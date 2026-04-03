@@ -19,14 +19,15 @@ The experiment should instead be executed on a separate machine, with this repos
 
 ## 2. Big picture in plain language
 
-This repository contains several related lines. For this execution task, only two matter:
+This repository contains the focused SkillX runtime and experiment assets needed for SkillX-on-SkillsBench execution.
 
-1. **MARC / MAC AutoResearch**
-   - broader platform goal: a community system for reusable agent-improvement artifacts, evaluation, transfer, and iteration
+For this execution task, two layers matter:
 
-2. **SkillX**
-   - a narrower focus inside that broader direction
-   - current question: can a more structured, lightweight, verifiable skill format outperform current loose skill packaging?
+1. **SkillX**
+   - this repo provides the protocols, materialized skillpacks, playbooks, and refine runtime
+
+2. **SkillsBench**
+   - this remains the external benchmark substrate used for execution
 
 This experiment is **not** trying to prove the entire SkillX vision.
 It is only testing the first narrow claim:
@@ -56,13 +57,14 @@ Read these files in order before acting:
 3. `experiments/skillx-skillsbench-001/agent_handoff/REMOTE_EXECUTION_PLAYBOOK.md`
 4. `experiments/skillx-skillsbench-001/agent_handoff/ARTIFACT_CONTRACT.md`
 5. `experiments/skillx-skillsbench-001/conditions.md`
-6. `plans/skillx/skillsbench-to-skillx-rewrite-experiment-plan-v0.1.md`
+6. `docs/experiment-plans/skillsbench-to-skillx-rewrite-experiment-plan-v0.1.md`
 
 If execution details are unclear, then consult:
 
-7. `playbooks/skillsbench-integration-playbook.md`
-8. `experiments/skillx-skillsbench-001/README.md`
-9. `experiments/skillx-skillsbench-001/results/dry-run-001-preparation-summary.md`
+7. `README.md`
+8. `INDEX.md`
+9. `experiments/skillx-skillsbench-001/README.md`
+10. `experiments/skillx-skillsbench-001/results/dry-run-001-preparation-summary.md`
 
 ---
 

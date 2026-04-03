@@ -7,7 +7,7 @@ name = "skillx"
 version = "0.1.0"
 description = "Standalone SkillX repository for skill rewrite and bounded refinement experiments."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.12,<3",
 ]

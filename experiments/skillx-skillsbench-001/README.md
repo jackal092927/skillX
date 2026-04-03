@@ -1,9 +1,14 @@
 # SkillX SkillsBench Experiment 001
 
-- **Project:** `projects/multi-agent-protocol-design`
+- **Project:** `skillX`
 - **Date initialized:** 2026-03-22
 - **Role:** first execution-facing experiment scaffold for testing SkillX on SkillsBench
-- **Parent plan:** `plans/skillsbench-to-skillx-rewrite-experiment-plan-v0.1.md`
+- **Parent plan:** `docs/experiment-plans/skillsbench-to-skillx-rewrite-experiment-plan-v0.1.md`
+
+Canonical onboarding for collaborators now lives at the repo root:
+
+- `README.md`
+- `INDEX.md`
 
 ---
 
