@@ -1,0 +1,2712 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import sys
+import tarfile
+import tempfile
+import unittest
+from pathlib import Path
+
+import path_setup
+from skillx.c4ar.contracts import (
+    NextSkillpackManifest,
+    RoundDecisionArtifact,
+    SessionEvidenceArtifact,
+)
+from skillx.session_evidence import distill_session_logs
+
+
+SCRIPT_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "scripts"
+    / "run_skillx_refine_benchmark.py"
+)
+
+
+def _load_module():
+    spec = importlib.util.spec_from_file_location("run_skillx_refine_benchmark", SCRIPT_PATH)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+class RunSkillxRefineBenchmarkTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.module = _load_module()
+
+    def _make_source_artifacts(
+        self,
+        *,
+        starting_skillpack_dir: Path,
+        starting_label: str = "C3",
+        starting_bundle_path: Path | None = None,
+    ):
+        return self.module.SourceArtifacts(
+            starting_skillpack_dir=starting_skillpack_dir,
+            starting_label=starting_label,
+            starting_bundle_path=starting_bundle_path,
+            rewrite_manifest_path=None,
+        )
+
+    def test_collect_tune_evidence_from_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            run_dir = Path(tmpdir) / "run-a"
+            (run_dir / "results").mkdir(parents=True)
+            payload = [
+                {"task_id": "task-a", "condition": "c1", "reward": 0.4},
+                {"task_id": "task-a", "condition": "c3", "reward": 0.9},
+                {"task_id": "task-b", "condition": "c2", "reward": 1.0},
+            ]
+            (run_dir / "results" / "benchmark_summary.json").write_text(json.dumps(payload))
+            rows = self.module.collect_tune_evidence("task-a", [run_dir])
+            self.assertEqual([row["condition"] for row in rows], ["c1", "c3"])
+            self.assertTrue(all(row["source_run_dir"] == str(run_dir) for row in rows))
+
+    def test_select_final_candidate_prefers_earliest_on_tie(self) -> None:
+        rows = [
+            {"round_index": 0, "reward": 0.8},
+            {"round_index": 1, "reward": 0.9},
+            {"round_index": 2, "reward": 0.9},
+        ]
+        selected = self.module.select_final_candidate(rows)
+        self.assertEqual(selected["round_index"], 1)
+
+    def test_make_round_zero_artifacts_copies_c3_skillpack(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            c3_dir = root / "source-run" / "rewrite_jobs" / "demo-task" / "outputs" / "materialized_skillpacks" / "demo-task" / "c3_derived" / "skill-a"
+            c3_dir.mkdir(parents=True)
+            (c3_dir / "SKILL.md").write_text("# Derived Execution Layer\nrefined\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            source = self._make_source_artifacts(starting_skillpack_dir=c3_dir.parent)
+            row = self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+            copied = paths.rounds_dir / "round-0" / "skillpack" / "skills" / "skill-a" / "SKILL.md"
+            self.assertTrue(copied.exists())
+            self.assertIn("# Derived Execution Layer", copied.read_text())
+            self.assertIsNone(row["reward"])
+
+    def test_locate_source_artifacts_uses_explicit_starting_pack(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            source_run_dir = root / "source-run"
+            (source_run_dir / "rewrite_jobs" / "demo-task" / "outputs" / "rewrite_manifest.json").parent.mkdir(
+                parents=True
+            )
+            (source_run_dir / "rewrite_jobs" / "demo-task" / "outputs" / "rewrite_manifest.json").write_text("{}\n")
+            explicit_skillpack_dir = root / "r0-skillpack"
+            (explicit_skillpack_dir / "skill-a").mkdir(parents=True)
+            (explicit_skillpack_dir / "skill-a" / "SKILL.md").write_text("explicit\n")
+            explicit_bundle_path = root / "r0-bundle.yaml"
+            explicit_bundle_path.write_text("bundle: true\n")
+
+            source = self.module.locate_source_artifacts(
+                "demo-task",
+                source_run_dir,
+                starting_skillpack_dir=explicit_skillpack_dir,
+                starting_bundle_path=explicit_bundle_path,
+                starting_label="R0",
+            )
+
+            self.assertEqual(source.starting_skillpack_dir, explicit_skillpack_dir)
+            self.assertEqual(source.starting_label, "R0")
+            self.assertEqual(source.starting_bundle_path, explicit_bundle_path)
+
+    def test_locate_source_artifacts_defaults_custom_starting_pack_to_r0_label(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            source_run_dir = root / "source-run"
+            (source_run_dir / "rewrite_jobs" / "demo-task" / "outputs" / "rewrite_manifest.json").parent.mkdir(
+                parents=True
+            )
+            (source_run_dir / "rewrite_jobs" / "demo-task" / "outputs" / "rewrite_manifest.json").write_text("{}\n")
+            explicit_skillpack_dir = root / "c2_class_aware"
+            (explicit_skillpack_dir / "skill-a").mkdir(parents=True)
+            (explicit_skillpack_dir / "skill-a" / "SKILL.md").write_text("explicit\n")
+
+            source = self.module.locate_source_artifacts(
+                "demo-task",
+                source_run_dir,
+                starting_skillpack_dir=explicit_skillpack_dir,
+            )
+
+            self.assertEqual(source.starting_skillpack_dir, explicit_skillpack_dir)
+            self.assertEqual(source.starting_label, "R0")
+            self.assertIsNone(source.starting_bundle_path)
+
+    def test_make_round_zero_artifacts_uses_explicit_starting_pack_and_label(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            starting_bundle_path = root / "start" / "bundle.yaml"
+            starting_bundle_path.write_text("bundle: true\n")
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=starting_skillpack_dir,
+                starting_label="R0",
+                starting_bundle_path=starting_bundle_path,
+            )
+
+            self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+
+            copied = paths.rounds_dir / "round-0" / "skillpack" / "skills" / "skill-a" / "SKILL.md"
+            self.assertTrue(copied.exists())
+            self.assertIn("custom", copied.read_text())
+            self.assertTrue((paths.rounds_dir / "round-0" / "skillpack_bundle.yaml").exists())
+            self.assertIn("R0", (paths.rounds_dir / "round-0" / "round_0_refine_memo.md").read_text())
+            self.assertIn("R0", (paths.rounds_dir / "round-0" / "round_0_risk_note.md").read_text())
+
+    def test_write_bundle_manifest_contains_round_budget(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=root
+                / "source-run"
+                / "rewrite_jobs"
+                / "demo-task"
+                / "outputs"
+                / "materialized_skillpacks"
+                / "demo-task"
+                / "c3_derived",
+            )
+            self.module.write_bundle_manifest(
+                paths=paths,
+                task=task,
+                source_run_dir=root / "source",
+                source=source,
+                tune_run_dirs=[root / "run-a"],
+                round_budget=4,
+                rounds=[{"round_index": 0, "reward": 0.7}],
+            )
+            payload = json.loads(paths.manifest_path.read_text())
+            self.assertEqual(payload["round_budget"], 4)
+            self.assertEqual(payload["starting_artifact"], "C3")
+            self.assertEqual(payload["starting_label"], "C3")
+            self.assertEqual(payload["starting_skillpack_dir"], str(source.starting_skillpack_dir))
+
+    def test_write_bundle_manifest_records_explicit_starting_pack(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            explicit_skillpack_dir = root / "start" / "skillpack"
+            (explicit_skillpack_dir / "skill-a").mkdir(parents=True)
+            (explicit_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            explicit_bundle_path = root / "start" / "bundle.yaml"
+            explicit_bundle_path.write_text("bundle: true\n")
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=explicit_skillpack_dir,
+                starting_label="R0",
+                starting_bundle_path=explicit_bundle_path,
+            )
+
+            self.module.write_bundle_manifest(
+                paths=paths,
+                task=task,
+                source_run_dir=root / "source",
+                source=source,
+                tune_run_dirs=[root / "run-a"],
+                round_budget=2,
+                rounds=[{"round_index": 0, "reward": 0.2}],
+            )
+
+            payload = json.loads(paths.manifest_path.read_text())
+            self.assertEqual(payload["starting_artifact"], "R0")
+            self.assertEqual(payload["starting_label"], "R0")
+            self.assertEqual(payload["starting_skillpack_dir"], str(explicit_skillpack_dir))
+            self.assertEqual(payload["starting_bundle_path"], str(explicit_bundle_path))
+
+    def test_write_static_bundle_attaches_session_evidence_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            c3_dir = root / "source-run" / "rewrite_jobs" / "demo-task" / "outputs" / "materialized_skillpacks" / "demo-task" / "c3_derived" / "skill-a"
+            c3_dir.mkdir(parents=True)
+            (c3_dir / "SKILL.md").write_text("# Derived Execution Layer\nrefined\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            source = self._make_source_artifacts(starting_skillpack_dir=c3_dir.parent)
+            session_evidence = self.module.SessionDerivedEvidence(
+                source_paths=(str(root / "session.log"),),
+                dominant_failure_pattern="repeated loop / low-progress churn",
+                wasted_loop_signals=["Repeated wasted loop 3x: tool_use edit"],
+                tool_misuse_signals=["Tool misuse: wrong tool"],
+                critical_turns=["Critical turn: timeout"],
+                skill_misguidance_signals=["Skill misguidance: too verbose"],
+                recommended_edit_targets=["compress_derived_layer", "tighten_scope_boundary"],
+                evidence_refs=[f"{root / 'session.log'}:12"],
+                observed_at="2026-03-25T00:00:00+00:00",
+            )
+            (root / "protocol.md").write_text("protocol\n")
+            (root / "bundle.md").write_text("bundle\n")
+            self.module.write_static_bundle(
+                task=task,
+                paths=paths,
+                protocols=self.module.ProtocolInputs(
+                    refine_protocol_path=root / "protocol.md",
+                    bundle_contract_path=root / "bundle.md",
+                ),
+                source=source,
+                tune_rows=[
+                    {
+                        "condition": "c3",
+                        "reward": 0.7,
+                        "result_path": "/tmp/c3/result.json",
+                        "source_run_dir": "/tmp/source",
+                        "exception_stats": {},
+                    }
+                ],
+                tune_run_dirs=[root / "run-a"],
+                round_budget=3,
+                source_run_dir=root / "source",
+                session_evidence=session_evidence,
+            )
+            session_dir = paths.static_dir / "session_evidence"
+            self.assertTrue((session_dir / "session_evidence.json").exists())
+            self.assertTrue((session_dir / "session_evidence.md").exists())
+            self.assertIn("repeated loop", (session_dir / "session_evidence.md").read_text())
+            self.assertIn(
+                "starting_artifact: `C3`",
+                (paths.static_dir / "constraints" / "refine_constraints.md").read_text(),
+            )
+
+    def test_write_static_bundle_records_explicit_starting_label(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            explicit_skillpack_dir = root / "start" / "skillpack"
+            (explicit_skillpack_dir / "skill-a").mkdir(parents=True)
+            (explicit_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            explicit_bundle_path = root / "start" / "bundle.yaml"
+            explicit_bundle_path.write_text("bundle: true\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=explicit_skillpack_dir,
+                starting_label="R0",
+                starting_bundle_path=explicit_bundle_path,
+            )
+            (root / "protocol.md").write_text("protocol\n")
+            (root / "bundle.md").write_text("bundle\n")
+
+            self.module.write_static_bundle(
+                task=task,
+                paths=paths,
+                protocols=self.module.ProtocolInputs(
+                    refine_protocol_path=root / "protocol.md",
+                    bundle_contract_path=root / "bundle.md",
+                ),
+                source=source,
+                tune_rows=[
+                    {
+                        "condition": "r0",
+                        "reward": 0.7,
+                        "result_path": "/tmp/r0/result.json",
+                        "source_run_dir": "/tmp/source",
+                        "exception_stats": {},
+                    }
+                ],
+                tune_run_dirs=[root / "run-a"],
+                round_budget=3,
+                source_run_dir=root / "source",
+                session_evidence=None,
+            )
+
+            constraints = (paths.static_dir / "constraints" / "refine_constraints.md").read_text()
+            self.assertIn("starting_artifact: `R0`", constraints)
+            self.assertIn(str(explicit_skillpack_dir), constraints)
+            self.assertIn(str(explicit_bundle_path), constraints)
+
+    def test_round_decision_context_is_bounded_and_copied_forward(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            session_evidence = self.module.SessionDerivedEvidence(
+                source_paths=(str(root / "session.log"),),
+                dominant_failure_pattern="repeated loop / low-progress churn",
+                wasted_loop_signals=["Repeated wasted loop 3x: tool_use edit"],
+                tool_misuse_signals=[],
+                critical_turns=[],
+                skill_misguidance_signals=["Skill misguidance: too verbose"],
+                recommended_edit_targets=["compress_derived_layer", "remove_speculative_evaluator_content"],
+                evidence_refs=[f"{root / 'session.log'}:12"],
+                observed_at="2026-03-25T00:00:00+00:00",
+            )
+            tune_rows = [
+                {
+                    "condition": "c3",
+                    "reward": 0.7,
+                    "result_path": "/tmp/c3/result.json",
+                    "source_run_dir": "/tmp/source",
+                    "exception_stats": {},
+                }
+            ]
+            c3_dir = root / "source-run" / "rewrite_jobs" / "demo-task" / "outputs" / "materialized_skillpacks" / "demo-task" / "c3_derived" / "skill-a"
+            c3_dir.mkdir(parents=True)
+            (c3_dir / "SKILL.md").write_text("# Derived Execution Layer\nrefined\n")
+            source = self._make_source_artifacts(starting_skillpack_dir=c3_dir.parent)
+            (root / "protocol.md").write_text("protocol\n")
+            (root / "bundle.md").write_text("bundle\n")
+            self.module.write_static_bundle(
+                task=task,
+                paths=paths,
+                protocols=self.module.ProtocolInputs(
+                    refine_protocol_path=root / "protocol.md",
+                    bundle_contract_path=root / "bundle.md",
+                ),
+                source=source,
+                tune_rows=tune_rows,
+                tune_run_dirs=[root / "run-a"],
+                round_budget=3,
+                source_run_dir=root / "source",
+                session_evidence=session_evidence,
+            )
+            round_dir = paths.rounds_dir / "round-0"
+            (round_dir / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_dir / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\nrefined\n")
+            (round_dir / "session_logs").mkdir()
+            (round_dir / "session_logs" / "raw.log").write_text("full raw log that should not be copied\n")
+            context = self.module.write_round_context_artifacts(
+                task=task,
+                round_index=0,
+                source_run_dir=root / "source",
+                round_rows=[
+                    self.module.build_round_row(
+                        0,
+                        round_dir,
+                        {
+                            "reward": 0.9,
+                            "exception_stats": {},
+                            "eval_name": "demo",
+                        },
+                    )
+                ],
+                tune_rows=tune_rows,
+                paths=paths,
+                session_evidence=session_evidence,
+            )
+            paths.ledger_path.write_text("# Refine Ledger\n\n")
+            decision_dir = round_dir / "decision_context"
+            self.assertTrue((decision_dir / "round_0_evidence_bundle.json").exists())
+            self.assertTrue((decision_dir / "round_0_decision.json").exists())
+            self.assertEqual(context["refine_intent"]["primary_action"], "compress_derived_layer")
+            self.assertTrue(context["disposition"]["keep_candidate"])
+
+            target_dir = root / "next-round-inputs"
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "protocol.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            self.module.populate_refine_inputs_dir(
+                task=task,
+                paths=paths,
+                protocols=protocols,
+                target_dir=target_dir,
+                previous_round_dir=round_dir,
+            )
+            self.assertTrue((target_dir / "decision_context" / "round_0_evidence_bundle.json").exists())
+            self.assertTrue((target_dir / "decision_context" / "round_0_decision.json").exists())
+            self.assertTrue((target_dir / "static" / "session_evidence" / "session_evidence.json").exists())
+            self.assertFalse((target_dir / "session_logs" / "raw.log").exists())
+
+    def test_existing_tune_result_recovers_nested_harbor_job(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            round_dir = root / "round-1"
+            tune_root = round_dir / "tune_check"
+            tune_root.mkdir(parents=True)
+            (tune_root / "config.json").write_text(
+                json.dumps({"job_name": "demo-task-round-1-c4-tune"})
+            )
+            job_dir = tune_root / "demo-task-round-1-c4-tune"
+            job_dir.mkdir()
+            (job_dir / "result.json").write_text(
+                json.dumps(
+                    {
+                        "stats": {
+                            "evals": {
+                                "demo": {
+                                    "metrics": [{"mean": 0.6}],
+                                    "exception_stats": {},
+                                }
+                            }
+                        }
+                    }
+                )
+            )
+            row = self.module.existing_tune_result(
+                task_id="demo-task",
+                round_dir_path=round_dir,
+                skill_source="/tmp/skillpack",
+            )
+            self.assertIsNotNone(row)
+            self.assertEqual(row["reward"], 0.6)
+            self.assertTrue((tune_root / "result.json").exists())
+
+    def test_is_round_materialized_checks_required_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            round_dir = root / "rounds" / "round-1"
+            (round_dir / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_dir / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("refined\n")
+            for name in [
+                "round_1_skill.md",
+                "round_1_refine_memo.md",
+                "round_1_diff_summary.md",
+                "round_1_effect_estimate.md",
+                "round_1_risk_note.md",
+                "round_1_diagnosis_table.md",
+            ]:
+                (round_dir / name).write_text("ok\n")
+            self.assertTrue(
+                self.module.is_round_materialized(task=task, round_dir_path=round_dir, round_index=1)
+            )
+
+    def test_append_refine_ledger_skips_duplicate_round(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            paths = self.module.ensure_refine_paths(Path(tmpdir) / "out", "demo-task")
+            self.module.append_refine_ledger(
+                paths=paths,
+                round_index=1,
+                parent_round_index=0,
+                tune_result={"reward": 0.4, "exception_stats": {}},
+            )
+            self.module.append_refine_ledger(
+                paths=paths,
+                round_index=1,
+                parent_round_index=0,
+                tune_result={"reward": 0.9, "exception_stats": {}},
+            )
+            lines = paths.ledger_path.read_text().splitlines()
+            self.assertEqual(sum(1 for line in lines if line.startswith("| R1 |")), 1)
+
+    def test_is_retryable_refine_contract_failure_detects_missing_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            job_dir = Path(tmpdir) / "job-a" / "trial-1" / "verifier"
+            job_dir.mkdir(parents=True)
+            (job_dir / "test-stdout.txt").write_text("missing refined skill for box-least-squares\n")
+            self.assertTrue(
+                self.module.is_retryable_refine_contract_failure(Path(tmpdir) / "job-a")
+            )
+
+    def test_write_round_context_artifacts_writes_bounded_decision_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_zero = paths.rounds_dir / "round-0"
+            (round_zero / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_zero / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nrefined\n"
+            )
+
+            log_path = root / "session.jsonl"
+            log_path.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "type": "assistant",
+                                "message": {
+                                    "role": "assistant",
+                                    "content": [
+                                        {
+                                            "type": "tool_use",
+                                            "name": "Edit",
+                                            "input": {"description": "edit derived layer"},
+                                        }
+                                    ],
+                                },
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "type": "assistant",
+                                "message": {
+                                    "role": "assistant",
+                                    "content": [{"type": "text", "text": "verifier contract failed"}],
+                                },
+                            }
+                        ),
+                    ]
+                )
+                + "\n"
+            )
+            session_evidence = distill_session_logs([log_path])
+
+            c3_row = {
+                "condition": "c3",
+                "reward": 0.4,
+                "result_path": str(root / "c3-result.json"),
+                "source_run_dir": str(root / "source-run"),
+                "exception_stats": {},
+            }
+            round_rows = [
+                {
+                    "round_index": 0,
+                    "reward": 0.4,
+                    "result_path": str(round_zero / "tune_check" / "result.json"),
+                    "round_dir": str(round_zero),
+                    "exception_stats": {},
+                    "classification": {"kind": "scientific_failure"},
+                }
+            ]
+            decision_context = self.module.write_round_context_artifacts(
+                task=task,
+                round_index=0,
+                source_run_dir=root / "source-run",
+                round_rows=round_rows,
+                tune_rows=[c3_row],
+                paths=paths,
+                session_evidence=session_evidence,
+            )
+
+            decision_dir = round_zero / "decision_context"
+            evidence_bundle = json.loads((decision_dir / "round_0_evidence_bundle.json").read_text())
+            round_decision = json.loads((decision_dir / "round_0_decision.json").read_text())
+
+            self.assertTrue((decision_dir / "round_0_evidence_bundle.md").exists())
+
+    def test_write_round_context_artifacts_accepts_r0_evidence_without_c3(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_zero = paths.rounds_dir / "round-0"
+            (round_zero / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_zero / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nrefined\n"
+            )
+
+            decision_context = self.module.write_round_context_artifacts(
+                task=task,
+                round_index=0,
+                source_run_dir=root / "source-run",
+                round_rows=[
+                    {
+                        "round_index": 0,
+                        "reward": 0.8,
+                        "result_path": str(round_zero / "tune_check" / "result.json"),
+                        "round_dir": str(round_zero),
+                        "exception_stats": {},
+                        "classification": {"kind": "clean_success"},
+                    }
+                ],
+                tune_rows=[
+                    {
+                        "condition": "r0",
+                        "reward": 0.6,
+                        "result_path": str(root / "r0-result.json"),
+                        "source_run_dir": str(root / "source-run"),
+                        "exception_stats": {},
+                    }
+                ],
+                paths=paths,
+                starting_label="R0",
+                session_evidence=None,
+            )
+
+            decision_dir = round_zero / "decision_context"
+            evidence_bundle = json.loads((decision_dir / "round_0_evidence_bundle.json").read_text())
+            self.assertEqual(evidence_bundle["starting_label"], "R0")
+            self.assertEqual(evidence_bundle["starting_result"]["condition"], "r0")
+            self.assertEqual(decision_context["refine_intent"]["primary_action"], "preserve_core_structure")
+
+    def test_write_round_context_artifacts_tolerates_missing_starting_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_zero = paths.rounds_dir / "round-0"
+            (round_zero / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_zero / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nrefined\n"
+            )
+
+            self.module.write_round_context_artifacts(
+                task=task,
+                round_index=0,
+                source_run_dir=root / "source-run",
+                round_rows=[
+                    {
+                        "round_index": 0,
+                        "reward": None,
+                        "result_path": str(round_zero / "tune_check" / "result.json"),
+                        "round_dir": str(round_zero),
+                        "exception_stats": {},
+                        "classification": {"kind": "runtime_failure"},
+                    }
+                ],
+                tune_rows=[],
+                paths=paths,
+                starting_label="R0",
+                session_evidence=None,
+            )
+
+            evidence_bundle = json.loads(
+                (round_zero / "decision_context" / "round_0_evidence_bundle.json").read_text()
+            )
+            self.assertEqual(evidence_bundle["starting_label"], "R0")
+            self.assertEqual(evidence_bundle["starting_result"]["condition"], "r0")
+            self.assertIsNone(evidence_bundle["starting_result"]["reward"])
+            self.assertTrue((round_zero / "decision_context" / "round_0_decision.md").exists())
+            self.assertFalse(evidence_bundle["bounded"]["raw_session_logs_attached"])
+            self.assertFalse(evidence_bundle["bounded"]["session_evidence_attached"])
+            self.assertIsNone(evidence_bundle["session_evidence"])
+
+    def test_populate_refine_inputs_dir_copies_decision_context_without_raw_session_logs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            previous_round = paths.rounds_dir / "round-0"
+            (previous_round / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (previous_round / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nrefined\n"
+            )
+            decision_dir = previous_round / "decision_context"
+            decision_dir.mkdir(parents=True)
+            (decision_dir / "round_0_decision.json").write_text("{}\n")
+            (decision_dir / "round_0_evidence_bundle.json").write_text("{}\n")
+            paths.ledger_path.write_text("# ledger\n")
+            session_static_dir = paths.static_dir / "session_evidence"
+            session_static_dir.mkdir(parents=True)
+            (session_static_dir / "session_evidence.json").write_text("{}\n")
+            (session_static_dir / "session_evidence.md").write_text("# evidence\n")
+
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            target_dir = root / "sandbox" / "environment" / "refine_inputs"
+            self.module.populate_refine_inputs_dir(
+                task=task,
+                paths=paths,
+                protocols=protocols,
+                target_dir=target_dir,
+                previous_round_dir=previous_round,
+            )
+
+            self.assertTrue((target_dir / "decision_context" / "round_0_decision.json").exists())
+            self.assertTrue((target_dir / "static" / "session_evidence" / "session_evidence.json").exists())
+            self.assertFalse((target_dir / "static" / "session_logs").exists())
+
+    def test_materialize_c4_sandbox_excludes_refine_plan_and_decision_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            round_dir = root / "round-1"
+            (round_dir / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_dir / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nrefined\n"
+            )
+            (round_dir / "decision_context").mkdir(parents=True)
+            (round_dir / "decision_context" / "round_0_decision.json").write_text("{}\n")
+            (round_dir / "refine_plan.json").write_text("{\"summary\": \"should not leak\"}\n")
+            (round_dir / "refine_plan.md").write_text("# Refine Plan\n")
+            (round_dir / "next_skillpack_manifest.json").write_text("{}\n")
+
+            sandbox_dir = self.module.materialize_c4_sandbox(task, root / "out", round_dir)
+
+            self.assertTrue((sandbox_dir / "instruction.md").exists())
+            self.assertTrue((sandbox_dir / "environment" / "skills" / "skill-a" / "SKILL.md").exists())
+            self.assertFalse((sandbox_dir / "environment" / "refine_inputs").exists())
+            self.assertFalse((sandbox_dir / "decision_context").exists())
+            self.assertFalse((sandbox_dir / "session_evidence").exists())
+            self.assertFalse((sandbox_dir / "refine_plan.json").exists())
+            self.assertFalse((sandbox_dir / "refine_plan.md").exists())
+            self.assertFalse((sandbox_dir / "round_decision.json").exists())
+            self.assertFalse((sandbox_dir / "next_skillpack_manifest.json").exists())
+
+    def test_materialize_c4ar_next_round_clears_stale_round_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            paths = self.module.ensure_refine_paths(root / "out", "demo-task")
+            target_round_dir = paths.rounds_dir / "round-1"
+            (target_round_dir / "role_a").mkdir(parents=True)
+            (target_round_dir / "role_a" / "session_evidence.json").write_text("{}\n")
+            (target_round_dir / "role_b").mkdir(parents=True)
+            (target_round_dir / "role_b" / "round_decision.json").write_text("{}\n")
+            (target_round_dir / "tune_check").mkdir(parents=True)
+            (target_round_dir / "tune_check" / "result.json").write_text("{}\n")
+
+            next_skillpack_dir = root / "candidate" / "skillpack"
+            (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True)
+            (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text("# next\n")
+
+            self.module.materialize_c4ar_next_round(
+                paths=paths,
+                next_round_index=1,
+                next_skillpack_dir=next_skillpack_dir,
+                bundle_path=None,
+            )
+
+            self.assertTrue((target_round_dir / "skillpack" / "skills" / "skill-a" / "SKILL.md").exists())
+            self.assertFalse((target_round_dir / "role_a").exists())
+            self.assertFalse((target_round_dir / "role_b").exists())
+            self.assertFalse((target_round_dir / "tune_check").exists())
+
+    def test_run_c4ar_round_with_harbor_ignores_synthetic_r0_cache(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_zero = paths.rounds_dir / "round-0"
+            (round_zero / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_zero / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nr0\n"
+            )
+            synthetic_tune_root = round_zero / "tune_check"
+            synthetic_tune_root.mkdir(parents=True)
+            (synthetic_tune_root / "result.json").write_text(json.dumps({"reward": 0.5}) + "\n")
+
+            observed = {"stale_result_present": None}
+            original_run_round_tune_check = self.module.run_round_tune_check
+            try:
+                def fake_run_round_tune_check(**kwargs):
+                    tune_root = kwargs["round_dir_path"] / "tune_check"
+                    observed["stale_result_present"] = (tune_root / "result.json").exists()
+                    job_name = "demo-task-round-0-c4-tune"
+                    (tune_root / "config.json").write_text(json.dumps({"job_name": job_name}) + "\n")
+                    trial_dir = tune_root / job_name / "trial-001"
+                    (trial_dir / "agent").mkdir(parents=True)
+                    (trial_dir / "agent" / "claude-code.txt").write_text("read skill\n")
+                    (trial_dir / "verifier").mkdir(parents=True)
+                    (trial_dir / "verifier" / "report.json").write_text(
+                        json.dumps({"summary": {"passed": 1, "failed": 0, "total": 1}, "exitcode": 0}) + "\n"
+                    )
+                    (trial_dir / "result.json").write_text("{}\n")
+                    return {
+                        "reward": 0.8444,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    }
+
+                self.module.run_round_tune_check = fake_run_round_tune_check
+
+                def fake_role_a_runner(inputs, **kwargs):
+                    out_dir = Path(inputs.output_dir)
+                    out_dir.mkdir(parents=True, exist_ok=True)
+                    payload = {
+                        "task_id": inputs.task_id,
+                        "round_index": inputs.round_index,
+                        "role": "role_a",
+                        "model_name": "codex-5.3",
+                        "source_log_paths": inputs.source_log_paths,
+                        "dominant_failure_pattern": "aggregation drift",
+                        "wasted_loop_signals": [],
+                        "tool_misuse_signals": [],
+                        "critical_turns": [],
+                        "skill_misguidance_signals": [],
+                        "recommended_edit_targets": ["guidance.block_2"],
+                        "evidence_refs": [f"{inputs.source_log_paths[0]}:1"],
+                        "observed_at": "2026-03-25T00:00:00+00:00",
+                    }
+                    (out_dir / "session_evidence.json").write_text(json.dumps(payload) + "\n")
+                    (out_dir / "session_evidence.md").write_text("# Session-Derived Evidence\n")
+                    return type(
+                        "RoleAResult",
+                        (),
+                        {
+                            "json_path": str(out_dir / "session_evidence.json"),
+                            "markdown_path": str(out_dir / "session_evidence.md"),
+                        },
+                    )()
+
+                def fake_role_b_runner(inputs, **kwargs):
+                    out_dir = Path(inputs.output_dir)
+                    next_skill = out_dir / "next_skillpack" / "skills" / "skill-a"
+                    next_skill.mkdir(parents=True, exist_ok=True)
+                    (next_skill / "SKILL.md").write_text("# Derived Execution Layer\nnext\n")
+                    (out_dir / "refine_plan.json").write_text(
+                        json.dumps(
+                            {
+                                "task_id": inputs.task_id,
+                                "round_index": inputs.round_index,
+                                "role": "role_b",
+                                "model_name": "gpt-5.4",
+                                "summary": "tighten aggregation guidance",
+                                "atomic_operations": [],
+                            }
+                        )
+                        + "\n"
+                    )
+                    (out_dir / "refine_plan.md").write_text("# Refine Plan\n")
+                    (out_dir / "next_skillpack_manifest.json").write_text(
+                        json.dumps(
+                            {
+                                "task_id": inputs.task_id,
+                                "round_index": inputs.round_index,
+                                "role": "role_b",
+                                "model_name": "gpt-5.4",
+                                "skillpack_dir": str(out_dir / "next_skillpack"),
+                                "skill_files": ["skills/skill-a/SKILL.md"],
+                                "prompt_invariant": True,
+                                "derived_from_round": inputs.round_index,
+                            }
+                        )
+                        + "\n"
+                    )
+                    (out_dir / "round_decision.json").write_text(
+                        json.dumps(
+                            {
+                                "task_id": inputs.task_id,
+                                "round_index": inputs.round_index,
+                                "role": "role_b",
+                                "model_name": "gpt-5.4",
+                                "decision": "continue",
+                                "reason": "candidate prepared",
+                                "next_round_index": inputs.round_index + 1,
+                                "next_skillpack_dir": str(out_dir / "next_skillpack"),
+                            }
+                        )
+                        + "\n"
+                    )
+                    return type(
+                        "RoleBResult",
+                        (),
+                        {
+                            "refine_plan_json_path": str(out_dir / "refine_plan.json"),
+                            "refine_plan_markdown_path": str(out_dir / "refine_plan.md"),
+                            "next_skillpack_manifest_json_path": str(out_dir / "next_skillpack_manifest.json"),
+                            "round_decision_json_path": str(out_dir / "round_decision.json"),
+                            "next_skillpack_dir": str(out_dir / "next_skillpack"),
+                        },
+                    )()
+
+                outputs, tune_result = self.module.run_c4ar_round_with_harbor(
+                    task=task,
+                    round_index=0,
+                    round_dir_path=round_zero,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    tune_timeout_multiplier=3.0,
+                    run_dir=root / "out",
+                    role_a_runner=fake_role_a_runner,
+                    role_b_runner=fake_role_b_runner,
+                )
+            finally:
+                self.module.run_round_tune_check = original_run_round_tune_check
+
+            self.assertFalse(observed["stale_result_present"])
+            self.assertEqual(tune_result["reward"], 0.8444)
+            self.assertTrue((round_zero / "role_a" / "session_evidence.json").exists())
+            self.assertTrue((round_zero / "role_b" / "round_decision.json").exists())
+
+    def test_run_c4ar_round_with_harbor_resumes_from_existing_executor_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_one = paths.rounds_dir / "round-1"
+            (round_one / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_one / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nr1\n"
+            )
+
+            tune_root = round_one / "tune_check"
+            job_name = "demo-task-round-1-c4-tune"
+            job_dir = tune_root / job_name
+            trial_dir = job_dir / "trial-001"
+            (trial_dir / "agent").mkdir(parents=True)
+            (trial_dir / "agent" / "claude-code.txt").write_text("cached session log\n")
+            (trial_dir / "verifier").mkdir(parents=True)
+            (trial_dir / "verifier" / "report.json").write_text(
+                json.dumps({"summary": {"passed": 1, "failed": 0, "total": 1}, "exitcode": 0}) + "\n"
+            )
+            (trial_dir / "result.json").write_text("{}\n")
+            (tune_root / "config.json").write_text(json.dumps({"job_name": job_name}) + "\n")
+            (tune_root / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "job_dir": str(job_dir),
+                        "result_path": str(job_dir / "result.json"),
+                        "reward": 0.61,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "skill_source": str(round_one / "skillpack"),
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    }
+                )
+                + "\n"
+            )
+            (round_one / "executor").mkdir()
+            (round_one / "executor" / "verifier_summary.json").write_text(
+                json.dumps(
+                    {
+                        "reward": 0.61,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                        "report_path": str(trial_dir / "verifier" / "report.json"),
+                        "trial_result_path": str(trial_dir / "result.json"),
+                        "passed_tests": 1,
+                        "failed_tests": 0,
+                        "total_tests": 1,
+                        "pytest_exitcode": 0,
+                    }
+                )
+                + "\n"
+            )
+
+            original_run_round_tune_check = self.module.run_round_tune_check
+            observed = {"executor_reran": False}
+            try:
+                def fail_run_round_tune_check(**kwargs):
+                    observed["executor_reran"] = True
+                    raise AssertionError("executor should not rerun when cached executor outputs exist")
+
+                self.module.run_round_tune_check = fail_run_round_tune_check
+
+                def fake_role_a_runner(inputs, **kwargs):
+                    out_dir = Path(inputs.output_dir)
+                    out_dir.mkdir(parents=True, exist_ok=True)
+                    payload = {
+                        "task_id": inputs.task_id,
+                        "round_index": inputs.round_index,
+                        "role": "role_a",
+                        "model_name": "codex-5.3",
+                        "source_log_paths": inputs.source_log_paths,
+                        "dominant_failure_pattern": "cached executor resume",
+                        "wasted_loop_signals": [],
+                        "tool_misuse_signals": [],
+                        "critical_turns": [],
+                        "skill_misguidance_signals": [],
+                        "recommended_edit_targets": ["guidance.block_2"],
+                        "evidence_refs": [f"{inputs.source_log_paths[0]}:1"],
+                        "observed_at": "2026-03-25T00:00:00+00:00",
+                    }
+                    (out_dir / "session_evidence.json").write_text(json.dumps(payload) + "\n")
+                    (out_dir / "session_evidence.md").write_text("# Session-Derived Evidence\n")
+                    return type(
+                        "RoleAResult",
+                        (),
+                        {
+                            "json_path": str(out_dir / "session_evidence.json"),
+                            "markdown_path": str(out_dir / "session_evidence.md"),
+                        },
+                    )()
+
+                def fake_role_b_runner(inputs, **kwargs):
+                    out_dir = Path(inputs.output_dir)
+                    next_skill = out_dir / "next_skillpack" / "skills" / "skill-a"
+                    next_skill.mkdir(parents=True, exist_ok=True)
+                    (next_skill / "SKILL.md").write_text("# Derived Execution Layer\nnext\n")
+                    (out_dir / "refine_plan.json").write_text(
+                        json.dumps(
+                            {
+                                "task_id": inputs.task_id,
+                                "round_index": inputs.round_index,
+                                "role": "role_b",
+                                "model_name": "gpt-5.4",
+                                "summary": "resume from cached executor",
+                                "atomic_operations": [],
+                            }
+                        )
+                        + "\n"
+                    )
+                    (out_dir / "refine_plan.md").write_text("# Refine Plan\n")
+                    (out_dir / "next_skillpack_manifest.json").write_text(
+                        json.dumps(
+                            {
+                                "task_id": inputs.task_id,
+                                "round_index": inputs.round_index,
+                                "role": "role_b",
+                                "model_name": "gpt-5.4",
+                                "skillpack_dir": str(out_dir / "next_skillpack"),
+                                "skill_files": ["skills/skill-a/SKILL.md"],
+                                "prompt_invariant": True,
+                                "derived_from_round": inputs.round_index,
+                            }
+                        )
+                        + "\n"
+                    )
+                    (out_dir / "round_decision.json").write_text(
+                        json.dumps(
+                            {
+                                "task_id": inputs.task_id,
+                                "round_index": inputs.round_index,
+                                "role": "role_b",
+                                "model_name": "gpt-5.4",
+                                "decision": "stop",
+                                "reason": "resume test complete",
+                                "next_round_index": None,
+                                "next_skillpack_dir": None,
+                                "selected_candidate_label": "R1",
+                            }
+                        )
+                        + "\n"
+                    )
+                    return type(
+                        "RoleBResult",
+                        (),
+                        {
+                            "refine_plan_json_path": str(out_dir / "refine_plan.json"),
+                            "refine_plan_markdown_path": str(out_dir / "refine_plan.md"),
+                            "next_skillpack_manifest_json_path": str(out_dir / "next_skillpack_manifest.json"),
+                            "round_decision_json_path": str(out_dir / "round_decision.json"),
+                            "next_skillpack_dir": str(out_dir / "next_skillpack"),
+                        },
+                    )()
+
+                outputs, tune_result = self.module.run_c4ar_round_with_harbor(
+                    task=task,
+                    round_index=1,
+                    round_dir_path=round_one,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    tune_timeout_multiplier=3.0,
+                    run_dir=root / "out",
+                    role_a_runner=fake_role_a_runner,
+                    role_b_runner=fake_role_b_runner,
+                )
+            finally:
+                self.module.run_round_tune_check = original_run_round_tune_check
+
+            self.assertFalse(observed["executor_reran"])
+            self.assertEqual(tune_result["reward"], 0.61)
+            self.assertEqual(outputs.round_decision.decision, "stop")
+
+    def test_run_c4ar_round_with_harbor_passes_default_playbooks_to_orchestrator(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_zero = paths.rounds_dir / "round-0"
+            (round_zero / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_zero / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nr0\n"
+            )
+
+            captured: dict[str, object] = {}
+            original_run_round_tune_check = self.module.run_round_tune_check
+            original_run_c4ar_round = self.module.run_c4ar_round
+            try:
+                def fake_run_round_tune_check(**kwargs):
+                    tune_root = kwargs["round_dir_path"] / "tune_check"
+                    tune_root.mkdir(parents=True, exist_ok=True)
+                    job_name = "demo-task-round-0-c4-tune"
+                    (tune_root / "config.json").write_text(json.dumps({"job_name": job_name}) + "\n")
+                    trial_dir = tune_root / job_name / "trial-001"
+                    (trial_dir / "agent").mkdir(parents=True)
+                    (trial_dir / "agent" / "claude-code.txt").write_text("read skill\n")
+                    (trial_dir / "verifier").mkdir(parents=True)
+                    (trial_dir / "verifier" / "report.json").write_text(
+                        json.dumps({"summary": {"passed": 1, "failed": 0, "total": 1}, "exitcode": 0}) + "\n"
+                    )
+                    (trial_dir / "result.json").write_text("{}\n")
+                    return {
+                        "reward": 0.8444,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    }
+
+                def fake_run_c4ar_round(inputs, *, config, executor_runner, role_a_runner, role_b_runner):
+                    captured["role_a_config"] = config.role_a_config
+                    captured["role_b_config"] = config.role_b_config
+                    executor_runner(
+                        type(
+                            "ExecutorInputs",
+                            (),
+                            {
+                                "output_dir": str(Path(inputs.round_root_dir) / "executor"),
+                                "skillpack_dir": inputs.current_skillpack_dir,
+                                "bundle_path": inputs.current_bundle_path,
+                            },
+                        )()
+                    )
+                    return self.module.OrchestratorOutputs(
+                        event_log_path=str(Path(inputs.round_root_dir) / "orchestrator_log.ndjson"),
+                        session_evidence=SessionEvidenceArtifact(
+                            task_id=inputs.task_id,
+                            round_index=inputs.round_index,
+                            role="role_a",
+                            model_name="codex-5.3",
+                            source_log_paths=[],
+                            dominant_failure_pattern="aggregation drift",
+                            wasted_loop_signals=[],
+                            tool_misuse_signals=[],
+                            critical_turns=[],
+                            skill_misguidance_signals=[],
+                            recommended_edit_targets=[],
+                            evidence_refs=[],
+                            observed_at="2026-03-25T00:00:00+00:00",
+                        ),
+                        next_skillpack_manifest=NextSkillpackManifest(
+                            task_id=inputs.task_id,
+                            round_index=inputs.round_index,
+                            role="role_b",
+                            model_name="gpt-5.4",
+                            skillpack_dir=str(round_zero / "skillpack"),
+                            skill_files=["skills/skill-a/SKILL.md"],
+                            prompt_invariant=True,
+                            derived_from_round=inputs.round_index,
+                            bundle_path=None,
+                        ),
+                        round_decision=RoundDecisionArtifact(
+                            task_id=inputs.task_id,
+                            round_index=inputs.round_index,
+                            role="role_b",
+                            model_name="gpt-5.4",
+                            decision="continue",
+                            reason="candidate prepared",
+                            next_round_index=1,
+                            next_skillpack_dir=str(round_zero / "skillpack"),
+                        ),
+                    )
+
+                self.module.run_round_tune_check = fake_run_round_tune_check
+                self.module.run_c4ar_round = fake_run_c4ar_round
+
+                self.module.run_c4ar_round_with_harbor(
+                    task=task,
+                    round_index=0,
+                    round_dir_path=round_zero,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    tune_timeout_multiplier=3.0,
+                    run_dir=root / "run",
+                )
+            finally:
+                self.module.run_round_tune_check = original_run_round_tune_check
+                self.module.run_c4ar_round = original_run_c4ar_round
+
+            role_a_config = captured["role_a_config"]
+            role_b_config = captured["role_b_config"]
+            self.assertEqual(role_a_config.model_name, "codex-5.3")
+            self.assertEqual(role_b_config.model_name, "gpt-5.4")
+            self.assertTrue(role_a_config.playbook_path.endswith("C4AR_ROLE_A_SESSION_DISTILL_PLAYBOOK.md"))
+            self.assertTrue(role_b_config.playbook_path.endswith("C4AR_ROLE_B_REFINE_BRAIN_PLAYBOOK.md"))
+
+    def test_run_refine_rounds_c4ar_mode_uses_orchestrator_from_r0_and_skips_legacy_refine_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=starting_skillpack_dir,
+                starting_label="R0",
+            )
+            r0_row = self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            recorded: dict[str, object] = {}
+
+            def fake_run_c4ar_round_with_harbor(**kwargs):
+                recorded["task_prompt_path"] = kwargs["task"].instruction_path
+                recorded["round_index"] = kwargs["round_index"]
+                recorded["round_dir_path"] = kwargs["round_dir_path"]
+                recorded["current_skillpack_dir"] = kwargs["round_dir_path"] / "skillpack"
+                next_skillpack_dir = kwargs["round_dir_path"] / "role_b" / "next_skillpack"
+                (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
+                (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text(
+                    "# Derived Execution Layer\nnext\n"
+                )
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "aggregation drift",
+                                    "recommended_edit_targets": ["guidance.block_2"],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "stop",
+                                    "reason": "single-round test",
+                                    "next_round_index": None,
+                                    "next_skillpack_dir": None,
+                                    "selected_candidate_label": "R0",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.8444,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_write_context = self.module.write_round_context_artifacts
+            original_create_refine = self.module.create_refine_round_task_sandbox
+            try:
+                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+
+                def fail_write_context(**kwargs):
+                    raise AssertionError("legacy decision_context path should not run in c4ar mode")
+
+                def fail_create_refine(*args, **kwargs):
+                    raise AssertionError("legacy Harbor refine task should not run in c4ar mode")
+
+                self.module.write_round_context_artifacts = fail_write_context
+                self.module.create_refine_round_task_sandbox = fail_create_refine
+
+                rows = self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=2.0,
+                    tune_timeout_multiplier=3.0,
+                    round_budget=0,
+                    r0_row=r0_row,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                )
+            finally:
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                self.module.write_round_context_artifacts = original_write_context
+                self.module.create_refine_round_task_sandbox = original_create_refine
+
+            self.assertEqual(recorded["round_index"], 0)
+            self.assertEqual(recorded["task_prompt_path"], task.instruction_path)
+            self.assertEqual(recorded["round_dir_path"], paths.rounds_dir / "round-0")
+            self.assertEqual(recorded["current_skillpack_dir"], paths.rounds_dir / "round-0" / "skillpack")
+            copied = paths.rounds_dir / "round-0" / "skillpack" / "skills" / "skill-a" / "SKILL.md"
+            self.assertIn("custom", copied.read_text())
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["round_index"], 0)
+            self.assertEqual(rows[0]["reward"], 0.8444)
+
+    def test_run_refine_rounds_c4ar_doubles_next_timeout_after_timeout_result(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text(
+                "[agent]\n"
+                "timeout_sec = 300\n"
+                "[verifier]\n"
+                "timeout_sec = 180\n"
+                "[build]\n"
+                "timeout_sec = 120\n"
+            )
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=starting_skillpack_dir,
+                starting_label="R0",
+            )
+            r0_row = self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            seen_multipliers: list[float] = []
+
+            def fake_run_c4ar_round_with_harbor(**kwargs):
+                round_index = kwargs["round_index"]
+                seen_multipliers.append(kwargs["tune_timeout_multiplier"])
+                next_skillpack_dir = kwargs["round_dir_path"] / "role_b" / "next_skillpack"
+                (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
+                (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text(
+                    "# Derived Execution Layer\nnext\n"
+                )
+                if round_index == 0:
+                    return (
+                        type(
+                            "FakeOrchestratorOutputs",
+                            (),
+                            {
+                                "session_evidence": type(
+                                    "FakeSessionEvidence",
+                                    (),
+                                    {
+                                        "dominant_failure_pattern": "timeout",
+                                        "recommended_edit_targets": ["guidance.block_1"],
+                                    },
+                                )(),
+                                "next_skillpack_manifest": type(
+                                    "FakeNextManifest",
+                                    (),
+                                    {
+                                        "skill_files": ["skills/skill-a/SKILL.md"],
+                                        "prompt_invariant": True,
+                                        "skillpack_dir": str(next_skillpack_dir),
+                                        "bundle_path": None,
+                                    },
+                                )(),
+                                "round_decision": type(
+                                    "FakeRoundDecision",
+                                    (),
+                                    {
+                                        "decision": "continue",
+                                        "reason": "retry with more time",
+                                        "next_round_index": 1,
+                                        "next_skillpack_dir": str(next_skillpack_dir),
+                                        "selected_candidate_label": "R0",
+                                    },
+                                )(),
+                            },
+                        )(),
+                        {
+                            "reward": 0.2,
+                            "eval_name": "pytest",
+                            "exception_stats": {"AgentTimeoutError": ["trial-a"]},
+                            "n_trials": 1,
+                            "n_errors": 1,
+                        },
+                    )
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "resolved",
+                                    "recommended_edit_targets": [],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "stop",
+                                    "reason": "done",
+                                    "next_round_index": None,
+                                    "next_skillpack_dir": None,
+                                    "selected_candidate_label": "R1",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.7,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            try:
+                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                rows = self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=1.0,
+                    tune_timeout_multiplier=2.0,
+                    round_budget=1,
+                    r0_row=r0_row,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                )
+            finally:
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+
+            self.assertEqual([round(row["reward"], 4) for row in rows], [0.2, 0.7])
+            self.assertEqual(seen_multipliers, [2.0, 4.0])
+
+    def test_run_refine_rounds_c4ar_caps_timeout_growth_at_thirty_minutes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text(
+                "[agent]\n"
+                "timeout_sec = 500\n"
+                "[verifier]\n"
+                "timeout_sec = 180\n"
+                "[build]\n"
+                "timeout_sec = 200\n"
+            )
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=starting_skillpack_dir,
+                starting_label="R0",
+            )
+            r0_row = self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            seen_multipliers: list[float] = []
+
+            def fake_run_c4ar_round_with_harbor(**kwargs):
+                round_index = kwargs["round_index"]
+                seen_multipliers.append(kwargs["tune_timeout_multiplier"])
+                next_skillpack_dir = kwargs["round_dir_path"] / "role_b" / "next_skillpack"
+                (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
+                (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text(
+                    "# Derived Execution Layer\nnext\n"
+                )
+                decision = "continue" if round_index == 0 else "stop"
+                next_round_index = 1 if round_index == 0 else None
+                next_skillpack_dir_value = str(next_skillpack_dir) if round_index == 0 else None
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "timeout",
+                                    "recommended_edit_targets": ["guidance.block_1"],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": decision,
+                                    "reason": "timeout cap check",
+                                    "next_round_index": next_round_index,
+                                    "next_skillpack_dir": next_skillpack_dir_value,
+                                    "selected_candidate_label": "R0",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.0 if round_index == 0 else 0.6,
+                        "eval_name": "pytest",
+                        "exception_stats": {"AgentTimeoutError": ["trial-a"]} if round_index == 0 else {},
+                        "n_trials": 1,
+                        "n_errors": 1 if round_index == 0 else 0,
+                    },
+                )
+
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            try:
+                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=1.0,
+                    tune_timeout_multiplier=3.0,
+                    round_budget=1,
+                    r0_row=r0_row,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                )
+            finally:
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+
+            self.assertEqual(seen_multipliers, [3.0, 3.6])
+
+    def test_run_refine_rounds_c4ar_does_not_rematerialize_existing_next_round(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=starting_skillpack_dir,
+                starting_label="R0",
+            )
+            r0_row = self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+            existing_round_one = paths.rounds_dir / "round-1"
+            (existing_round_one / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (existing_round_one / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("# existing next\n")
+
+            def fake_run_c4ar_round_with_harbor(**kwargs):
+                round_index = kwargs["round_index"]
+                round_dir_path = kwargs["round_dir_path"]
+                next_skillpack_dir = round_dir_path / "role_b" / "next_skillpack"
+                (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
+                (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text("# next\n")
+                decision = "continue" if round_index == 0 else "stop"
+                next_round_index = 1 if round_index == 0 else None
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "none",
+                                    "recommended_edit_targets": [],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": decision,
+                                    "reason": "resume guard",
+                                    "next_round_index": next_round_index,
+                                    "next_skillpack_dir": str(next_skillpack_dir) if decision == "continue" else None,
+                                    "selected_candidate_label": "R0",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.5 if round_index == 0 else 0.7,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_materialize = self.module.materialize_c4ar_next_round
+            try:
+                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+
+                def fail_materialize(**kwargs):
+                    raise AssertionError("existing next round must not be rematerialized")
+
+                self.module.materialize_c4ar_next_round = fail_materialize
+
+                rows = self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=1.0,
+                    tune_timeout_multiplier=1.0,
+                    round_budget=1,
+                    r0_row=r0_row,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                )
+            finally:
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                self.module.materialize_c4ar_next_round = original_materialize
+
+            self.assertEqual([row["round_index"] for row in rows], [0, 1])
+
+    def test_run_refine_rounds_c4ar_materializes_missing_next_round_before_executor(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=starting_skillpack_dir,
+                starting_label="R0",
+            )
+            r0_row = self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            seen_rounds: list[int] = []
+
+            def fake_run_c4ar_round_with_harbor(**kwargs):
+                round_index = kwargs["round_index"]
+                round_dir_path = kwargs["round_dir_path"]
+                seen_rounds.append(round_index)
+                if round_index == 1:
+                    materialized_skill = round_dir_path / "skillpack" / "skills" / "skill-a" / "SKILL.md"
+                    self.assertTrue(
+                        materialized_skill.exists(),
+                        "round-1 skillpack must be materialized before executor/orchestrator starts",
+                    )
+                next_skillpack_dir = round_dir_path / "role_b" / "next_skillpack"
+                (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
+                (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text(f"# next round {round_index}\n")
+                decision = "continue" if round_index == 0 else "stop"
+                next_round_index = 1 if round_index == 0 else None
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "none",
+                                    "recommended_edit_targets": [],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": decision,
+                                    "reason": "materialize next round",
+                                    "next_round_index": next_round_index,
+                                    "next_skillpack_dir": str(next_skillpack_dir) if decision == "continue" else None,
+                                    "selected_candidate_label": "R0",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.1 if round_index == 0 else 0.2,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            try:
+                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                rows = self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=1.0,
+                    tune_timeout_multiplier=1.0,
+                    round_budget=1,
+                    r0_row=r0_row,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                )
+            finally:
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+
+            self.assertEqual(seen_rounds, [0, 1])
+            self.assertEqual([row["round_index"] for row in rows], [0, 1])
+
+    def test_c4ar_resume_requires_backup_when_complete_round_would_rewrite_existing_next_round(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            run_dir = root / "batch-run" / "task_runs" / "demo-run"
+            round_zero = run_dir / "refine" / "demo-task" / "rounds" / "round-0"
+            (round_zero / "tune_check").mkdir(parents=True)
+            (round_zero / "tune_check" / "result.json").write_text(
+                json.dumps(
+                    {
+                        "reward": 0.8,
+                        "exception_stats": {},
+                    }
+                )
+            )
+            session_evidence = SessionEvidenceArtifact(
+                task_id="demo-task",
+                round_index=0,
+                role="role_a",
+                model_name="codex-5.3",
+                source_log_paths=["/tmp/session.log"],
+                dominant_failure_pattern="none",
+                observed_at="2026-03-27T00:00:00+00:00",
+            )
+            next_manifest = NextSkillpackManifest(
+                task_id="demo-task",
+                round_index=0,
+                role="role_b",
+                model_name="gpt-5.4",
+                skillpack_dir=str(round_zero / "role_b" / "next_skillpack"),
+                skill_files=["skills/skill-a/SKILL.md"],
+                prompt_invariant=True,
+                derived_from_round=0,
+            )
+            round_decision = RoundDecisionArtifact(
+                task_id="demo-task",
+                round_index=0,
+                role="role_b",
+                model_name="gpt-5.4",
+                decision="continue",
+                reason="keep refining",
+                next_round_index=1,
+                next_skillpack_dir=str(round_zero / "role_b" / "next_skillpack"),
+                selected_candidate_label="R0",
+            )
+            (round_zero / "role_a").mkdir()
+            (round_zero / "role_a" / "session_evidence.json").write_text(json.dumps(session_evidence.to_dict()))
+            (round_zero / "role_b").mkdir()
+            (round_zero / "role_b" / "next_skillpack_manifest.json").write_text(json.dumps(next_manifest.to_dict()))
+            (round_zero / "role_b" / "round_decision.json").write_text(json.dumps(round_decision.to_dict()))
+            (run_dir / "refine" / "demo-task" / "rounds" / "round-1" / "skillpack").mkdir(parents=True)
+
+            self.assertTrue(
+                self.module.c4ar_resume_requires_backup(
+                    run_dir=run_dir,
+                    task_id="demo-task",
+                    round_budget=3,
+                )
+            )
+
+    def test_backup_run_dir_before_resume_writes_archive_and_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            run_dir = root / "batch-run" / "task_runs" / "demo-run"
+            run_dir.mkdir(parents=True)
+            (run_dir / "RUN_STATUS.md").write_text("status\n")
+
+            archive_path = self.module.backup_run_dir_before_resume(
+                run_dir=run_dir,
+                reason="test backup",
+                timestamp_label="20260327T150000Z",
+            )
+
+            self.assertTrue(archive_path.exists())
+            manifest_path = archive_path.parent / "BACKUP_MANIFEST.md"
+            self.assertTrue(manifest_path.exists())
+            self.assertIn("test backup", manifest_path.read_text())
+            with tarfile.open(archive_path, "r:gz") as handle:
+                names = handle.getnames()
+            self.assertIn("task_runs/demo-run/RUN_STATUS.md", names)
+
+    def test_infer_c4ar_resume_round_index_prefers_existing_partial_high_round(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            run_dir = root / "batch-run" / "task_runs" / "demo-run"
+            round_two = run_dir / "refine" / "demo-task" / "rounds" / "round-2"
+            (round_two / "skillpack").mkdir(parents=True)
+            (round_two / "tune_check").mkdir()
+            (round_two / "tune_check" / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "reward": 0.77,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "skill_source": str(round_two / "skillpack"),
+                    }
+                )
+            )
+            (round_two / "executor").mkdir()
+            (round_two / "executor" / "verifier_summary.json").write_text(
+                json.dumps(
+                    {
+                        "trial_result_path": str(round_two / "trial" / "result.json"),
+                    }
+                )
+            )
+            session_evidence = SessionEvidenceArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_a",
+                model_name="codex-5.3",
+                source_log_paths=["/tmp/session.log"],
+                dominant_failure_pattern="none",
+                observed_at="2026-03-27T00:00:00+00:00",
+            )
+            next_manifest = NextSkillpackManifest(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                skillpack_dir=str(round_two / "role_b" / "next_skillpack"),
+                skill_files=["skills/skill-a/SKILL.md"],
+                prompt_invariant=True,
+                derived_from_round=2,
+            )
+            round_decision = RoundDecisionArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                decision="continue",
+                reason="continue from branch",
+                next_round_index=3,
+                next_skillpack_dir=str(round_two / "role_b" / "next_skillpack"),
+                selected_candidate_label="R2",
+            )
+            (round_two / "role_a").mkdir()
+            (round_two / "role_a" / "session_evidence.json").write_text(json.dumps(session_evidence.to_dict()))
+            (round_two / "role_b" / "next_skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_two / "role_b" / "next_skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("# next\n")
+            (round_two / "role_b").mkdir(exist_ok=True)
+            (round_two / "role_b" / "next_skillpack_manifest.json").write_text(json.dumps(next_manifest.to_dict()))
+            (round_two / "role_b" / "round_decision.json").write_text(json.dumps(round_decision.to_dict()))
+            (run_dir / "refine" / "demo-task" / "rounds" / "round-3").mkdir(parents=True)
+
+            self.assertEqual(
+                self.module.infer_c4ar_resume_round_index(
+                    run_dir=run_dir,
+                    task_id="demo-task",
+                    round_budget=3,
+                ),
+                3,
+            )
+
+    def test_prepare_c4ar_resume_round_materializes_missing_skillpack_from_previous_round(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_two = paths.rounds_dir / "round-2"
+            (round_two / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_two / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("# current\n")
+            (round_two / "tune_check").mkdir()
+            (round_two / "tune_check" / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "reward": 0.77,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "skill_source": str(round_two / "skillpack"),
+                    }
+                )
+            )
+            (round_two / "executor").mkdir()
+            trial_dir = round_two / "trial"
+            trial_dir.mkdir()
+            (trial_dir / "result.json").write_text("{}\n")
+            (trial_dir / "agent").mkdir()
+            (trial_dir / "agent" / "claude-code.txt").write_text("cached session log\n")
+            (round_two / "executor" / "verifier_summary.json").write_text(
+                json.dumps({"trial_result_path": str(trial_dir / "result.json")})
+            )
+            session_evidence = SessionEvidenceArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_a",
+                model_name="codex-5.3",
+                source_log_paths=["/tmp/session.log"],
+                dominant_failure_pattern="none",
+                observed_at="2026-03-27T00:00:00+00:00",
+            )
+            next_skillpack = round_two / "role_b" / "next_skillpack" / "skills" / "skill-a"
+            next_skillpack.mkdir(parents=True)
+            (next_skillpack / "SKILL.md").write_text("# next\n")
+            next_manifest = NextSkillpackManifest(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                skillpack_dir=str(round_two / "role_b" / "next_skillpack"),
+                skill_files=["skills/skill-a/SKILL.md"],
+                prompt_invariant=True,
+                derived_from_round=2,
+            )
+            round_decision = RoundDecisionArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                decision="continue",
+                reason="continue from branch",
+                next_round_index=3,
+                next_skillpack_dir=str(round_two / "role_b" / "next_skillpack"),
+                selected_candidate_label="R2",
+            )
+            (round_two / "role_a").mkdir()
+            (round_two / "role_a" / "session_evidence.json").write_text(json.dumps(session_evidence.to_dict()))
+            (round_two / "role_b").mkdir(exist_ok=True)
+            (round_two / "role_b" / "next_skillpack_manifest.json").write_text(json.dumps(next_manifest.to_dict()))
+            (round_two / "role_b" / "round_decision.json").write_text(json.dumps(round_decision.to_dict()))
+
+            round_three = paths.rounds_dir / "round-3"
+            round_three.mkdir()
+
+            self.module.prepare_c4ar_resume_round(
+                task=task,
+                paths=paths,
+                round_index=3,
+            )
+
+            self.assertTrue((round_three / "skillpack" / "skills" / "skill-a" / "SKILL.md").exists())
+            self.assertIn("next", (round_three / "skillpack" / "skills" / "skill-a" / "SKILL.md").read_text())
+
+    def test_infer_c4ar_resume_round_index_clamps_past_budget(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            run_dir = root / "batch-run" / "task_runs" / "demo-run"
+            round_two = run_dir / "refine" / "demo-task" / "rounds" / "round-2"
+            (round_two / "skillpack").mkdir(parents=True)
+            (round_two / "tune_check").mkdir()
+            (round_two / "tune_check" / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "reward": 0.77,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "skill_source": str(round_two / "skillpack"),
+                    }
+                )
+            )
+            (round_two / "executor").mkdir()
+            trial_dir = round_two / "trial"
+            trial_dir.mkdir()
+            (trial_dir / "result.json").write_text("{}\n")
+            (trial_dir / "agent").mkdir()
+            (trial_dir / "agent" / "claude-code.txt").write_text("cached session log\n")
+            (round_two / "executor" / "verifier_summary.json").write_text(
+                json.dumps({"trial_result_path": str(trial_dir / "result.json")})
+            )
+            session_evidence = SessionEvidenceArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_a",
+                model_name="codex-5.3",
+                source_log_paths=["/tmp/session.log"],
+                dominant_failure_pattern="none",
+                observed_at="2026-03-27T00:00:00+00:00",
+            )
+            next_manifest = NextSkillpackManifest(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                skillpack_dir=str(round_two / "role_b" / "next_skillpack"),
+                skill_files=["skills/skill-a/SKILL.md"],
+                prompt_invariant=True,
+                derived_from_round=2,
+            )
+            round_decision = RoundDecisionArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                decision="continue",
+                reason="corrupted next round",
+                next_round_index=99,
+                next_skillpack_dir=str(round_two / "role_b" / "next_skillpack"),
+                selected_candidate_label="R2",
+            )
+            (round_two / "role_a").mkdir()
+            (round_two / "role_a" / "session_evidence.json").write_text(json.dumps(session_evidence.to_dict()))
+            (round_two / "role_b" / "next_skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_two / "role_b" / "next_skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("# next\n")
+            (round_two / "role_b").mkdir(exist_ok=True)
+            (round_two / "role_b" / "next_skillpack_manifest.json").write_text(json.dumps(next_manifest.to_dict()))
+            (round_two / "role_b" / "round_decision.json").write_text(json.dumps(round_decision.to_dict()))
+
+            self.assertEqual(
+                self.module.infer_c4ar_resume_round_index(
+                    run_dir=run_dir,
+                    task_id="demo-task",
+                    round_budget=3,
+                ),
+                3,
+            )
+
+    def test_run_refine_rounds_c4ar_resume_preserves_existing_completed_rounds(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            round_two = paths.rounds_dir / "round-2"
+            (round_two / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_two / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("# existing r2\n")
+            (round_two / "tune_check").mkdir()
+            (round_two / "tune_check" / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "reward": 0.77,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "skill_source": str(round_two / "skillpack"),
+                    }
+                )
+            )
+            (round_two / "executor").mkdir()
+            trial_dir = round_two / "trial"
+            trial_dir.mkdir()
+            (trial_dir / "result.json").write_text("{}\n")
+            (trial_dir / "agent").mkdir()
+            (trial_dir / "agent" / "claude-code.txt").write_text("cached session log\n")
+            (round_two / "executor" / "verifier_summary.json").write_text(
+                json.dumps({"trial_result_path": str(trial_dir / "result.json")})
+            )
+            session_evidence = SessionEvidenceArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_a",
+                model_name="codex-5.3",
+                source_log_paths=["/tmp/session.log"],
+                dominant_failure_pattern="none",
+                observed_at="2026-03-27T00:00:00+00:00",
+            )
+            next_skillpack_dir = round_two / "role_b" / "next_skillpack"
+            (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True)
+            (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text("# next r3\n")
+            next_manifest = NextSkillpackManifest(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                skillpack_dir=str(next_skillpack_dir),
+                skill_files=["skills/skill-a/SKILL.md"],
+                prompt_invariant=True,
+                derived_from_round=2,
+            )
+            round_decision = RoundDecisionArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                decision="continue",
+                reason="continue to r3",
+                next_round_index=3,
+                next_skillpack_dir=str(next_skillpack_dir),
+                selected_candidate_label="R2",
+            )
+            (round_two / "role_a").mkdir()
+            (round_two / "role_a" / "session_evidence.json").write_text(json.dumps(session_evidence.to_dict()))
+            (round_two / "role_b").mkdir(exist_ok=True)
+            (round_two / "role_b" / "next_skillpack_manifest.json").write_text(json.dumps(next_manifest.to_dict()))
+            (round_two / "role_b" / "round_decision.json").write_text(json.dumps(round_decision.to_dict()))
+            (paths.rounds_dir / "round-3").mkdir()
+
+            def fake_run_c4ar_round_with_harbor(**kwargs):
+                self.assertEqual(kwargs["round_index"], 3)
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "resolved",
+                                    "recommended_edit_targets": [],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "stop",
+                                    "reason": "done",
+                                    "next_round_index": None,
+                                    "next_skillpack_dir": None,
+                                    "selected_candidate_label": "R3",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.72,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            try:
+                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                rows = self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=1.0,
+                    tune_timeout_multiplier=2.0,
+                    round_budget=3,
+                    r0_row=None,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                    start_round_index=3,
+                )
+            finally:
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+
+            self.assertEqual([row["round_index"] for row in rows], [2, 3])
+            self.assertEqual(rows[0]["reward"], 0.77)
+            self.assertEqual(rows[1]["reward"], 0.72)
+
+    def test_run_refine_rounds_c4ar_resume_carries_forward_timeout_multiplier(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text(
+                "[agent]\n"
+                "timeout_sec = 500\n"
+                "[verifier]\n"
+                "timeout_sec = 180\n"
+                "[build]\n"
+                "timeout_sec = 200\n"
+            )
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            round_two = paths.rounds_dir / "round-2"
+            (round_two / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_two / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("# existing r2\n")
+            (round_two / "tune_check").mkdir()
+            (round_two / "tune_check" / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "reward": 0.2,
+                        "eval_name": "pytest",
+                        "exception_stats": {"AgentTimeoutError": ["trial-a"]},
+                        "skill_source": str(round_two / "skillpack"),
+                    }
+                )
+            )
+            (round_two / "executor").mkdir()
+            trial_dir = round_two / "trial"
+            trial_dir.mkdir()
+            (trial_dir / "result.json").write_text("{}\n")
+            (trial_dir / "agent").mkdir()
+            (trial_dir / "agent" / "claude-code.txt").write_text("cached session log\n")
+            (round_two / "executor" / "verifier_summary.json").write_text(
+                json.dumps({"trial_result_path": str(trial_dir / "result.json")})
+            )
+            session_evidence = SessionEvidenceArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_a",
+                model_name="codex-5.3",
+                source_log_paths=["/tmp/session.log"],
+                dominant_failure_pattern="timeout",
+                observed_at="2026-03-27T00:00:00+00:00",
+            )
+            next_skillpack_dir = round_two / "role_b" / "next_skillpack"
+            (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True)
+            (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text("# next r3\n")
+            next_manifest = NextSkillpackManifest(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                skillpack_dir=str(next_skillpack_dir),
+                skill_files=["skills/skill-a/SKILL.md"],
+                prompt_invariant=True,
+                derived_from_round=2,
+            )
+            round_decision = RoundDecisionArtifact(
+                task_id="demo-task",
+                round_index=2,
+                role="role_b",
+                model_name="gpt-5.4",
+                decision="continue",
+                reason="continue to r3",
+                next_round_index=3,
+                next_skillpack_dir=str(next_skillpack_dir),
+                selected_candidate_label="R2",
+            )
+            (round_two / "role_a").mkdir()
+            (round_two / "role_a" / "session_evidence.json").write_text(json.dumps(session_evidence.to_dict()))
+            (round_two / "role_b").mkdir(exist_ok=True)
+            (round_two / "role_b" / "next_skillpack_manifest.json").write_text(json.dumps(next_manifest.to_dict()))
+            (round_two / "role_b" / "round_decision.json").write_text(json.dumps(round_decision.to_dict()))
+            (paths.rounds_dir / "round-3").mkdir()
+
+            seen_multipliers: list[float] = []
+
+            def fake_run_c4ar_round_with_harbor(**kwargs):
+                seen_multipliers.append(kwargs["tune_timeout_multiplier"])
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "resolved",
+                                    "recommended_edit_targets": [],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "stop",
+                                    "reason": "done",
+                                    "next_round_index": None,
+                                    "next_skillpack_dir": None,
+                                    "selected_candidate_label": "R3",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.72,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            try:
+                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=1.0,
+                    tune_timeout_multiplier=2.0,
+                    round_budget=3,
+                    r0_row=None,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                    start_round_index=3,
+                )
+            finally:
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+
+            self.assertEqual(seen_multipliers, [3.6])
+
+
+if __name__ == "__main__":
+    unittest.main()

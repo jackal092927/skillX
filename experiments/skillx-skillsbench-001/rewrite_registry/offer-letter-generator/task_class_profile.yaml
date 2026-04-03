@@ -1,0 +1,19 @@
+task_id: offer-letter-generator
+domain: document-generation
+task_class: artifact-generator
+skill_topology: single-skill
+primary_pattern: generator
+secondary_patterns:
+  - reviewer
+risk_profile:
+  - likely-positive-skill
+  - template-drift-sensitive
+  - invention-risk
+verifier_mode: deterministic-output-contract
+scaffold_budget: low-to-medium
+script_policy: optional
+rationale: >
+  Single-skill document generation task with a clear output contract. The main
+  template concern is preserving document structure and placeholders while
+  preventing invented content. This is a likely positive-skill case where a
+  compact generator-style template should help more than heavy scaffolding.

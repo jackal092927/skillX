@@ -1,0 +1,14 @@
+- timestamp: `2026-03-23T11:39:14.849268+00:00`
+- skillsbench_root: `<SKILLSBENCH_ROOT>`
+- oauth_file: `<CLAUDE_CODE_OAUTH_TOKEN_FILE>`
+- source_run_dir: `<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite`
+- tune_run_dirs: `<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/negative-transfer-candidate-check-002-adjusted, <INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite`
+- refine_protocol_path: `<INCUBATOR_REPO_ROOT>/plans/skillx/skillx-refine-protocol-v0.1.md`
+- bundle_contract_path: `<INCUBATOR_REPO_ROOT>/plans/skillx/skillx-refine-bundle-contract-v0.1.md`
+- benchmark_agent: `claude-code`
+- benchmark_model: `anthropic/claude-sonnet-4-5`
+- round_budget: `3`
+- round_timeout_multiplier: `2.0`
+- tune_timeout_multiplier: `3.0`
+- docker_mem_bytes: `16753045504`
+- uv_path: `uv`

@@ -1,0 +1,10 @@
+[
+  {
+    "task_id": "trend-anomaly-causal-inference",
+    "n_original_skills": 4,
+    "n_c2_skills": 4,
+    "n_c3_skills": 4,
+    "bundle_generated": true,
+    "rewrite_manifest": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/rewrite_manifest.json"
+  }
+]

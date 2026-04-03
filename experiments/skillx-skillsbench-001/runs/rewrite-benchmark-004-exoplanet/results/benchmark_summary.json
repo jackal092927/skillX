@@ -1,0 +1,22 @@
+[
+  {
+    "task_id": "exoplanet-detection-period",
+    "condition": "c2",
+    "job_dir": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/benchmark_jobs/exoplanet-detection-period-c2",
+    "result_path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/benchmark_jobs/exoplanet-detection-period-c2/result.json",
+    "reward": 0.0,
+    "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+    "exception_stats": {},
+    "skill_source": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c2_minimal"
+  },
+  {
+    "task_id": "exoplanet-detection-period",
+    "condition": "c3",
+    "job_dir": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/benchmark_jobs/exoplanet-detection-period-c3",
+    "result_path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/benchmark_jobs/exoplanet-detection-period-c3/result.json",
+    "reward": 0.0,
+    "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+    "exception_stats": {},
+    "skill_source": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c3_derived"
+  }
+]

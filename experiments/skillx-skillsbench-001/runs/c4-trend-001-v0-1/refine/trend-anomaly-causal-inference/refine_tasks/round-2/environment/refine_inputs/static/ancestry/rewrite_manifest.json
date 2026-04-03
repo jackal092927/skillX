@@ -1,0 +1,37 @@
+{
+  "task_id": "trend-anomaly-causal-inference",
+  "writer_agent": "claude-code",
+  "writer_model": "anthropic/claude-sonnet-4-5",
+  "writer_runtime": "harbor-docker-claude-code-v0.1",
+  "c2_protocol_version": "v0.2",
+  "c3_protocol_version": "v0.1",
+  "prompt_hashes": {
+    "c2": "1314379658e88e326cce2d265728b47e47821850292fd17bf2e47a4d17d2a80f",
+    "c3": "084a8e8f4481aafc77afcad79ce722c911955cd493017c8c64f20f25abb8aed8"
+  },
+  "input_files": [
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/C2_REWRITE_PROTOCOL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/C3_REWRITE_PROTOCOL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/conditions.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/data_cleaning__original__SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/did_causal_analysis__original__SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/feature_engineering__original__SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/instruction.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/task.toml",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/test.sh",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/test_outputs.py",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/inputs/time_series_anomaly_detection__original__SKILL.md"
+  ],
+  "output_files": [
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/materialized_skillpacks/trend-anomaly-causal-inference/c2_minimal/data_cleaning/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/materialized_skillpacks/trend-anomaly-causal-inference/c2_minimal/did_causal_analysis/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/materialized_skillpacks/trend-anomaly-causal-inference/c2_minimal/feature_engineering/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/materialized_skillpacks/trend-anomaly-causal-inference/c2_minimal/time_series_anomaly_detection/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/materialized_skillpacks/trend-anomaly-causal-inference/c3_derived/data_cleaning/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/materialized_skillpacks/trend-anomaly-causal-inference/c3_derived/did_causal_analysis/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/materialized_skillpacks/trend-anomaly-causal-inference/c3_derived/feature_engineering/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/materialized_skillpacks/trend-anomaly-causal-inference/c3_derived/time_series_anomaly_detection/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/outputs/rewrite_registry/trend-anomaly-causal-inference/skillx_derived__bundle__notes.yaml"
+  ],
+  "timestamp": "2026-03-23T10:02:44.602624+00:00"
+}

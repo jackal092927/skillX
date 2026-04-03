@@ -1,0 +1,19 @@
+task_id: exoplanet-detection-period
+domain: scientific-analysis
+task_class: analytic-pipeline-bundle
+skill_topology: multi-skill-staged-bundle
+primary_pattern: pipeline
+secondary_patterns:
+  - tool-wrapper
+risk_profile:
+  - stage-confusion-sensitive
+  - contract-completion-sensitive
+  - missing-artifact-sensitive
+verifier_mode: deterministic-artifact-plus-stage-check
+scaffold_budget: medium-to-high-distributed
+script_policy: recommended
+rationale: >
+  Scientific multi-stage task with several specialized skills and a strong need
+  for explicit stage-local outputs. Current failure evidence suggests contract
+  completion and missing refined artifacts are central risks, making this a good
+  analytic-pipeline test case.

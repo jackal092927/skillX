@@ -1,0 +1,10 @@
+{
+  "task_id": "trend-anomaly-causal-inference",
+  "condition": "c4",
+  "job_dir": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/refine/trend-anomaly-causal-inference/rounds/round-3/tune_check/trend-anomaly-causal-inference-round-3-c4-tune",
+  "result_path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/refine/trend-anomaly-causal-inference/rounds/round-3/tune_check/trend-anomaly-causal-inference-round-3-c4-tune/result.json",
+  "reward": 0.95,
+  "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+  "exception_stats": {},
+  "skill_source": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/refine/trend-anomaly-causal-inference/rounds/round-3/skillpack"
+}

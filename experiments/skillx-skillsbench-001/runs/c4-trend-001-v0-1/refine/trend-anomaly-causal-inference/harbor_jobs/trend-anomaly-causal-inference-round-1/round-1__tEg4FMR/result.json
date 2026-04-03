@@ -1,0 +1,90 @@
+{
+    "id": "fb71f58d-adf0-4393-85a4-3fa8e02aeaeb",
+    "task_name": "round-1",
+    "trial_name": "round-1__tEg4FMR",
+    "trial_uri": "file://<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/refine/trend-anomaly-causal-inference/harbor_jobs/trend-anomaly-causal-inference-round-1/round-1__tEg4FMR",
+    "task_id": {
+        "path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/refine/trend-anomaly-causal-inference/refine_tasks/round-1"
+    },
+    "source": null,
+    "task_checksum": "4d282ebf65d5b35e4922e4446678eab8463f0ab0514e9922505ee01f2317d3d5",
+    "config": {
+        "task": {
+            "path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/refine/trend-anomaly-causal-inference/refine_tasks/round-1",
+            "git_url": null,
+            "git_commit_id": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "round-1__tEg4FMR",
+        "trials_dir": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/refine/trend-anomaly-causal-inference/harbor_jobs/trend-anomaly-causal-inference-round-1",
+        "timeout_multiplier": 2.0,
+        "agent": {
+            "name": "claude-code",
+            "import_path": null,
+            "model_name": "anthropic/claude-sonnet-4-5",
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "kwargs": {}
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "kwargs": {}
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": false
+        },
+        "job_id": "676bcc53-3e15-4887-bba0-72f5901df8c1"
+    },
+    "agent_info": {
+        "name": "claude-code",
+        "version": "unknown",
+        "model_info": {
+            "name": "claude-sonnet-4-5",
+            "provider": "anthropic"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 2996093,
+        "n_cache_tokens": 2983210,
+        "n_output_tokens": 18377,
+        "cost_usd": null,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 1.0
+        }
+    },
+    "exception_info": null,
+    "started_at": "2026-03-23T07:10:12.685935",
+    "finished_at": "2026-03-23T07:18:08.858735",
+    "environment_setup": {
+        "started_at": "2026-03-23T07:10:12.688389",
+        "finished_at": "2026-03-23T07:10:14.084772"
+    },
+    "agent_setup": {
+        "started_at": "2026-03-23T07:10:14.084862",
+        "finished_at": "2026-03-23T07:10:27.994475"
+    },
+    "agent_execution": {
+        "started_at": "2026-03-23T07:10:27.994535",
+        "finished_at": "2026-03-23T07:17:58.053175"
+    },
+    "verifier": {
+        "started_at": "2026-03-23T07:17:58.053306",
+        "finished_at": "2026-03-23T07:17:58.512710"
+    }
+}

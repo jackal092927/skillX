@@ -1,0 +1,90 @@
+{
+    "id": "bb93cc15-70e6-46b1-a991-2037a240a86d",
+    "task_name": "c2-exoplanet-detection-period",
+    "trial_name": "c2-exoplanet-detection-period__ov7K6y9",
+    "trial_uri": "file://<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/benchmark_jobs/exoplanet-detection-period-c2/c2-exoplanet-detection-period__ov7K6y9",
+    "task_id": {
+        "path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/artifacts/task_sandboxes/c2-exoplanet-detection-period"
+    },
+    "source": null,
+    "task_checksum": "0c33326f4d638a7806ecaa920ba8438978c3e72a9b10008e9e634d6baff194c7",
+    "config": {
+        "task": {
+            "path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/artifacts/task_sandboxes/c2-exoplanet-detection-period",
+            "git_url": null,
+            "git_commit_id": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "c2-exoplanet-detection-period__ov7K6y9",
+        "trials_dir": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/benchmark_jobs/exoplanet-detection-period-c2",
+        "timeout_multiplier": 1.0,
+        "agent": {
+            "name": "claude-code",
+            "import_path": null,
+            "model_name": "anthropic/claude-sonnet-4-5",
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "kwargs": {}
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "kwargs": {}
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": false
+        },
+        "job_id": "667fd2fc-e92a-4717-891e-2c1e7ac4b82a"
+    },
+    "agent_info": {
+        "name": "claude-code",
+        "version": "unknown",
+        "model_info": {
+            "name": "claude-sonnet-4-5",
+            "provider": "anthropic"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 373725,
+        "n_cache_tokens": 373418,
+        "n_output_tokens": 4624,
+        "cost_usd": null,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 0.0
+        }
+    },
+    "exception_info": null,
+    "started_at": "2026-03-23T06:48:26.581509",
+    "finished_at": "2026-03-23T06:55:39.935325",
+    "environment_setup": {
+        "started_at": "2026-03-23T06:48:26.582880",
+        "finished_at": "2026-03-23T06:48:27.568549"
+    },
+    "agent_setup": {
+        "started_at": "2026-03-23T06:48:27.568640",
+        "finished_at": "2026-03-23T06:48:38.697939"
+    },
+    "agent_execution": {
+        "started_at": "2026-03-23T06:48:38.698031",
+        "finished_at": "2026-03-23T06:55:25.007261"
+    },
+    "verifier": {
+        "started_at": "2026-03-23T06:55:25.007391",
+        "finished_at": "2026-03-23T06:55:29.456379"
+    }
+}

@@ -1,0 +1,21 @@
+{
+  "firstStartTime": "2026-03-23T11:18:27.824Z",
+  "opusProMigrationComplete": true,
+  "sonnet1m45MigrationComplete": true,
+  "clientDataCache": {
+    "data": null,
+    "timestamp": 1774264707871
+  },
+  "userID": "330cb623b1fa851e308d050123efda9cbdfdca057092af05f7ed9b808a263e2d",
+  "cachedExtraUsageDisabledReason": "org_level_disabled",
+  "skillUsage": {
+    "data_cleaning": {
+      "usageCount": 1,
+      "lastUsedAt": 1774264767403
+    },
+    "time_series_anomaly_detection": {
+      "usageCount": 1,
+      "lastUsedAt": 1774264890815
+    }
+  }
+}

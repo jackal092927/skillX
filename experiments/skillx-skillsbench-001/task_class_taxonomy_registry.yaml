@@ -1,0 +1,123 @@
+experiment: skillx-skillsbench-001
+created_at: 2026-03-25
+status: proposed-overlay
+purpose: >
+  First concrete task-class-aware overlay for SkillX / MARC. This registry does
+  not replace the current C0/C1/C2/C3/C4 baseline. It adds a higher-level
+  clustering layer so the future outer loop / MetaEvolver has a concrete object
+  to optimize.
+
+design_principles:
+  - classify by task shape and skill-usage topology, not only topical domain
+  - keep pattern labels lightweight and visualization-friendly
+  - treat risk and verifier posture as general dimensions, even if later made lightweight in the inner loop
+  - use task-class templates as optional priors first, not mandatory schema replacements
+
+field_notes:
+  task_class: behavioral family of the task
+  skill_topology: how one or more skills interact in the task
+  primary_pattern: dominant behavioral pattern of the skill/task setup
+  secondary_patterns: optional supporting patterns
+  risk_profile: likely failure / transfer risks
+  verifier_mode: main acceptance shape
+  scaffold_budget: prior on how much guidance the task family can tolerate
+  script_policy: prior on whether executable scripts are useful
+
+tasks:
+  - task_id: offer-letter-generator
+    domain: document-generation
+    task_class: artifact-generator
+    skill_topology: single-skill
+    primary_pattern: generator
+    secondary_patterns:
+      - reviewer
+    risk_profile:
+      - likely-positive-skill
+      - template-drift-sensitive
+      - invention-risk
+    verifier_mode: deterministic-output-contract
+    scaffold_budget: low-to-medium
+    script_policy: optional
+
+  - task_id: parallel-tfidf-search
+    domain: engineering-parallelization
+    task_class: engineering-composition-bundle
+    skill_topology: multi-skill-flat-bundle
+    primary_pattern: pipeline
+    secondary_patterns:
+      - tool-wrapper
+      - reviewer
+    risk_profile:
+      - composition-confusion-sensitive
+      - objective-conflict-sensitive
+      - scope-drift-sensitive
+    verifier_mode: correctness-plus-performance-check
+    scaffold_budget: medium
+    script_policy: recommended
+
+  - task_id: trend-anomaly-causal-inference
+    domain: analytics
+    task_class: analytic-pipeline-bundle
+    skill_topology: multi-skill-staged-bundle
+    primary_pattern: pipeline
+    secondary_patterns:
+      - tool-wrapper
+      - reviewer
+    risk_profile:
+      - negative-transfer-sensitive
+      - stage-confusion-sensitive
+      - evaluator-compatibility-sensitive
+    verifier_mode: deterministic-artifact-plus-stage-check
+    scaffold_budget: medium-to-high-distributed
+    script_policy: recommended
+
+  - task_id: exoplanet-detection-period
+    domain: scientific-analysis
+    task_class: analytic-pipeline-bundle
+    skill_topology: multi-skill-staged-bundle
+    primary_pattern: pipeline
+    secondary_patterns:
+      - tool-wrapper
+    risk_profile:
+      - stage-confusion-sensitive
+      - contract-completion-sensitive
+      - missing-artifact-sensitive
+    verifier_mode: deterministic-artifact-plus-stage-check
+    scaffold_budget: medium-to-high-distributed
+    script_policy: recommended
+
+  - task_id: energy-ac-optimal-power-flow
+    domain: scientific-optimization
+    task_class: analytic-pipeline-bundle
+    skill_topology: multi-skill-staged-bundle
+    primary_pattern: pipeline
+    secondary_patterns:
+      - tool-wrapper
+    risk_profile:
+      - stage-confusion-sensitive
+      - contract-completion-sensitive
+      - missing-artifact-sensitive
+    verifier_mode: deterministic-artifact-plus-stage-check
+    scaffold_budget: medium-to-high-distributed
+    script_policy: recommended-to-required
+
+  - task_id: taxonomy-tree-merge
+    domain: ml-nlp
+    task_class: methodology-heavy-guardrail-task
+    skill_topology: guardrail-heavy-single-skill
+    primary_pattern: inversion
+    secondary_patterns:
+      - reviewer
+      - pipeline
+    risk_profile:
+      - over-guidance-sensitive
+      - negative-transfer-sensitive
+      - assumption-brittleness-sensitive
+    verifier_mode: methodology-and-boundary-check
+    scaffold_budget: low-to-medium
+    script_policy: optional
+
+next_recommended_steps:
+  - write template-family skeletons for the first 4 task classes
+  - compare generic SkillX rewrite vs class-aware SkillX rewrite on one task per class
+  - let C4 consume task-class priors before allowing protocol-level mutation

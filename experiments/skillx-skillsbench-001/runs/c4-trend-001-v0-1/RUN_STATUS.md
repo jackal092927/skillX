@@ -1,0 +1,6 @@
+- status: `completed`
+- run_id: `c4-trend-001-v0-1`
+- task: `trend-anomaly-causal-inference`
+- source_run_dir: `<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite`
+- round_budget: `3`
+- updated_at: `2026-03-23T12:18:21.735378+00:00`

@@ -1,0 +1,20 @@
+task_id: trend-anomaly-causal-inference
+domain: analytics
+task_class: analytic-pipeline-bundle
+skill_topology: multi-skill-staged-bundle
+primary_pattern: pipeline
+secondary_patterns:
+  - tool-wrapper
+  - reviewer
+risk_profile:
+  - negative-transfer-sensitive
+  - stage-confusion-sensitive
+  - evaluator-compatibility-sensitive
+verifier_mode: deterministic-artifact-plus-stage-check
+scaffold_budget: medium-to-high-distributed
+script_policy: recommended
+rationale: >
+  Multi-stage analytic task where each skill corresponds to a stage and the main
+  challenge is preserving stage boundaries, handoff contracts, and evaluator-
+  compatible intermediate artifacts. This is a strong candidate for class-aware
+  pipeline templates.

@@ -1,0 +1,5 @@
+- status: `completed`
+- run_id: `rewrite-benchmark-004-exoplanet`
+- tasks: `exoplanet-detection-period`
+- conditions: `c2,c3`
+- updated_at: `2026-03-23T11:09:27.060610+00:00`

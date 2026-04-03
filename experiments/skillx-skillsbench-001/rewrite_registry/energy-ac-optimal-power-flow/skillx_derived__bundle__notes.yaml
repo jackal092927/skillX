@@ -1,0 +1,35 @@
+task_id: energy-ac-optimal-power-flow
+skill_bundle:
+  - power-flow-data
+  - ac-branch-pi-model
+  - casadi-ipopt-nlp
+derived_layer:
+  candidate_preconditions:
+    - network.json and math-model.md are readable
+    - MATPOWER-style bus, gen, branch, and cost arrays can be parsed consistently
+    - per-unit scaling and bus-index mappings are established before optimization
+  candidate_postconditions:
+    - report.json exists and matches the required schema
+    - the operating point is AC-feasible within verifier tolerances
+    - branch loading and feasibility-check fields are internally consistent with the solved state
+    - solver status is reported honestly rather than guessed
+  candidate_failure_modes:
+    - bus-number mapping errors corrupt constraint assembly
+    - branch-flow equations use the wrong sign, tap, phase-shift, or unit convention
+    - solver converges to an infeasible or partial solution but the report claims success
+    - report fields are structurally present but numerically inconsistent with the solution vectors
+    - a simplified DC-style shortcut is used where the task requires AC feasibility
+  candidate_evaluator_hooks:
+    - report-schema validation
+    - feasibility-check recomputation from report values
+    - branch-limit and voltage-limit consistency checks
+    - cost and load-generation balance sanity checks
+  bundle_interaction_note:
+    - parse and map the network first
+    - encode exact AC branch physics second
+    - formulate and solve the NLP last
+    - do not let optimization proceed before units, mappings, and equations are trustworthy
+  suspected_negative_transfer_risk:
+    - medium to high
+    - the original bundle is technically useful but dense enough that agents can be overwhelmed or misled by too much general detail
+

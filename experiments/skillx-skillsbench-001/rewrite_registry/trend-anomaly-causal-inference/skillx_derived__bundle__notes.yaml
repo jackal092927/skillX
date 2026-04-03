@@ -1,0 +1,36 @@
+task_id: trend-anomaly-causal-inference
+skill_bundle:
+  - data_cleaning
+  - feature_engineering
+  - time_series_anomaly_detection
+  - did_causal_analysis
+derived_layer:
+  candidate_preconditions:
+    - dirty survey and purchase tables are readable and cover the 2019-2020 window
+    - March 2020 is treated as treatment and January-February 2020 as baseline
+    - cleaned outputs preserve IDs, dates, categories, and spend columns needed downstream
+  candidate_postconditions:
+    - all required files exist under /app/output with the expected names
+    - engineered survey features are numeric and keyed by Survey ResponseID
+    - anomaly ranking outputs top surge and top slump categories with usable anomaly indices
+    - DID report includes the expected metadata, surge/slump blocks, and sorted driver lists
+  candidate_failure_modes:
+    - cleaning drops or corrupts keys required for joins
+    - categorical features remain as strings and break DID analysis
+    - anomaly detection trains on the treatment window or ranks categories with the wrong sign
+    - intensive and extensive margin tables are built with the wrong panel logic
+    - causal report structure is valid JSON but semantically inconsistent with the intermediate artifacts
+  candidate_evaluator_hooks:
+    - output-file existence check for all seven required artifacts
+    - data-type check that engineered features are numeric
+    - category-anomaly ordering and sign sanity check
+    - panel-shape check for intensive vs extensive tables
+    - causal-report schema and sorting check
+  bundle_interaction_note:
+    - clean first, engineer second, rank anomalies third, run DiD last
+    - do not let generic cleaning or feature work silently redefine the anomaly or DiD questions
+    - the bundle is stage-ordered; later skills assume earlier outputs are already valid
+  suspected_negative_transfer_risk:
+    - high
+    - the original bundle is broad enough that stage confusion and overextended generic advice can plausibly hurt performance
+

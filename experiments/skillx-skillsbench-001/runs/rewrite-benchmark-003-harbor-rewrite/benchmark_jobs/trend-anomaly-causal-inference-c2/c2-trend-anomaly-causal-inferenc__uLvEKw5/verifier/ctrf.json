@@ -1,0 +1,207 @@
+{
+    "results": {
+        "tool": {
+            "name": "pytest",
+            "version": "8.4.1"
+        },
+        "summary": {
+            "tests": 15,
+            "passed": 13,
+            "failed": 2,
+            "skipped": 0,
+            "pending": 0,
+            "other": 0,
+            "start": 1774260521.432955,
+            "stop": 1774260526.7436178
+        },
+        "tests": [
+            {
+                "name": "test_outputs.py::test_cleaned_data",
+                "status": "passed",
+                "duration": 0.01814924899917969,
+                "start": 1774260521.7876105,
+                "stop": 1774260521.806101,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "parametrize::file_config::[{'filename': 'survey_cleaned.csv', 'required_columns': ['Survey ResponseID'], 'min_rows': 1000, 'unique_key': 'Survey ResponseID'}, {'filename': 'amazon-purchases-2019-2020-filtered.csv', 'required_columns': ['Survey ResponseID', 'Order Date', 'Category'], 'min_rows': 10000, 'unique_key': None, 'price_column_aliases': ['Item Total', 'Total Price', 'item_total', 'total_price', 'Purchase Price Per Unit', 'purchase_price_per_unit']}]",
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_survey_cleaning_correctness",
+                "status": "passed",
+                "duration": 0.016235708999374765,
+                "start": 1774260522.7114882,
+                "stop": 1774260522.7280366,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_purchase_cleaning_correctness",
+                "status": "passed",
+                "duration": 0.8642837079987657,
+                "start": 1774260522.7281642,
+                "stop": 1774260523.5927503,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_anomaly_detection",
+                "status": "passed",
+                "duration": 0.0012683750010182848,
+                "start": 1774260523.5928972,
+                "stop": 1774260523.5943522,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_anomaly_detection_correctness",
+                "status": "passed",
+                "duration": 0.8432250839996414,
+                "start": 1774260523.5944993,
+                "stop": 1774260524.4394011,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_feature_engineering",
+                "status": "passed",
+                "duration": 0.022682625000015832,
+                "start": 1774260524.4398074,
+                "stop": 1774260524.462816,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_feature_engineering_correctness",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.025814375998379546,
+                "start": 1774260524.4629464,
+                "stop": 1774260524.534642,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ],
+                "trace": "/tests/test_outputs.py:286: in test_feature_engineering_correctness\n    assert n_unique > 1, f\"Feature '{col}' is constant (only {n_unique} unique value)\"\nE   AssertionError: Feature 'edu_some_college' is constant (only 1 unique value)\nE   assert 1 > 1",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::test_user_category_period_aggregated",
+                "status": "passed",
+                "duration": 0.12553145799938648,
+                "start": 1774260524.5347683,
+                "stop": 1774260524.660557,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_structure",
+                "status": "passed",
+                "duration": 0.0017947080013982486,
+                "start": 1774260524.6606753,
+                "stop": 1774260524.662738,
+                "retries": 3,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "parametrize::section,keys::[('metadata', ['baseline_start', 'baseline_end', 'treatment_start', 'treatment_end', 'total_features_analyzed']), ('surge_categories', None), ('slump_categories', None), ('summary', ['surge', 'slump'])]",
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_analysis_baseline_period",
+                "status": "passed",
+                "duration": 0.0005270009987725643,
+                "start": 1774260524.6648524,
+                "stop": 1774260524.6656578,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_categories",
+                "status": "passed",
+                "duration": 0.00040629200157127343,
+                "start": 1774260524.6657903,
+                "stop": 1774260524.6663616,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_did_correctness",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.0008458339980279561,
+                "start": 1774260524.6664577,
+                "stop": 1774260524.6776712,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ],
+                "trace": "/tests/test_outputs.py:650: in test_causal_report_did_correctness\n    assert estimates == sorted(estimates, reverse=True), \\\nE   AssertionError: Surge CRACKER: intensive_margin not sorted by estimate (desc). Got: [64.53, -39.79, 28.95]\nE   assert [64.53, -39.79, 28.95] == [64.53, 28.95, -39.79]\nE     \nE     At index 1 diff: -39.79 != 28.95\nE     \nE     Full diff:\nE       [\nE           64.53,\nE     +     -39.79,...\nE     \nE     ...Full output truncated (3 lines hidden), use '-vv' to show",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::test_cross_file_consistency",
+                "status": "passed",
+                "duration": 0.09889154199845507,
+                "start": 1774260524.677817,
+                "stop": 1774260524.777004,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_purchase_aggregation_correctness",
+                "status": "passed",
+                "duration": 0.8880944589982391,
+                "start": 1774260524.777133,
+                "stop": 1774260525.6655369,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_did_aggregation_independence",
+                "status": "passed",
+                "duration": 1.0647417919972213,
+                "start": 1774260525.6656868,
+                "stop": 1774260526.7307146,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            }
+        ]
+    }
+}

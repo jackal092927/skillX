@@ -1,0 +1,5 @@
+- status: `completed`
+- run_id: `rewrite-benchmark-003-harbor-rewrite`
+- tasks: `trend-anomaly-causal-inference`
+- conditions: `c2,c3`
+- updated_at: `2026-03-23T10:16:02.874307+00:00`

@@ -1,0 +1,40 @@
+{
+  "task_id": "exoplanet-detection-period",
+  "writer_agent": "claude-code",
+  "writer_model": "anthropic/claude-sonnet-4-5",
+  "writer_runtime": "harbor-docker-claude-code-v0.1",
+  "c2_protocol_version": "v0.2",
+  "c3_protocol_version": "v0.1",
+  "prompt_hashes": {
+    "c2": "1314379658e88e326cce2d265728b47e47821850292fd17bf2e47a4d17d2a80f",
+    "c3": "084a8e8f4481aafc77afcad79ce722c911955cd493017c8c64f20f25abb8aed8"
+  },
+  "input_files": [
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/C2_REWRITE_PROTOCOL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/C3_REWRITE_PROTOCOL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/box-least-squares__original__SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/conditions.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/exoplanet-workflows__original__SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/instruction.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/light-curve-preprocessing__original__SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/lomb-scargle-periodogram__original__SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/task.toml",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/test.sh",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/test_outputs.py",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/inputs/transit-least-squares__original__SKILL.md"
+  ],
+  "output_files": [
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c2_minimal/box-least-squares/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c2_minimal/exoplanet-workflows/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c2_minimal/light-curve-preprocessing/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c2_minimal/lomb-scargle-periodogram/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c2_minimal/transit-least-squares/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c3_derived/box-least-squares/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c3_derived/exoplanet-workflows/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c3_derived/light-curve-preprocessing/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c3_derived/lomb-scargle-periodogram/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/materialized_skillpacks/exoplanet-detection-period/c3_derived/transit-least-squares/SKILL.md",
+    "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/rewrite_registry/exoplanet-detection-period/skillx_derived__bundle__notes.yaml"
+  ],
+  "timestamp": "2026-03-23T10:48:22.326273+00:00"
+}

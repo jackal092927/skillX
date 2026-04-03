@@ -1,0 +1,29 @@
+{
+    "id": "045ba815-da27-42f7-8d64-4d41014954e9",
+    "started_at": "2026-03-23T06:55:45.622447",
+    "finished_at": "2026-03-23T07:09:26.126142",
+    "n_total_trials": 1,
+    "stats": {
+        "n_trials": 1,
+        "n_errors": 0,
+        "evals": {
+            "claude-code__claude-sonnet-4-5__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "mean": 0.0
+                    }
+                ],
+                "reward_stats": {
+                    "reward": {
+                        "0.0": [
+                            "c3-exoplanet-detection-period__y5tc58E"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        }
+    }
+}

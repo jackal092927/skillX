@@ -1,0 +1,19 @@
+task_id: energy-ac-optimal-power-flow
+domain: scientific-optimization
+task_class: analytic-pipeline-bundle
+skill_topology: multi-skill-staged-bundle
+primary_pattern: pipeline
+secondary_patterns:
+  - tool-wrapper
+risk_profile:
+  - stage-confusion-sensitive
+  - contract-completion-sensitive
+  - missing-artifact-sensitive
+verifier_mode: deterministic-artifact-plus-stage-check
+scaffold_budget: medium-to-high-distributed
+script_policy: recommended-to-required
+rationale: >
+  Scientific optimization workflow with several linked technical components.
+  Like exoplanet, it behaves as a staged analytic bundle, but likely benefits
+  even more from deterministic checks and executable helpers due to stricter
+  technical constraints.

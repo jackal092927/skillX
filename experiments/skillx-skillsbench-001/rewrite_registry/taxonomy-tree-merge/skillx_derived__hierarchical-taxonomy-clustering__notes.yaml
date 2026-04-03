@@ -1,0 +1,28 @@
+task_id: taxonomy-tree-merge
+skill_id: hierarchical-taxonomy-clustering
+derived_layer:
+  candidate_preconditions:
+    - all required category input files are readable
+    - category paths can be normalized into a comparable hierarchical format
+    - runtime can support embedding generation and recursive clustering
+  candidate_postconditions:
+    - both required CSV outputs exist
+    - outputs contain the requested unified levels
+    - level-count and naming constraints are mostly satisfied or explicit tradeoffs are documented
+    - taxonomy is multi-source rather than dominated by one source in most branches
+  candidate_failure_modes:
+    - flat clustering with no meaningful hierarchy
+    - level counts outside requested bounds
+    - parent/child name overlap or sibling overlap beyond constraint
+    - unusable naming from noisy term extraction
+    - excessive source skew in the unified taxonomy
+    - pipeline too heavy to complete within task limits
+  candidate_evaluator_hooks:
+    - output-file existence and schema checks
+    - level-count constraint checks
+    - word-overlap and ancestor-overlap checks on names
+    - source-distribution review on a sampled branch set
+    - runtime-completion sanity check
+  suspected_negative_transfer_risk:
+    - high
+    - the original skill may encourage a methodology-heavy implementation path that is strong when executed well but brittle when followed too literally under task constraints

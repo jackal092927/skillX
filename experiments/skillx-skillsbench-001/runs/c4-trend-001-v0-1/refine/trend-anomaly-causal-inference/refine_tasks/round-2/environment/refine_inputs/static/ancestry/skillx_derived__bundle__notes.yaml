@@ -1,0 +1,363 @@
+---
+task_id: trend-anomaly-causal-inference
+protocol_version: C3_REWRITE_PROTOCOL_v0.1
+bundle_type: multi_skill_task_coordination
+
+# Stage Ordering and Dependencies
+stages:
+  - stage: 1
+    name: data_cleaning
+    skill: data_cleaning
+    description: Clean both survey demographic and transaction datasets to prepare for downstream analysis
+    required_inputs:
+      - /app/data/survey_dirty.csv
+      - /app/data/amazon-purchases-2019-2020_dirty.csv
+    outputs:
+      - /app/output/survey_cleaned.csv
+      - /app/output/amazon-purchases-2019-2020-filtered.csv
+    completion_criteria:
+      - Both output files exist and are parseable CSV
+      - survey_cleaned.csv has unique Survey ResponseID (no duplicates)
+      - amazon-purchases-2019-2020-filtered.csv has valid dates in 2019-2020 range
+      - No missing values in critical columns (Survey ResponseID, Order Date, Category)
+      - Demographic columns in survey are fully imputed (no nulls)
+      - Transaction prices are positive and within reasonable bounds
+    blocks_stages: [2, 3]
+
+  - stage: 2
+    name: anomaly_detection
+    skill: time_series_anomaly_detection
+    description: Detect category-level spending anomalies in March 2020 using Prophet-based counterfactual prediction
+    depends_on: [1]
+    required_inputs:
+      - /app/output/amazon-purchases-2019-2020-filtered.csv (from stage 1)
+    outputs:
+      - /app/output/category_anomaly_index.csv
+    completion_criteria:
+      - Output file exists with columns [Category, Anomaly_Index]
+      - Anomaly_Index values are bounded in [-100, 100]
+      - At least 20 categories present (to support top-10 surge + top-10 slump selection)
+      - Both positive (surge) and negative (slump) anomaly indices exist
+      - File is sorted by Anomaly_Index in descending order
+      - Prophet models trained only on data BEFORE March 2020
+    blocks_stages: [4]
+
+  - stage: 3
+    name: feature_engineering
+    skill: feature_engineering
+    description: Engineer numeric demographic features from cleaned survey data for DiD regression analysis
+    depends_on: [1]
+    required_inputs:
+      - /app/output/survey_cleaned.csv (from stage 1)
+    outputs:
+      - /app/output/survey_feature_engineered.csv
+    completion_criteria:
+      - Output file exists with Survey ResponseID + engineered features
+      - All features (except Survey ResponseID) are numeric (int or float dtype)
+      - At least 20 features present
+      - No constant features (all features have variance)
+      - Same row count as survey_cleaned.csv
+      - No missing values in feature columns
+    blocks_stages: [4]
+
+  - stage: 4
+    name: causal_analysis
+    skill: did_causal_analysis
+    description: Run Difference-in-Differences analysis on top 20 anomalous categories to identify demographic drivers
+    depends_on: [1, 2, 3]
+    required_inputs:
+      - /app/output/amazon-purchases-2019-2020-filtered.csv (from stage 1)
+      - /app/output/category_anomaly_index.csv (from stage 2)
+      - /app/output/survey_feature_engineered.csv (from stage 3)
+    outputs:
+      - /app/output/user_category_period_aggregated_intensive.csv
+      - /app/output/user_category_period_aggregated_extensive.csv
+      - /app/output/causal_analysis_report.json
+    completion_criteria:
+      - All three output files exist
+      - Intensive margin contains only purchasers (sparse data structure)
+      - Extensive margin contains complete user×category×period grid (all users)
+      - Both files aggregated to unique user-category-period level (no duplicates)
+      - Period labels are 'baseline' or 'treatment' (case-insensitive)
+      - Only top 10 surge + top 10 slump categories from stage 2 are analyzed
+      - JSON report has correct structure with metadata, surge_categories, slump_categories, summary
+      - Each category has top 3 intensive_margin and top 3 extensive_margin drivers
+      - Drivers are sorted correctly (descending for surge, ascending for slump)
+      - Baseline period is Jan-Feb 2020 (not 2019)
+      - Treatment period is March 2020
+
+# Cross-Skill Handoff Boundaries
+handoffs:
+  - from_stage: 1
+    to_stage: 2
+    artifact: amazon-purchases-2019-2020-filtered.csv
+    contract:
+      - Must have columns: Survey ResponseID, Order Date, Category, price column
+      - Order Date must be parseable datetime in 2019-2020 range
+      - No missing Category values
+      - Positive prices only
+    failure_mode: If transaction data has missing dates or categories, anomaly detection will fail or produce incomplete category coverage
+
+  - from_stage: 1
+    to_stage: 3
+    artifact: survey_cleaned.csv
+    contract:
+      - Must have Survey ResponseID column with unique values
+      - All demographic columns fully imputed (no missing values)
+      - Sufficient row count (4500-5500 expected)
+    failure_mode: If demographic columns have nulls, feature engineering will fail or produce incomplete feature matrix
+
+  - from_stage: 2
+    to_stage: 4
+    artifact: category_anomaly_index.csv
+    contract:
+      - Must be sorted by Anomaly_Index descending
+      - At least 20 categories to support top-10 surge + top-10 slump selection
+      - Categories must exist in transaction data
+    failure_mode: If fewer than 20 categories or sorting is wrong, top-N selection will be incorrect
+
+  - from_stage: 3
+    to_stage: 4
+    artifact: survey_feature_engineered.csv
+    contract:
+      - All features (except ID) must be numeric
+      - Survey ResponseID must match survey_cleaned.csv
+      - At least 20 features for meaningful DiD analysis
+    failure_mode: If features are non-numeric, DiD regression will fail. If insufficient features, analysis lacks statistical power
+
+  - from_stage: 1
+    to_stage: 4
+    artifact: amazon-purchases-2019-2020-filtered.csv
+    contract:
+      - Transaction data with Survey ResponseID linking to survey data
+      - Date range must include Jan-Feb-Mar 2020 for baseline/treatment periods
+      - Survey ResponseID values must exist in survey_feature_engineered.csv for inner join
+    failure_mode: If date range is incomplete or survey IDs don't match, DiD analysis will have insufficient data or broken joins
+
+# Task-Level Failure Modes
+failure_modes:
+  - category: sequencing_error
+    description: Running stages out of order (e.g., feature engineering before data cleaning)
+    detection: Missing input files or file-not-found errors
+    mitigation: Strict stage dependency enforcement - verify stage 1 outputs exist before running stage 2/3
+
+  - category: incomplete_cleaning
+    description: Data cleaning leaves missing values or invalid data that breaks downstream analysis
+    detection: Stage 2/3/4 fail with data type errors or null value errors
+    mitigation: Validate cleaning completeness - check for nulls, invalid dates, non-positive prices before proceeding
+
+  - category: referential_integrity_failure
+    description: Survey ResponseID mismatches between datasets causing empty joins or data loss
+    detection: Drastically reduced row counts after merges in stage 4, or empty DiD results
+    mitigation: Validate Survey ResponseID overlap between survey and transaction data after stage 1
+
+  - category: insufficient_categories
+    description: Too few categories with sufficient data for Prophet modeling
+    detection: category_anomaly_index.csv has fewer than 20 rows
+    mitigation: Relax Prophet minimum training requirements or filter transactions to retain more categories
+
+  - category: non_numeric_features
+    description: Feature engineering produces non-numeric columns that break DiD regression
+    detection: Stage 4 fails with dtype errors during regression
+    mitigation: Strict validation in stage 3 - verify all features are int/float before saving
+
+  - category: wrong_baseline_period
+    description: Using 2019 data as baseline instead of Jan-Feb 2020
+    detection: Tests fail on metadata.baseline_start verification
+    mitigation: Explicitly filter to Jan-Feb 2020 for baseline, March 2020 for treatment in stage 4
+
+  - category: aggregation_errors
+    description: Duplicate user-category-period combinations or wrong margin structure
+    detection: Tests fail on duplicate checks or row count mismatches
+    mitigation: Validate aggregation produces unique user-category-period tuples; intensive=sparse, extensive=complete grid
+
+  - category: sorting_errors
+    description: category_anomaly_index not sorted descending, or DiD drivers not sorted by magnitude
+    detection: Tests fail on sorting validation
+    mitigation: Explicit sort operations before saving anomaly index and before selecting top-3 drivers
+
+  - category: incomplete_did_output
+    description: Missing top-N categories or missing margin results in JSON report
+    detection: Tests fail on structure checks or category count validation
+    mitigation: Verify all 20 categories (10 surge + 10 slump) have both intensive and extensive margin results
+
+# Task-Level Deliverables
+deliverables:
+  - name: survey_cleaned.csv
+    stage: 1
+    evaluator_checks:
+      - File exists
+      - Has Survey ResponseID column
+      - At least 1000 rows with unique Survey ResponseID
+      - No duplicate Survey ResponseID values
+      - Required demographic columns present with no missing values
+
+  - name: amazon-purchases-2019-2020-filtered.csv
+    stage: 1
+    evaluator_checks:
+      - File exists
+      - Has Survey ResponseID, Order Date, Category columns
+      - At least 10000 rows
+      - Dates are parseable and in 2019-2020 range
+      - No missing Category values
+      - Has price column (flexible naming) with positive values
+
+  - name: category_anomaly_index.csv
+    stage: 2
+    evaluator_checks:
+      - File exists
+      - Has Category and Anomaly_Index columns (flexible naming for index)
+      - Anomaly_Index bounded in [-100, 100]
+      - At least 10 categories present
+      - Both positive and negative anomaly indices exist
+      - Sorted by Anomaly_Index in descending order
+
+  - name: survey_feature_engineered.csv
+    stage: 3
+    evaluator_checks:
+      - File exists
+      - Has Survey ResponseID column
+      - At least 20 numeric features
+      - All columns except Survey ResponseID are numeric dtype
+      - No constant features (all have variance)
+      - Same row count as survey_cleaned.csv
+
+  - name: user_category_period_aggregated_intensive.csv
+    stage: 4
+    evaluator_checks:
+      - File exists
+      - Has Survey ResponseID, Category, Period, spending column
+      - Period values are 'baseline' or 'treatment'
+      - All spending values are positive (purchasers only)
+      - No duplicate user-category-period combinations
+      - Only contains top 20 categories from anomaly detection
+
+  - name: user_category_period_aggregated_extensive.csv
+    stage: 4
+    evaluator_checks:
+      - File exists
+      - Has Survey ResponseID, Category, Period, Has_Purchase column
+      - Period values are 'baseline' or 'treatment'
+      - Has_Purchase is binary (0 or 1)
+      - No duplicate user-category-period combinations
+      - Row count >= intensive margin (includes non-purchasers)
+      - Only contains top 20 categories from anomaly detection
+
+  - name: causal_analysis_report.json
+    stage: 4
+    evaluator_checks:
+      - File exists and is valid JSON
+      - Has metadata section with baseline/treatment dates and total_features_analyzed
+      - metadata.baseline_start is in 2020 (not 2019)
+      - metadata.treatment_start is in March 2020
+      - Has surge_categories array with 10 entries
+      - Has slump_categories array with 10 entries
+      - Each category has intensive_margin and extensive_margin arrays
+      - Each margin has up to 3 drivers with feature, did_estimate, p_value, method
+      - intensive_margin sorted descending for surge, ascending for slump
+      - extensive_margin sorted descending for surge, ascending for slump
+      - Surge categories match top 10 from anomaly_index.csv
+      - Slump categories match bottom 10 from anomaly_index.csv
+      - summary section has correct counts
+
+# Evaluator-Sensitive Output Contract
+evaluator_contract:
+  priority_0_tests:
+    weight: 0.50
+    count: 9
+    checks:
+      - Cleaned data files exist with required structure
+      - Anomaly detection produces bounded index with surge/slump
+      - Feature engineering creates numeric features
+      - Aggregated files have correct user-category-period structure
+      - JSON report has complete metadata, categories, and summary sections
+
+  priority_1_tests:
+    weight: 0.35
+    count: 7
+    checks:
+      - Survey cleaning removes duplicates and imputes missing values
+      - Purchase cleaning validates dates and prices
+      - Anomaly detection uses correct methods and has meaningful distribution
+      - Feature engineering produces varying, numeric features
+      - DiD uses correct baseline period (Jan-Feb 2020, not 2019)
+      - DiD categories match top-20 from anomaly index
+      - DiD results have valid statistical properties and correct sorting
+
+  priority_2_tests:
+    weight: 0.15
+    count: 3
+    checks:
+      - Survey ResponseID consistency across all output files
+      - Purchase aggregation correctness for top-20 categories after survey merge
+      - DiD aggregation produces independent observations with no duplicates
+
+  total_reward_formula: "(P0_passed / 9 * 0.50) + (P1_passed / 7 * 0.35) + (P2_passed / 3 * 0.15)"
+
+# Common Pitfalls and Risk Points
+common_pitfalls:
+  - pitfall: Running feature engineering before data cleaning completes
+    stage: 3
+    consequence: Feature engineering operates on dirty data with nulls
+    prevention: Enforce stage 1 completion before starting stage 3
+
+  - pitfall: Using 2019 data as DiD baseline instead of Jan-Feb 2020
+    stage: 4
+    consequence: Fails P1 test on baseline period validation
+    prevention: Explicitly filter to 2020-01-01 through 2020-02-29 for baseline
+
+  - pitfall: Including non-purchasers in intensive margin aggregation
+    stage: 4
+    consequence: Changes research question and dilutes treatment effects
+    prevention: Only aggregate actual transactions for intensive margin (sparse structure)
+
+  - pitfall: Missing non-purchasers in extensive margin
+    stage: 4
+    consequence: Cannot measure purchase propensity changes correctly
+    prevention: Create complete user×category×period grid, mark purchases as 1, non-purchases as 0
+
+  - pitfall: Not filtering to top-20 categories before DiD
+    stage: 4
+    consequence: Analyzes wrong categories or all categories (fails validation)
+    prevention: Filter aggregated data to only top 10 surge + top 10 slump categories from anomaly index
+
+  - pitfall: Wrong sorting direction for anomaly index or DiD drivers
+    stage: 2, 4
+    consequence: Top-N selection picks wrong categories, or wrong drivers reported
+    prevention: Sort anomaly index descending; sort drivers descending for surge, ascending for slump
+
+  - pitfall: Leaving categorical features as strings in feature engineering output
+    stage: 3
+    consequence: DiD regression fails with dtype errors
+    prevention: Validate all features are numeric (int/float) before saving
+
+  - pitfall: Creating duplicate user-category-period combinations
+    stage: 4
+    consequence: Violates DiD independence assumption, fails validation tests
+    prevention: Aggregate to unique user-category-period level; verify no duplicates before saving
+
+# Coordination Notes
+coordination_strategy: |
+  This is a linear dependency chain with one parallel branch:
+  - Stage 1 (cleaning) must complete first
+  - Stages 2 (anomaly) and 3 (features) can run in parallel after stage 1
+  - Stage 4 (DiD) requires all previous stages to complete
+
+  Critical handoff validation points:
+  1. After stage 1: Verify referential integrity (survey IDs in transactions exist in survey)
+  2. After stage 2: Verify sufficient categories (>= 20) for top-N selection
+  3. After stage 3: Verify all features are numeric and non-constant
+  4. During stage 4: Verify correct period filtering and top-N category selection
+
+execution_order: [1, [2, 3], 4]
+
+data_flow_summary: |
+  Raw data → [Stage 1: Clean] → Cleaned survey + transactions
+                                      ↓                    ↓
+                              [Stage 3: Features]    [Stage 2: Anomaly]
+                                      ↓                    ↓
+                              Feature matrix      Anomaly index (top 20)
+                                      ↓                    ↓
+                                      └──→ [Stage 4: DiD] ←──┘
+                                                  ↓
+                                    Intensive + Extensive + JSON report

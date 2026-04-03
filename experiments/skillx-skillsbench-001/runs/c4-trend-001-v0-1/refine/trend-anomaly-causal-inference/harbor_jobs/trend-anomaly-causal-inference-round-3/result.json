@@ -1,0 +1,29 @@
+{
+    "id": "e83e2270-b941-4f40-a2af-142f89185cf0",
+    "started_at": "2026-03-23T07:58:48.982621",
+    "finished_at": "2026-03-23T08:05:45.691082",
+    "n_total_trials": 1,
+    "stats": {
+        "n_trials": 1,
+        "n_errors": 0,
+        "evals": {
+            "claude-code__claude-sonnet-4-5__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "mean": 1.0
+                    }
+                ],
+                "reward_stats": {
+                    "reward": {
+                        "1.0": [
+                            "round-3__xm75VEj"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        }
+    }
+}

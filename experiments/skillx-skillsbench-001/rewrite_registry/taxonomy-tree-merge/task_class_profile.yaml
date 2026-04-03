@@ -1,0 +1,20 @@
+task_id: taxonomy-tree-merge
+domain: ml-nlp
+task_class: methodology-heavy-guardrail-task
+skill_topology: guardrail-heavy-single-skill
+primary_pattern: inversion
+secondary_patterns:
+  - reviewer
+  - pipeline
+risk_profile:
+  - over-guidance-sensitive
+  - negative-transfer-sensitive
+  - assumption-brittleness-sensitive
+verifier_mode: methodology-and-boundary-check
+scaffold_budget: low-to-medium
+script_policy: optional
+rationale: >
+  Hard methodology-heavy task where the main risk is harmful overcommitment to a
+  brittle process. The template should emphasize assumptions, abstention,
+  clarifying questions, and compact boundary guidance rather than adding more
+  procedural bulk.

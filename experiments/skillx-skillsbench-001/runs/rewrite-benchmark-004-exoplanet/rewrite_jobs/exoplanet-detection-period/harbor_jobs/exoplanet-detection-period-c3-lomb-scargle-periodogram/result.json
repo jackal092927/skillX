@@ -1,0 +1,29 @@
+{
+    "id": "1d89287f-4f7b-47a9-816e-389c3b5f9f3b",
+    "started_at": "2026-03-23T06:41:13.502226",
+    "finished_at": "2026-03-23T06:43:13.685464",
+    "n_total_trials": 1,
+    "stats": {
+        "n_trials": 1,
+        "n_errors": 0,
+        "evals": {
+            "claude-code__claude-sonnet-4-5__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "mean": 1.0
+                    }
+                ],
+                "reward_stats": {
+                    "reward": {
+                        "1.0": [
+                            "c3-lomb-scargle-periodogram__CfRsfFa"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        }
+    }
+}

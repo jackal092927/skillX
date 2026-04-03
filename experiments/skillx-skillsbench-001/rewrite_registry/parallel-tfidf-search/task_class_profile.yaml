@@ -1,0 +1,20 @@
+task_id: parallel-tfidf-search
+domain: engineering-parallelization
+task_class: engineering-composition-bundle
+skill_topology: multi-skill-flat-bundle
+primary_pattern: pipeline
+secondary_patterns:
+  - tool-wrapper
+  - reviewer
+risk_profile:
+  - composition-confusion-sensitive
+  - objective-conflict-sensitive
+  - scope-drift-sensitive
+verifier_mode: correctness-plus-performance-check
+scaffold_budget: medium
+script_policy: recommended
+rationale: >
+  Multi-skill engineering task where the main problem is not one missing skill
+  but unclear coordination among multiple overlapping skills. The template
+  should make bundle roles, precedence, and correctness-vs-performance tradeoffs
+  explicit.

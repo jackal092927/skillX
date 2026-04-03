@@ -1,0 +1,9 @@
+- timestamp: `2026-03-23T10:10:57.864237+00:00`
+- skillsbench_root: `<SKILLSBENCH_ROOT>`
+- oauth_file: `<CLAUDE_CODE_OAUTH_TOKEN_FILE>`
+- benchmark_agent: `claude-code`
+- benchmark_model: `anthropic/claude-sonnet-4-5`
+- docker_mem_bytes: `16753045504`
+- uv_path: `uv`
+- max_concurrency: `2`
+- timeout_multiplier: `3.0`

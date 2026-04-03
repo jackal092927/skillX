@@ -1,0 +1,204 @@
+{
+    "results": {
+        "tool": {
+            "name": "pytest",
+            "version": "8.4.1"
+        },
+        "summary": {
+            "tests": 15,
+            "passed": 14,
+            "failed": 1,
+            "skipped": 0,
+            "pending": 0,
+            "other": 0,
+            "start": 1774268285.5260763,
+            "stop": 1774268290.3985455
+        },
+        "tests": [
+            {
+                "name": "test_outputs.py::test_cleaned_data",
+                "status": "passed",
+                "duration": 0.013090959000692237,
+                "start": 1774268285.8583033,
+                "stop": 1774268285.871735,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "parametrize::file_config::[{'filename': 'survey_cleaned.csv', 'required_columns': ['Survey ResponseID'], 'min_rows': 1000, 'unique_key': 'Survey ResponseID'}, {'filename': 'amazon-purchases-2019-2020-filtered.csv', 'required_columns': ['Survey ResponseID', 'Order Date', 'Category'], 'min_rows': 10000, 'unique_key': None, 'price_column_aliases': ['Item Total', 'Total Price', 'item_total', 'total_price', 'Purchase Price Per Unit', 'purchase_price_per_unit']}]",
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_survey_cleaning_correctness",
+                "status": "passed",
+                "duration": 0.015042458995594643,
+                "start": 1774268286.6927388,
+                "stop": 1774268286.7080705,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_purchase_cleaning_correctness",
+                "status": "passed",
+                "duration": 0.7949430840017158,
+                "start": 1774268286.7082071,
+                "stop": 1774268287.503475,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_anomaly_detection",
+                "status": "passed",
+                "duration": 0.0012166239976068027,
+                "start": 1774268287.5036116,
+                "stop": 1774268287.5049937,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_anomaly_detection_correctness",
+                "status": "passed",
+                "duration": 0.7687307500018505,
+                "start": 1774268287.505094,
+                "stop": 1774268288.2742114,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_feature_engineering",
+                "status": "passed",
+                "duration": 0.03576391699971282,
+                "start": 1774268288.274404,
+                "stop": 1774268288.310424,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_feature_engineering_correctness",
+                "status": "passed",
+                "duration": 0.06844433300284436,
+                "start": 1774268288.3107586,
+                "stop": 1774268288.379498,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_user_category_period_aggregated",
+                "status": "passed",
+                "duration": 0.10849266700461158,
+                "start": 1774268288.379624,
+                "stop": 1774268288.4883847,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_structure",
+                "status": "passed",
+                "duration": 0.0015683330020692665,
+                "start": 1774268288.4885185,
+                "stop": 1774268288.490297,
+                "retries": 3,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "parametrize::section,keys::[('metadata', ['baseline_start', 'baseline_end', 'treatment_start', 'treatment_end', 'total_features_analyzed']), ('surge_categories', None), ('slump_categories', None), ('summary', ['surge', 'slump'])]",
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_analysis_baseline_period",
+                "status": "passed",
+                "duration": 0.0005858330005139578,
+                "start": 1774268288.49221,
+                "stop": 1774268288.4930077,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_categories",
+                "status": "passed",
+                "duration": 0.00038995800059637986,
+                "start": 1774268288.4931693,
+                "stop": 1774268288.4936988,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_did_correctness",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.0007362500036833808,
+                "start": 1774268288.493788,
+                "stop": 1774268288.5207288,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ],
+                "trace": "/tests/test_outputs.py:623: in test_causal_report_did_correctness\n    assert 0.05 < median_p < 0.8, \\\nE   AssertionError: P-value distribution looks suspicious (median=0.048). Expected median between 0.05 and 0.8 for realistic causal analysis.\nE   assert 0.05 < np.float64(0.04765)",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::test_cross_file_consistency",
+                "status": "passed",
+                "duration": 0.09568862499872921,
+                "start": 1774268288.5208714,
+                "stop": 1774268288.616842,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_purchase_aggregation_correctness",
+                "status": "passed",
+                "duration": 0.7926308329988387,
+                "start": 1774268288.6170886,
+                "stop": 1774268289.4100373,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_did_aggregation_independence",
+                "status": "passed",
+                "duration": 0.986555835002946,
+                "start": 1774268289.4101684,
+                "stop": 1774268290.397025,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            }
+        ]
+    }
+}

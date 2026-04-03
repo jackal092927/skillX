@@ -1,0 +1,19 @@
+You are running inside a protocol-controlled SkillX rewrite task.
+
+Your job is to read the frozen rewrite inputs from `/root/rewrite_inputs` and write exactly one final artifact.
+
+- mode: `c3`
+- task id: `trend-anomaly-causal-inference`
+- target skill: `feature_engineering`
+- protocol file: `/root/rewrite_inputs/protocols/C3_REWRITE_PROTOCOL.md`
+- task instruction file: `/root/rewrite_inputs/task/instruction.md`
+- task config file: `/root/rewrite_inputs/task/task.toml`
+- task tests: `/root/rewrite_inputs/task/tests/`
+- write the final artifact to `/root/output/SKILL.md`
+
+Rules:
+- Read the protocol file first and follow it exactly.
+- Read only the provided rewrite inputs under `/root/rewrite_inputs`.
+- Do not solve the benchmark task itself.
+- Do not output commentary, explanation, or markdown fences.
+- The final file must be exactly the full derived SKILL.md for this single skill.

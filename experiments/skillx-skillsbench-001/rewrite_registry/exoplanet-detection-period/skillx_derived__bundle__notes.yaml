@@ -1,0 +1,36 @@
+task_id: exoplanet-detection-period
+skill_bundle:
+  - exoplanet-workflows
+  - light-curve-preprocessing
+  - transit-least-squares
+  - box-least-squares
+  - lomb-scargle-periodogram
+derived_layer:
+  candidate_preconditions:
+    - the TESS light curve file is readable and quality-flag semantics are verified
+    - flux uncertainty values are available for weighted transit search
+    - preprocessing preserves short transit-like dips rather than smoothing them away
+  candidate_postconditions:
+    - /root/period.txt exists
+    - the file contains a single positive numeric value in days
+    - the value is rounded to at most five decimal places
+    - the selected period comes from a transit-focused workflow rather than an unrelated stellar-variability signal
+  candidate_failure_modes:
+    - quality flags interpreted backwards
+    - overaggressive flattening removes the transit signature
+    - a stellar-rotation period is returned instead of the planet period
+    - half-period or double-period alias is written without validation
+    - the period is correct in spirit but written with the wrong file path or format
+  candidate_evaluator_hooks:
+    - output-file existence and scalar-format check
+    - positivity and decimal-place check
+    - absolute-period tolerance check against the reference value
+    - optional audit for whether TLS/BLS candidate review was performed before final write
+  bundle_interaction_note:
+    - preprocessing comes before search
+    - TLS is the primary search method for the final answer
+    - BLS and Lomb-Scargle are supporting checks, not replacements for the main transit workflow
+  suspected_negative_transfer_risk:
+    - medium
+    - the original bundle is information-rich but can diffuse attention away from the narrow output contract
+

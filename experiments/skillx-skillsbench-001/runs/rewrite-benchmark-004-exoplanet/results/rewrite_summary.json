@@ -1,0 +1,10 @@
+[
+  {
+    "task_id": "exoplanet-detection-period",
+    "n_original_skills": 5,
+    "n_c2_skills": 5,
+    "n_c3_skills": 5,
+    "bundle_generated": true,
+    "rewrite_manifest": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-004-exoplanet/rewrite_jobs/exoplanet-detection-period/outputs/rewrite_manifest.json"
+  }
+]

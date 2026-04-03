@@ -1,0 +1,56 @@
+experiment: skillx-skillsbench-001
+frozen_at: 2026-03-22
+stage: dry-run-001
+
+selection_logic:
+  goals:
+    - include one likely positive-skill case
+    - include one multi-skill composition case
+    - include one likely negative-transfer or over-guidance case
+    - keep verifier signal clear
+    - keep rewrite burden interpretable
+  excluded_for_now:
+    - extra external API/auth tasks
+    - tasks requiring heavy new domain research before rewrite
+    - tasks with negligible original-skill structure
+
+selected_tasks:
+  - task_id: offer-letter-generator
+    role_in_dry_run: positive-skill single-skill case
+    category: document-generation
+    difficulty: easy
+    original_skill_files:
+      - rewrite_registry/offer-letter-generator/original__docx__SKILL.md
+    rationale:
+      - original skill is useful but prose-heavy
+      - task has clear requirements, strong deterministic output, and obvious scope/risk boundaries
+      - good candidate for testing whether lightweight declarative structure adds clarity without much burden
+
+  - task_id: parallel-tfidf-search
+    role_in_dry_run: multi-skill bundle case
+    category: parallelization
+    difficulty: medium
+    original_skill_files:
+      - rewrite_registry/parallel-tfidf-search/original__memory-optimization__SKILL.md
+      - rewrite_registry/parallel-tfidf-search/original__python-parallelization__SKILL.md
+      - rewrite_registry/parallel-tfidf-search/original__workload-balancing__SKILL.md
+    rationale:
+      - task includes a nontrivial skill bundle rather than one skill
+      - useful for testing whether SkillX can disambiguate overlapping guidance across speed, memory, and load balancing
+      - likely to expose authoring-burden questions for multi-skill settings
+
+  - task_id: taxonomy-tree-merge
+    role_in_dry_run: negative-transfer / over-guidance case
+    category: ML-NLP
+    difficulty: hard
+    original_skill_files:
+      - rewrite_registry/taxonomy-tree-merge/original__hierarchical-taxonomy-clustering__SKILL.md
+    rationale:
+      - original skill is methodology-heavy and potentially over-prescriptive
+      - task is difficult enough that scope errors and brittle assumptions matter
+      - useful test of whether SkillX can reduce harmful overcommitment rather than only raise average score
+
+next_step_after_selection:
+  - write SkillX minimal rewrites for all selected task skills
+  - write agent-derived expansion notes
+  - inspect rewrite burden before scaling to the 12-task pilot

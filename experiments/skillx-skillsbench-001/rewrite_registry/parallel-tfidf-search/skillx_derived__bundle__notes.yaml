@@ -1,0 +1,32 @@
+task_id: parallel-tfidf-search
+skill_bundle:
+  - memory-optimization
+  - python-parallelization
+  - workload-balancing
+derived_layer:
+  candidate_preconditions:
+    - sequential baseline behavior is understood and available for correctness comparison
+    - environment exposes multiple CPU cores
+    - the implementation can safely partition documents and queries into worker tasks
+  candidate_postconditions:
+    - required functions exist with the expected signatures
+    - search/index outputs remain equivalent to the sequential baseline
+    - speedup targets are addressed without obvious runaway memory costs
+  candidate_failure_modes:
+    - thread-based implementation fails to bypass CPU bottlenecks
+    - worker code is non-picklable or breaks under multiprocessing
+    - result ordering or TF-IDF semantics drift from the original implementation
+    - chunking is so fine-grained that overhead cancels any speedup
+    - memory duplication across workers makes the design impractical
+  candidate_evaluator_hooks:
+    - API/signature validation for required functions
+    - equivalence check against sequential outputs
+    - timing/speedup comparison under the benchmark workload
+    - memory-use sanity check or copy-amplification review on a smaller audit slice
+  bundle_interaction_note:
+    - python-parallelization is the primary skill
+    - workload-balancing should guide partitioning once a parallel approach exists
+    - memory-optimization should prevent the parallel version from winning only by wasteful resource use
+  suspected_negative_transfer_risk:
+    - medium
+    - because three skills overlap, there is risk of over-guidance or conflicting priorities if scope boundaries are unclear

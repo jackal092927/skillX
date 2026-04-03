@@ -1,0 +1,26 @@
+task_id: offer-letter-generator
+skill_id: docx
+derived_layer:
+  candidate_preconditions:
+    - template .docx is available and readable
+    - structured employee data is available and key placeholders can be mapped to fields
+    - output path is writable
+  candidate_postconditions:
+    - final .docx exists at the required output path
+    - expected placeholders are replaced or explicitly surfaced as missing
+    - no raw conditional markers remain in final content
+    - core template structure is preserved
+  candidate_failure_modes:
+    - split placeholder missed due to run-level replacement
+    - header/footer placeholder left unresolved
+    - nested-table placeholder left unresolved
+    - relocation block incorrectly removed or incorrectly retained
+    - invented value inserted for missing field
+  candidate_evaluator_hooks:
+    - unresolved-placeholder scan
+    - marker-removal scan for IF/END_IF tags
+    - existence and readability check on output .docx
+    - targeted spot-checks for header/footer and nested-table replacement
+  suspected_negative_transfer_risk:
+    - low to medium
+    - this skill appears genuinely helpful, so the main risk is overconfidence or missed edge surfaces rather than over-prescriptive strategy

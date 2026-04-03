@@ -1,0 +1,133 @@
+---
+task_id: trend-anomaly-causal-inference
+protocol_version: C4_R1_REFINE
+bundle_type: multi_skill_task_coordination
+
+# Stage Ordering and Dependencies
+stages:
+  - stage: 1
+    name: data_cleaning
+    skill: data_cleaning
+    description: Clean survey demographic and transaction datasets
+    required_inputs:
+      - /app/data/survey_dirty.csv
+      - /app/data/amazon-purchases-2019-2020_dirty.csv
+    outputs:
+      - /app/output/survey_cleaned.csv
+      - /app/output/amazon-purchases-2019-2020-filtered.csv
+    critical_requirements:
+      - Unique Survey ResponseID in survey (no duplicates)
+      - Valid dates in 2019-2020 range in transactions
+      - No missing values in critical columns
+      - Positive prices within reasonable bounds
+
+  - stage: 2
+    name: anomaly_detection
+    skill: time_series_anomaly_detection
+    description: Detect category-level spending anomalies using Prophet
+    depends_on: [1]
+    required_inputs:
+      - /app/output/amazon-purchases-2019-2020-filtered.csv
+    outputs:
+      - /app/output/category_anomaly_index.csv
+    critical_requirements:
+      - Anomaly_Index bounded in [-100, 100]
+      - At least 20 categories present
+      - Sorted descending by Anomaly_Index
+      - Both surge and slump values present
+
+  - stage: 3
+    name: feature_engineering
+    skill: feature_engineering
+    description: Engineer numeric demographic features for DiD
+    depends_on: [1]
+    required_inputs:
+      - /app/output/survey_cleaned.csv
+    outputs:
+      - /app/output/survey_feature_engineered.csv
+    critical_requirements:
+      - All features (except Survey ResponseID) are numeric
+      - At least 20 features present
+      - No constant features
+      - Same row count as input
+
+  - stage: 4
+    name: causal_analysis
+    skill: did_causal_analysis
+    description: Run DiD on top 20 anomalous categories
+    depends_on: [1, 2, 3]
+    required_inputs:
+      - /app/output/amazon-purchases-2019-2020-filtered.csv
+      - /app/output/category_anomaly_index.csv
+      - /app/output/survey_feature_engineered.csv
+    outputs:
+      - /app/output/user_category_period_aggregated_intensive.csv
+      - /app/output/user_category_period_aggregated_extensive.csv
+      - /app/output/causal_analysis_report.json
+    critical_requirements:
+      - Intensive margin sparse (purchasers only)
+      - Extensive margin complete grid (all users)
+      - No duplicate user-category-period combinations
+      - Only top 10 surge + top 10 slump categories
+      - Baseline is Jan-Feb 2020, treatment is March 2020
+
+# Cross-Skill Handoff Boundaries
+handoffs:
+  - from_stage: 1
+    to_stage: 2
+    artifact: amazon-purchases-2019-2020-filtered.csv
+    contract:
+      - Valid dates in 2019-2020
+      - No missing Category values
+      - Positive prices only
+
+  - from_stage: 1
+    to_stage: 3
+    artifact: survey_cleaned.csv
+    contract:
+      - Unique Survey ResponseID
+      - All demographics fully imputed
+
+  - from_stage: 2
+    to_stage: 4
+    artifact: category_anomaly_index.csv
+    contract:
+      - Sorted descending
+      - At least 20 categories
+
+  - from_stage: 3
+    to_stage: 4
+    artifact: survey_feature_engineered.csv
+    contract:
+      - All features numeric
+      - At least 20 features
+
+# Key Task-Level Failure Modes
+failure_modes:
+  - category: wrong_baseline_period
+    description: Using 2019 data as baseline instead of Jan-Feb 2020
+    mitigation: Explicitly filter to Jan-Feb 2020 for baseline, March 2020 for treatment
+
+  - category: non_numeric_features
+    description: Feature engineering produces non-numeric columns
+    mitigation: Strict validation - verify all features are int/float before saving
+
+  - category: aggregation_errors
+    description: Duplicate user-category-period or wrong margin structure
+    mitigation: Validate unique tuples; intensive=sparse, extensive=complete grid
+
+  - category: sorting_errors
+    description: Anomaly index or DiD drivers not sorted correctly
+    mitigation: Explicit sort operations before saving outputs
+
+# Deliverables
+deliverables:
+  - survey_cleaned.csv
+  - amazon-purchases-2019-2020-filtered.csv
+  - category_anomaly_index.csv
+  - survey_feature_engineered.csv
+  - user_category_period_aggregated_intensive.csv
+  - user_category_period_aggregated_extensive.csv
+  - causal_analysis_report.json
+
+execution_order: [1, [2, 3], 4]

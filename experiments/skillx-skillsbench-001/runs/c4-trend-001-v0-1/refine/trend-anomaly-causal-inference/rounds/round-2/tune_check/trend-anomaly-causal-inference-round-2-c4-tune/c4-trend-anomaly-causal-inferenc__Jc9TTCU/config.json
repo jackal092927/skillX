@@ -1,0 +1,39 @@
+{
+    "task": {
+        "path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/artifacts/task_sandboxes/c4-trend-anomaly-causal-inference-round-2",
+        "git_url": null,
+        "git_commit_id": null,
+        "overwrite": false,
+        "download_dir": null,
+        "source": null
+    },
+    "trial_name": "c4-trend-anomaly-causal-inferenc__Jc9TTCU",
+    "trials_dir": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/c4-trend-001-v0-1/refine/trend-anomaly-causal-inference/rounds/round-2/tune_check/trend-anomaly-causal-inference-round-2-c4-tune",
+    "timeout_multiplier": 3.0,
+    "agent": {
+        "name": "claude-code",
+        "import_path": null,
+        "model_name": "anthropic/claude-sonnet-4-5",
+        "override_timeout_sec": null,
+        "override_setup_timeout_sec": null,
+        "max_timeout_sec": null,
+        "kwargs": {}
+    },
+    "environment": {
+        "type": "docker",
+        "import_path": null,
+        "force_build": false,
+        "delete": true,
+        "override_cpus": null,
+        "override_memory_mb": null,
+        "override_storage_mb": null,
+        "override_gpus": null,
+        "kwargs": {}
+    },
+    "verifier": {
+        "override_timeout_sec": null,
+        "max_timeout_sec": null,
+        "disable": false
+    },
+    "job_id": "63354f5d-644d-4d89-86f7-1934c0175cb4"
+}

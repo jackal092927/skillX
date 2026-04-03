@@ -1,0 +1,213 @@
+{
+    "results": {
+        "tool": {
+            "name": "pytest",
+            "version": "8.4.1"
+        },
+        "summary": {
+            "tests": 15,
+            "passed": 11,
+            "failed": 4,
+            "skipped": 0,
+            "pending": 0,
+            "other": 0,
+            "start": 1774260946.9354348,
+            "stop": 1774260951.534348
+        },
+        "tests": [
+            {
+                "name": "test_outputs.py::test_cleaned_data",
+                "status": "passed",
+                "duration": 0.011250208001001738,
+                "start": 1774260947.2278764,
+                "stop": 1774260947.2394695,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "parametrize::file_config::[{'filename': 'survey_cleaned.csv', 'required_columns': ['Survey ResponseID'], 'min_rows': 1000, 'unique_key': 'Survey ResponseID'}, {'filename': 'amazon-purchases-2019-2020-filtered.csv', 'required_columns': ['Survey ResponseID', 'Order Date', 'Category'], 'min_rows': 10000, 'unique_key': None, 'price_column_aliases': ['Item Total', 'Total Price', 'item_total', 'total_price', 'Purchase Price Per Unit', 'purchase_price_per_unit']}]",
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_survey_cleaning_correctness",
+                "status": "passed",
+                "duration": 0.015362959000412957,
+                "start": 1774260948.030455,
+                "stop": 1774260948.0461662,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_purchase_cleaning_correctness",
+                "status": "passed",
+                "duration": 0.7969484589993954,
+                "start": 1774260948.0463674,
+                "stop": 1774260948.8436503,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_anomaly_detection",
+                "status": "passed",
+                "duration": 0.0013241249998827698,
+                "start": 1774260948.843808,
+                "stop": 1774260948.845329,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_anomaly_detection_correctness",
+                "status": "passed",
+                "duration": 0.787140583001019,
+                "start": 1774260948.8455303,
+                "stop": 1774260949.63299,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_feature_engineering",
+                "status": "passed",
+                "duration": 0.010168750000957516,
+                "start": 1774260949.6331878,
+                "stop": 1774260949.6436284,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_feature_engineering_correctness",
+                "status": "passed",
+                "duration": 0.032046707998233614,
+                "start": 1774260949.643982,
+                "stop": 1774260949.6763015,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_user_category_period_aggregated",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.007070833002217114,
+                "start": 1774260949.6764188,
+                "stop": 1774260949.722789,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ],
+                "trace": "/tests/test_outputs.py:348: in test_user_category_period_aggregated\n    assert (intensive_df[spending_col] > 0).all(), \"Found non-positive Total_Spend in intensive margin (should only have purchasers)\"\nE   AssertionError: Found non-positive Total_Spend in intensive margin (should only have purchasers)\nE   assert np.False_\nE    +  where np.False_ = all()\nE    +    where all = 0        0.00\\n1       13.84\\n2        0.00\\n3       25.26\\n4        0.00\\n        ...  \\n7449     0.00\\n7450     0.00\\n7451     8.49\\n7452    16.97\\n7453     0.00\\nName: Total_Spend, Length: 7454, dtype: float64 > 0.all",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_structure",
+                "status": "passed",
+                "duration": 0.0012829159986722516,
+                "start": 1774260949.722941,
+                "stop": 1774260949.7243998,
+                "retries": 3,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "parametrize::section,keys::[('metadata', ['baseline_start', 'baseline_end', 'treatment_start', 'treatment_end', 'total_features_analyzed']), ('surge_categories', None), ('slump_categories', None), ('summary', ['surge', 'slump'])]",
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_analysis_baseline_period",
+                "status": "passed",
+                "duration": 0.00030079200041654985,
+                "start": 1774260949.726284,
+                "stop": 1774260949.726707,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_categories",
+                "status": "passed",
+                "duration": 0.0003203749984095339,
+                "start": 1774260949.7268007,
+                "stop": 1774260949.7272413,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_did_correctness",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.0006812089995946735,
+                "start": 1774260949.7273242,
+                "stop": 1774260949.7382824,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ],
+                "trace": "/tests/test_outputs.py:623: in test_causal_report_did_correctness\n    assert 0.05 < median_p < 0.8, \\\nE   AssertionError: P-value distribution looks suspicious (median=0.034). Expected median between 0.05 and 0.8 for realistic causal analysis.\nE   assert 0.05 < np.float64(0.034)",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::test_cross_file_consistency",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.05865220700070495,
+                "start": 1774260949.738416,
+                "stop": 1774260949.8059723,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ],
+                "trace": "/tests/test_outputs.py:720: in test_cross_file_consistency\n    assert extensive_ids == clean_ids, \\\nE   AssertionError: Extensive data should have all survey IDs. Missing: 2867, Extra: 0\nE   assert {'R_037XK72IZ...4unHGkF', ...} == {'R_01vNIayew...BmkwSTn', ...}\nE     \nE     Extra items in the right set:\nE     'R_2zNpJuWE3ykIlGh'\nE     'R_3mkMvFzGYLaDXjJ'\nE     'R_0Sq4gTizoIawAud'\nE     'R_29j42T3WUvUh78M'\nE     'R_231Z70wupQFdnTB'...\nE     \nE     ...Full output truncated (7893 lines hidden), use '-vv' to show",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::test_purchase_aggregation_correctness",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.7918449169992527,
+                "start": 1774260949.806138,
+                "stop": 1774260950.6073084,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ],
+                "trace": "/tests/test_outputs.py:778: in test_purchase_aggregation_correctness\n    assert row_diff_ratio < 0.05, \\\nE   AssertionError: Intensive data has 7454 rows, expected ~4226 (\u00b15%) after survey merge for top 20 categories\nE   assert 0.7638428774254614 < 0.05",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::test_did_aggregation_independence",
+                "status": "passed",
+                "duration": 0.9247995010009618,
+                "start": 1774260950.6074476,
+                "stop": 1774260951.5326135,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            }
+        ]
+    }
+}

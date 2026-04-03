@@ -1,0 +1,301 @@
+---
+task_id: exoplanet-detection-period
+protocol_version: C3_REWRITE_PROTOCOL_v0.1
+bundle_type: multi_skill_coordination
+
+metadata:
+  task_category: astronomy
+  difficulty: medium
+  primary_deliverable: /root/period.txt
+  expected_period: 5.35699  # days, from test reference
+  tolerance: 0.01  # days
+
+skills:
+  - exoplanet-workflows
+  - light-curve-preprocessing
+  - transit-least-squares
+  - box-least-squares
+  - lomb-scargle-periodogram
+
+stage_order:
+  1_data_loading:
+    description: Load TESS light curve from /root/data/tess_lc.txt and understand column structure
+    primary_skill: light-curve-preprocessing
+    supporting_skill: exoplanet-workflows
+    inputs:
+      - /root/data/tess_lc.txt with columns [Time (MJD), Normalized flux, Quality flag, Flux uncertainty]
+    outputs:
+      - time array (days)
+      - flux array (normalized)
+      - quality flag array
+      - flux_err array
+    completion_criteria:
+      - All four data arrays successfully loaded
+      - Data shape understood and verified
+      - Quality flag convention identified (0=good or 0=bad)
+
+  2_quality_filtering:
+    description: Filter data using quality flags and remove outliers
+    primary_skill: light-curve-preprocessing
+    depends_on: 1_data_loading
+    inputs:
+      - Raw time, flux, quality, flux_err arrays
+    outputs:
+      - Filtered time, flux, flux_err arrays (quality-filtered)
+    critical_decisions:
+      - Quality flag convention: test both (quality==0) and (quality!=0) to determine which is correct
+      - Outlier removal sigma threshold: 3-sigma initially
+    completion_criteria:
+      - Bad quality data points removed
+      - Obvious outliers removed without over-clipping
+      - Flux_err array preserved for TLS
+
+  3_stellar_activity_removal:
+    description: Remove stellar variability (rotation, starspots) to expose transit signal
+    primary_skill: light-curve-preprocessing
+    supporting_skill: exoplanet-workflows
+    depends_on: 2_quality_filtering
+    inputs:
+      - Quality-filtered light curve
+    outputs:
+      - Detrended/flattened light curve with stellar variability removed
+    critical_operations:
+      - Apply flatten() with window_length appropriate for TESS data (300-500)
+      - Apply iterative sine fitting to remove dominant periodic stellar signal
+      - Preserve transit-duration features while removing longer-period trends
+    completion_criteria:
+      - Stellar rotation signal significantly reduced
+      - Transit-like periodic dips preserved and more visible
+      - Visual confirmation via plotting recommended
+
+  4_period_detection:
+    description: Detect exoplanet orbital period using transit-optimized algorithms
+    primary_skill: transit-least-squares
+    alternative_skill: box-least-squares
+    supporting_skill: exoplanet-workflows
+    depends_on: 3_stellar_activity_removal
+    inputs:
+      - Preprocessed light curve (time, flux, flux_err)
+    outputs:
+      - Best period value (days)
+      - Detection confidence metrics (SDE, SNR)
+    algorithm_selection:
+      primary: Transit Least Squares (TLS)
+        - Optimized for transit-shaped signals
+        - Requires flux_err array (mandatory)
+        - Returns SDE, SNR for validation
+      fallback: Box Least Squares (BLS)
+        - Alternative if TLS unavailable
+        - Also requires multiple duration searches
+    period_search_strategy:
+      - Initial broad search across reasonable range (0.5-50 days for hot/warm planets)
+      - Optional refinement: narrow range around candidate (±5-10%) for precision
+    validation_thresholds:
+      - SDE > 6 (candidate), SDE > 9 (strong)
+      - SNR > 7 (reliable)
+      - Check for period aliasing (2x or 0.5x warnings)
+    completion_criteria:
+      - Period detected with sufficient confidence
+      - Validation metrics checked
+      - Period value extracted and ready for formatting
+
+  5_output_formatting:
+    description: Write period to output file in required format
+    primary_skill: exoplanet-workflows
+    depends_on: 4_period_detection
+    inputs:
+      - Detected period value (days)
+    outputs:
+      - /root/period.txt
+    format_requirements:
+      - Single numerical value
+      - Rounded to exactly 5 decimal places
+      - Plain text, no additional content
+      - Example: "2.44535" (not "2.44535 days" or other text)
+    completion_criteria:
+      - File exists at /root/period.txt
+      - Contains valid float formatted to 5 decimals
+      - No extra whitespace or formatting beyond single number
+
+handoff_boundaries:
+  loading_to_filtering:
+    output_contract: Four numpy arrays with consistent length
+    validation: All arrays same shape, quality flags are integers
+
+  filtering_to_detrending:
+    output_contract: Cleaned arrays with outliers removed but transit signals preserved
+    validation: Data points reduced but not excessively (>80% retained typical)
+
+  detrending_to_detection:
+    output_contract: Flattened light curve with stellar variability removed
+    validation: Periodic dips visible, long-term trends removed
+    critical: flux_err array must be preserved through all preprocessing steps
+
+  detection_to_output:
+    output_contract: Single period value in days
+    validation: Positive float, physically reasonable range (0.5-50 days typical)
+
+cross_skill_dependencies:
+  exoplanet_workflows_coordinates:
+    - Provides overall task structure and decision guidance
+    - References preprocessing, period detection, and validation steps
+    - Does not execute specific algorithms but guides workflow choices
+
+  light_curve_preprocessing_enables:
+    - Essential for revealing transit signal hidden by stellar activity
+    - Outputs feed directly into period detection algorithms
+    - Quality of preprocessing directly affects detection success
+
+  period_detection_requires:
+    - Preprocessed data from light-curve-preprocessing
+    - Must preserve flux_err through preprocessing pipeline
+    - TLS requires flux_err as mandatory parameter
+
+  format_requirements_constrain:
+    - Period must be rounded to exactly 5 decimal places
+    - Output file path is fixed: /root/period.txt
+    - No alternative formats accepted by evaluator
+
+task_level_failure_modes:
+  wrong_quality_flag_convention:
+    description: Using incorrect quality flag filter (quality==0 vs quality!=0)
+    impact: May filter out all good data or keep all bad data
+    detection: Check filtered data count and visual inspection
+    mitigation: Test both conventions and verify which produces cleaner results
+
+  over_aggressive_preprocessing:
+    description: Removing too much signal during outlier removal or flattening
+    impact: Transit signal removed along with stellar variability
+    detection: Low or no detection confidence, missing expected period
+    mitigation: Use conservative sigma thresholds (3-5), appropriate window lengths
+
+  insufficient_stellar_activity_removal:
+    description: Not removing enough stellar variability to expose transits
+    impact: Transit signal remains hidden, wrong period detected (stellar rotation)
+    detection: Detected period around days-to-weeks (stellar rotation) not hours-to-days (planet)
+    mitigation: Apply iterative sine fitting after basic flattening
+
+  missing_flux_uncertainties:
+    description: Not preserving or passing flux_err to TLS
+    impact: TLS will fail or perform poorly without required flux_err parameter
+    detection: TLS error message about missing flux_err
+    mitigation: Track flux_err through entire preprocessing pipeline
+
+  period_aliasing:
+    description: Detected period is 2x or 0.5x true period due to data gaps
+    impact: Wrong period value written to output
+    detection: TLS/BLS warnings about missing transits, validation metrics
+    mitigation: Check candidate and its 2x/0.5x periods, use validation metrics
+
+  incorrect_output_format:
+    description: Writing period with wrong precision, units, or extra text
+    impact: Test fails on format validation even if period value correct
+    detection: Format test failure
+    mitigation: Round to exactly 5 decimals, plain number only, no units or labels
+
+  incomplete_execution:
+    description: Stopping after detection without writing output file
+    impact: No output file created, test fails immediately
+    detection: File existence test failure
+    mitigation: Verify /root/period.txt exists before completion
+
+task_level_deliverables:
+  required_file:
+    path: /root/period.txt
+    type: plain text
+    content: Single floating point number
+    format: 5 decimal places
+    example: "5.35699"
+    must_exist: true
+
+  expected_period_range:
+    minimum: 0.5  # days - very short period planets
+    maximum: 50.0  # days - warm/habitable zone limit for this search
+    expected_for_this_task: 5.35699  # from reference solution
+
+  intermediate_artifacts:
+    recommended: Preprocessed light curve arrays, periodogram plots for validation
+    required: false
+    purpose: Debugging and verification only
+
+evaluator_hooks:
+  file_existence:
+    check: /root/period.txt must exist
+    test: test_period_file_exists
+    failure_mode: File not written or written to wrong location
+
+  numeric_validity:
+    check: Content must be parseable as positive float
+    test: test_period_is_valid_number
+    failure_modes:
+      - Non-numeric content in file
+      - Negative or zero value
+      - Empty file
+
+  value_correctness:
+    check: Period must match expected 5.35699 ± 0.01 days
+    test: test_period_value_correct
+    failure_modes:
+      - Wrong period detected (e.g., stellar rotation period instead)
+      - Period aliasing (2x or 0.5x true period)
+      - Insufficient signal processing
+    tolerance: 0.01 days absolute
+
+  format_compliance:
+    check: At most 5 decimal places
+    test: test_period_format
+    failure_modes:
+      - Too many decimal places
+      - Scientific notation
+      - Extra text (units, labels)
+      - Incorrect rounding
+
+execution_guidance:
+  recommended_sequence:
+    1: Read and understand instruction.md requirements
+    2: Load TESS light curve from /root/data/tess_lc.txt
+    3: Apply quality filtering (test both flag conventions)
+    4: Remove outliers conservatively (sigma=3)
+    5: Flatten to remove trends (window_length=300-500)
+    6: Apply iterative sine fitting to remove stellar rotation
+    7: Run Transit Least Squares with flux_err
+    8: Validate detection (check SDE, SNR)
+    9: Extract period value
+    10: Round to 5 decimal places
+    11: Write to /root/period.txt
+    12: Verify file exists and format correct
+
+  critical_checkpoints:
+    - After quality filtering: verify data retained and flux_err preserved
+    - After detrending: visually confirm stellar variability reduced
+    - After TLS: check SDE > 6 and SNR > 7
+    - Before writing: verify period is physically reasonable (0.5-50 days)
+    - After writing: verify file exists and contains only numeric value
+
+  common_pitfalls:
+    - Forgetting to test quality flag convention
+    - Losing flux_err array during preprocessing
+    - Over-processing and removing transit signal
+    - Under-processing and missing transit signal
+    - Writing period with wrong format (units, too many decimals)
+    - Not handling TLS warnings about period aliasing
+
+risk_assessment:
+  high_risk_operations:
+    - Stellar activity removal (can remove signal if too aggressive)
+    - Quality flag filtering (wrong convention filters all data)
+    - Output formatting (exact format required for test pass)
+
+  medium_risk_operations:
+    - Outlier removal (balance needed)
+    - Period search range selection (must include true period)
+    - Period aliasing detection (requires validation)
+
+  low_risk_operations:
+    - Data loading (straightforward file read)
+    - Basic visualization for debugging
+
+  validation_requirements:
+    - Visual inspection of preprocessed light curve recommended
+    - Check TLS detection metrics before accepting result
+    - Verify output file format before claiming completion

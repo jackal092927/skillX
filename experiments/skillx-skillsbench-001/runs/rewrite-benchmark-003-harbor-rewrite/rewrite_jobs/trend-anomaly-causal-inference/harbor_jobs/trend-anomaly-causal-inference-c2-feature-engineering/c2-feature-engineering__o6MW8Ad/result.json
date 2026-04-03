@@ -1,0 +1,90 @@
+{
+    "id": "fd0dcca0-d67d-424b-8ec4-dfb76ded3c07",
+    "task_name": "c2-feature-engineering",
+    "trial_name": "c2-feature-engineering__o6MW8Ad",
+    "trial_uri": "file://<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/harbor_jobs/trend-anomaly-causal-inference-c2-feature-engineering/c2-feature-engineering__o6MW8Ad",
+    "task_id": {
+        "path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/rewrite_tasks/c2-feature-engineering"
+    },
+    "source": null,
+    "task_checksum": "2c621f614842bebc748508774ec14c5b38a6d780923b0edc04f7e20b2f2c1b6b",
+    "config": {
+        "task": {
+            "path": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/rewrite_tasks/c2-feature-engineering",
+            "git_url": null,
+            "git_commit_id": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "c2-feature-engineering__o6MW8Ad",
+        "trials_dir": "<INCUBATOR_REPO_ROOT>/experiments/skillx-skillsbench-001/runs/rewrite-benchmark-003-harbor-rewrite/rewrite_jobs/trend-anomaly-causal-inference/harbor_jobs/trend-anomaly-causal-inference-c2-feature-engineering",
+        "timeout_multiplier": 1.0,
+        "agent": {
+            "name": "claude-code",
+            "import_path": null,
+            "model_name": "anthropic/claude-sonnet-4-5",
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "kwargs": {}
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "kwargs": {}
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": false
+        },
+        "job_id": "d63bd608-c44d-43f2-9cf6-3642623f4e14"
+    },
+    "agent_info": {
+        "name": "claude-code",
+        "version": "unknown",
+        "model_info": {
+            "name": "claude-sonnet-4-5",
+            "provider": "anthropic"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 359767,
+        "n_cache_tokens": 349196,
+        "n_output_tokens": 5510,
+        "cost_usd": null,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 1.0
+        }
+    },
+    "exception_info": null,
+    "started_at": "2026-03-23T05:50:08.254666",
+    "finished_at": "2026-03-23T05:52:39.772102",
+    "environment_setup": {
+        "started_at": "2026-03-23T05:50:08.257312",
+        "finished_at": "2026-03-23T05:50:09.023442"
+    },
+    "agent_setup": {
+        "started_at": "2026-03-23T05:50:09.023500",
+        "finished_at": "2026-03-23T05:50:24.425558"
+    },
+    "agent_execution": {
+        "started_at": "2026-03-23T05:50:24.426159",
+        "finished_at": "2026-03-23T05:52:29.039384"
+    },
+    "verifier": {
+        "started_at": "2026-03-23T05:52:29.039514",
+        "finished_at": "2026-03-23T05:52:29.454152"
+    }
+}

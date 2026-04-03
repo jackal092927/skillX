@@ -1,0 +1,201 @@
+{
+    "results": {
+        "tool": {
+            "name": "pytest",
+            "version": "8.4.1"
+        },
+        "summary": {
+            "tests": 15,
+            "passed": 15,
+            "failed": 0,
+            "skipped": 0,
+            "pending": 0,
+            "other": 0,
+            "start": 1774267108.0772915,
+            "stop": 1774267112.8034985
+        },
+        "tests": [
+            {
+                "name": "test_outputs.py::test_cleaned_data",
+                "status": "passed",
+                "duration": 0.009425792002730304,
+                "start": 1774267108.376982,
+                "stop": 1774267108.3867114,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "parametrize::file_config::[{'filename': 'survey_cleaned.csv', 'required_columns': ['Survey ResponseID'], 'min_rows': 1000, 'unique_key': 'Survey ResponseID'}, {'filename': 'amazon-purchases-2019-2020-filtered.csv', 'required_columns': ['Survey ResponseID', 'Order Date', 'Category'], 'min_rows': 10000, 'unique_key': None, 'price_column_aliases': ['Item Total', 'Total Price', 'item_total', 'total_price', 'Purchase Price Per Unit', 'purchase_price_per_unit']}]",
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_survey_cleaning_correctness",
+                "status": "passed",
+                "duration": 0.012805750004190486,
+                "start": 1774267109.1802602,
+                "stop": 1774267109.1933887,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_purchase_cleaning_correctness",
+                "status": "passed",
+                "duration": 0.8136572520015761,
+                "start": 1774267109.1935961,
+                "stop": 1774267110.007589,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_anomaly_detection",
+                "status": "passed",
+                "duration": 0.0015451260005647782,
+                "start": 1774267110.0077403,
+                "stop": 1774267110.0095003,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_anomaly_detection_correctness",
+                "status": "passed",
+                "duration": 0.7618437909950444,
+                "start": 1774267110.0096176,
+                "stop": 1774267110.7717547,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_feature_engineering",
+                "status": "passed",
+                "duration": 0.009869291996437823,
+                "start": 1774267110.7718875,
+                "stop": 1774267110.7819664,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_feature_engineering_correctness",
+                "status": "passed",
+                "duration": 0.03328720900026383,
+                "start": 1774267110.7820783,
+                "stop": 1774267110.815653,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_user_category_period_aggregated",
+                "status": "passed",
+                "duration": 0.11534962499717949,
+                "start": 1774267110.8159053,
+                "stop": 1774267110.9315698,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_structure",
+                "status": "passed",
+                "duration": 0.0014771679998375475,
+                "start": 1774267110.931717,
+                "stop": 1774267110.9333775,
+                "retries": 3,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "parametrize::section,keys::[('metadata', ['baseline_start', 'baseline_end', 'treatment_start', 'treatment_end', 'total_features_analyzed']), ('surge_categories', None), ('slump_categories', None), ('summary', ['surge', 'slump'])]",
+                    "p0"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_analysis_baseline_period",
+                "status": "passed",
+                "duration": 0.00029420899954857305,
+                "start": 1774267110.9355264,
+                "stop": 1774267110.9359386,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_categories",
+                "status": "passed",
+                "duration": 0.0003065429991693236,
+                "start": 1774267110.9360232,
+                "stop": 1774267110.9364414,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_causal_report_did_correctness",
+                "status": "passed",
+                "duration": 0.0024551659989811014,
+                "start": 1774267110.9365218,
+                "stop": 1774267110.9391847,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p1"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_cross_file_consistency",
+                "status": "passed",
+                "duration": 0.08562408299985691,
+                "start": 1774267110.9392927,
+                "stop": 1774267111.0251982,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_purchase_aggregation_correctness",
+                "status": "passed",
+                "duration": 0.7958832910044293,
+                "start": 1774267111.02534,
+                "stop": 1774267111.82153,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            },
+            {
+                "name": "test_outputs.py::test_did_aggregation_independence",
+                "status": "passed",
+                "duration": 0.9798167079934501,
+                "start": 1774267111.8216608,
+                "stop": 1774267112.8017168,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "tags": [
+                    "p2"
+                ]
+            }
+        ]
+    }
+}
