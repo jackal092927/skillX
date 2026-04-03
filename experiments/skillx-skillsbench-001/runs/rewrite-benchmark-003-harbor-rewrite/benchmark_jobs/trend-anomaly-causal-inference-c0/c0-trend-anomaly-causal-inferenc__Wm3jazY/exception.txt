@@ -18,17 +18,17 @@ Traceback (most recent call last):
   File "<SKILLSBENCH_ROOT>/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 400, in <lambda>
     self._add_action_func(lambda rs: rs.outcome.result())
                                      ^^^^^^^^^^^^^^^^^^^
-  File "<LOCAL_HOME>/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+  File "<LOCAL_UV_PYTHON_RUNTIME>", line 449, in result
     return self.__get_result()
            ^^^^^^^^^^^^^^^^^^^
-  File "<LOCAL_HOME>/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+  File "<LOCAL_UV_PYTHON_RUNTIME>", line 401, in __get_result
     raise self._exception
   File "<SKILLSBENCH_ROOT>/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 114, in __call__
     result = await fn(*args, **kwargs)
              ^^^^^^^^^^^^^^^^^^^^^^^^^
   File "<SKILLSBENCH_ROOT>/.venv/lib/python3.12/site-packages/harbor/trial/trial.py", line 193, in _start_environment_with_retry
     await asyncio.wait_for(
-  File "<LOCAL_HOME>/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
+  File "<LOCAL_UV_PYTHON_RUNTIME>", line 520, in wait_for
     return await fut
            ^^^^^^^^^
   File "<SKILLSBENCH_ROOT>/.venv/lib/python3.12/site-packages/harbor/environments/docker/docker.py", line 205, in start
