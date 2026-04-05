@@ -1,0 +1,185 @@
+{
+  "artifact_type": "skillx_prompt_bank",
+  "version": "v0.1",
+  "date": "2026-04-03",
+  "source_markdown": "docs/plans/skillx/skillx-prompt-bank-v0.1.md",
+  "status": "working seed bank",
+  "category_count": 7,
+  "categories": [
+    {
+      "category_id": "artifact-generation",
+      "semantic_intent": "Produce a constrained artifact that must exactly satisfy an output contract.",
+      "emphasize": [
+        "exact output schema / format / placement requirements",
+        "preservation constraints and no-invention discipline",
+        "missing-input detection before finalization",
+        "short final reviewer pass against explicit contract items"
+      ],
+      "avoid": [
+        "unnecessary multi-stage scaffolding",
+        "speculative filling of unknown fields",
+        "tool usage that is not required by the artifact contract"
+      ],
+      "expected_good_fit": [
+        "form filling",
+        "formatting / conversion with strict output expectations",
+        "single-artifact generation or transformation"
+      ],
+      "expected_bad_fit": [
+        "benchmark-gated code repair",
+        "control/simulation loops",
+        "deep retrieval-heavy synthesis"
+      ],
+      "meta_prompt": "You are revising a skill for an artifact-generation task.\nOptimize the skill for exactness of the final artifact, not breadth of procedure.\n\nPrioritize:\n1. explicit statement of the required output artifact and allowed transformations,\n2. no-invention / do-not-guess rules for missing or ambiguous inputs,\n3. preservation of formatting, structure, or source truth where required,\n4. a short final verification checklist before producing the final artifact.\n\nKeep the skill lean.\nOnly introduce stages, tools, or wrappers when they are clearly necessary for meeting the artifact contract.\n\nDo not turn the skill into a generic multi-stage workflow if the task is fundamentally a constrained artifact-writing problem."
+    },
+    {
+      "category_id": "analytic-pipeline",
+      "semantic_intent": "Run an ordered analysis pipeline where intermediate processing quality strongly affects final correctness.",
+      "emphasize": [
+        "stage decomposition and stage ordering",
+        "explicit intermediate artifacts / checkpoints",
+        "handoff integrity between stages",
+        "final output tied back to pipeline evidence"
+      ],
+      "avoid": [
+        "collapsing multiple sensitive transforms into one vague step",
+        "skipping intermediate validation",
+        "overly generic prose-only guidance"
+      ],
+      "expected_good_fit": [
+        "scientific / signal / video / security analysis workflows",
+        "ordered transformation + measurement tasks"
+      ],
+      "expected_bad_fit": [
+        "simple one-shot artifact tasks",
+        "pure code patch / compile-test loops"
+      ],
+      "meta_prompt": "You are revising a skill for an analytic-pipeline task.\nOptimize the skill as a staged workflow whose correctness depends on preserving structure between stages.\n\nPrioritize:\n1. stage-by-stage decomposition,\n2. explicit intermediate artifacts or checks when a later step depends on earlier processing quality,\n3. clear handoff rules between extraction, transformation, analysis, and final reporting,\n4. a final output step that summarizes the pipeline result without dropping critical constraints.\n\nStrengthen stage contracts before adding more generic scaffolding.\nIf the task is failing, assume stage-handoff weakness before assuming the task needs more general instructions."
+    },
+    {
+      "category_id": "engineering-composition",
+      "semantic_intent": "Compose diagnosis, editing, execution, and verification into a disciplined engineering workflow.",
+      "emphasize": [
+        "diagnose -> patch/edit -> verify sequencing",
+        "tool wrappers / execution interfaces / reproducible commands",
+        "explicit precedence and dependency handling",
+        "benchmark / build / test gate awareness"
+      ],
+      "avoid": [
+        "vague reviewer-only advice without execution discipline",
+        "unordered bundles of suggestions",
+        "generic prose that does not tell the agent how to validate changes"
+      ],
+      "expected_good_fit": [
+        "build fixes",
+        "migrations",
+        "code implementation tasks with compile/test/benchmark constraints"
+      ],
+      "expected_bad_fit": [
+        "pure retrieval/synthesis",
+        "simple output formatting tasks"
+      ],
+      "meta_prompt": "You are revising a skill for an engineering-composition task.\nOptimize the skill as a disciplined execution bundle, not as a generic writing prompt.\n\nPrioritize:\n1. diagnose-before-edit behavior,\n2. explicit tool / command / wrapper interfaces where execution matters,\n3. ordered patching with dependency awareness,\n4. verification gates such as compile, test, or benchmark checks.\n\nIf the task fails, first ask whether the skill lacks:\n- clear execution order,\n- explicit interfaces,\n- or a strong verify step.\n\nDo not over-expand into broad research or synthesis unless the task truly requires it."
+    },
+    {
+      "category_id": "retrieval-heavy-synthesis",
+      "semantic_intent": "Gather evidence from sources, compress it correctly, and synthesize an output without dropping support.",
+      "emphasize": [
+        "retrieval plan and source grounding",
+        "evidence tracking / provenance discipline",
+        "compression without support loss",
+        "abstain / unknown behavior when evidence is insufficient"
+      ],
+      "avoid": [
+        "unsupported synthesis",
+        "hallucinated joins across sources",
+        "excessive workflow scaffolding that obscures evidence use"
+      ],
+      "expected_good_fit": [
+        "information search",
+        "handbook / database grounded QA",
+        "report or answer generation from external sources"
+      ],
+      "expected_bad_fit": [
+        "simulator/control tasks",
+        "code patch workflows"
+      ],
+      "meta_prompt": "You are revising a skill for a retrieval-heavy synthesis task.\nOptimize the skill for evidence-grounded synthesis rather than free-form completion.\n\nPrioritize:\n1. retrieving the right evidence before answering,\n2. keeping track of what each source supports,\n3. compressing evidence into the final answer without dropping required support,\n4. explicit unknown / abstain behavior when the evidence does not justify completion.\n\nIf the task is failing, suspect evidence-loss or unsupported synthesis before adding more procedural bulk."
+    },
+    {
+      "category_id": "environment-control",
+      "semantic_intent": "Interact with a simulator, planner, or dynamic environment under explicit metric or validity constraints.",
+      "emphasize": [
+        "world / simulator / environment state understanding",
+        "explicit control or planning loop structure",
+        "parameter, policy, or plan validation",
+        "metric-facing evaluation after execution"
+      ],
+      "avoid": [
+        "overly textual synthesis behavior",
+        "weak feedback loops between action and evaluation",
+        "artifact-first thinking when the task is really environment-facing"
+      ],
+      "expected_good_fit": [
+        "control design",
+        "planning with validity constraints",
+        "simulator-driven evaluation tasks"
+      ],
+      "expected_bad_fit": [
+        "document formatting / artifact generation",
+        "pure evidence synthesis tasks"
+      ],
+      "meta_prompt": "You are revising a skill for an environment-control task.\nOptimize the skill around interacting with a planner, simulator, or controlled environment under explicit validity or metric constraints.\n\nPrioritize:\n1. clear modeling of state, parameters, or action space,\n2. an execution loop that includes evaluate-and-adjust behavior,\n3. explicit metric / validity checks after candidate actions or plans,\n4. concise recording of outputs needed by the evaluator.\n\nIf the task is failing, first strengthen control-loop structure and metric feedback before adding generic analysis scaffolding."
+    },
+    {
+      "category_id": "methodology-guardrail",
+      "semantic_intent": "Prevent premature or unsafe completion by enforcing fit-checks, abstention, and rule-aware judgment.",
+      "emphasize": [
+        "fit-check before commitment",
+        "abstention / unknown / needs-clarification behavior",
+        "rule hierarchy and anti-hallucination discipline",
+        "reviewer-style judgment over direct eager generation"
+      ],
+      "avoid": [
+        "premature completion",
+        "overconfident synthesis when the task is underdetermined",
+        "unnecessary multi-stage pipeline expansion"
+      ],
+      "expected_good_fit": [
+        "taxonomy merge / fit-check tasks",
+        "citation / rule / policy screening tasks",
+        "abstention-sensitive validation tasks"
+      ],
+      "expected_bad_fit": [
+        "straightforward artifact generation",
+        "benchmark-driven engineering loops"
+      ],
+      "meta_prompt": "You are revising a skill for a methodology-heavy guardrail task.\nOptimize the skill for disciplined judgment, fit-checking, and safe refusal when needed.\n\nPrioritize:\n1. checking whether the task instance actually fits the intended method,\n2. explicit abstain / unknown / request-clarification behavior,\n3. reviewer-style comparison against criteria or rules,\n4. preventing premature commitment to a single answer path.\n\nIf the task is failing, prefer stronger judgment discipline over adding more execution scaffolding."
+    },
+    {
+      "category_id": "orchestration-delegation",
+      "semantic_intent": "Coordinate ordered external actions or substeps where sequence and dependency management matter.",
+      "emphasize": [
+        "constraint extraction before action",
+        "ordering across dependent steps / systems",
+        "state handoff between stages or tools",
+        "fail-safe finalization and side-effect awareness"
+      ],
+      "avoid": [
+        "eager direct completion without dependency checks",
+        "reviewer-only prompts that lack execution choreography",
+        "over-abstract synthesis that ignores operational order"
+      ],
+      "expected_good_fit": [
+        "scheduling / delegation workflows",
+        "multi-system action coordination",
+        "tasks where one substep creates constraints for the next"
+      ],
+      "expected_bad_fit": [
+        "static artifact-only tasks",
+        "deep scientific analysis pipelines"
+      ],
+      "meta_prompt": "You are revising a skill for an orchestration/delegation task.\nOptimize the skill as a coordination protocol, not just as a content-generation prompt.\n\nPrioritize:\n1. extracting constraints before taking actions,\n2. preserving correct action order across dependent systems or stages,\n3. making state handoffs explicit,\n4. preventing side effects from happening before prerequisites are checked.\n\nIf the task is failing, first strengthen dependency ordering and handoff logic before adding more general reasoning guidance."
+    }
+  ]
+}

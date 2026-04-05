@@ -9,6 +9,7 @@ Canonical onboarding for collaborators now lives at the repo root:
 
 - `README.md`
 - `INDEX.md`
+- `docs/INDEX.md`
 
 ---
 
@@ -110,6 +111,11 @@ This experiment follows the SkillX design principles already frozen in project d
 - human provides intent; agent derives structure
 - evaluation should be anti-cheat by design
 - negative transfer matters as much as average lift
+
+## Related planning docs
+
+- `anthropic-baseline-vs-skillx-experiment-matrix-v0.1.md`
+- `../../docs/plans/skillx/INDEX.md`
 
 ---
 

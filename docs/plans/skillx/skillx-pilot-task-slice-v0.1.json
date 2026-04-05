@@ -1,0 +1,30 @@
+{
+  "artifact_type": "skillx_pilot_task_slice",
+  "version": "v0.1",
+  "date": "2026-04-03",
+  "tier_1_micro_pilot": [
+    {"task_name": "offer-letter-generator", "seed_schema_id": "artifact-generation"},
+    {"task_name": "trend-anomaly-causal-inference", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "parallel-tfidf-search", "seed_schema_id": "engineering-composition"},
+    {"task_name": "enterprise-information-search", "seed_schema_id": "retrieval-heavy-synthesis"},
+    {"task_name": "adaptive-cruise-control", "seed_schema_id": "environment-control"},
+    {"task_name": "taxonomy-tree-merge", "seed_schema_id": "methodology-guardrail"},
+    {"task_name": "scheduling-email-assistant", "seed_schema_id": "orchestration-delegation"}
+  ],
+  "tier_2_expanded_pilot": [
+    {"task_name": "offer-letter-generator", "seed_schema_id": "artifact-generation"},
+    {"task_name": "court-form-filling", "seed_schema_id": "artifact-generation"},
+    {"task_name": "trend-anomaly-causal-inference", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "flood-risk-analysis", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "parallel-tfidf-search", "seed_schema_id": "engineering-composition"},
+    {"task_name": "fix-build-agentops", "seed_schema_id": "engineering-composition"},
+    {"task_name": "enterprise-information-search", "seed_schema_id": "retrieval-heavy-synthesis"},
+    {"task_name": "gh-repo-analytics", "seed_schema_id": "retrieval-heavy-synthesis"},
+    {"task_name": "adaptive-cruise-control", "seed_schema_id": "environment-control"},
+    {"task_name": "pddl-tpp-planning", "seed_schema_id": "environment-control"},
+    {"task_name": "taxonomy-tree-merge", "seed_schema_id": "methodology-guardrail"},
+    {"task_name": "citation-check", "seed_schema_id": "methodology-guardrail"},
+    {"task_name": "scheduling-email-assistant", "seed_schema_id": "orchestration-delegation"},
+    {"task_name": "pg-essay-to-audiobook", "seed_schema_id": "orchestration-delegation"}
+  ]
+}

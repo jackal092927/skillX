@@ -1,0 +1,2 @@
+round_id,task_name,schema_id,score,success,best_score,final_score,timeout_flag,invalid_output_flag,verifier_fail_flag,runtime_error_flag,notes
+pilot-round-0,offer-letter-generator,artifact-generation,,,,,,,,,

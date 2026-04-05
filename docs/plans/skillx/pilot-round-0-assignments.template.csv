@@ -1,0 +1,2 @@
+round_id,task_name,assigned_schema,best_score,second_best_schema,second_best_score,margin,assignment_confidence,tie_break_used,tie_break_reason,semantic_prior_used,balance_adjust_used,previous_assignment_used
+pilot-round-0,offer-letter-generator,,,,,,,,,,,

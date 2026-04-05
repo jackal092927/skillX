@@ -12,23 +12,34 @@ the `LICENSE` file.
 
 1. `README.md`
 2. `INDEX.md`
-3. `experiments/skillx-skillsbench-001/README.md`
+3. `docs/INDEX.md`
+4. `experiments/skillx-skillsbench-001/README.md`
 
 If you are working on C4AR specifically, then read next:
 
-4. `experiments/skillx-skillsbench-001/playbooks/C4AR_ROLE_A_SESSION_DISTILL_PLAYBOOK.md`
-5. `experiments/skillx-skillsbench-001/playbooks/C4AR_ROLE_B_REFINE_BRAIN_PLAYBOOK.md`
-6. `scripts/run_skillx_refine_benchmark.py`
+5. `experiments/skillx-skillsbench-001/playbooks/C4AR_ROLE_A_SESSION_DISTILL_PLAYBOOK.md`
+6. `experiments/skillx-skillsbench-001/playbooks/C4AR_ROLE_B_REFINE_BRAIN_PLAYBOOK.md`
+7. `scripts/run_skillx_refine_benchmark.py`
 
 If you are working on rewrite experiments first, then read instead:
 
-4. `experiments/skillx-skillsbench-001/C2_REWRITE_PROTOCOL.md`
-5. `experiments/skillx-skillsbench-001/C3_REWRITE_PROTOCOL.md`
-6. `scripts/run_skillx_rewrite_benchmark.py`
+5. `experiments/skillx-skillsbench-001/C2_REWRITE_PROTOCOL.md`
+6. `experiments/skillx-skillsbench-001/C3_REWRITE_PROTOCOL.md`
+7. `scripts/run_skillx_rewrite_benchmark.py`
+
+If you are working on the newer meta-schema / outer-loop planning line, then
+read:
+
+5. `docs/checkpoints/INDEX.md`
+6. `docs/plans/skillx/INDEX.md`
+7. `docs/research/deep-dives/INDEX.md`
 
 ## Repository Map
 
-- `docs/`: design docs, references, protocol drafts, and experiment plans
+- `docs/`: design docs, references, checkpoints, deep dives, and planning material
+- `docs/plans/skillx/`: newer SkillX planning line imported from MARC
+- `docs/checkpoints/`: compact handoff checkpoints for the current framing
+- `docs/research/deep-dives/`: external baseline and comparison memos
 - `experiments/skillx-skillsbench-001/`: the active SkillsBench experiment line
 - `src/skillx/`: the standalone SkillX Python package
 - `src/skillx/c4ar/`: C4AR contracts, roles, and orchestrator

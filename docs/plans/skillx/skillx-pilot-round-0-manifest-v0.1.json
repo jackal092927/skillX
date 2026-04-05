@@ -1,0 +1,105 @@
+{
+  "artifact_type": "skillx_pilot_round_manifest",
+  "version": "v0.1",
+  "date": "2026-04-03",
+  "round_id": "pilot-round-0",
+  "status": "working_mvp_manifest",
+  "goal": "Run a first Meta-schema-bank assignment pass under a frozen Render layer.",
+  "inner_loop_system": "Mark Auto Research",
+  "optimization_target": "meta_schema_only",
+  "render_policy": {
+    "render_template_spec": "projects/skillX/docs/plans/skillx/skillx-render-template-frozen-v0.1.md",
+    "render_frozen": true,
+    "wrapper_frozen": true,
+    "output_contract_frozen": true,
+    "block_order_frozen": true,
+    "current_task_skill_included": true,
+    "evidence_block_included": true
+  },
+  "meta_schema_bank": {
+    "markdown_spec": "projects/skillX/docs/plans/skillx/skillx-prompt-bank-v0.1.md",
+    "json_artifact": "projects/skillX/docs/plans/skillx/skillx-prompt-bank-v0.1.json",
+    "schema_count": 7,
+    "schema_ids": [
+      "artifact-generation",
+      "analytic-pipeline",
+      "engineering-composition",
+      "retrieval-heavy-synthesis",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation"
+    ]
+  },
+  "task_slice": {
+    "artifact": "projects/skillX/docs/plans/skillx/skillx-pilot-task-slice-v0.1.json",
+    "tier": "tier_1_micro_pilot",
+    "task_count": 7,
+    "tasks": [
+      "offer-letter-generator",
+      "trend-anomaly-causal-inference",
+      "parallel-tfidf-search",
+      "enterprise-information-search",
+      "adaptive-cruise-control",
+      "taxonomy-tree-merge",
+      "scheduling-email-assistant"
+    ]
+  },
+  "budget": {
+    "budget_profile": "pilot-light-v0",
+    "initial_pass_repeats": 1,
+    "repeat_policy": {
+      "default_repeats": 1,
+      "ambiguous_pair_extra_repeats": 1,
+      "max_total_repeats_per_pair": 2
+    },
+    "ambiguity_trigger": {
+      "score_margin_lt": 0.05
+    }
+  },
+  "assignment": {
+    "policy": "hard_assignment",
+    "score_definition": "Use evaluator score from one (task, meta_schema) run under fixed Render and fixed budget.",
+    "assignment_rule": "assigned_schema = argmax score",
+    "margin_definition": "top1_score - top2_score",
+    "tie_break_order": [
+      "semantic_prior",
+      "cluster_balance",
+      "previous_assignment_stability",
+      "deterministic_fallback"
+    ],
+    "universal_baseline": {
+      "enabled": true,
+      "baseline_id": "U0",
+      "assignable_cluster": false,
+      "description": "Universal meta-protocol control for collapse interpretation."
+    }
+  },
+  "sidecar_support": {
+    "enabled": true,
+    "artifact": "projects/skillX/docs/plans/skillx/skillsbench-task-cluster-inputs-v0.1.jsonl",
+    "usage": [
+      "semantic_prior_for_near_ties",
+      "cluster_balance_support",
+      "collapse_diagnosis",
+      "post_hoc_interpretation"
+    ]
+  },
+  "outputs": {
+    "score_matrix_csv": "projects/skillX/docs/plans/skillx/pilot-round-0-score-matrix.template.csv",
+    "assignments_csv": "projects/skillX/docs/plans/skillx/pilot-round-0-assignments.template.csv",
+    "diagnostics_json": "projects/skillX/docs/plans/skillx/pilot-round-0-diagnostics.template.json",
+    "meta_schema_update_summary_md": "projects/skillX/docs/plans/skillx/pilot-round-1-meta-schema-updates.md"
+  },
+  "success_checks": {
+    "minimum_occupied_schema_count": 3,
+    "flag_if_mean_margin_lt": 0.05,
+    "flag_if_largest_cluster_share_gt": 0.7,
+    "flag_if_low_margin_fraction_high": true,
+    "flag_if_methodology_guardrail_and_orchestration_delegation_inseparable": true
+  },
+  "notes": [
+    "This is a manifest and terminology freeze, not yet a full executable runner.",
+    "The pilot varies Meta schema across columns while keeping Render fixed.",
+    "The Task skill remains the edited/executed object; the Meta skill is the task-specific prompt produced by Render."
+  ]
+}

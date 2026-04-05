@@ -1,0 +1,12 @@
+{
+  "round_id": "pilot-round-0",
+  "task_count": 0,
+  "schema_count": 0,
+  "occupied_cluster_count": 0,
+  "cluster_sizes": {},
+  "largest_cluster_share": 0.0,
+  "mean_assignment_margin": 0.0,
+  "low_margin_task_fraction": 0.0,
+  "collapse_warning": false,
+  "notes": []
+}
