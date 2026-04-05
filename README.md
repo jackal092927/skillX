@@ -6,6 +6,20 @@ This repository is intended to be collaboration-ready. The SkillX code, playbook
 
 See [INDEX.md](INDEX.md) for the recommended reading order.
 
+## License and Usage
+
+This repository is public for inspection and authorized collaboration, but it
+is not open source.
+
+- Commercial use is not permitted.
+- Copying, mirroring, redistribution, and casual reuse are not permitted.
+- Derivative works and service use are not permitted without prior written
+  permission.
+- Explicitly authorized collaborators may make the minimum copies and edits
+  needed for that collaboration.
+
+See `LICENSE` for the controlling terms.
+
 ## Standalone Status
 
 What is already self-contained in this repo:

@@ -2,6 +2,12 @@
 
 This file is the shortest path for new collaborators.
 
+## License
+
+This repository is public for inspection and authorized collaboration only.
+Commercial use, copying, redistribution, and derivative use are restricted by
+the `LICENSE` file.
+
 ## Start Here
 
 1. `README.md`
