@@ -20,6 +20,9 @@ incubation repo.
 - `skillx-outer-loop-update-protocol-v0.1.md`
 - `skillx-task-clustering-and-taxonomy-v0.1.md`
 - `skillx-mvp-automatic-clustering-input-schema-v0.1.md`
+- `skillx-internalization-track-roadmap-v0.1.md`
+- `skillx-internalization-utility-scorecard-v0.1.md`
+- `skillx-scaffold-withdrawal-probes-v0.1.md`
 
 ## Pilot And Assignment
 
@@ -45,3 +48,10 @@ Suggested read order for the current MVP line:
 3. `skillx-render-template-frozen-v0.1.md`
 4. `skillx-assignment-matrix-protocol-v0.1.md`
 5. `skillx-outer-loop-update-protocol-v0.1.md`
+
+Suggested read order for the new internalization track:
+
+1. `../../research/deep-dives/2026-04-05-skill0-icrl-implications-for-skillx.md`
+2. `skillx-internalization-track-roadmap-v0.1.md`
+3. `skillx-internalization-utility-scorecard-v0.1.md`
+4. `skillx-scaffold-withdrawal-probes-v0.1.md`

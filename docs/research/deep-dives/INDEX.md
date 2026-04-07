@@ -7,3 +7,4 @@ inform the SkillX planning line.
 - `2026-03-29-google-adk-skill-patterns-deep-read.md`
 - `2026-03-30-google-5-patterns-to-skillx-mapping.md`
 - `2026-03-31-anthropic-vs-google-vs-skillx-three-way-comparison.md`
+- `2026-04-05-skill0-icrl-implications-for-skillx.md`
