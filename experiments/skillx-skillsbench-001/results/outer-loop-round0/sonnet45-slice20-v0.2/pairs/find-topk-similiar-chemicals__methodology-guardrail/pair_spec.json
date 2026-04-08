@@ -1,0 +1,43 @@
+{
+  "pair_id": "find-topk-similiar-chemicals__methodology-guardrail",
+  "run_id": "sonnet45-slice20-v0.2",
+  "task_name": "find-topk-similiar-chemicals",
+  "schema_id": "methodology-guardrail",
+  "pair_dir": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/find-topk-similiar-chemicals__methodology-guardrail",
+  "skillsbench_task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/find-topk-similiar-chemicals",
+  "starting_skillpack_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/find-topk-similiar-chemicals/environment/skills",
+  "starting_label": "C1",
+  "official_scores": {
+    "no_skills": 20.0,
+    "with_skills": 10.0
+  },
+  "rendered_meta_skill_path": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/find-topk-similiar-chemicals__methodology-guardrail/rendered_meta_skill.md",
+  "refine_command": [
+    "python3.12",
+    "/Users/Jackal/iWorld/projects/skillX/scripts/run_skillx_refine_benchmark.py",
+    "--skillsbench-root",
+    "/Users/Jackal/iWorld/projects/skillsbench-src",
+    "--task",
+    "find-topk-similiar-chemicals",
+    "--run-id",
+    "find-topk-similiar-chemicals__methodology-guardrail",
+    "--output-dir",
+    "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/find-topk-similiar-chemicals__methodology-guardrail/refine_run",
+    "--oauth-file",
+    "/Users/Jackal/.claude/claude-code-oauth-token",
+    "--source-run-dir",
+    "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/find-topk-similiar-chemicals__methodology-guardrail/source_stub",
+    "--starting-skillpack-dir",
+    "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/find-topk-similiar-chemicals/environment/skills",
+    "--starting-label",
+    "C1",
+    "--round-budget",
+    "3",
+    "--agent",
+    "claude-code",
+    "--model",
+    "anthropic/claude-sonnet-4-5",
+    "--orchestration-mode",
+    "c4ar"
+  ]
+}

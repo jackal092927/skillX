@@ -1,0 +1,30 @@
+{
+  "cached_at": "2026-04-08T06:58:06.599764+00:00",
+  "task_count_attempted": 89,
+  "task_count_succeeded": 71,
+  "task_count_missing_results": 18,
+  "missing_results_tasks": [
+    "PDF-Crosspage-Table-Normalization-to-Excel",
+    "crystallographic-wyckoff-position-analysis",
+    "dialogue-parser",
+    "dynamic-object-aware-egomotion",
+    "edit-pdf",
+    "enterprise-information-search",
+    "fix-visual-stability",
+    "hvac-control",
+    "jax-computing-basics",
+    "lean4-proof",
+    "manufacturing-codebook-normalization",
+    "manufacturing-equipment-maintenance",
+    "manufacturing-fjsp-optimization",
+    "mhc-layer-impl",
+    "quantum-numerical-simulation",
+    "r2r-mpc-control",
+    "scheduling-email-assistant",
+    "video-silence-remover"
+  ],
+  "baseline_coverage": {
+    "claude_code_sonnet_4_5_with_skills": 71,
+    "claude_code_opus_4_6_with_skills": 71
+  }
+}
