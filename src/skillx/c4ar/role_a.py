@@ -28,6 +28,9 @@ class RoleAConfig:
     model_name: str = "codex-5.3"
     role_name: str = "role_a"
     playbook_path: str | None = None
+    timeout_sec: float = 1200.0
+    max_attempts: int = 3
+    retry_backoff_sec: float = 5.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -148,6 +151,9 @@ def _default_model_runner(inputs: RoleAInputs, config: RoleAConfig) -> SessionEv
         prompt=prompt,
         final_response_schema=final_schema,
         expected_output_paths=[session_evidence_json_path, session_evidence_markdown_path],
+        timeout_sec=config.timeout_sec,
+        max_attempts=config.max_attempts,
+        retry_backoff_sec=config.retry_backoff_sec,
     )
     artifact = ensure_valid_session_evidence_artifact(read_json(session_evidence_json_path))
     return {

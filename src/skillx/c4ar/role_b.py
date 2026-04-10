@@ -39,6 +39,9 @@ class RoleBConfig:
     model_name: str = "gpt-5.4"
     role_name: str = "role_b"
     playbook_path: str | None = None
+    timeout_sec: float = 1200.0
+    max_attempts: int = 3
+    retry_backoff_sec: float = 5.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,13 +112,17 @@ def _default_model_runner(inputs: RoleBInputs, config: RoleBConfig, output_dir: 
     verifier_summary = read_json(Path(inputs.verifier_summary_path))
     session_evidence = ensure_valid_session_evidence_artifact(read_json(Path(inputs.session_evidence_path)))
     next_skillpack_dir = output_dir / "next_skillpack"
-    _copy_tree(Path(inputs.current_skillpack_dir), next_skillpack_dir)
+    copied_bundle = output_dir / "next_skillpack_bundle.yaml"
+    bundle_path = str(copied_bundle) if inputs.current_bundle_path is not None else None
 
-    bundle_path: str | None = None
-    if inputs.current_bundle_path is not None:
-        copied_bundle = output_dir / "next_skillpack_bundle.yaml"
-        shutil.copy2(inputs.current_bundle_path, copied_bundle)
-        bundle_path = str(copied_bundle)
+    def stage_next_skillpack(_attempt_index: int) -> None:
+        _copy_tree(Path(inputs.current_skillpack_dir), next_skillpack_dir)
+        if inputs.current_bundle_path is not None:
+            shutil.copy2(inputs.current_bundle_path, copied_bundle)
+        elif copied_bundle.exists():
+            copied_bundle.unlink()
+
+    stage_next_skillpack(1)
 
     packet = {
         "task_id": inputs.task_id,
@@ -219,6 +226,10 @@ def _default_model_runner(inputs: RoleBInputs, config: RoleBConfig, output_dir: 
             next_manifest_json_path,
             round_decision_json_path,
         ],
+        timeout_sec=config.timeout_sec,
+        max_attempts=config.max_attempts,
+        retry_backoff_sec=config.retry_backoff_sec,
+        prepare_attempt=stage_next_skillpack,
     )
     return {
         "refine_plan_json_path": str(refine_plan_json_path),

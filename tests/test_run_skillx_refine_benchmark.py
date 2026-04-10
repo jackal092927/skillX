@@ -16,6 +16,10 @@ from skillx.c4ar.contracts import (
     RoundDecisionArtifact,
     SessionEvidenceArtifact,
 )
+from skillx.c4ar.playbook_agent_runner import (
+    PlaybookAgentExecutionError,
+    PlaybookAgentTimeoutError,
+)
 from skillx.session_evidence import distill_session_logs
 
 
@@ -1796,6 +1800,262 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertIsNotNone(cached_executor)
             cached_round = self.module.existing_c4ar_round_outputs(round_dir_path=round_zero, task_id="demo-task")
             self.assertIsNotNone(cached_round)
+
+    def test_run_c4ar_round_with_harbor_soft_fails_role_a_timeout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_one = paths.rounds_dir / "round-1"
+            (round_one / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_one / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nr1\n"
+            )
+
+            tune_root = round_one / "tune_check"
+            job_name = "demo-task-round-1-c4-tune"
+            job_dir = tune_root / job_name
+            trial_dir = job_dir / "trial-001"
+            (trial_dir / "agent").mkdir(parents=True)
+            (trial_dir / "agent" / "claude-code.txt").write_text("cached session log\n")
+            (trial_dir / "verifier").mkdir(parents=True)
+            report_path = trial_dir / "verifier" / "report.json"
+            report_path.write_text(
+                json.dumps({"summary": {"passed": 0, "failed": 1, "total": 1}, "exitcode": 1}) + "\n"
+            )
+            (trial_dir / "result.json").write_text("{}\n")
+            (tune_root / "config.json").write_text(json.dumps({"job_name": job_name}) + "\n")
+            (tune_root / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "job_dir": str(job_dir),
+                        "result_path": str(job_dir / "result.json"),
+                        "reward": 0.41,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "skill_source": str(round_one / "skillpack"),
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    }
+                )
+                + "\n"
+            )
+            (round_one / "executor").mkdir()
+            (round_one / "executor" / "verifier_summary.json").write_text(
+                json.dumps(
+                    {
+                        "reward": 0.41,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                        "report_path": str(report_path),
+                        "trial_result_path": str(trial_dir / "result.json"),
+                        "passed_tests": 0,
+                        "failed_tests": 1,
+                        "total_tests": 1,
+                        "pytest_exitcode": 1,
+                    }
+                )
+                + "\n"
+            )
+
+            observed = {"role_b_called": False}
+
+            def fail_role_a_runner(*args, **kwargs):
+                raise PlaybookAgentTimeoutError("role_a CLI hung after 3 attempts")
+
+            def fail_role_b_runner(*args, **kwargs):
+                observed["role_b_called"] = True
+                raise AssertionError("role_b_runner should not be called after role_a timeout")
+
+            outputs, tune_result = self.module.run_c4ar_round_with_harbor(
+                task=task,
+                round_index=1,
+                round_dir_path=round_one,
+                skillsbench_root=root / "skillsbench",
+                oauth_file=root / "oauth.txt",
+                agent_name="claude-code",
+                model_name="anthropic/claude-sonnet-4-5",
+                tune_timeout_multiplier=1.0,
+                run_dir=root / "out",
+                role_a_runner=fail_role_a_runner,
+                role_b_runner=fail_role_b_runner,
+            )
+
+            self.assertFalse(observed["role_b_called"])
+            self.assertEqual(outputs.round_decision.decision, "stop")
+            self.assertIn("RoleAAgentTimeoutError", tune_result["exception_stats"])
+            self.assertTrue((round_one / "role_a" / "session_evidence.json").exists())
+            self.assertTrue((round_one / "role_b" / "round_decision.json").exists())
+            cached_round = self.module.existing_c4ar_round_outputs(round_dir_path=round_one, task_id="demo-task")
+            self.assertIsNotNone(cached_round)
+
+            cached_tune_result = json.loads((tune_root / "result.json").read_text())
+            self.assertIn("RoleAAgentTimeoutError", cached_tune_result["exception_stats"])
+            events = [
+                json.loads(line)
+                for line in (round_one / "orchestrator_log.ndjson").read_text().splitlines()
+                if line.strip()
+            ]
+            event_types = [item["event_type"] for item in events]
+            self.assertEqual(
+                event_types,
+                ["round_started", "executor_completed", "role_a_failed", "round_decision_loaded"],
+            )
+
+    def test_run_c4ar_round_with_harbor_soft_fails_role_b_execution_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_one = paths.rounds_dir / "round-1"
+            (round_one / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_one / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nr1\n"
+            )
+
+            tune_root = round_one / "tune_check"
+            job_name = "demo-task-round-1-c4-tune"
+            job_dir = tune_root / job_name
+            trial_dir = job_dir / "trial-001"
+            (trial_dir / "agent").mkdir(parents=True)
+            (trial_dir / "agent" / "claude-code.txt").write_text("cached session log\n")
+            (trial_dir / "verifier").mkdir(parents=True)
+            report_path = trial_dir / "verifier" / "report.json"
+            report_path.write_text(
+                json.dumps({"summary": {"passed": 0, "failed": 1, "total": 1}, "exitcode": 1}) + "\n"
+            )
+            (trial_dir / "result.json").write_text("{}\n")
+            (tune_root / "config.json").write_text(json.dumps({"job_name": job_name}) + "\n")
+            (tune_root / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "job_dir": str(job_dir),
+                        "result_path": str(job_dir / "result.json"),
+                        "reward": 0.38,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "skill_source": str(round_one / "skillpack"),
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    }
+                )
+                + "\n"
+            )
+            (round_one / "executor").mkdir()
+            (round_one / "executor" / "verifier_summary.json").write_text(
+                json.dumps(
+                    {
+                        "reward": 0.38,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                        "report_path": str(report_path),
+                        "trial_result_path": str(trial_dir / "result.json"),
+                        "passed_tests": 0,
+                        "failed_tests": 1,
+                        "total_tests": 1,
+                        "pytest_exitcode": 1,
+                    }
+                )
+                + "\n"
+            )
+
+            def fake_role_a_runner(inputs, **kwargs):
+                out_dir = Path(inputs.output_dir)
+                out_dir.mkdir(parents=True, exist_ok=True)
+                payload = {
+                    "task_id": inputs.task_id,
+                    "round_index": inputs.round_index,
+                    "role": "role_a",
+                    "model_name": "codex-5.3",
+                    "source_log_paths": inputs.source_log_paths,
+                    "dominant_failure_pattern": "executor regression pattern",
+                    "wasted_loop_signals": [],
+                    "tool_misuse_signals": [],
+                    "critical_turns": [],
+                    "skill_misguidance_signals": [],
+                    "recommended_edit_targets": ["guidance.block_1"],
+                    "evidence_refs": [f"{inputs.source_log_paths[0]}:1"],
+                    "observed_at": "2026-03-27T00:00:00+00:00",
+                }
+                (out_dir / "session_evidence.json").write_text(json.dumps(payload) + "\n")
+                (out_dir / "session_evidence.md").write_text("# Session-Derived Evidence\n")
+                return type(
+                    "RoleAResult",
+                    (),
+                    {
+                        "json_path": str(out_dir / "session_evidence.json"),
+                        "markdown_path": str(out_dir / "session_evidence.md"),
+                    },
+                )()
+
+            def fail_role_b_runner(*args, **kwargs):
+                raise PlaybookAgentExecutionError("role_b CLI exited 7")
+
+            outputs, tune_result = self.module.run_c4ar_round_with_harbor(
+                task=task,
+                round_index=1,
+                round_dir_path=round_one,
+                skillsbench_root=root / "skillsbench",
+                oauth_file=root / "oauth.txt",
+                agent_name="claude-code",
+                model_name="anthropic/claude-sonnet-4-5",
+                tune_timeout_multiplier=1.0,
+                run_dir=root / "out",
+                role_a_runner=fake_role_a_runner,
+                role_b_runner=fail_role_b_runner,
+            )
+
+            self.assertEqual(outputs.round_decision.decision, "stop")
+            self.assertIn("RoleBAgentExecutionError", tune_result["exception_stats"])
+            session_evidence_payload = json.loads((round_one / "role_a" / "session_evidence.json").read_text())
+            self.assertEqual(
+                session_evidence_payload["dominant_failure_pattern"],
+                "executor regression pattern",
+            )
+            events = [
+                json.loads(line)
+                for line in (round_one / "orchestrator_log.ndjson").read_text().splitlines()
+                if line.strip()
+            ]
+            event_types = [item["event_type"] for item in events]
+            self.assertEqual(
+                event_types,
+                [
+                    "round_started",
+                    "executor_completed",
+                    "role_a_completed",
+                    "role_b_failed",
+                    "round_decision_loaded",
+                ],
+            )
 
     def test_run_c4ar_round_with_harbor_reuses_cached_role_a_and_role_b_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
