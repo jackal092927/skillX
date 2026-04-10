@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -44,6 +45,11 @@ from skillx.c4ar.role_b import (
     RoleBConfig,
     RoleBOutputs,
     run_role_b,
+)
+from skillx.c4ar.playbook_agent_runner import (
+    PlaybookAgentExecutionError,
+    PlaybookAgentOutputContractError,
+    PlaybookAgentTimeoutError,
 )
 from skillx.c4ar.role_b_artifacts import load_and_canonicalize_role_b_artifact_files
 from skillx.c4ar.contracts import (
@@ -1491,6 +1497,295 @@ def write_executor_soft_failure_artifacts(
     )
 
 
+def _role_failure_stage_label(stage: str) -> str:
+    if stage == "role_a":
+        return "RoleA"
+    if stage == "role_b":
+        return "RoleB"
+    raise ValueError(f"unsupported role failure stage: {stage}")
+
+
+def _role_failure_exception_key(stage: str, error: Exception) -> str:
+    prefix = _role_failure_stage_label(stage)
+    if isinstance(error, PlaybookAgentTimeoutError):
+        suffix = "AgentTimeoutError"
+    elif isinstance(error, PlaybookAgentExecutionError):
+        suffix = "AgentExecutionError"
+    elif isinstance(error, PlaybookAgentOutputContractError):
+        suffix = "AgentOutputContractError"
+    else:
+        suffix = type(error).__name__
+    return f"{prefix}{suffix}"
+
+
+def _role_failure_message(stage: str, error: Exception) -> str:
+    return f"{stage}: {type(error).__name__}: {error}"
+
+
+def annotate_tune_result_with_role_failure(
+    *,
+    round_dir_path: Path,
+    tune_result: dict[str, Any],
+    stage: str,
+    error: Exception,
+) -> dict[str, Any]:
+    updated = dict(tune_result)
+    exception_stats_raw = updated.get("exception_stats") or {}
+    exception_stats: dict[str, list[str]] = {}
+    if isinstance(exception_stats_raw, dict):
+        for key, value in exception_stats_raw.items():
+            if isinstance(value, list):
+                exception_stats[str(key)] = [str(item) for item in value]
+            elif value is None:
+                exception_stats[str(key)] = []
+            else:
+                exception_stats[str(key)] = [str(value)]
+    key = _role_failure_exception_key(stage, error)
+    message = _role_failure_message(stage, error)
+    bucket = exception_stats.setdefault(key, [])
+    if message not in bucket:
+        bucket.append(message)
+    updated["exception_stats"] = exception_stats
+    updated["role_agent_failed"] = True
+    updated["failure_stage"] = stage
+    updated["failure_message"] = message
+    write_json(round_dir_path / "tune_check" / "result.json", updated)
+    return updated
+
+
+def _load_existing_session_evidence(path: Path) -> SessionEvidenceArtifact | None:
+    if not path.exists() or not path.is_file():
+        return None
+    try:
+        return ensure_valid_session_evidence_artifact(read_json(path))
+    except Exception:
+        return None
+
+
+def _write_session_evidence_markdown(path: Path, artifact: SessionEvidenceArtifact) -> None:
+    path.write_text(
+        "\n".join(
+            [
+                "# Session-Derived Evidence",
+                "",
+                f"- task_id: `{artifact.task_id}`",
+                f"- round_index: `{artifact.round_index}`",
+                f"- role: `{artifact.role}`",
+                f"- model_name: `{artifact.model_name}`",
+                f"- dominant_failure_pattern: `{artifact.dominant_failure_pattern}`",
+                f"- source_log_paths: `{', '.join(artifact.source_log_paths) or 'none'}`",
+                "",
+                "## Critical Turns",
+                "",
+                *([f"- {item}" for item in artifact.critical_turns] or ["- none"]),
+                "",
+                "## Recommended Edit Targets",
+                "",
+                *([f"- {item}" for item in artifact.recommended_edit_targets] or ["- none"]),
+                "",
+                "## Evidence Refs",
+                "",
+                *([f"- {item}" for item in artifact.evidence_refs] or ["- none"]),
+                "",
+                f"- observed_at: `{artifact.observed_at}`",
+            ]
+        )
+        + "\n"
+    )
+
+
+def _role_failure_artifact_ref(*, role_dir: Path, fallback: Path) -> str:
+    candidates = [
+        role_dir / "agent_run" / "run_metadata.json",
+        role_dir / "agent_run" / "stderr.txt",
+        role_dir / "agent_run" / "stdout.jsonl",
+        fallback,
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+    return str(fallback)
+
+
+def build_synthetic_c4ar_role_failure_outputs(
+    *,
+    task: TaskInputs,
+    round_index: int,
+    round_dir_path: Path,
+    executor_outputs: ExecutorOutputs,
+    tune_result: dict[str, Any],
+    failure_stage: str,
+    error: Exception,
+    role_a_model_name: str,
+    role_b_model_name: str,
+) -> OrchestratorOutputs:
+    role_a_dir = ensure_dir(round_dir_path / "role_a")
+    role_b_dir = ensure_dir(round_dir_path / "role_b")
+    event_log_path = round_dir_path / "orchestrator_log.ndjson"
+    failure_message = tune_result.get("failure_message") or _role_failure_message(failure_stage, error)
+    current_skillpack_dir = executor_outputs.current_skillpack_dir
+    skillpack_dir = Path(current_skillpack_dir)
+    skill_files = collect_skillpack_files(skillpack_dir)
+    if not skill_files:
+        skill_files = [f"skills/{skill_name}/SKILL.md" for skill_name in task.skill_names]
+    session_evidence_json_path = role_a_dir / "session_evidence.json"
+    session_evidence_md_path = role_a_dir / "session_evidence.md"
+    existing_session_evidence = _load_existing_session_evidence(session_evidence_json_path)
+    if existing_session_evidence is None:
+        dominant_failure_pattern = (
+            "role_a runtime failure"
+            if failure_stage == "role_a"
+            else "role_b runtime failure after role_a completed"
+        )
+        session_evidence = SessionEvidenceArtifact(
+            task_id=task.task_id,
+            round_index=round_index,
+            role="role_a",
+            model_name=role_a_model_name,
+            source_log_paths=[executor_outputs.session_log_path],
+            dominant_failure_pattern=dominant_failure_pattern,
+            wasted_loop_signals=[],
+            tool_misuse_signals=[],
+            critical_turns=[failure_message],
+            skill_misguidance_signals=[],
+            recommended_edit_targets=[],
+            evidence_refs=[f"{executor_outputs.session_log_path}:1"],
+            observed_at=_timestamp(),
+        )
+        write_json(session_evidence_json_path, session_evidence.to_dict())
+    else:
+        session_evidence = existing_session_evidence
+    _write_session_evidence_markdown(session_evidence_md_path, session_evidence)
+
+    failure_reason = (
+        f"{failure_stage.replace('_', ' ')} failed after executor completed; stopping this round"
+    )
+    refine_plan_json_path = role_b_dir / "refine_plan.json"
+    refine_plan_md_path = role_b_dir / "refine_plan.md"
+    next_manifest_json_path = role_b_dir / "next_skillpack_manifest.json"
+    round_decision_json_path = role_b_dir / "round_decision.json"
+
+    write_json(
+        refine_plan_json_path,
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "role_b",
+            "model_name": role_b_model_name,
+            "summary": failure_reason,
+            "atomic_operations": [],
+        },
+    )
+    refine_plan_md_path.write_text(
+        "\n".join(
+            [
+                "# Refine Plan",
+                "",
+                f"- summary: `{failure_reason}`",
+                f"- failure_message: `{failure_message}`",
+                "- atomic_operations: `none`",
+            ]
+        )
+        + "\n"
+    )
+
+    next_manifest = NextSkillpackManifest(
+        task_id=task.task_id,
+        round_index=round_index,
+        role="role_b",
+        model_name=role_b_model_name,
+        skillpack_dir=current_skillpack_dir,
+        skill_files=skill_files,
+        prompt_invariant=True,
+        derived_from_round=round_index,
+        bundle_path=executor_outputs.current_bundle_path,
+    )
+    round_decision = RoundDecisionArtifact(
+        task_id=task.task_id,
+        round_index=round_index,
+        role="role_b",
+        model_name=role_b_model_name,
+        decision="stop",
+        reason=failure_reason,
+        next_round_index=None,
+        next_skillpack_dir=None,
+        selected_candidate_label=f"R{round_index}",
+    )
+    write_json(next_manifest_json_path, next_manifest.to_dict())
+    write_json(round_decision_json_path, round_decision.to_dict())
+
+    events = [
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "orchestrator",
+            "event_type": "round_started",
+            "status": "running",
+            "timestamp": _timestamp(),
+            "artifact_ref": current_skillpack_dir,
+            "note": "starting sequential C4AR round",
+        },
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "orchestrator",
+            "event_type": "executor_completed",
+            "status": "ok",
+            "timestamp": _timestamp(),
+            "artifact_ref": executor_outputs.verifier_summary_path,
+            "note": None,
+        },
+    ]
+    if failure_stage == "role_b":
+        events.append(
+            {
+                "task_id": task.task_id,
+                "round_index": round_index,
+                "role": "orchestrator",
+                "event_type": "role_a_completed",
+                "status": "ok",
+                "timestamp": _timestamp(),
+                "artifact_ref": str(session_evidence_json_path),
+                "note": "reused completed role_a outputs before role_b failure",
+            }
+        )
+    events.extend(
+        [
+            {
+                "task_id": task.task_id,
+                "round_index": round_index,
+                "role": "orchestrator",
+                "event_type": f"{failure_stage}_failed",
+                "status": "failed",
+                "timestamp": _timestamp(),
+                "artifact_ref": _role_failure_artifact_ref(
+                    role_dir=role_a_dir if failure_stage == "role_a" else role_b_dir,
+                    fallback=session_evidence_json_path if failure_stage == "role_a" else round_decision_json_path,
+                ),
+                "note": failure_message,
+            },
+            {
+                "task_id": task.task_id,
+                "round_index": round_index,
+                "role": "orchestrator",
+                "event_type": "round_decision_loaded",
+                "status": "stop",
+                "timestamp": _timestamp(),
+                "artifact_ref": str(round_decision_json_path),
+                "note": failure_reason,
+            },
+        ]
+    )
+    event_log_path.write_text("".join(json.dumps(event) + "\n" for event in events))
+
+    return OrchestratorOutputs(
+        event_log_path=str(event_log_path),
+        session_evidence=session_evidence,
+        next_skillpack_manifest=next_manifest,
+        round_decision=round_decision,
+    )
+
+
 def materialize_c4ar_next_round(
     *,
     paths: RefinePaths,
@@ -2268,7 +2563,10 @@ def run_c4ar_round_with_harbor(
         del executor_inputs
         return executor_outputs
 
+    failure_context: dict[str, Any] = {"stage": None}
+
     def role_a_runner_with_resume(inputs: Any, *, config: Any) -> Any:
+        failure_context["stage"] = "role_a"
         output_dir = Path(inputs.output_dir)
         json_path = output_dir / "session_evidence.json"
         markdown_path = output_dir / "session_evidence.md"
@@ -2276,12 +2574,13 @@ def run_c4ar_round_with_harbor(
             artifact = ensure_valid_session_evidence_artifact(read_json(json_path))
             return RoleAOutputs(
                 json_path=str(json_path),
-                markdown_path=str(markdown_path),
-                artifact=artifact,
-            )
+                    markdown_path=str(markdown_path),
+                    artifact=artifact,
+                )
         return role_a_runner(inputs, config=config)
 
     def role_b_runner_with_resume(inputs: Any, *, config: Any) -> Any:
+        failure_context["stage"] = "role_b"
         output_dir = Path(inputs.output_dir)
         refine_plan_json_path = output_dir / "refine_plan.json"
         refine_plan_markdown_path = output_dir / "refine_plan.md"
@@ -2313,29 +2612,52 @@ def run_c4ar_round_with_harbor(
             )
         return role_b_runner(inputs, config=config)
 
-    orchestrator_outputs = run_c4ar_round(
-        OrchestratorInputs(
-            task_id=task.task_id,
+    try:
+        orchestrator_outputs = run_c4ar_round(
+            OrchestratorInputs(
+                task_id=task.task_id,
+                round_index=round_index,
+                task_prompt_path=str(task.instruction_path),
+                current_skillpack_dir=str(round_dir_path / "skillpack"),
+                current_bundle_path=str(current_bundle_path) if current_bundle_path is not None else None,
+                round_root_dir=str(round_dir_path),
+            ),
+            config=OrchestratorConfig(
+                role_a_config=RoleAConfig(
+                    model_name=role_a_model_name,
+                    playbook_path=str(role_a_playbook_path),
+                ),
+                role_b_config=RoleBConfig(
+                    model_name=role_b_model_name,
+                    playbook_path=str(role_b_playbook_path),
+                ),
+            ),
+            executor_runner=executor_runner,
+            role_a_runner=role_a_runner_with_resume,
+            role_b_runner=role_b_runner_with_resume,
+        )
+    except Exception as error:
+        failure_stage = failure_context.get("stage")
+        if failure_stage not in {"role_a", "role_b"}:
+            raise
+        tune_result = annotate_tune_result_with_role_failure(
+            round_dir_path=round_dir_path,
+            tune_result=tune_result,
+            stage=str(failure_stage),
+            error=error,
+        )
+        synthetic_outputs = build_synthetic_c4ar_role_failure_outputs(
+            task=task,
             round_index=round_index,
-            task_prompt_path=str(task.instruction_path),
-            current_skillpack_dir=str(round_dir_path / "skillpack"),
-            current_bundle_path=str(current_bundle_path) if current_bundle_path is not None else None,
-            round_root_dir=str(round_dir_path),
-        ),
-        config=OrchestratorConfig(
-            role_a_config=RoleAConfig(
-                model_name=role_a_model_name,
-                playbook_path=str(role_a_playbook_path),
-            ),
-            role_b_config=RoleBConfig(
-                model_name=role_b_model_name,
-                playbook_path=str(role_b_playbook_path),
-            ),
-        ),
-        executor_runner=executor_runner,
-        role_a_runner=role_a_runner_with_resume,
-        role_b_runner=role_b_runner_with_resume,
-    )
+            round_dir_path=round_dir_path,
+            executor_outputs=executor_outputs,
+            tune_result=tune_result,
+            failure_stage=str(failure_stage),
+            error=error,
+            role_a_model_name=role_a_model_name,
+            role_b_model_name=role_b_model_name,
+        )
+        return synthetic_outputs, tune_result
     return orchestrator_outputs, tune_result
 
 
@@ -2961,90 +3283,103 @@ def main() -> int:
     args.tune_run_dir = [path.resolve() for path in (args.tune_run_dir or [args.source_run_dir])]
     args.session_log_path = [path.resolve() for path in (args.session_log_path or [])]
     run_dir = ensure_dir(args.output_dir)
-    task = discover_task_inputs(args.skillsbench_root, args.task)
-    if args.orchestration_mode == "c4ar" and c4ar_resume_requires_backup(
-        run_dir=run_dir,
-        task_id=task.task_id,
-        round_budget=args.round_budget,
-    ):
-        backup_run_dir_before_resume(
-            run_dir=run_dir,
-            reason="automatic safety backup before c4ar resume that may rewrite existing round artifacts",
-        )
-    env_payload = check_environment(args.skillsbench_root, args.oauth_file, agent_name=args.agent)
-    write_environment_notes(run_dir, env_payload, args)
-    write_run_status(run_dir, "running", args)
-
-    paths = ensure_refine_paths(run_dir, task.task_id)
-    protocols = ProtocolInputs(
-        refine_protocol_path=args.refine_protocol_path,
-        bundle_contract_path=args.bundle_contract_path,
-    )
-    source = locate_source_artifacts(
-        task.task_id,
-        args.source_run_dir,
-        starting_skillpack_dir=args.starting_skillpack_dir,
-        starting_bundle_path=args.starting_bundle_path,
-        starting_label=args.starting_label,
-    )
-    tune_rows = collect_tune_evidence(task.task_id, args.tune_run_dir)
-    session_log_paths = expand_session_log_paths(args.session_log_path)
-    session_evidence = distill_session_logs(session_log_paths) if session_log_paths else None
-    start_round_index = 0
-    if args.orchestration_mode == "c4ar":
-        start_round_index = infer_c4ar_resume_round_index(
+    try:
+        task = discover_task_inputs(args.skillsbench_root, args.task)
+        if args.orchestration_mode == "c4ar" and c4ar_resume_requires_backup(
             run_dir=run_dir,
             task_id=task.task_id,
             round_budget=args.round_budget,
+        ):
+            backup_run_dir_before_resume(
+                run_dir=run_dir,
+                reason="automatic safety backup before c4ar resume that may rewrite existing round artifacts",
+            )
+        env_payload = check_environment(args.skillsbench_root, args.oauth_file, agent_name=args.agent)
+        write_environment_notes(run_dir, env_payload, args)
+        write_run_status(run_dir, "running", args)
+
+        paths = ensure_refine_paths(run_dir, task.task_id)
+        protocols = ProtocolInputs(
+            refine_protocol_path=args.refine_protocol_path,
+            bundle_contract_path=args.bundle_contract_path,
         )
-    r0_row: dict[str, Any] | None = None
-    if not (args.orchestration_mode == "c4ar" and start_round_index > 0):
-        write_static_bundle(
+        source = locate_source_artifacts(
+            task.task_id,
+            args.source_run_dir,
+            starting_skillpack_dir=args.starting_skillpack_dir,
+            starting_bundle_path=args.starting_bundle_path,
+            starting_label=args.starting_label,
+        )
+        tune_rows = collect_tune_evidence(task.task_id, args.tune_run_dir)
+        session_log_paths = expand_session_log_paths(args.session_log_path)
+        session_evidence = distill_session_logs(session_log_paths) if session_log_paths else None
+        start_round_index = 0
+        if args.orchestration_mode == "c4ar":
+            start_round_index = infer_c4ar_resume_round_index(
+                run_dir=run_dir,
+                task_id=task.task_id,
+                round_budget=args.round_budget,
+            )
+        r0_row: dict[str, Any] | None = None
+        if not (args.orchestration_mode == "c4ar" and start_round_index > 0):
+            write_static_bundle(
+                task=task,
+                paths=paths,
+                protocols=protocols,
+                source=source,
+                tune_rows=tune_rows,
+                tune_run_dirs=args.tune_run_dir,
+                round_budget=args.round_budget,
+                source_run_dir=args.source_run_dir,
+                session_evidence=session_evidence,
+            )
+            r0_row = make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=tune_rows)
+        round_rows = run_refine_rounds(
             task=task,
             paths=paths,
             protocols=protocols,
-            source=source,
+            skillsbench_root=args.skillsbench_root,
+            oauth_file=args.oauth_file,
+            agent_name=args.agent,
+            model_name=args.model,
+            round_timeout_multiplier=args.round_timeout_multiplier,
+            tune_timeout_multiplier=args.tune_timeout_multiplier,
+            round_budget=args.round_budget,
+            r0_row=r0_row,
+            run_dir=run_dir,
+            source_run_dir=args.source_run_dir,
+            starting_label=source.starting_label,
+            session_evidence=session_evidence,
             tune_rows=tune_rows,
+            orchestration_mode=args.orchestration_mode,
+            start_round_index=start_round_index,
+        )
+        write_bundle_manifest(
+            paths=paths,
+            task=task,
+            source_run_dir=args.source_run_dir,
+            source=source,
             tune_run_dirs=args.tune_run_dir,
             round_budget=args.round_budget,
-            source_run_dir=args.source_run_dir,
-            session_evidence=session_evidence,
+            rounds=round_rows,
         )
-        r0_row = make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=tune_rows)
-    round_rows = run_refine_rounds(
-        task=task,
-        paths=paths,
-        protocols=protocols,
-        skillsbench_root=args.skillsbench_root,
-        oauth_file=args.oauth_file,
-        agent_name=args.agent,
-        model_name=args.model,
-        round_timeout_multiplier=args.round_timeout_multiplier,
-        tune_timeout_multiplier=args.tune_timeout_multiplier,
-        round_budget=args.round_budget,
-        r0_row=r0_row,
-        run_dir=run_dir,
-        source_run_dir=args.source_run_dir,
-        starting_label=source.starting_label,
-        session_evidence=session_evidence,
-        tune_rows=tune_rows,
-        orchestration_mode=args.orchestration_mode,
-        start_round_index=start_round_index,
-    )
-    write_bundle_manifest(
-        paths=paths,
-        task=task,
-        source_run_dir=args.source_run_dir,
-        source=source,
-        tune_run_dirs=args.tune_run_dir,
-        round_budget=args.round_budget,
-        rounds=round_rows,
-    )
-    selected_row = select_final_candidate(round_rows)
-    write_final_bundle(task=task, paths=paths, selected_row=selected_row, tune_rows=round_rows)
-    write_json(paths.summary_path, {"task_id": task.task_id, "selected": selected_row, "rounds": round_rows})
-    write_run_status(run_dir, "completed", args)
-    return 0
+        selected_row = select_final_candidate(round_rows)
+        write_final_bundle(task=task, paths=paths, selected_row=selected_row, tune_rows=round_rows)
+        write_json(paths.summary_path, {"task_id": task.task_id, "selected": selected_row, "rounds": round_rows})
+        write_run_status(run_dir, "completed", args)
+        return 0
+    except Exception as error:
+        write_json(
+            run_dir / "run_failure.json",
+            {
+                "error_type": type(error).__name__,
+                "error_message": str(error),
+                "traceback": traceback.format_exc(),
+                "observed_at": _timestamp(),
+            },
+        )
+        write_run_status(run_dir, "failed", args)
+        raise
 
 
 if __name__ == "__main__":
