@@ -1,0 +1,128 @@
+{
+  "artifact_type": "skillx_round0_candidate_slice",
+  "version": "v0.2",
+  "date": "2026-04-08",
+  "baseline_model": "Claude Code (Sonnet 4.5)",
+  "baseline_condition": "With Skills",
+  "source_cache_manifest": "experiments/skillx-skillsbench-001/results/official-task-results/manifest.json",
+  "selection_policy": {
+    "primary_rule": "Prefer tasks with official Sonnet 4.5 With Skills score < 100.",
+    "secondary_rule": "Maintain seed-schema coverage while preferring tasks with low With Skills scores, low No Skills scores, or weak-to-negative No Skills -> With Skills deltas that leave more room for improvement.",
+    "notes": [
+      "This is a pilot task slice for round-0 outer-loop prescan, not a final benchmark subset.",
+      "Methodology-guardrail and orchestration-delegation each currently have only one non-saturated official candidate.",
+      "The five additions in v0.2 were chosen to increase optimization headroom rather than amplify tasks that already benefited strongly from the official skill pack."
+    ]
+  },
+  "counts_by_seed_schema": {
+    "analytic-pipeline": 4,
+    "artifact-generation": 4,
+    "engineering-composition": 4,
+    "retrieval-heavy-synthesis": 3,
+    "environment-control": 3,
+    "methodology-guardrail": 1,
+    "orchestration-delegation": 1
+  },
+  "tasks": [
+    {
+      "task_name": "civ6-adjacency-optimizer",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_with_skills_score": 14.7
+    },
+    {
+      "task_name": "earthquake-phase-association",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_with_skills_score": 20
+    },
+    {
+      "task_name": "energy-ac-optimal-power-flow",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_with_skills_score": 20
+    },
+    {
+      "task_name": "pdf-excel-diff",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_with_skills_score": 40
+    },
+    {
+      "task_name": "court-form-filling",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_with_skills_score": 20
+    },
+    {
+      "task_name": "syzkaller-ppdev-syzlang",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_with_skills_score": 20
+    },
+    {
+      "task_name": "threejs-to-obj",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_with_skills_score": 60
+    },
+    {
+      "task_name": "latex-formula-extraction",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_with_skills_score": 0
+    },
+    {
+      "task_name": "setup-fuzzing-py",
+      "seed_schema_id": "engineering-composition",
+      "official_sonnet45_with_skills_score": 9.8
+    },
+    {
+      "task_name": "find-topk-similiar-chemicals",
+      "seed_schema_id": "engineering-composition",
+      "official_sonnet45_with_skills_score": 10
+    },
+    {
+      "task_name": "fix-erlang-ssh-cve",
+      "seed_schema_id": "engineering-composition",
+      "official_sonnet45_with_skills_score": 40
+    },
+    {
+      "task_name": "parallel-tfidf-search",
+      "seed_schema_id": "engineering-composition",
+      "official_sonnet45_with_skills_score": 0
+    },
+    {
+      "task_name": "organize-messy-files",
+      "seed_schema_id": "retrieval-heavy-synthesis",
+      "official_sonnet45_with_skills_score": 20
+    },
+    {
+      "task_name": "travel-planning",
+      "seed_schema_id": "retrieval-heavy-synthesis",
+      "official_sonnet45_with_skills_score": 20
+    },
+    {
+      "task_name": "gh-repo-analytics",
+      "seed_schema_id": "retrieval-heavy-synthesis",
+      "official_sonnet45_with_skills_score": 0
+    },
+    {
+      "task_name": "pddl-tpp-planning",
+      "seed_schema_id": "environment-control",
+      "official_sonnet45_with_skills_score": 0
+    },
+    {
+      "task_name": "glm-lake-mendota",
+      "seed_schema_id": "environment-control",
+      "official_sonnet45_with_skills_score": 80
+    },
+    {
+      "task_name": "adaptive-cruise-control",
+      "seed_schema_id": "environment-control",
+      "official_sonnet45_with_skills_score": 0
+    },
+    {
+      "task_name": "taxonomy-tree-merge",
+      "seed_schema_id": "methodology-guardrail",
+      "official_sonnet45_with_skills_score": 0
+    },
+    {
+      "task_name": "pg-essay-to-audiobook",
+      "seed_schema_id": "orchestration-delegation",
+      "official_sonnet45_with_skills_score": 0
+    }
+  ]
+}

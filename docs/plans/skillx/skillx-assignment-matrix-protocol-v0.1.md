@@ -310,7 +310,74 @@ This lets us see weak structure early.
 
 ---
 
-## 9. Recommended first experiment schedule
+## 9. Minimum evidence allocation for schema updates
+
+### 9.1 Problem
+
+The primary hard assignment (Section 4) can leave some schemas with
+zero or very few assigned tasks. A schema with no assigned tasks
+receives no evidence during the update pass and cannot evolve, even
+if it showed moderate scores on several tasks. Over iterations this
+creates a silent death spiral: the schema never improves because it
+never gets signal.
+
+### 9.2 Rule: guaranteed update evidence floor
+
+After the primary assignment pass, compute the **update evidence set**
+for each schema `k`:
+
+```text
+update_tasks(k) = primary_assigned_tasks(k)
+                  ∪ top_scoring_tasks(k, floor_K)
+                  where duplicates are removed
+
+floor_K = max(2, ceil(0.10 * |task_set|))
+```
+
+That is: for every schema, always include the `floor_K` tasks on which
+that schema scored highest — even if those tasks were assigned to a
+different schema in the primary pass.
+
+### 9.3 Separation of concerns
+
+This does **not** change the primary assignment or the score matrix.
+The primary assignment remains `argmax_k S(t, k)` as defined in
+Section 4.
+
+The update evidence set is used **only** for feeding the schema update
+operator. It answers a different question:
+- Primary assignment: "which schema is best for this task right now?"
+- Update evidence: "which tasks give this schema the most useful
+  signal for improvement?"
+
+### 9.4 Why `max(2, ceil(10%))`
+
+- The fixed floor of 2 prevents any schema from being starved even in
+  small task pools (e.g., a 7-task pilot would give `max(2, 1) = 2`).
+- The 10% fraction scales with larger task sets (e.g., 100 tasks
+  gives a floor of 10).
+- Using `max` rather than a single rule avoids degenerate behavior at
+  both ends of the scale.
+
+### 9.5 Interaction with diagnostics
+
+The minimum diagnostics (Section 8) should additionally report:
+
+```yaml
+schemas_below_floor:
+  - category: string
+    primary_assigned_count: int
+    floor_K: int
+    top_K_tasks_added: [task_name]
+```
+
+This makes it visible when and where the floor allocation is doing
+work, so you can judge whether a schema is genuinely weak (and a
+merge candidate) versus simply underexplored.
+
+---
+
+## 10. Recommended first experiment schedule
 
 ### Phase A — representative pilot
 
@@ -333,7 +400,7 @@ This is much cheaper than repeating the whole matrix blindly.
 
 ---
 
-## 10. Bottom line
+## 11. Bottom line
 
 The assignment rule for the MVP is:
 
