@@ -39,6 +39,7 @@ coordinating multiple sessions or collaborators, then also read:
 
 8. `docs/plans/skillx/skillx-parallel-development-playbook-v0.1.md`
 9. `docs/plans/skillx/skillx-round0-mxn-runbook-v0.1.md`
+10. `docs/plans/skillx/skillx-experiment-results-versioning-policy-v0.1.md`
 
 ## Repository Map
 
