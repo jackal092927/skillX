@@ -126,6 +126,6 @@
 ## 相关文档
 
 - 并行开发和 worktree 规范：
-  [`skillx-parallel-development-playbook-v0.1.md`](/Users/Jackal/iWorld/projects/skillX/docs/plans/skillx/skillx-parallel-development-playbook-v0.1.md)
+  `docs/plans/skillx/skillx-parallel-development-playbook-v0.1.md`
 - round0 `m × n` 运行和监控：
-  [`skillx-round0-mxn-runbook-v0.1.md`](/Users/Jackal/iWorld/projects/skillX/docs/plans/skillx/skillx-round0-mxn-runbook-v0.1.md)
+  `docs/plans/skillx/skillx-round0-mxn-runbook-v0.1.md`

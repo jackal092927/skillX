@@ -1,6 +1,6 @@
 # SkillX Round-0 Launcher 使用说明
 
-本文档说明如何使用 [`scripts/launch_skillx_round0.py`](/Users/Jackal/iWorld/projects/skillX/scripts/launch_skillx_round0.py) 启动 SkillX 的 round-0 outer-loop 任务。
+本文档说明如何使用 `scripts/launch_skillx_round0.py` 启动 SkillX 的 round-0 outer-loop 任务。
 
 ## 目的
 
@@ -12,11 +12,11 @@
 
 当前默认读取的 task slice 是：
 
-- [`experiments/skillx-skillsbench-001/results/official-task-results/sonnet45-round0-candidate-slice-v0.2.json`](/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/official-task-results/sonnet45-round0-candidate-slice-v0.2.json)
+- `experiments/skillx-skillsbench-001/results/official-task-results/sonnet45-round0-candidate-slice-v0.2.json`
 
 当前默认读取的 materialized round-0 root 是：
 
-- [`experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2`](/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2)
+- `experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2`
 
 ## 运行语义
 
@@ -61,7 +61,7 @@ launcher 默认按 `(task, schema)` 串行执行。
 3. 为每个 `(task, schema)` 生成并执行一条 refine 命令
 4. refine 命令内部会走：
    - `uv run python`
-   - [`run_skillx_refine_benchmark.py`](/Users/Jackal/iWorld/projects/skillX/scripts/run_skillx_refine_benchmark.py)
+   - `scripts/run_skillx_refine_benchmark.py`
    - `C1` 作为 starting skillpack
    - 显式 protocol path
    - `c4ar` orchestration mode

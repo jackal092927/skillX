@@ -22,13 +22,13 @@
 ## 相关脚本
 
 - 实验 launcher
-  - [`scripts/launch_skillx_round0.py`](/Users/Jackal/iWorld/projects/skillX/scripts/launch_skillx_round0.py)
+  - `scripts/launch_skillx_round0.py`
 - `tmux` 启动 helper
-  - [`scripts/run_round0_experiment_tmux.sh`](/Users/Jackal/iWorld/projects/skillX/scripts/run_round0_experiment_tmux.sh)
+  - `scripts/run_round0_experiment_tmux.sh`
 - dashboard server
-  - [`scripts/serve_round0_monitor.py`](/Users/Jackal/iWorld/projects/skillX/scripts/serve_round0_monitor.py)
+  - `scripts/serve_round0_monitor.py`
 - dashboard 启动 helper
-  - [`scripts/run_round0_monitor.sh`](/Users/Jackal/iWorld/projects/skillX/scripts/run_round0_monitor.sh)
+  - `scripts/run_round0_monitor.sh`
 
 ## 前提
 
@@ -64,7 +64,7 @@ uv run python scripts/launch_skillx_round0.py --list-tasks
 最简单的方式是直接用 tmux helper：
 
 ```bash
-cd /Users/Jackal/iWorld/projects/skillX
+cd <repo-root>
 scripts/run_round0_experiment_tmux.sh 3 run-3x7-2026-04-10 skillx-3x7
 ```
 
@@ -119,7 +119,7 @@ tmux attach -t skillx-3x7
 最简单的方式：
 
 ```bash
-cd /Users/Jackal/iWorld/projects/skillX
+cd <repo-root>
 scripts/run_round0_monitor.sh run-3x7-2026-04-10 8765
 ```
 
@@ -198,6 +198,6 @@ scripts/run_round0_monitor.sh run-3x7-2026-04-10 8765
 ## 相关文档
 
 - 详细 launcher 参数说明：
-  [`skillx-round0-launcher-usage-v0.1.md`](/Users/Jackal/iWorld/projects/skillX/docs/plans/skillx/skillx-round0-launcher-usage-v0.1.md)
+  `docs/plans/skillx/skillx-round0-launcher-usage-v0.1.md`
 - 并行开发和 worktree 规范：
-  [`skillx-parallel-development-playbook-v0.1.md`](/Users/Jackal/iWorld/projects/skillX/docs/plans/skillx/skillx-parallel-development-playbook-v0.1.md)
+  `docs/plans/skillx/skillx-parallel-development-playbook-v0.1.md`
