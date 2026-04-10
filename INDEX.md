@@ -34,6 +34,11 @@ read:
 6. `docs/plans/skillx/INDEX.md`
 7. `docs/research/deep-dives/INDEX.md`
 
+If you are actively developing, running experiments in parallel, or
+coordinating multiple sessions or collaborators, then also read:
+
+8. `docs/plans/skillx/skillx-parallel-development-playbook-v0.1.md`
+
 ## Repository Map
 
 - `docs/`: design docs, references, checkpoints, deep dives, and planning material

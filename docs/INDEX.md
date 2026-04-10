@@ -20,6 +20,7 @@ This index maps the main documentation tracks in this repository.
 ## Current Planning Line
 
 - `plans/skillx/INDEX.md`
+- `plans/skillx/skillx-parallel-development-playbook-v0.1.md`
 - `checkpoints/INDEX.md`
 
 ## Research Context

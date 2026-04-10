@@ -35,6 +35,11 @@ incubation repo.
 - `pilot-round-0-assignments.template.csv`
 - `pilot-round-0-diagnostics.template.json`
 
+## Workflow And Operations
+
+- `skillx-parallel-development-playbook-v0.1.md`
+- `skillx-round0-launcher-usage-v0.1.md`
+
 ## SkillsBench Support Material
 
 - `skillsbench-task-profile-annotations-v0.1.md`
