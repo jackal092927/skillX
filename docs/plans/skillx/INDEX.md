@@ -18,6 +18,7 @@ incubation repo.
 - `skillx-meta-schema-search-operator-v0.2.md`
 - `skillx-meta-schema-acceptance-scorecard-v0.1.md`
 - `skillx-outer-loop-update-protocol-v0.1.md`
+- `skillx-evaluator-in-the-loop-evaluation-protocol-v0.1.md`
 - `skillx-task-clustering-and-taxonomy-v0.1.md`
 - `skillx-mvp-automatic-clustering-input-schema-v0.1.md`
 - `skillx-internalization-track-roadmap-v0.1.md`
@@ -46,8 +47,9 @@ Suggested read order for the current MVP line:
 1. `../../checkpoints/CHECKPOINT-2026-04-05-skillx-meta-schema-mvp.md`
 2. `skillx-prompt-bank-clustering-and-outer-loop-spec-v0.1.md`
 3. `skillx-render-template-frozen-v0.1.md`
-4. `skillx-assignment-matrix-protocol-v0.1.md`
-5. `skillx-outer-loop-update-protocol-v0.1.md`
+4. `skillx-evaluator-in-the-loop-evaluation-protocol-v0.1.md`
+5. `skillx-assignment-matrix-protocol-v0.1.md`
+6. `skillx-outer-loop-update-protocol-v0.1.md`
 
 Suggested read order for the new internalization track:
 
