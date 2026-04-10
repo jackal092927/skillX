@@ -15,6 +15,7 @@ incubation repo.
 ## Meta-Schema And Outer Loop
 
 - `skillx-project-tracker-v0.2.md`
+- `skillx-main-thesis-and-outer-loop-framing-v0.1.md`
 - `skillx-meta-schema-update-operator-v0.1.md`
 - `skillx-meta-schema-search-operator-v0.2.md`
 - `skillx-meta-schema-acceptance-scorecard-v0.1.md`
@@ -51,6 +52,8 @@ incubation repo.
 - `skillsbench-initial-classification-v0.1.md`
 - `skillsbench-lite-eval-harness-v0.1.md`
 - `skillx-dataset-selection-note-v0.1.md`
+- `skillx-baseline-exploration-execution-brief-v0.1.md`
+- `skillx-baseline-collaborator-handoff-v0.1.md`
 - `skillsbench-benchmark-onboarding-note-v0.1.md`
 - `swe-skills-bench-onboarding-note-v0.1.md`
 - `skillcraft-onboarding-note-v0.1.md`
@@ -58,19 +61,22 @@ incubation repo.
 Suggested read order for the current MVP line:
 
 1. `skillx-project-tracker-v0.2.md`
-2. `../../checkpoints/CHECKPOINT-2026-04-05-skillx-meta-schema-mvp.md`
-3. `skillx-prompt-bank-clustering-and-outer-loop-spec-v0.1.md`
-4. `skillx-render-template-frozen-v0.1.md`
-5. `skillx-evaluator-in-the-loop-evaluation-protocol-v0.1.md`
-6. `skillx-assignment-matrix-protocol-v0.1.md`
-7. `skillx-outer-loop-update-protocol-v0.1.md`
+2. `skillx-main-thesis-and-outer-loop-framing-v0.1.md`
+3. `../../checkpoints/CHECKPOINT-2026-04-05-skillx-meta-schema-mvp.md`
+4. `skillx-prompt-bank-clustering-and-outer-loop-spec-v0.1.md`
+5. `skillx-render-template-frozen-v0.1.md`
+6. `skillx-evaluator-in-the-loop-evaluation-protocol-v0.1.md`
+7. `skillx-assignment-matrix-protocol-v0.1.md`
+8. `skillx-outer-loop-update-protocol-v0.1.md`
 
 Suggested read order for benchmark selection and onboarding:
 
 1. `skillx-dataset-selection-note-v0.1.md`
-2. `skillsbench-benchmark-onboarding-note-v0.1.md`
-3. `swe-skills-bench-onboarding-note-v0.1.md`
-4. `skillcraft-onboarding-note-v0.1.md`
+2. `skillx-baseline-exploration-execution-brief-v0.1.md`
+3. `skillx-baseline-collaborator-handoff-v0.1.md`
+4. `skillsbench-benchmark-onboarding-note-v0.1.md`
+5. `swe-skills-bench-onboarding-note-v0.1.md`
+6. `skillcraft-onboarding-note-v0.1.md`
 
 Suggested read order for the new internalization track:
 
