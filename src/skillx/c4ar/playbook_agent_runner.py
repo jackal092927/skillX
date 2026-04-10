@@ -9,13 +9,9 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from ..io_utils import ensure_dir, write_json
+from ..model_routing import resolve_cli_model_name, resolve_playbook_cli_name
 
 ROOT = Path(__file__).resolve().parents[3]
-
-MODEL_NAME_ALIASES = {
-    "codex-5.3": "gpt-5.3-codex",
-    "gpt-5.4": "gpt-5.4",
-}
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,12 +24,6 @@ class PlaybookAgentRunResult:
     last_message_path: str
     metadata_path: str
     final_message: dict[str, Any]
-
-
-def resolve_cli_model_name(model_name: str) -> str:
-    return MODEL_NAME_ALIASES.get(model_name, model_name)
-
-
 def ensure_playbook_path(playbook_path: str | None, *, role_name: str) -> Path:
     if playbook_path is None or not playbook_path.strip():
         raise ValueError(f"{role_name} requires a playbook_path when no custom model_runner is provided")
@@ -68,21 +58,35 @@ def run_playbook_agent(
     write_json(schema_path, final_response_schema)
     prompt_path.write_text(prompt + "\n")
 
+    cli_name = resolve_playbook_cli_name(model_name)
     cli_model_name = resolve_cli_model_name(model_name)
-    command = [
-        "codex",
-        "exec",
-        "--dangerously-bypass-approvals-and-sandbox",
-        "--skip-git-repo-check",
-        "--json",
-        "--model",
-        cli_model_name,
-        "--output-schema",
-        str(schema_path),
-        "--output-last-message",
-        str(last_message_path),
-        "--",
-    ]
+    if cli_name == "claude":
+        command = [
+            "claude",
+            "--print",
+            "--dangerously-skip-permissions",
+            "--output-format",
+            "json",
+            "--model",
+            cli_model_name,
+            "--json-schema",
+            json.dumps(final_response_schema, separators=(",", ":")),
+        ]
+    else:
+        command = [
+            "codex",
+            "exec",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "--skip-git-repo-check",
+            "--json",
+            "--model",
+            cli_model_name,
+            "--output-schema",
+            str(schema_path),
+            "--output-last-message",
+            str(last_message_path),
+            "--",
+        ]
     command_path.write_text(" ".join(shlex.quote(part) for part in command) + "\n")
 
     started = time.time()
@@ -102,6 +106,7 @@ def run_playbook_agent(
         {
             "role_name": role_name,
             "model_name": model_name,
+            "cli_name": cli_name,
             "cli_model_name": cli_model_name,
             "playbook_path": str(playbook_path),
             "returncode": proc.returncode,
@@ -114,12 +119,22 @@ def run_playbook_agent(
         raise RuntimeError(
             f"{role_name} agent run failed ({proc.returncode}); see {stdout_path} and {stderr_path}"
         )
-    if not last_message_path.exists():
-        raise RuntimeError(f"{role_name} agent did not write final message: {last_message_path}")
-    try:
-        final_message = json.loads(last_message_path.read_text())
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"{role_name} final message is not valid JSON: {last_message_path}") from exc
+    if cli_name == "claude":
+        try:
+            payload = json.loads(proc.stdout)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"{role_name} Claude output is not valid JSON: {stdout_path}") from exc
+        final_message = payload.get("structured_output")
+        if not isinstance(final_message, dict):
+            raise RuntimeError(f"{role_name} Claude output missing structured_output object: {stdout_path}")
+        write_json(last_message_path, final_message)
+    else:
+        if not last_message_path.exists():
+            raise RuntimeError(f"{role_name} agent did not write final message: {last_message_path}")
+        try:
+            final_message = json.loads(last_message_path.read_text())
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"{role_name} final message is not valid JSON: {last_message_path}") from exc
 
     missing = [str(path) for path in expected_output_paths if not path.exists()]
     if missing:
@@ -141,5 +156,6 @@ __all__ = [
     "PlaybookAgentRunResult",
     "ensure_playbook_path",
     "resolve_cli_model_name",
+    "resolve_playbook_cli_name",
     "run_playbook_agent",
 ]

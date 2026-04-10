@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 import tarfile
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import path_setup
 from skillx.c4ar.contracts import (
@@ -75,6 +77,76 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
         ]
         selected = self.module.select_final_candidate(rows)
         self.assertEqual(selected["round_index"], 1)
+
+    def test_resolve_benchmark_agent_name_infers_from_model(self) -> None:
+        self.assertEqual(
+            self.module.resolve_benchmark_agent_name(agent_name=None, model_name="anthropic/claude-sonnet-4-5"),
+            "claude-code",
+        )
+        self.assertEqual(
+            self.module.resolve_benchmark_agent_name(agent_name=None, model_name="openai/gpt-5.2-codex"),
+            "codex",
+        )
+
+    def test_resolve_benchmark_agent_name_rejects_mismatch(self) -> None:
+        with self.assertRaises(ValueError):
+            self.module.resolve_benchmark_agent_name(
+                agent_name="claude-code",
+                model_name="openai/gpt-5.2-codex",
+            )
+
+    def test_build_job_config_infers_agent_from_model_when_unspecified(self) -> None:
+        payload = self.module.build_job_config(
+            job_name="demo-job",
+            jobs_dir=Path("/tmp/jobs"),
+            task_path=Path("/tmp/task"),
+            agent_name=None,
+            model_name="openai/gpt-5.2-codex",
+            timeout_multiplier=1.0,
+            n_concurrent_trials=1,
+        )
+        self.assertIsNone(payload["agents"][0]["name"])
+        self.assertEqual(payload["agents"][0]["import_path"], "skillx.harbor_agents:AuthBackedCodex")
+
+    def test_find_executor_session_log_path_accepts_codex_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            trial_dir = Path(tmpdir) / "trial-001"
+            agent_dir = trial_dir / "agent"
+            agent_dir.mkdir(parents=True)
+            codex_log = agent_dir / "codex.txt"
+            codex_log.write_text("{\"event\":\"done\"}\n")
+
+            self.assertEqual(self.module.find_executor_session_log_path(trial_dir), codex_log)
+
+    def test_check_environment_for_codex_requires_auth_file_but_not_oauth(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skillsbench_root = Path(tmpdir) / "skillsbench"
+            skillsbench_root.mkdir()
+            codex_home = Path(tmpdir) / "codex-home"
+            (codex_home / ".codex").mkdir(parents=True)
+            auth_file = codex_home / ".codex" / "auth.json"
+            auth_file.write_text('{"auth_mode":"chatgpt","tokens":{"access_token":"x"}}\n')
+            with mock.patch.object(self.module.Path, "home", return_value=codex_home):
+                with mock.patch.object(
+                    self.module,
+                    "_run",
+                    return_value=self.module.subprocess.CompletedProcess(
+                        ["docker", "info"],
+                        0,
+                        stdout="17179869184\n",
+                        stderr="",
+                    ),
+                ):
+                    with mock.patch.object(self.module.shutil, "which", return_value="/usr/bin/uv"):
+                        payload = self.module.check_environment(
+                            skillsbench_root,
+                            oauth_file=None,
+                            agent_name="codex",
+                        )
+
+            self.assertEqual(payload["benchmark_agent"], "codex")
+            self.assertIsNone(payload["oauth_file"])
+            self.assertEqual(payload["codex_auth_file"], str(auth_file))
 
     def test_make_round_zero_artifacts_copies_c3_skillpack(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1238,6 +1310,168 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
 
             self.assertFalse(observed["executor_reran"])
             self.assertEqual(tune_result["reward"], 0.61)
+            self.assertEqual(outputs.round_decision.decision, "stop")
+
+    def test_run_c4ar_round_with_harbor_reuses_cached_role_a_and_role_b_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            round_one = paths.rounds_dir / "round-1"
+            (round_one / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_one / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nr1\n"
+            )
+
+            tune_root = round_one / "tune_check"
+            job_name = "demo-task-round-1-c4-tune"
+            job_dir = tune_root / job_name
+            trial_dir = job_dir / "trial-001"
+            (trial_dir / "agent").mkdir(parents=True)
+            (trial_dir / "agent" / "claude-code.txt").write_text("cached session log\n")
+            (trial_dir / "verifier").mkdir(parents=True)
+            report_path = trial_dir / "verifier" / "report.json"
+            report_path.write_text(
+                json.dumps({"summary": {"passed": 1, "failed": 0, "total": 1}, "exitcode": 0}) + "\n"
+            )
+            (trial_dir / "result.json").write_text("{}\n")
+            (tune_root / "config.json").write_text(json.dumps({"job_name": job_name}) + "\n")
+            (tune_root / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "job_dir": str(job_dir),
+                        "result_path": str(job_dir / "result.json"),
+                        "reward": 0.55,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "skill_source": str(round_one / "skillpack"),
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    }
+                )
+                + "\n"
+            )
+            (round_one / "executor").mkdir()
+            (round_one / "executor" / "verifier_summary.json").write_text(
+                json.dumps(
+                    {
+                        "reward": 0.55,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                        "report_path": str(report_path),
+                        "trial_result_path": str(trial_dir / "result.json"),
+                        "passed_tests": 1,
+                        "failed_tests": 0,
+                        "total_tests": 1,
+                        "pytest_exitcode": 0,
+                    }
+                )
+                + "\n"
+            )
+
+            session_evidence = SessionEvidenceArtifact(
+                task_id="demo-task",
+                round_index=1,
+                role="role_a",
+                model_name="codex-5.3",
+                source_log_paths=[str(trial_dir / "agent" / "claude-code.txt")],
+                dominant_failure_pattern="cached role artifacts",
+                observed_at="2026-03-27T00:00:00+00:00",
+            )
+            role_a_dir = round_one / "role_a"
+            role_a_dir.mkdir()
+            (role_a_dir / "session_evidence.json").write_text(json.dumps(session_evidence.to_dict()))
+            (role_a_dir / "session_evidence.md").write_text("# Session-Derived Evidence\n")
+
+            next_skillpack_dir = round_one / "role_b" / "next_skillpack"
+            (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True)
+            (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text("# next r1\n")
+            role_b_dir = round_one / "role_b"
+            role_b_dir.mkdir(exist_ok=True)
+            (role_b_dir / "refine_plan.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "round_index": 1,
+                        "role": "role_b",
+                        "model_name": "gpt-5.4",
+                        "summary": "cached role_b output",
+                        "atomic_operations": [],
+                    }
+                )
+                + "\n"
+            )
+            (role_b_dir / "refine_plan.md").write_text("# Refine Plan\n")
+            next_manifest = NextSkillpackManifest(
+                task_id="demo-task",
+                round_index=1,
+                role="role_b",
+                model_name="gpt-5.4",
+                skillpack_dir=str(next_skillpack_dir),
+                skill_files=["skills/skill-a/SKILL.md"],
+                prompt_invariant=True,
+                derived_from_round=1,
+            )
+            (role_b_dir / "next_skillpack_manifest.json").write_text(json.dumps(next_manifest.to_dict()))
+            round_decision = RoundDecisionArtifact(
+                task_id="demo-task",
+                round_index=1,
+                role="role_b",
+                model_name="gpt-5.4",
+                decision="stop",
+                reason="cached role outputs complete",
+                next_round_index=None,
+                next_skillpack_dir=None,
+                selected_candidate_label="R1",
+            )
+            (role_b_dir / "round_decision.json").write_text(json.dumps(round_decision.to_dict()))
+
+            original_existing_c4ar_round_outputs = self.module.existing_c4ar_round_outputs
+            observed = {"role_a_called": False, "role_b_called": False}
+            try:
+                self.module.existing_c4ar_round_outputs = lambda **kwargs: None
+
+                def fail_role_a_runner(*args, **kwargs):
+                    observed["role_a_called"] = True
+                    raise AssertionError("role_a_runner should not rerun when cached role_a outputs exist")
+
+                def fail_role_b_runner(*args, **kwargs):
+                    observed["role_b_called"] = True
+                    raise AssertionError("role_b_runner should not rerun when cached role_b outputs exist")
+
+                outputs, tune_result = self.module.run_c4ar_round_with_harbor(
+                    task=task,
+                    round_index=1,
+                    round_dir_path=round_one,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    tune_timeout_multiplier=3.0,
+                    run_dir=root / "out",
+                    role_a_runner=fail_role_a_runner,
+                    role_b_runner=fail_role_b_runner,
+                )
+            finally:
+                self.module.existing_c4ar_round_outputs = original_existing_c4ar_round_outputs
+
+            self.assertFalse(observed["role_a_called"])
+            self.assertFalse(observed["role_b_called"])
+            self.assertEqual(tune_result["reward"], 0.55)
             self.assertEqual(outputs.round_decision.decision, "stop")
 
     def test_run_c4ar_round_with_harbor_passes_default_playbooks_to_orchestrator(self) -> None:

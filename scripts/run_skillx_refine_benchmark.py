@@ -24,6 +24,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.io_utils import ensure_dir, read_json, write_json
+from skillx.model_routing import AUTH_BACKED_CODEX_IMPORT_PATH, resolve_benchmark_agent_name
 from skillx.c4ar.orchestrator import (
     ExecutorOutputs,
     OrchestratorConfig,
@@ -31,8 +32,18 @@ from skillx.c4ar.orchestrator import (
     OrchestratorOutputs,
     run_c4ar_round,
 )
-from skillx.c4ar.role_a import RoleAConfig, run_role_a
-from skillx.c4ar.role_b import RoleBConfig, run_role_b
+from skillx.c4ar.role_a import (
+    RoleAConfig,
+    RoleAOutputs,
+    run_role_a,
+)
+from skillx.c4ar.role_b import (
+    RoleBConfig,
+    RoleBOutputs,
+    run_role_b,
+)
+from skillx.c4ar.role_b_artifacts import load_and_canonicalize_role_b_artifact_files
+from skillx.c4ar.contracts import ensure_valid_session_evidence_artifact
 from skillx.decision import (
     SkillXDecisionBundle,
     SkillXRefineIntent,
@@ -242,10 +253,6 @@ def copy_tree(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst)
 
 
-def normalize_claude_model_name(model_name: str) -> str:
-    return model_name.split("/", 1)[1] if "/" in model_name else model_name
-
-
 def parse_job_result(job_dir: Path, condition: str, task_id: str, skill_source: str) -> dict[str, Any]:
     result_path = job_dir / "result.json"
     payload = read_json(result_path)
@@ -276,11 +283,24 @@ def build_job_config(
     job_name: str,
     jobs_dir: Path,
     task_path: Path,
-    agent_name: str,
+    agent_name: str | None,
     model_name: str,
     timeout_multiplier: float,
     n_concurrent_trials: int,
 ) -> dict[str, Any]:
+    resolved_agent_name = resolve_benchmark_agent_name(agent_name, model_name)
+    agent_payload: dict[str, Any] = {
+        "name": resolved_agent_name,
+        "import_path": None,
+        "model_name": model_name,
+        "override_timeout_sec": None,
+        "override_setup_timeout_sec": None,
+        "max_timeout_sec": None,
+        "kwargs": {},
+    }
+    if resolved_agent_name == "codex":
+        agent_payload["name"] = None
+        agent_payload["import_path"] = AUTH_BACKED_CODEX_IMPORT_PATH
     return {
         "job_name": job_name,
         "jobs_dir": str(jobs_dir),
@@ -319,15 +339,7 @@ def build_job_config(
         },
         "metrics": [],
         "agents": [
-            {
-                "name": agent_name,
-                "import_path": None,
-                "model_name": model_name,
-                "override_timeout_sec": None,
-                "override_setup_timeout_sec": None,
-                "max_timeout_sec": None,
-                "kwargs": {},
-            }
+            agent_payload
         ],
         "datasets": [],
         "tasks": [
@@ -347,21 +359,41 @@ def run_harbor_job(
     *,
     skillsbench_root: Path,
     config_path: Path,
-    oauth_file: Path,
+    oauth_file: Path | None,
+    agent_name: str,
 ) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
-    env["CLAUDE_CODE_OAUTH_TOKEN_FILE"] = str(oauth_file)
-    token_text = oauth_file.read_text().strip()
-    if token_text:
-        env["CLAUDE_CODE_OAUTH_TOKEN"] = token_text
+    existing_pythonpath = env.get("PYTHONPATH", "").strip()
+    env["PYTHONPATH"] = str(SRC) if not existing_pythonpath else f"{SRC}:{existing_pythonpath}"
+    if agent_name == "claude-code":
+        if oauth_file is None:
+            raise ValueError("oauth_file is required for claude-code runs")
+        env["CLAUDE_CODE_OAUTH_TOKEN_FILE"] = str(oauth_file)
+        token_text = oauth_file.read_text().strip()
+        if token_text:
+            env["CLAUDE_CODE_OAUTH_TOKEN"] = token_text
+    elif agent_name == "codex":
+        pass
+    else:
+        raise ValueError(f"unsupported benchmark agent: {agent_name}")
     return _run(["uv", "run", "harbor", "run", "-c", str(config_path.resolve())], cwd=skillsbench_root, env=env)
 
 
-def check_environment(skillsbench_root: Path, oauth_file: Path) -> dict[str, Any]:
+def check_environment(skillsbench_root: Path, oauth_file: Path | None, *, agent_name: str) -> dict[str, Any]:
     if not skillsbench_root.exists():
         raise FileNotFoundError(f"skillsbench root not found: {skillsbench_root}")
-    if not oauth_file.exists():
-        raise FileNotFoundError(f"oauth file not found: {oauth_file}")
+    if agent_name == "claude-code":
+        if oauth_file is None:
+            raise ValueError("oauth_file is required for claude-code runs")
+        if not oauth_file.exists():
+            raise FileNotFoundError(f"oauth file not found: {oauth_file}")
+        codex_auth_file = None
+    elif agent_name == "codex":
+        codex_auth_file = Path.home() / ".codex" / "auth.json"
+        if not codex_auth_file.exists():
+            raise FileNotFoundError(f"codex auth file not found: {codex_auth_file}")
+    else:
+        raise ValueError(f"unsupported benchmark agent: {agent_name}")
     docker_info = _run(["docker", "info", "--format", "{{json .MemTotal}}"])
     docker_mem_bytes = int(json.loads(docker_info.stdout.strip()))
     if docker_mem_bytes < MIN_DOCKER_MEMORY_BYTES:
@@ -374,7 +406,9 @@ def check_environment(skillsbench_root: Path, oauth_file: Path) -> dict[str, Any
     return {
         "docker_mem_bytes": docker_mem_bytes,
         "uv_path": uv_path,
-        "oauth_file": str(oauth_file),
+        "oauth_file": None if oauth_file is None else str(oauth_file),
+        "benchmark_agent": agent_name,
+        "codex_auth_file": None if codex_auth_file is None else str(codex_auth_file),
     }
 
 
@@ -1318,6 +1352,7 @@ def resolve_single_trial_dir(job_dir: Path) -> Path:
 def find_executor_session_log_path(trial_dir: Path) -> Path:
     candidates = [
         trial_dir / "agent" / "claude-code.txt",
+        trial_dir / "agent" / "codex.txt",
         trial_dir / "agent" / "trajectory.json",
         trial_dir / "trial.log",
     ]
@@ -1728,7 +1763,7 @@ def run_c4ar_round_with_harbor(
     round_index: int,
     round_dir_path: Path,
     skillsbench_root: Path,
-    oauth_file: Path,
+    oauth_file: Path | None,
     agent_name: str,
     model_name: str,
     tune_timeout_multiplier: float,
@@ -1788,12 +1823,12 @@ def run_c4ar_round_with_harbor(
         json_path = output_dir / "session_evidence.json"
         markdown_path = output_dir / "session_evidence.md"
         if json_path.exists() and markdown_path.exists():
-            artifact = read_json(json_path)
-            return {
-                "artifact": artifact,
-                "json_path": str(json_path),
-                "markdown_path": str(markdown_path),
-            }
+            artifact = ensure_valid_session_evidence_artifact(read_json(json_path))
+            return RoleAOutputs(
+                json_path=str(json_path),
+                markdown_path=str(markdown_path),
+                artifact=artifact,
+            )
         return role_a_runner(inputs, config=config)
 
     def role_b_runner_with_resume(inputs: Any, *, config: Any) -> Any:
@@ -1810,13 +1845,22 @@ def run_c4ar_round_with_harbor(
             and round_decision_json_path.exists()
             and next_skillpack_dir.exists()
         ):
-            return {
-                "refine_plan_json_path": str(refine_plan_json_path),
-                "refine_plan_markdown_path": str(refine_plan_markdown_path),
-                "next_skillpack_manifest_json_path": str(next_skillpack_manifest_json_path),
-                "round_decision_json_path": str(round_decision_json_path),
-                "next_skillpack_dir": str(next_skillpack_dir),
-            }
+            canonical_artifacts = load_and_canonicalize_role_b_artifact_files(
+                refine_plan_json_path=refine_plan_json_path,
+                next_skillpack_manifest_json_path=next_skillpack_manifest_json_path,
+                round_decision_json_path=round_decision_json_path,
+                rewrite=True,
+            )
+            return RoleBOutputs(
+                refine_plan_json_path=str(refine_plan_json_path),
+                refine_plan_markdown_path=str(refine_plan_markdown_path),
+                next_skillpack_manifest_json_path=str(next_skillpack_manifest_json_path),
+                round_decision_json_path=str(round_decision_json_path),
+                next_skillpack_dir=str(next_skillpack_dir),
+                refine_plan=canonical_artifacts.refine_plan,
+                next_skillpack_manifest=canonical_artifacts.next_skillpack_manifest,
+                round_decision=canonical_artifacts.round_decision,
+            )
         return role_b_runner(inputs, config=config)
 
     orchestrator_outputs = run_c4ar_round(
@@ -1926,7 +1970,7 @@ def run_round_tune_check(
     run_dir: Path,
     round_dir_path: Path,
     skillsbench_root: Path,
-    oauth_file: Path,
+    oauth_file: Path | None,
     agent_name: str,
     model_name: str,
     timeout_multiplier: float,
@@ -1951,7 +1995,12 @@ def run_round_tune_check(
         ),
     )
     clear_job_dir(tune_root / job_name)
-    run_harbor_job(skillsbench_root=skillsbench_root, config_path=config_path, oauth_file=oauth_file)
+    run_harbor_job(
+        skillsbench_root=skillsbench_root,
+        config_path=config_path,
+        oauth_file=oauth_file,
+        agent_name=agent_name,
+    )
     result = parse_job_result(
         tune_root / job_name,
         condition="c4",
@@ -2092,7 +2141,7 @@ def write_environment_notes(run_dir: Path, env_payload: dict[str, Any], args: ar
         [
             f"- timestamp: `{_timestamp()}`",
             f"- skillsbench_root: `{args.skillsbench_root}`",
-            f"- oauth_file: `{args.oauth_file}`",
+            f"- oauth_file: `{args.oauth_file or 'none'}`",
             f"- source_run_dir: `{args.source_run_dir}`",
             f"- tune_run_dirs: `{', '.join(str(path) for path in args.tune_run_dir)}`",
             f"- session_log_paths: `{', '.join(str(path) for path in (args.session_log_path or [])) or 'none'}`",
@@ -2135,7 +2184,7 @@ def run_refine_rounds(
     paths: RefinePaths,
     protocols: ProtocolInputs,
     skillsbench_root: Path,
-    oauth_file: Path,
+    oauth_file: Path | None,
     agent_name: str,
     model_name: str,
     round_timeout_multiplier: float,
@@ -2288,7 +2337,12 @@ def run_refine_rounds(
                 except RuntimeError:
                     clear_job_dir(existing_job_dir)
             if not can_reuse_existing_job:
-                run_harbor_job(skillsbench_root=skillsbench_root, config_path=spec.config_path, oauth_file=oauth_file)
+                run_harbor_job(
+                    skillsbench_root=skillsbench_root,
+                    config_path=spec.config_path,
+                    oauth_file=oauth_file,
+                    agent_name=agent_name,
+                )
                 try:
                     exported_dir = collect_refine_round_output(spec)
                 except RuntimeError:
@@ -2300,6 +2354,7 @@ def run_refine_rounds(
                         skillsbench_root=skillsbench_root,
                         config_path=spec.config_path,
                         oauth_file=oauth_file,
+                        agent_name=agent_name,
                     )
                     exported_dir = collect_refine_round_output(spec)
             materialized_round_dir = materialize_round_output(paths, round_index, exported_dir)
@@ -2335,14 +2390,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--task", required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--oauth-file", type=Path, required=True)
+    parser.add_argument("--oauth-file", type=Path)
     parser.add_argument("--source-run-dir", type=Path, required=True)
     parser.add_argument("--starting-skillpack-dir", type=Path)
     parser.add_argument("--starting-bundle-path", type=Path)
     parser.add_argument("--starting-label")
     parser.add_argument("--tune-run-dir", type=Path, action="append")
     parser.add_argument("--session-log-path", type=Path, action="append")
-    parser.add_argument("--agent", default=DEFAULT_AGENT)
+    parser.add_argument("--agent")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--round-budget", type=int, default=3)
     parser.add_argument(
@@ -2366,7 +2421,8 @@ def main() -> int:
     args = parser.parse_args()
     args.skillsbench_root = args.skillsbench_root.resolve()
     args.output_dir = args.output_dir.resolve()
-    args.oauth_file = args.oauth_file.resolve()
+    args.agent = resolve_benchmark_agent_name(args.agent, args.model)
+    args.oauth_file = args.oauth_file.resolve() if args.oauth_file else None
     args.source_run_dir = args.source_run_dir.resolve()
     args.starting_skillpack_dir = args.starting_skillpack_dir.resolve() if args.starting_skillpack_dir else None
     args.starting_bundle_path = args.starting_bundle_path.resolve() if args.starting_bundle_path else None
@@ -2385,7 +2441,7 @@ def main() -> int:
             run_dir=run_dir,
             reason="automatic safety backup before c4ar resume that may rewrite existing round artifacts",
         )
-    env_payload = check_environment(args.skillsbench_root, args.oauth_file)
+    env_payload = check_environment(args.skillsbench_root, args.oauth_file, agent_name=args.agent)
     write_environment_notes(run_dir, env_payload, args)
     write_run_status(run_dir, "running", args)
 
