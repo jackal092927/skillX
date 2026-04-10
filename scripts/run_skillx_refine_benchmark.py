@@ -12,7 +12,6 @@ import shutil
 import subprocess
 import sys
 import tarfile
-import tomllib
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,7 +46,12 @@ from skillx.c4ar.role_b import (
     run_role_b,
 )
 from skillx.c4ar.role_b_artifacts import load_and_canonicalize_role_b_artifact_files
-from skillx.c4ar.contracts import ensure_valid_session_evidence_artifact
+from skillx.c4ar.contracts import (
+    NextSkillpackManifest,
+    RoundDecisionArtifact,
+    SessionEvidenceArtifact,
+    ensure_valid_session_evidence_artifact,
+)
 from skillx.decision import (
     SkillXDecisionBundle,
     SkillXRefineIntent,
@@ -72,7 +76,6 @@ DEFAULT_AGENT = "claude-code"
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
 DEFAULT_ORCHESTRATION_MODE = "legacy"
 MIN_DOCKER_MEMORY_BYTES = 16_000_000_000
-MAX_DYNAMIC_TIMEOUT_SEC = 1_800.0
 DEFAULT_RETRY_EXCLUDE = [
     "AgentTimeoutError",
     "VerifierTimeoutError",
@@ -81,6 +84,7 @@ DEFAULT_RETRY_EXCLUDE = [
     "VerifierOutputParseError",
 ]
 TIMEOUT_EXCEPTION_MARKERS = ("timeout",)
+HARBOR_INFRA_FAILURE_EXCEPTION = "HarborJobExecutionError"
 
 
 @dataclass(frozen=True)
@@ -214,19 +218,6 @@ def discover_task_inputs(skillsbench_root: Path, task_id: str) -> TaskInputs:
     )
 
 
-def load_task_timeout_seconds(task_toml_path: Path) -> dict[str, float]:
-    payload = tomllib.loads(task_toml_path.read_text())
-    timeouts: dict[str, float] = {}
-    for section_name in ("agent", "verifier", "build"):
-        section = payload.get(section_name)
-        if not isinstance(section, dict):
-            continue
-        timeout_value = section.get("timeout_sec")
-        if isinstance(timeout_value, (int, float)):
-            timeouts[section_name] = float(timeout_value)
-    return timeouts
-
-
 def tune_result_has_timeout_exception(tune_result: dict[str, Any]) -> bool:
     exception_stats = tune_result.get("exception_stats") or {}
     if not isinstance(exception_stats, dict):
@@ -238,17 +229,33 @@ def tune_result_has_timeout_exception(tune_result: dict[str, Any]) -> bool:
     return False
 
 
-def next_timeout_multiplier_after_timeout(
+def tune_result_has_executor_unavailable(tune_result: dict[str, Any]) -> bool:
+    return bool(tune_result.get("executor_unavailable"))
+
+
+def build_tune_infra_failure_result(
     *,
-    current_multiplier: float,
-    task_timeout_seconds: dict[str, float],
-) -> float:
-    timeout_values = [value for value in task_timeout_seconds.values() if value > 0]
-    if not timeout_values:
-        return current_multiplier * 2.0
-    max_phase_timeout_sec = max(timeout_values)
-    max_multiplier = MAX_DYNAMIC_TIMEOUT_SEC / max_phase_timeout_sec
-    return min(current_multiplier * 2.0, max_multiplier)
+    task_id: str,
+    round_dir_path: Path,
+    error: Exception,
+    stage: str,
+    attempt_timeout_multiplier: float,
+) -> dict[str, Any]:
+    message = f"{type(error).__name__}: {error}"
+    return {
+        "task_id": task_id,
+        "condition": "c4",
+        "reward": None,
+        "eval_name": None,
+        "exception_stats": {HARBOR_INFRA_FAILURE_EXCEPTION: [f"{stage}: {message}"]},
+        "n_trials": 0,
+        "n_errors": 1,
+        "skill_source": str(round_dir_path / "skillpack"),
+        "executor_unavailable": True,
+        "failure_stage": stage,
+        "failure_message": message,
+        "attempt_timeout_multiplier": attempt_timeout_multiplier,
+    }
 
 
 def copy_tree(src: Path, dst: Path) -> None:
@@ -1437,6 +1444,53 @@ def write_executor_verifier_summary(
     return summary_path
 
 
+def write_executor_soft_failure_artifacts(
+    *,
+    round_dir_path: Path,
+    tune_result: dict[str, Any],
+) -> ExecutorOutputs:
+    executor_dir = ensure_dir(round_dir_path / "executor")
+    failure_dir = ensure_dir(executor_dir / "soft_failure")
+    session_log_path = failure_dir / "executor_failure.log"
+    exception_stats = tune_result.get("exception_stats") or {}
+    message_lines = [
+        f"status=executor_soft_failure task={round_dir_path.name}",
+        f"failure_stage={tune_result.get('failure_stage') or 'unknown'}",
+        f"failure_message={tune_result.get('failure_message') or 'unknown'}",
+        f"exception_stats={json.dumps(exception_stats, sort_keys=True)}",
+    ]
+    session_log_path.write_text("\n".join(message_lines) + "\n")
+    summary_path = executor_dir / "verifier_summary.json"
+    write_json(
+        summary_path,
+        {
+            "reward": tune_result.get("reward"),
+            "eval_name": tune_result.get("eval_name"),
+            "exception_stats": exception_stats,
+            "n_trials": tune_result.get("n_trials"),
+            "n_errors": tune_result.get("n_errors"),
+            "report_path": None,
+            "trial_result_path": None,
+            "session_log_path": str(session_log_path),
+            "soft_failure": True,
+            "soft_failure_reason": tune_result.get("failure_message"),
+            "soft_failure_stage": tune_result.get("failure_stage"),
+            "passed_tests": None,
+            "failed_tests": None,
+            "total_tests": None,
+            "pytest_exitcode": None,
+        },
+    )
+    bundle_path = round_dir_path / "skillpack_bundle.yaml"
+    current_bundle_path = str(bundle_path) if bundle_path.exists() else None
+    return ExecutorOutputs(
+        session_log_path=str(session_log_path),
+        verifier_summary_path=str(summary_path),
+        current_skillpack_dir=str(round_dir_path / "skillpack"),
+        current_bundle_path=current_bundle_path,
+    )
+
+
 def materialize_c4ar_next_round(
     *,
     paths: RefinePaths,
@@ -1455,6 +1509,175 @@ def materialize_c4ar_next_round(
     elif target_bundle_path.exists():
         target_bundle_path.unlink()
     return target_round_dir
+
+
+def collect_skillpack_files(skillpack_dir: Path) -> list[str]:
+    if not skillpack_dir.exists():
+        return []
+    return sorted(
+        str(path.relative_to(skillpack_dir))
+        for path in skillpack_dir.rglob("*")
+        if path.is_file()
+    )
+
+
+def write_c4ar_terminal_round_artifacts(
+    *,
+    round_dir_path: Path,
+    round_index: int,
+    task: TaskInputs,
+    tune_result: dict[str, Any],
+) -> None:
+    skillpack_dir = round_dir_path / "skillpack"
+    skill_files = collect_skillpack_files(skillpack_dir)
+    if not skill_files:
+        skill_files = [f"skills/{skill_name}/SKILL.md" for skill_name in task.skill_names]
+    verifier_summary_path = round_dir_path / "executor" / "verifier_summary.json"
+    legacy_role_dirs = [name for name in ("role_a", "role_b") if (round_dir_path / name).exists()]
+    terminal_reason = (
+        "terminal evaluation round; role_a and role_b were skipped because there is no downstream refine round"
+    )
+    legacy_note = (
+        f" Ignored legacy role artifacts: {', '.join(legacy_role_dirs)}."
+        if legacy_role_dirs
+        else ""
+    )
+    marker_path = round_dir_path / "terminal_round.json"
+    write_json(
+        marker_path,
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "mode": "terminal_executor_only",
+            "decision": "select_final",
+            "reason": terminal_reason,
+            "selected_candidate_label": f"R{round_index}",
+            "current_skillpack_dir": str(skillpack_dir),
+            "bundle_path": str(round_dir_path / "skillpack_bundle.yaml")
+            if (round_dir_path / "skillpack_bundle.yaml").exists()
+            else None,
+            "verifier_summary_path": str(verifier_summary_path) if verifier_summary_path.exists() else None,
+            "reward": tune_result.get("reward"),
+            "eval_name": tune_result.get("eval_name"),
+            "exception_stats": tune_result.get("exception_stats") or {},
+            "ignored_legacy_role_dirs": legacy_role_dirs,
+            "updated_at": _timestamp(),
+        },
+    )
+
+    events = [
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "orchestrator",
+            "event_type": "round_started",
+            "status": "running",
+            "timestamp": _timestamp(),
+            "artifact_ref": None,
+            "note": "terminal executor-only round",
+        },
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "executor",
+            "event_type": "executor_completed",
+            "status": "completed",
+            "timestamp": _timestamp(),
+            "artifact_ref": str(verifier_summary_path) if verifier_summary_path.exists() else None,
+            "note": "terminal evaluation completed",
+        },
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "orchestrator",
+            "event_type": "terminal_round_completed",
+            "status": "select_final",
+            "timestamp": _timestamp(),
+            "artifact_ref": str(marker_path),
+            "note": terminal_reason,
+        },
+    ]
+    (round_dir_path / "orchestrator_log.ndjson").write_text(
+        "".join(json.dumps(event) + "\n" for event in events)
+    )
+
+    (round_dir_path / f"round_{round_index}_skill.md").write_text(
+        "\n".join(
+            [
+                "# Round Skill Snapshot",
+                "",
+                f"- task_id: `{task.task_id}`",
+                f"- round_index: `R{round_index}`",
+                f"- skill_files: `{', '.join(skill_files)}`",
+                "- source: `current round skillpack (terminal evaluation)`",
+            ]
+        )
+        + "\n"
+    )
+
+    (round_dir_path / f"round_{round_index}_refine_memo.md").write_text(
+        "\n".join(
+            [
+                "# Refine Memo",
+                "",
+                f"- summary: `{terminal_reason}.{legacy_note}`",
+            ]
+        )
+        + "\n"
+    )
+
+    (round_dir_path / f"round_{round_index}_diff_summary.md").write_text(
+        "\n".join(
+            [
+                "# Diff Summary",
+                "",
+                "- recommended_edit_targets: `none`",
+                "- prompt_invariant: `not-applicable (terminal evaluation only)`",
+                "- next_skillpack_dir: `not-applicable`",
+            ]
+        )
+        + "\n"
+    )
+
+    (round_dir_path / f"round_{round_index}_effect_estimate.md").write_text(
+        "\n".join(
+            [
+                "# Effect Estimate",
+                "",
+                f"- reward: `{tune_result.get('reward')}`",
+                f"- eval_name: `{tune_result.get('eval_name')}`",
+                f"- exception_keys: `{', '.join(sorted((tune_result.get('exception_stats') or {}).keys())) or 'none'}`",
+            ]
+        )
+        + "\n"
+    )
+
+    (round_dir_path / f"round_{round_index}_risk_note.md").write_text(
+        "\n".join(
+            [
+                "# Risk Note",
+                "",
+                "- decision: `select_final`",
+                f"- reason: `{terminal_reason}`",
+            ]
+        )
+        + "\n"
+    )
+
+    (round_dir_path / f"round_{round_index}_diagnosis_table.md").write_text(
+        "\n".join(
+            [
+                "# Diagnosis Table",
+                "",
+                "- dominant_failure_pattern: `not assessed in terminal evaluation round`",
+                "",
+                "## Planned Operations",
+                "",
+                "- none",
+            ]
+        )
+        + "\n"
+    )
 
 
 def write_c4ar_round_artifacts(
@@ -1559,6 +1782,153 @@ def write_c4ar_round_artifacts(
     )
 
 
+def build_synthetic_c4ar_executor_failure_outputs(
+    *,
+    task: TaskInputs,
+    round_index: int,
+    round_dir_path: Path,
+    executor_outputs: ExecutorOutputs,
+    tune_result: dict[str, Any],
+    role_a_model_name: str,
+    role_b_model_name: str,
+) -> OrchestratorOutputs:
+    role_a_dir = ensure_dir(round_dir_path / "role_a")
+    role_b_dir = ensure_dir(round_dir_path / "role_b")
+    event_log_path = round_dir_path / "orchestrator_log.ndjson"
+    skillpack_dir = Path(executor_outputs.current_skillpack_dir)
+    skill_files = collect_skillpack_files(skillpack_dir)
+    if not skill_files:
+        skill_files = [f"skills/{skill_name}/SKILL.md" for skill_name in task.skill_names]
+
+    failure_reason = (
+        "executor/tune_check infrastructure failure; role_a and role_b were skipped for this round"
+    )
+    failure_message = tune_result.get("failure_message") or "Harbor executor failed before producing trial outputs"
+    session_evidence = SessionEvidenceArtifact(
+        task_id=task.task_id,
+        round_index=round_index,
+        role="role_a",
+        model_name=role_a_model_name,
+        source_log_paths=[executor_outputs.session_log_path],
+        dominant_failure_pattern="executor infrastructure failure",
+        wasted_loop_signals=[],
+        tool_misuse_signals=[],
+        critical_turns=[failure_message],
+        skill_misguidance_signals=[],
+        recommended_edit_targets=[],
+        evidence_refs=[f"{executor_outputs.session_log_path}:1"],
+        observed_at=_timestamp(),
+    )
+    next_manifest = NextSkillpackManifest(
+        task_id=task.task_id,
+        round_index=round_index,
+        role="role_b",
+        model_name=role_b_model_name,
+        skillpack_dir=executor_outputs.current_skillpack_dir,
+        skill_files=skill_files,
+        prompt_invariant=True,
+        derived_from_round=round_index,
+        bundle_path=executor_outputs.current_bundle_path,
+    )
+    round_decision = RoundDecisionArtifact(
+        task_id=task.task_id,
+        round_index=round_index,
+        role="role_b",
+        model_name=role_b_model_name,
+        decision="stop",
+        reason=failure_reason,
+        next_round_index=None,
+        next_skillpack_dir=None,
+        selected_candidate_label=f"R{round_index}",
+    )
+
+    session_evidence_json_path = role_a_dir / "session_evidence.json"
+    session_evidence_md_path = role_a_dir / "session_evidence.md"
+    refine_plan_json_path = role_b_dir / "refine_plan.json"
+    refine_plan_md_path = role_b_dir / "refine_plan.md"
+    next_manifest_json_path = role_b_dir / "next_skillpack_manifest.json"
+    round_decision_json_path = role_b_dir / "round_decision.json"
+
+    write_json(session_evidence_json_path, session_evidence.to_dict())
+    session_evidence_md_path.write_text(
+        "\n".join(
+            [
+                "# Session-Derived Evidence",
+                "",
+                f"- dominant_failure_pattern: `{session_evidence.dominant_failure_pattern}`",
+                f"- critical_turn: `{failure_message}`",
+                f"- source_log_path: `{executor_outputs.session_log_path}`",
+            ]
+        )
+        + "\n"
+    )
+    write_json(
+        refine_plan_json_path,
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "role_b",
+            "model_name": role_b_model_name,
+            "summary": failure_reason,
+            "atomic_operations": [],
+        },
+    )
+    refine_plan_md_path.write_text(
+        "\n".join(
+            [
+                "# Refine Plan",
+                "",
+                f"- summary: `{failure_reason}`",
+                "- atomic_operations: `none`",
+            ]
+        )
+        + "\n"
+    )
+    write_json(next_manifest_json_path, next_manifest.to_dict())
+    write_json(round_decision_json_path, round_decision.to_dict())
+
+    events = [
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "orchestrator",
+            "event_type": "round_started",
+            "status": "running",
+            "timestamp": _timestamp(),
+            "artifact_ref": executor_outputs.current_skillpack_dir,
+            "note": "starting sequential C4AR round",
+        },
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "orchestrator",
+            "event_type": "executor_soft_failed",
+            "status": "failed",
+            "timestamp": _timestamp(),
+            "artifact_ref": executor_outputs.verifier_summary_path,
+            "note": failure_message,
+        },
+        {
+            "task_id": task.task_id,
+            "round_index": round_index,
+            "role": "orchestrator",
+            "event_type": "round_decision_loaded",
+            "status": "stop",
+            "timestamp": _timestamp(),
+            "artifact_ref": str(round_decision_json_path),
+            "note": failure_reason,
+        },
+    ]
+    event_log_path.write_text("".join(json.dumps(event) + "\n" for event in events))
+
+    return OrchestratorOutputs(
+        event_log_path=str(event_log_path),
+        session_evidence=session_evidence,
+        next_skillpack_manifest=next_manifest,
+        round_decision=round_decision,
+    )
+
+
 def existing_c4ar_round_outputs(
     *,
     round_dir_path: Path,
@@ -1602,13 +1972,71 @@ def existing_executor_outputs(
     if not verifier_summary_path.exists():
         return None
     summary_payload = read_json(verifier_summary_path)
-    trial_result_path = summary_payload.get("trial_result_path")
-    if not isinstance(trial_result_path, str) or not trial_result_path.strip():
-        return None
-    trial_dir = Path(trial_result_path).parent
-    if not trial_dir.exists():
-        return None
+    session_log_path_value = summary_payload.get("session_log_path")
+    session_log_path: Path | None = None
+    if isinstance(session_log_path_value, str) and session_log_path_value.strip():
+        candidate = Path(session_log_path_value)
+        if candidate.exists() and candidate.is_file():
+            session_log_path = candidate
+    if session_log_path is None:
+        trial_result_path = summary_payload.get("trial_result_path")
+        if not isinstance(trial_result_path, str) or not trial_result_path.strip():
+            return None
+        trial_dir = Path(trial_result_path).parent
+        if not trial_dir.exists():
+            return None
+        session_log_path = find_executor_session_log_path(trial_dir)
+    bundle_path = round_dir_path / "skillpack_bundle.yaml"
+    current_bundle_path = str(bundle_path) if bundle_path.exists() else None
+    return (
+        ExecutorOutputs(
+            session_log_path=str(session_log_path),
+            verifier_summary_path=str(verifier_summary_path),
+            current_skillpack_dir=str(round_dir_path / "skillpack"),
+            current_bundle_path=current_bundle_path,
+        ),
+        tune_result,
+    )
+
+
+def ensure_c4ar_executor_outputs(
+    *,
+    task: TaskInputs,
+    round_dir_path: Path,
+    skillsbench_root: Path,
+    oauth_file: Path | None,
+    agent_name: str,
+    model_name: str,
+    tune_timeout_multiplier: float,
+    run_dir: Path,
+) -> tuple[ExecutorOutputs, dict[str, Any]]:
+    cached_executor = existing_executor_outputs(round_dir_path=round_dir_path, task_id=task.task_id)
+    if cached_executor is not None:
+        return cached_executor
+
+    tune_root = round_dir_path / "tune_check"
+    if (tune_root / "result.json").exists() and not (tune_root / "config.json").exists():
+        (tune_root / "result.json").unlink()
+    tune_result = run_round_tune_check(
+        task=task,
+        run_dir=run_dir,
+        round_dir_path=round_dir_path,
+        skillsbench_root=skillsbench_root,
+        oauth_file=oauth_file,
+        agent_name=agent_name,
+        model_name=model_name,
+        timeout_multiplier=tune_timeout_multiplier,
+    )
+    if tune_result_has_executor_unavailable(tune_result):
+        return write_executor_soft_failure_artifacts(round_dir_path=round_dir_path, tune_result=tune_result), tune_result
+    job_dir = resolve_tune_job_dir(tune_root)
+    trial_dir = resolve_single_trial_dir(job_dir)
     session_log_path = find_executor_session_log_path(trial_dir)
+    verifier_summary_path = write_executor_verifier_summary(
+        trial_dir=trial_dir,
+        tune_result=tune_result,
+        output_dir=round_dir_path / "executor",
+    )
     bundle_path = round_dir_path / "skillpack_bundle.yaml"
     current_bundle_path = str(bundle_path) if bundle_path.exists() else None
     return (
@@ -1643,6 +2071,10 @@ def infer_c4ar_resume_round_index(
     for round_index in existing_indices:
         current_round_dir = rounds_dir / f"round-{round_index}"
         cached = existing_c4ar_round_outputs(round_dir_path=current_round_dir, task_id=task_id)
+        if cached is None and round_index == round_budget:
+            terminal_cached = existing_executor_outputs(round_dir_path=current_round_dir, task_id=task_id)
+            if terminal_cached is not None:
+                return round_budget
         if cached is None:
             return round_index
         highest_complete_index = round_index
@@ -1681,32 +2113,6 @@ def existing_completed_round_rows(
             continue
         rows.append(build_round_row(round_index, round_dir_path, tune_result))
     return rows
-
-
-def carried_timeout_multiplier_for_resume(
-    *,
-    base_multiplier: float,
-    paths: RefinePaths,
-    task_id: str,
-    stop_before_round_index: int,
-    task_timeout_seconds: dict[str, float],
-) -> float:
-    current_multiplier = base_multiplier
-    for round_index in range(0, stop_before_round_index):
-        round_dir_path = round_dir(paths, round_index)
-        tune_result = existing_tune_result(
-            task_id=task_id,
-            round_dir_path=round_dir_path,
-            skill_source=str(round_dir_path / "skillpack"),
-        )
-        if tune_result is None:
-            continue
-        if tune_result_has_timeout_exception(tune_result):
-            current_multiplier = next_timeout_multiplier_after_timeout(
-                current_multiplier=current_multiplier,
-                task_timeout_seconds=task_timeout_seconds,
-            )
-    return current_multiplier
 
 
 def prepare_c4ar_resume_round(
@@ -1762,9 +2168,15 @@ def c4ar_resume_requires_backup(
         if not current_round_dir.exists():
             continue
         cached = existing_c4ar_round_outputs(round_dir_path=current_round_dir, task_id=task_id)
+        if cached is None and round_index == round_budget:
+            terminal_cached = existing_executor_outputs(round_dir_path=current_round_dir, task_id=task_id)
+            if terminal_cached is not None:
+                continue
         if round_index > 0 and cached is None:
             return True
         if cached is None:
+            continue
+        if round_index >= round_budget:
             continue
         orchestrator_outputs, _ = cached
         round_decision = orchestrator_outputs.round_decision
@@ -1827,44 +2239,34 @@ def run_c4ar_round_with_harbor(
     if cached is not None:
         return cached
 
-    executor_state: dict[str, Any] = {}
-    cached_executor = existing_executor_outputs(round_dir_path=round_dir_path, task_id=task.task_id)
+    executor_outputs, tune_result = ensure_c4ar_executor_outputs(
+        task=task,
+        round_dir_path=round_dir_path,
+        skillsbench_root=skillsbench_root,
+        oauth_file=oauth_file,
+        agent_name=agent_name,
+        model_name=model_name,
+        tune_timeout_multiplier=tune_timeout_multiplier,
+        run_dir=run_dir,
+    )
+    if tune_result_has_executor_unavailable(tune_result):
+        synthetic_outputs = build_synthetic_c4ar_executor_failure_outputs(
+            task=task,
+            round_index=round_index,
+            round_dir_path=round_dir_path,
+            executor_outputs=executor_outputs,
+            tune_result=tune_result,
+            role_a_model_name=role_a_model_name,
+            role_b_model_name=role_b_model_name,
+        )
+        return synthetic_outputs, tune_result
+
     bundle_path = round_dir_path / "skillpack_bundle.yaml"
     current_bundle_path = bundle_path if bundle_path.exists() else None
 
     def executor_runner(executor_inputs: Any) -> ExecutorOutputs:
-        if cached_executor is not None:
-            executor_outputs, tune_result = cached_executor
-            executor_state["tune_result"] = tune_result
-            return executor_outputs
-        tune_root = round_dir_path / "tune_check"
-        if (tune_root / "result.json").exists() and not (tune_root / "config.json").exists():
-            (tune_root / "result.json").unlink()
-        tune_result = run_round_tune_check(
-            task=task,
-            run_dir=run_dir,
-            round_dir_path=round_dir_path,
-            skillsbench_root=skillsbench_root,
-            oauth_file=oauth_file,
-            agent_name=agent_name,
-            model_name=model_name,
-            timeout_multiplier=tune_timeout_multiplier,
-        )
-        job_dir = resolve_tune_job_dir(tune_root)
-        trial_dir = resolve_single_trial_dir(job_dir)
-        session_log_path = find_executor_session_log_path(trial_dir)
-        verifier_summary_path = write_executor_verifier_summary(
-            trial_dir=trial_dir,
-            tune_result=tune_result,
-            output_dir=Path(executor_inputs.output_dir),
-        )
-        executor_state["tune_result"] = tune_result
-        return ExecutorOutputs(
-            session_log_path=str(session_log_path),
-            verifier_summary_path=str(verifier_summary_path),
-            current_skillpack_dir=executor_inputs.skillpack_dir,
-            current_bundle_path=executor_inputs.bundle_path,
-        )
+        del executor_inputs
+        return executor_outputs
 
     def role_a_runner_with_resume(inputs: Any, *, config: Any) -> Any:
         output_dir = Path(inputs.output_dir)
@@ -1934,10 +2336,33 @@ def run_c4ar_round_with_harbor(
         role_a_runner=role_a_runner_with_resume,
         role_b_runner=role_b_runner_with_resume,
     )
-    tune_result = executor_state.get("tune_result")
-    if tune_result is None:
-        raise RuntimeError("executor runner did not capture tune_result")
     return orchestrator_outputs, tune_result
+
+
+def run_terminal_c4ar_round(
+    *,
+    task: TaskInputs,
+    round_index: int,
+    round_dir_path: Path,
+    skillsbench_root: Path,
+    oauth_file: Path | None,
+    agent_name: str,
+    model_name: str,
+    tune_timeout_multiplier: float,
+    run_dir: Path,
+) -> dict[str, Any]:
+    del round_index
+    _, tune_result = ensure_c4ar_executor_outputs(
+        task=task,
+        round_dir_path=round_dir_path,
+        skillsbench_root=skillsbench_root,
+        oauth_file=oauth_file,
+        agent_name=agent_name,
+        model_name=model_name,
+        tune_timeout_multiplier=tune_timeout_multiplier,
+        run_dir=run_dir,
+    )
+    return tune_result
 
 
 def is_round_materialized(
@@ -2045,31 +2470,57 @@ def run_round_tune_check(
     sandbox_dir = materialize_c4_sandbox(task, run_dir, round_dir_path)
     job_name = f"{task.task_id}-{round_dir_path.name}-c4-tune"
     config_path = tune_root / "config.json"
-    write_json(
-        config_path,
-        build_job_config(
-            job_name=job_name,
-            jobs_dir=tune_root,
-            task_path=sandbox_dir,
-            agent_name=agent_name,
-            model_name=model_name,
-            timeout_multiplier=timeout_multiplier,
-            n_concurrent_trials=1,
-        ),
-    )
-    clear_job_dir(tune_root / job_name)
-    run_harbor_job(
-        skillsbench_root=skillsbench_root,
-        config_path=config_path,
-        oauth_file=oauth_file,
-        agent_name=agent_name,
-    )
-    result = parse_job_result(
-        tune_root / job_name,
-        condition="c4",
-        task_id=task.task_id,
-        skill_source=str(round_dir_path / "skillpack"),
-    )
+    job_dir = tune_root / job_name
+
+    def run_attempt(*, attempt_timeout_multiplier: float) -> dict[str, Any]:
+        write_json(
+            config_path,
+            build_job_config(
+                job_name=job_name,
+                jobs_dir=tune_root,
+                task_path=sandbox_dir,
+                agent_name=agent_name,
+                model_name=model_name,
+                timeout_multiplier=attempt_timeout_multiplier,
+                n_concurrent_trials=1,
+            ),
+        )
+        clear_job_dir(job_dir)
+        try:
+            run_harbor_job(
+                skillsbench_root=skillsbench_root,
+                config_path=config_path,
+                oauth_file=oauth_file,
+                agent_name=agent_name,
+            )
+        except Exception as error:
+            return build_tune_infra_failure_result(
+                task_id=task.task_id,
+                round_dir_path=round_dir_path,
+                error=error,
+                stage="harbor_run_failed",
+                attempt_timeout_multiplier=attempt_timeout_multiplier,
+            )
+        try:
+            return parse_job_result(
+                job_dir,
+                condition="c4",
+                task_id=task.task_id,
+                skill_source=str(round_dir_path / "skillpack"),
+            )
+        except Exception as error:
+            return build_tune_infra_failure_result(
+                task_id=task.task_id,
+                round_dir_path=round_dir_path,
+                error=error,
+                stage="result_parse_failed",
+                attempt_timeout_multiplier=attempt_timeout_multiplier,
+            )
+
+    result = run_attempt(attempt_timeout_multiplier=timeout_multiplier)
+    if tune_result_has_timeout_exception(result):
+        # Retry timeout outcomes once in-place with double timeout; other failures are final.
+        result = run_attempt(attempt_timeout_multiplier=timeout_multiplier * 2.0)
     write_json(tune_root / "result.json", result)
     return result
 
@@ -2080,6 +2531,7 @@ def append_refine_ledger(
     round_index: int,
     parent_round_index: int | None,
     tune_result: dict[str, Any],
+    note: str | None = None,
 ) -> None:
     lines: list[str]
     if paths.ledger_path.exists():
@@ -2097,8 +2549,8 @@ def append_refine_ledger(
     reward = tune_result.get("reward")
     exceptions = ",".join(sorted((tune_result.get("exception_stats") or {}).keys()))
     parent_label = "-" if parent_round_index is None else f"R{parent_round_index}"
-    note = "bootstrap" if round_index == 0 else "generated round candidate"
-    lines.append(f"| R{round_index} | {parent_label} | {reward} | {exceptions} | {note} |")
+    note_value = note if note is not None else ("bootstrap" if round_index == 0 else "generated round candidate")
+    lines.append(f"| R{round_index} | {parent_label} | {reward} | {exceptions} | {note_value} |")
     paths.ledger_path.write_text("\n".join(lines) + "\n")
 
 
@@ -2268,18 +2720,38 @@ def run_refine_rounds(
             task_id=task.task_id,
             stop_before_round_index=start_round_index,
         )
-        task_timeout_seconds = load_task_timeout_seconds(task.task_toml_path)
-        current_tune_timeout_multiplier = carried_timeout_multiplier_for_resume(
-            base_multiplier=tune_timeout_multiplier,
-            paths=paths,
-            task_id=task.task_id,
-            stop_before_round_index=start_round_index,
-            task_timeout_seconds=task_timeout_seconds,
-        )
         for round_index in range(start_round_index, round_budget + 1):
             current_round_dir = round_dir(paths, round_index)
             if round_index == start_round_index and round_index > 0:
                 prepare_c4ar_resume_round(task=task, paths=paths, round_index=round_index)
+            if round_index == round_budget:
+                tune_result = run_terminal_c4ar_round(
+                    task=task,
+                    round_index=round_index,
+                    round_dir_path=current_round_dir,
+                    skillsbench_root=skillsbench_root,
+                    oauth_file=oauth_file,
+                    agent_name=agent_name,
+                    model_name=model_name,
+                    tune_timeout_multiplier=tune_timeout_multiplier,
+                    run_dir=run_dir,
+                )
+                round_row = build_round_row(round_index, current_round_dir, tune_result)
+                round_rows.append(round_row)
+                append_refine_ledger(
+                    paths=paths,
+                    round_index=round_index,
+                    parent_round_index=None if round_index == 0 else round_index - 1,
+                    tune_result=tune_result,
+                    note="terminal evaluation",
+                )
+                write_c4ar_terminal_round_artifacts(
+                    round_dir_path=current_round_dir,
+                    round_index=round_index,
+                    task=task,
+                    tune_result=tune_result,
+                )
+                break
             orchestrator_outputs, tune_result = run_c4ar_round_with_harbor(
                 task=task,
                 round_index=round_index,
@@ -2288,7 +2760,7 @@ def run_refine_rounds(
                 oauth_file=oauth_file,
                 agent_name=agent_name,
                 model_name=model_name,
-                tune_timeout_multiplier=current_tune_timeout_multiplier,
+                tune_timeout_multiplier=tune_timeout_multiplier,
                 run_dir=run_dir,
             )
             round_row = build_round_row(round_index, current_round_dir, tune_result)
@@ -2314,11 +2786,6 @@ def run_refine_rounds(
                 if isinstance(round_decision, dict)
                 else round_decision.next_round_index
             )
-            if tune_result_has_timeout_exception(tune_result):
-                current_tune_timeout_multiplier = next_timeout_multiplier_after_timeout(
-                    current_multiplier=current_tune_timeout_multiplier,
-                    task_timeout_seconds=task_timeout_seconds,
-                )
             if round_index >= round_budget or decision_name != "continue":
                 break
 
@@ -2474,7 +2941,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=ROOT / "plans" / "skillx" / "skillx-refine-bundle-contract-v0.1.md",
     )
     parser.add_argument("--round-timeout-multiplier", type=float, default=2.0)
-    parser.add_argument("--tune-timeout-multiplier", type=float, default=3.0)
+    parser.add_argument("--tune-timeout-multiplier", type=float, default=1.0)
     parser.add_argument("--orchestration-mode", choices=("legacy", "c4ar"), default=DEFAULT_ORCHESTRATION_MODE)
     return parser
 
