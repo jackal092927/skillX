@@ -41,6 +41,10 @@ incubation repo.
 - `skillsbench-task-cluster-inputs-v0.1.jsonl`
 - `skillsbench-initial-classification-v0.1.md`
 - `skillsbench-lite-eval-harness-v0.1.md`
+- `skillx-dataset-selection-note-v0.1.md`
+- `skillsbench-benchmark-onboarding-note-v0.1.md`
+- `swe-skills-bench-onboarding-note-v0.1.md`
+- `skillcraft-onboarding-note-v0.1.md`
 
 Suggested read order for the current MVP line:
 
@@ -50,6 +54,13 @@ Suggested read order for the current MVP line:
 4. `skillx-evaluator-in-the-loop-evaluation-protocol-v0.1.md`
 5. `skillx-assignment-matrix-protocol-v0.1.md`
 6. `skillx-outer-loop-update-protocol-v0.1.md`
+
+Suggested read order for benchmark selection and onboarding:
+
+1. `skillx-dataset-selection-note-v0.1.md`
+2. `skillsbench-benchmark-onboarding-note-v0.1.md`
+3. `swe-skills-bench-onboarding-note-v0.1.md`
+4. `skillcraft-onboarding-note-v0.1.md`
 
 Suggested read order for the new internalization track:
 
