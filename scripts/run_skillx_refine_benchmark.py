@@ -43,7 +43,13 @@ from skillx.c4ar.role_b import (
     run_role_b,
 )
 from skillx.c4ar.role_b_artifacts import load_and_canonicalize_role_b_artifact_files
-from skillx.c4ar.contracts import ensure_valid_session_evidence_artifact
+from skillx.c4ar.contracts import (
+    NextSkillpackManifest,
+    OrchestratorEvent,
+    RoundDecisionArtifact,
+    SessionEvidenceArtifact,
+    ensure_valid_session_evidence_artifact,
+)
 from skillx.decision import (
     SkillXDecisionBundle,
     SkillXRefineIntent,
@@ -1892,6 +1898,197 @@ def run_c4ar_round_with_harbor(
     return orchestrator_outputs, tune_result
 
 
+def _current_round_skill_files(*, task: TaskInputs, round_dir_path: Path) -> list[str]:
+    skill_files: list[str] = []
+    for skill_name in task.skill_names:
+        relative_path = Path("skills") / skill_name / "SKILL.md"
+        if not (round_dir_path / "skillpack" / relative_path).exists():
+            raise FileNotFoundError(f"missing current round skill file: {round_dir_path / 'skillpack' / relative_path}")
+        skill_files.append(str(relative_path))
+    return skill_files
+
+
+def _append_orchestrator_event(log_path: Path, event: OrchestratorEvent) -> None:
+    ensure_dir(log_path.parent)
+    with log_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(event.to_dict()) + "\n")
+
+
+def _synthesize_terminal_round_outputs(
+    *,
+    task: TaskInputs,
+    round_index: int,
+    round_dir_path: Path,
+    executor_outputs: ExecutorOutputs,
+    role_a_model_name: str,
+    role_b_model_name: str,
+) -> OrchestratorOutputs:
+    role_a_dir = ensure_dir(round_dir_path / "role_a")
+    role_b_dir = ensure_dir(round_dir_path / "role_b")
+    bundle_path = round_dir_path / "skillpack_bundle.yaml"
+    current_bundle_path = str(bundle_path) if bundle_path.exists() else None
+    skill_files = _current_round_skill_files(task=task, round_dir_path=round_dir_path)
+
+    session_evidence = SessionEvidenceArtifact(
+        task_id=task.task_id,
+        round_index=round_index,
+        role="role_a",
+        model_name=role_a_model_name,
+        source_log_paths=[executor_outputs.session_log_path],
+        dominant_failure_pattern="terminal_round_eval_only",
+        recommended_edit_targets=[],
+        evidence_refs=[executor_outputs.verifier_summary_path],
+        observed_at=_timestamp(),
+    )
+    write_json(role_a_dir / "session_evidence.json", session_evidence.to_dict())
+    (role_a_dir / "session_evidence.md").write_text(
+        "\n".join(
+            [
+                "# Session Evidence",
+                "",
+                "- mode: `synthetic-terminal-round`",
+                "- note: `round budget reached; skipped role_a and role_b after executor evaluation`",
+                f"- source_log_path: `{executor_outputs.session_log_path}`",
+                f"- dominant_failure_pattern: `{session_evidence.dominant_failure_pattern}`",
+            ]
+        )
+        + "\n"
+    )
+
+    next_skillpack_manifest = NextSkillpackManifest(
+        task_id=task.task_id,
+        round_index=round_index,
+        role="role_b",
+        model_name=role_b_model_name,
+        skillpack_dir=str(round_dir_path / "skillpack"),
+        skill_files=skill_files,
+        prompt_invariant=True,
+        derived_from_round=round_index,
+        bundle_path=current_bundle_path,
+    )
+    round_decision = RoundDecisionArtifact(
+        task_id=task.task_id,
+        round_index=round_index,
+        role="role_b",
+        model_name=role_b_model_name,
+        decision="stop",
+        reason="round budget reached; terminal round records evaluator result only",
+        next_round_index=None,
+        next_skillpack_dir=None,
+        selected_candidate_label=f"R{round_index}",
+    )
+    write_json(role_b_dir / "next_skillpack_manifest.json", next_skillpack_manifest.to_dict())
+    write_json(role_b_dir / "round_decision.json", round_decision.to_dict())
+
+    event_log_path = round_dir_path / "orchestrator_log.ndjson"
+    if not event_log_path.exists():
+        _append_orchestrator_event(
+            event_log_path,
+            OrchestratorEvent(
+                task_id=task.task_id,
+                round_index=round_index,
+                role="orchestrator",
+                event_type="round_started",
+                status="ok",
+                timestamp=_timestamp(),
+                artifact_ref=str(round_dir_path / "skillpack"),
+                note="starting terminal evaluator-only round",
+            ),
+        )
+    _append_orchestrator_event(
+        event_log_path,
+        OrchestratorEvent(
+            task_id=task.task_id,
+            round_index=round_index,
+            role="orchestrator",
+            event_type="executor_completed",
+            status="ok",
+            timestamp=_timestamp(),
+            artifact_ref=executor_outputs.verifier_summary_path,
+            note="role_a and role_b skipped on terminal round",
+        ),
+    )
+    _append_orchestrator_event(
+        event_log_path,
+        OrchestratorEvent(
+            task_id=task.task_id,
+            round_index=round_index,
+            role="orchestrator",
+            event_type="round_decision_loaded",
+            status="stop",
+            timestamp=_timestamp(),
+            artifact_ref=str(role_b_dir / "round_decision.json"),
+            note="synthetic stop decision for terminal round",
+        ),
+    )
+    return OrchestratorOutputs(
+        event_log_path=str(event_log_path),
+        session_evidence=session_evidence,
+        next_skillpack_manifest=next_skillpack_manifest,
+        round_decision=round_decision,
+    )
+
+
+def run_c4ar_terminal_round_with_harbor(
+    *,
+    task: TaskInputs,
+    round_index: int,
+    round_dir_path: Path,
+    skillsbench_root: Path,
+    oauth_file: Path | None,
+    agent_name: str,
+    model_name: str,
+    tune_timeout_multiplier: float,
+    run_dir: Path,
+    role_a_model_name: str = "codex-5.3",
+    role_b_model_name: str = "gpt-5.4",
+) -> tuple[OrchestratorOutputs, dict[str, Any]]:
+    cached = existing_c4ar_round_outputs(round_dir_path=round_dir_path, task_id=task.task_id)
+    if cached is not None:
+        return cached
+
+    cached_executor = existing_executor_outputs(round_dir_path=round_dir_path, task_id=task.task_id)
+    if cached_executor is not None:
+        executor_outputs, tune_result = cached_executor
+    else:
+        tune_result = run_round_tune_check(
+            task=task,
+            run_dir=run_dir,
+            round_dir_path=round_dir_path,
+            skillsbench_root=skillsbench_root,
+            oauth_file=oauth_file,
+            agent_name=agent_name,
+            model_name=model_name,
+            timeout_multiplier=tune_timeout_multiplier,
+        )
+        tune_root = round_dir_path / "tune_check"
+        job_dir = resolve_tune_job_dir(tune_root)
+        trial_dir = resolve_single_trial_dir(job_dir)
+        session_log_path = find_executor_session_log_path(trial_dir)
+        verifier_summary_path = write_executor_verifier_summary(
+            trial_dir=trial_dir,
+            tune_result=tune_result,
+            output_dir=ensure_dir(round_dir_path / "executor"),
+        )
+        bundle_path = round_dir_path / "skillpack_bundle.yaml"
+        executor_outputs = ExecutorOutputs(
+            session_log_path=str(session_log_path),
+            verifier_summary_path=str(verifier_summary_path),
+            current_skillpack_dir=str(round_dir_path / "skillpack"),
+            current_bundle_path=str(bundle_path) if bundle_path.exists() else None,
+        )
+
+    outputs = _synthesize_terminal_round_outputs(
+        task=task,
+        round_index=round_index,
+        round_dir_path=round_dir_path,
+        executor_outputs=executor_outputs,
+        role_a_model_name=role_a_model_name,
+        role_b_model_name=role_b_model_name,
+    )
+    return outputs, tune_result
+
+
 def is_round_materialized(
     *,
     task: TaskInputs,
@@ -2217,17 +2414,30 @@ def run_refine_rounds(
             current_round_dir = round_dir(paths, round_index)
             if round_index == start_round_index and round_index > 0:
                 prepare_c4ar_resume_round(task=task, paths=paths, round_index=round_index)
-            orchestrator_outputs, tune_result = run_c4ar_round_with_harbor(
-                task=task,
-                round_index=round_index,
-                round_dir_path=current_round_dir,
-                skillsbench_root=skillsbench_root,
-                oauth_file=oauth_file,
-                agent_name=agent_name,
-                model_name=model_name,
-                tune_timeout_multiplier=current_tune_timeout_multiplier,
-                run_dir=run_dir,
-            )
+            if round_index >= round_budget:
+                orchestrator_outputs, tune_result = run_c4ar_terminal_round_with_harbor(
+                    task=task,
+                    round_index=round_index,
+                    round_dir_path=current_round_dir,
+                    skillsbench_root=skillsbench_root,
+                    oauth_file=oauth_file,
+                    agent_name=agent_name,
+                    model_name=model_name,
+                    tune_timeout_multiplier=current_tune_timeout_multiplier,
+                    run_dir=run_dir,
+                )
+            else:
+                orchestrator_outputs, tune_result = run_c4ar_round_with_harbor(
+                    task=task,
+                    round_index=round_index,
+                    round_dir_path=current_round_dir,
+                    skillsbench_root=skillsbench_root,
+                    oauth_file=oauth_file,
+                    agent_name=agent_name,
+                    model_name=model_name,
+                    tune_timeout_multiplier=current_tune_timeout_multiplier,
+                    run_dir=run_dir,
+                )
             round_row = build_round_row(round_index, current_round_dir, tune_result)
             round_rows.append(round_row)
             append_refine_ledger(

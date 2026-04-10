@@ -329,6 +329,27 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertEqual(failed[0]["returncode"], 17)
             self.assertIn("launcher_logs/robust-smoke", stdout.getvalue())
 
+    def test_build_launcher_summary_preserves_planned_total_pairs_during_partial_progress(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            summary = self.module.build_launcher_summary(
+                task_slice_path=root / "task-slice.json",
+                materialized_root=root / "materialized",
+                selected_task_names=["task-alpha", "task-beta"],
+                total_pairs=14,
+                results=[
+                    {
+                        "pair_id": "task-alpha__artifact-generation",
+                        "status": "succeeded",
+                    }
+                ],
+            )
+
+            self.assertEqual(summary["total_pairs"], 14)
+            self.assertEqual(summary["completed_pairs"], 1)
+            self.assertEqual(summary["succeeded_pairs"], 1)
+            self.assertEqual(summary["failed_pairs"], 0)
+
     def test_main_continues_when_command_build_fails_for_one_pair(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))

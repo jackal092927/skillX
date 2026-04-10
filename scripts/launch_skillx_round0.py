@@ -171,6 +171,7 @@ def build_launcher_summary(
     task_slice_path: Path,
     materialized_root: Path,
     selected_task_names: list[str],
+    total_pairs: int,
     results: list[dict[str, Any]],
 ) -> dict[str, Any]:
     succeeded_pairs = sum(1 for item in results if item.get("status") == "succeeded")
@@ -180,7 +181,7 @@ def build_launcher_summary(
         "task_slice_path": str(task_slice_path.resolve()),
         "materialized_root": str(materialized_root.resolve()),
         "selected_task_names": selected_task_names,
-        "total_pairs": len(results),
+        "total_pairs": total_pairs,
         "completed_pairs": len(results),
         "succeeded_pairs": succeeded_pairs,
         "failed_pairs": failed_pairs,
@@ -433,6 +434,7 @@ def main(argv: list[str] | None = None) -> int:
                     task_slice_path=args.task_slice,
                     materialized_root=args.materialized_root,
                     selected_task_names=selected_task_names,
+                    total_pairs=len(selected_pairs),
                     results=results,
                 ),
             )
@@ -561,6 +563,7 @@ def main(argv: list[str] | None = None) -> int:
                 task_slice_path=args.task_slice,
                 materialized_root=args.materialized_root,
                 selected_task_names=selected_task_names,
+                total_pairs=len(selected_pairs),
                 results=results,
             ),
         )

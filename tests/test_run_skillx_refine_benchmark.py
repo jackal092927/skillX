@@ -1712,7 +1712,7 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                     model_name="anthropic/claude-sonnet-4-5",
                     round_timeout_multiplier=2.0,
                     tune_timeout_multiplier=3.0,
-                    round_budget=0,
+                    round_budget=1,
                     r0_row=r0_row,
                     run_dir=root / "out",
                     source_run_dir=root / "source-run",
@@ -1738,6 +1738,137 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["round_index"], 0)
             self.assertEqual(rows[0]["reward"], 0.8444)
+
+    def test_run_refine_rounds_c4ar_terminal_round_skips_role_a_and_role_b(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            source = self._make_source_artifacts(
+                starting_skillpack_dir=starting_skillpack_dir,
+                starting_label="R0",
+            )
+            r0_row = self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            seen_terminal_calls: list[int] = []
+
+            def fail_run_c4ar_round_with_harbor(**kwargs):
+                raise AssertionError("terminal round should not invoke full c4ar orchestrator")
+
+            def fake_run_c4ar_terminal_round_with_harbor(**kwargs):
+                seen_terminal_calls.append(kwargs["round_index"])
+                round_dir_path = kwargs["round_dir_path"]
+                role_a_dir = round_dir_path / "role_a"
+                role_b_dir = round_dir_path / "role_b"
+                role_a_dir.mkdir(parents=True, exist_ok=True)
+                role_b_dir.mkdir(parents=True, exist_ok=True)
+                session_evidence = SessionEvidenceArtifact(
+                    task_id="demo-task",
+                    round_index=0,
+                    role="role_a",
+                    model_name="codex-5.3",
+                    source_log_paths=["/tmp/session.log"],
+                    dominant_failure_pattern="terminal_round_eval_only",
+                    observed_at="2026-04-10T00:00:00+00:00",
+                )
+                next_manifest = NextSkillpackManifest(
+                    task_id="demo-task",
+                    round_index=0,
+                    role="role_b",
+                    model_name="gpt-5.4",
+                    skillpack_dir=str(round_dir_path / "skillpack"),
+                    skill_files=["skills/skill-a/SKILL.md"],
+                    prompt_invariant=True,
+                    derived_from_round=0,
+                )
+                round_decision = RoundDecisionArtifact(
+                    task_id="demo-task",
+                    round_index=0,
+                    role="role_b",
+                    model_name="gpt-5.4",
+                    decision="stop",
+                    reason="terminal round reached",
+                    next_round_index=None,
+                    next_skillpack_dir=None,
+                    selected_candidate_label="R0",
+                )
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": session_evidence,
+                            "next_skillpack_manifest": next_manifest,
+                            "round_decision": round_decision,
+                        },
+                    )(),
+                    {
+                        "reward": 0.55,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_terminal_round = getattr(self.module, "run_c4ar_terminal_round_with_harbor", None)
+            try:
+                setattr(self.module, "run_c4ar_round_with_harbor", fail_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_terminal_round_with_harbor", fake_run_c4ar_terminal_round_with_harbor)
+                rows = self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=2.0,
+                    tune_timeout_multiplier=3.0,
+                    round_budget=0,
+                    r0_row=r0_row,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                )
+            finally:
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                if original_terminal_round is None:
+                    delattr(self.module, "run_c4ar_terminal_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_terminal_round_with_harbor", original_terminal_round)
+
+            self.assertEqual(seen_terminal_calls, [0])
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["round_index"], 0)
+            self.assertEqual(rows[0]["reward"], 0.55)
 
     def test_run_refine_rounds_c4ar_doubles_next_timeout_after_timeout_result(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1780,57 +1911,62 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
 
             def fake_run_c4ar_round_with_harbor(**kwargs):
                 round_index = kwargs["round_index"]
+                self.assertEqual(round_index, 0)
                 seen_multipliers.append(kwargs["tune_timeout_multiplier"])
                 next_skillpack_dir = kwargs["round_dir_path"] / "role_b" / "next_skillpack"
                 (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
                 (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text(
                     "# Derived Execution Layer\nnext\n"
                 )
-                if round_index == 0:
-                    return (
-                        type(
-                            "FakeOrchestratorOutputs",
-                            (),
-                            {
-                                "session_evidence": type(
-                                    "FakeSessionEvidence",
-                                    (),
-                                    {
-                                        "dominant_failure_pattern": "timeout",
-                                        "recommended_edit_targets": ["guidance.block_1"],
-                                    },
-                                )(),
-                                "next_skillpack_manifest": type(
-                                    "FakeNextManifest",
-                                    (),
-                                    {
-                                        "skill_files": ["skills/skill-a/SKILL.md"],
-                                        "prompt_invariant": True,
-                                        "skillpack_dir": str(next_skillpack_dir),
-                                        "bundle_path": None,
-                                    },
-                                )(),
-                                "round_decision": type(
-                                    "FakeRoundDecision",
-                                    (),
-                                    {
-                                        "decision": "continue",
-                                        "reason": "retry with more time",
-                                        "next_round_index": 1,
-                                        "next_skillpack_dir": str(next_skillpack_dir),
-                                        "selected_candidate_label": "R0",
-                                    },
-                                )(),
-                            },
-                        )(),
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
                         {
-                            "reward": 0.2,
-                            "eval_name": "pytest",
-                            "exception_stats": {"AgentTimeoutError": ["trial-a"]},
-                            "n_trials": 1,
-                            "n_errors": 1,
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "timeout",
+                                    "recommended_edit_targets": ["guidance.block_1"],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "continue",
+                                    "reason": "retry with more time",
+                                    "next_round_index": 1,
+                                    "next_skillpack_dir": str(next_skillpack_dir),
+                                    "selected_candidate_label": "R0",
+                                },
+                            )(),
                         },
-                    )
+                    )(),
+                    {
+                        "reward": 0.2,
+                        "eval_name": "pytest",
+                        "exception_stats": {"AgentTimeoutError": ["trial-a"]},
+                        "n_trials": 1,
+                        "n_errors": 1,
+                    },
+                )
+
+            def fake_run_c4ar_terminal_round_with_harbor(**kwargs):
+                self.assertEqual(kwargs["round_index"], 1)
+                seen_multipliers.append(kwargs["tune_timeout_multiplier"])
+                next_skillpack_dir = kwargs["round_dir_path"] / "skillpack"
                 return (
                     type(
                         "FakeOrchestratorOutputs",
@@ -1877,8 +2013,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 )
 
             original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_terminal_round = getattr(self.module, "run_c4ar_terminal_round_with_harbor", None)
             try:
                 setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_terminal_round_with_harbor", fake_run_c4ar_terminal_round_with_harbor)
                 rows = self.module.run_refine_rounds(
                     task=task,
                     paths=paths,
@@ -1903,6 +2041,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                     delattr(self.module, "run_c4ar_round_with_harbor")
                 else:
                     setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                if original_terminal_round is None:
+                    delattr(self.module, "run_c4ar_terminal_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_terminal_round_with_harbor", original_terminal_round)
 
             self.assertEqual([round(row["reward"], 4) for row in rows], [0.2, 0.7])
             self.assertEqual(seen_multipliers, [2.0, 4.0])
@@ -1948,15 +2090,13 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
 
             def fake_run_c4ar_round_with_harbor(**kwargs):
                 round_index = kwargs["round_index"]
+                self.assertEqual(round_index, 0)
                 seen_multipliers.append(kwargs["tune_timeout_multiplier"])
                 next_skillpack_dir = kwargs["round_dir_path"] / "role_b" / "next_skillpack"
                 (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
                 (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text(
                     "# Derived Execution Layer\nnext\n"
                 )
-                decision = "continue" if round_index == 0 else "stop"
-                next_round_index = 1 if round_index == 0 else None
-                next_skillpack_dir_value = str(next_skillpack_dir) if round_index == 0 else None
                 return (
                     type(
                         "FakeOrchestratorOutputs",
@@ -1984,27 +2124,78 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                                 "FakeRoundDecision",
                                 (),
                                 {
-                                    "decision": decision,
+                                    "decision": "continue",
                                     "reason": "timeout cap check",
-                                    "next_round_index": next_round_index,
-                                    "next_skillpack_dir": next_skillpack_dir_value,
+                                    "next_round_index": 1,
+                                    "next_skillpack_dir": str(next_skillpack_dir),
                                     "selected_candidate_label": "R0",
                                 },
                             )(),
                         },
                     )(),
                     {
-                        "reward": 0.0 if round_index == 0 else 0.6,
+                        "reward": 0.0,
                         "eval_name": "pytest",
-                        "exception_stats": {"AgentTimeoutError": ["trial-a"]} if round_index == 0 else {},
+                        "exception_stats": {"AgentTimeoutError": ["trial-a"]},
                         "n_trials": 1,
-                        "n_errors": 1 if round_index == 0 else 0,
+                        "n_errors": 1,
+                    },
+                )
+
+            def fake_run_c4ar_terminal_round_with_harbor(**kwargs):
+                self.assertEqual(kwargs["round_index"], 1)
+                seen_multipliers.append(kwargs["tune_timeout_multiplier"])
+                next_skillpack_dir = kwargs["round_dir_path"] / "skillpack"
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "timeout",
+                                    "recommended_edit_targets": ["guidance.block_1"],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "stop",
+                                    "reason": "timeout cap check",
+                                    "next_round_index": None,
+                                    "next_skillpack_dir": None,
+                                    "selected_candidate_label": "R1",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.6,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
                     },
                 )
 
             original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_terminal_round = getattr(self.module, "run_c4ar_terminal_round_with_harbor", None)
             try:
                 setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_terminal_round_with_harbor", fake_run_c4ar_terminal_round_with_harbor)
                 self.module.run_refine_rounds(
                     task=task,
                     paths=paths,
@@ -2029,6 +2220,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                     delattr(self.module, "run_c4ar_round_with_harbor")
                 else:
                     setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                if original_terminal_round is None:
+                    delattr(self.module, "run_c4ar_terminal_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_terminal_round_with_harbor", original_terminal_round)
 
             self.assertEqual(seen_multipliers, [3.0, 3.6])
 
@@ -2067,12 +2262,11 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
 
             def fake_run_c4ar_round_with_harbor(**kwargs):
                 round_index = kwargs["round_index"]
+                self.assertEqual(round_index, 0)
                 round_dir_path = kwargs["round_dir_path"]
                 next_skillpack_dir = round_dir_path / "role_b" / "next_skillpack"
                 (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
                 (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text("# next\n")
-                decision = "continue" if round_index == 0 else "stop"
-                next_round_index = 1 if round_index == 0 else None
                 return (
                     type(
                         "FakeOrchestratorOutputs",
@@ -2100,17 +2294,64 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                                 "FakeRoundDecision",
                                 (),
                                 {
-                                    "decision": decision,
+                                    "decision": "continue",
                                     "reason": "resume guard",
-                                    "next_round_index": next_round_index,
-                                    "next_skillpack_dir": str(next_skillpack_dir) if decision == "continue" else None,
+                                    "next_round_index": 1,
+                                    "next_skillpack_dir": str(next_skillpack_dir),
                                     "selected_candidate_label": "R0",
                                 },
                             )(),
                         },
                     )(),
                     {
-                        "reward": 0.5 if round_index == 0 else 0.7,
+                        "reward": 0.5,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            def fake_run_c4ar_terminal_round_with_harbor(**kwargs):
+                self.assertEqual(kwargs["round_index"], 1)
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "none",
+                                    "recommended_edit_targets": [],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(kwargs["round_dir_path"] / "skillpack"),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "stop",
+                                    "reason": "resume guard",
+                                    "next_round_index": None,
+                                    "next_skillpack_dir": None,
+                                    "selected_candidate_label": "R1",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.7,
                         "eval_name": "pytest",
                         "exception_stats": {},
                         "n_trials": 1,
@@ -2119,9 +2360,11 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 )
 
             original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_terminal_round = getattr(self.module, "run_c4ar_terminal_round_with_harbor", None)
             original_materialize = self.module.materialize_c4ar_next_round
             try:
                 setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_terminal_round_with_harbor", fake_run_c4ar_terminal_round_with_harbor)
 
                 def fail_materialize(**kwargs):
                     raise AssertionError("existing next round must not be rematerialized")
@@ -2152,6 +2395,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                     delattr(self.module, "run_c4ar_round_with_harbor")
                 else:
                     setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                if original_terminal_round is None:
+                    delattr(self.module, "run_c4ar_terminal_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_terminal_round_with_harbor", original_terminal_round)
                 self.module.materialize_c4ar_next_round = original_materialize
 
             self.assertEqual([row["round_index"] for row in rows], [0, 1])
@@ -2190,19 +2437,12 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
 
             def fake_run_c4ar_round_with_harbor(**kwargs):
                 round_index = kwargs["round_index"]
+                self.assertEqual(round_index, 0)
                 round_dir_path = kwargs["round_dir_path"]
                 seen_rounds.append(round_index)
-                if round_index == 1:
-                    materialized_skill = round_dir_path / "skillpack" / "skills" / "skill-a" / "SKILL.md"
-                    self.assertTrue(
-                        materialized_skill.exists(),
-                        "round-1 skillpack must be materialized before executor/orchestrator starts",
-                    )
                 next_skillpack_dir = round_dir_path / "role_b" / "next_skillpack"
                 (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
                 (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text(f"# next round {round_index}\n")
-                decision = "continue" if round_index == 0 else "stop"
-                next_round_index = 1 if round_index == 0 else None
                 return (
                     type(
                         "FakeOrchestratorOutputs",
@@ -2230,17 +2470,70 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                                 "FakeRoundDecision",
                                 (),
                                 {
-                                    "decision": decision,
+                                    "decision": "continue",
                                     "reason": "materialize next round",
-                                    "next_round_index": next_round_index,
-                                    "next_skillpack_dir": str(next_skillpack_dir) if decision == "continue" else None,
+                                    "next_round_index": 1,
+                                    "next_skillpack_dir": str(next_skillpack_dir),
                                     "selected_candidate_label": "R0",
                                 },
                             )(),
                         },
                     )(),
                     {
-                        "reward": 0.1 if round_index == 0 else 0.2,
+                        "reward": 0.1,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            def fake_run_c4ar_terminal_round_with_harbor(**kwargs):
+                round_dir_path = kwargs["round_dir_path"]
+                seen_rounds.append(kwargs["round_index"])
+                materialized_skill = round_dir_path / "skillpack" / "skills" / "skill-a" / "SKILL.md"
+                self.assertTrue(
+                    materialized_skill.exists(),
+                    "round-1 skillpack must be materialized before terminal executor starts",
+                )
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {
+                                    "dominant_failure_pattern": "none",
+                                    "recommended_edit_targets": [],
+                                },
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(round_dir_path / "skillpack"),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "stop",
+                                    "reason": "materialize next round",
+                                    "next_round_index": None,
+                                    "next_skillpack_dir": None,
+                                    "selected_candidate_label": "R1",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.2,
                         "eval_name": "pytest",
                         "exception_stats": {},
                         "n_trials": 1,
@@ -2249,8 +2542,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 )
 
             original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_terminal_round = getattr(self.module, "run_c4ar_terminal_round_with_harbor", None)
             try:
                 setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_terminal_round_with_harbor", fake_run_c4ar_terminal_round_with_harbor)
                 rows = self.module.run_refine_rounds(
                     task=task,
                     paths=paths,
@@ -2275,6 +2570,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                     delattr(self.module, "run_c4ar_round_with_harbor")
                 else:
                     setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                if original_terminal_round is None:
+                    delattr(self.module, "run_c4ar_terminal_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_terminal_round_with_harbor", original_terminal_round)
 
             self.assertEqual(seen_rounds, [0, 1])
             self.assertEqual([row["round_index"] for row in rows], [0, 1])
@@ -2687,7 +2986,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             (round_two / "role_b" / "round_decision.json").write_text(json.dumps(round_decision.to_dict()))
             (paths.rounds_dir / "round-3").mkdir()
 
-            def fake_run_c4ar_round_with_harbor(**kwargs):
+            def fail_run_c4ar_round_with_harbor(**kwargs):
+                raise AssertionError("terminal resume round should not invoke full c4ar orchestrator")
+
+            def fake_run_c4ar_terminal_round_with_harbor(**kwargs):
                 self.assertEqual(kwargs["round_index"], 3)
                 return (
                     type(
@@ -2735,8 +3037,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 )
 
             original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_terminal_round = getattr(self.module, "run_c4ar_terminal_round_with_harbor", None)
             try:
-                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_round_with_harbor", fail_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_terminal_round_with_harbor", fake_run_c4ar_terminal_round_with_harbor)
                 rows = self.module.run_refine_rounds(
                     task=task,
                     paths=paths,
@@ -2762,6 +3066,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                     delattr(self.module, "run_c4ar_round_with_harbor")
                 else:
                     setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                if original_terminal_round is None:
+                    delattr(self.module, "run_c4ar_terminal_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_terminal_round_with_harbor", original_terminal_round)
 
             self.assertEqual([row["round_index"] for row in rows], [2, 3])
             self.assertEqual(rows[0]["reward"], 0.77)
@@ -2863,7 +3171,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
 
             seen_multipliers: list[float] = []
 
-            def fake_run_c4ar_round_with_harbor(**kwargs):
+            def fail_run_c4ar_round_with_harbor(**kwargs):
+                raise AssertionError("terminal resume round should not invoke full c4ar orchestrator")
+
+            def fake_run_c4ar_terminal_round_with_harbor(**kwargs):
                 seen_multipliers.append(kwargs["tune_timeout_multiplier"])
                 return (
                     type(
@@ -2911,8 +3222,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 )
 
             original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_terminal_round = getattr(self.module, "run_c4ar_terminal_round_with_harbor", None)
             try:
-                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_round_with_harbor", fail_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_c4ar_terminal_round_with_harbor", fake_run_c4ar_terminal_round_with_harbor)
                 self.module.run_refine_rounds(
                     task=task,
                     paths=paths,
@@ -2938,6 +3251,10 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                     delattr(self.module, "run_c4ar_round_with_harbor")
                 else:
                     setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                if original_terminal_round is None:
+                    delattr(self.module, "run_c4ar_terminal_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_terminal_round_with_harbor", original_terminal_round)
 
             self.assertEqual(seen_multipliers, [3.6])
 
