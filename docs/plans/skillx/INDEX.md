@@ -14,6 +14,7 @@ incubation repo.
 
 ## Meta-Schema And Outer Loop
 
+- `skillx-project-tracker-v0.1.md`
 - `skillx-meta-schema-update-operator-v0.1.md`
 - `skillx-meta-schema-search-operator-v0.2.md`
 - `skillx-meta-schema-acceptance-scorecard-v0.1.md`
