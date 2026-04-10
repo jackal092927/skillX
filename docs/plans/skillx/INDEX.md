@@ -14,7 +14,7 @@ incubation repo.
 
 ## Meta-Schema And Outer Loop
 
-- `skillx-project-tracker-v0.1.md`
+- `skillx-project-tracker-v0.2.md`
 - `skillx-meta-schema-update-operator-v0.1.md`
 - `skillx-meta-schema-search-operator-v0.2.md`
 - `skillx-meta-schema-acceptance-scorecard-v0.1.md`
@@ -54,12 +54,13 @@ incubation repo.
 
 Suggested read order for the current MVP line:
 
-1. `../../checkpoints/CHECKPOINT-2026-04-05-skillx-meta-schema-mvp.md`
-2. `skillx-prompt-bank-clustering-and-outer-loop-spec-v0.1.md`
-3. `skillx-render-template-frozen-v0.1.md`
-4. `skillx-evaluator-in-the-loop-evaluation-protocol-v0.1.md`
-5. `skillx-assignment-matrix-protocol-v0.1.md`
-6. `skillx-outer-loop-update-protocol-v0.1.md`
+1. `skillx-project-tracker-v0.2.md`
+2. `../../checkpoints/CHECKPOINT-2026-04-05-skillx-meta-schema-mvp.md`
+3. `skillx-prompt-bank-clustering-and-outer-loop-spec-v0.1.md`
+4. `skillx-render-template-frozen-v0.1.md`
+5. `skillx-evaluator-in-the-loop-evaluation-protocol-v0.1.md`
+6. `skillx-assignment-matrix-protocol-v0.1.md`
+7. `skillx-outer-loop-update-protocol-v0.1.md`
 
 Suggested read order for benchmark selection and onboarding:
 
