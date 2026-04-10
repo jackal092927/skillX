@@ -11,15 +11,7 @@ import json
 import re
 from pathlib import Path
 import subprocess
-import sys
 from typing import Any
-
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
-from skillx.path_utils import resolve_repo_path
 
 
 SELECTED_LINE_PATTERN = re.compile(r"Selected\s+(\d+)\s+task\(s\)\s+->\s+(\d+)\s+pair\(s\)")
@@ -229,7 +221,7 @@ def _read_materialized_manifest(materialized_root: Path) -> dict[str, Any] | Non
 
 
 def _resolve_pair_run_dir_for_label(pair_spec: dict[str, Any], run_label: str) -> Path:
-    pair_dir = resolve_repo_path(str(pair_spec.get("pair_dir") or ""))
+    pair_dir = Path(str(pair_spec.get("pair_dir") or "")).resolve()
     return pair_dir / f"refine_run_{run_label}"
 
 
@@ -393,7 +385,7 @@ def _collect_pair_rows(
 
         launcher_result = summary_by_pair_id.get(pair_id)
         launcher_output_dir = (
-            resolve_repo_path(str(launcher_result.get("output_dir")))
+            Path(str(launcher_result.get("output_dir"))).resolve()
             if isinstance(launcher_result, dict) and isinstance(launcher_result.get("output_dir"), str)
             else None
         )
@@ -594,12 +586,12 @@ def collect_launcher_status(
 
 def _health_color(health: str) -> str:
     return {
-        "completed": "#22c55e",
-        "completed_with_failures": "#c084fc",
-        "running": "#3b82f6",
-        "stalled": "#ef4444",
-        "waiting": "#a78bfa",
-    }.get(health, "#64748b")
+        "completed": "#1b5e20",
+        "completed_with_failures": "#8e24aa",
+        "running": "#1565c0",
+        "stalled": "#b71c1c",
+        "waiting": "#6d4c41",
+    }.get(health, "#37474f")
 
 
 def _metric_card(label: str, value: str) -> str:
@@ -619,53 +611,6 @@ def _format_metric(value: Any) -> str:
     if isinstance(value, int):
         return str(value)
     return str(value)
-
-
-def _delta_class(value: Any) -> str:
-    """Classify a delta value for color coding. Threshold 0.5 avoids noise."""
-    if value is None:
-        return "num"
-    try:
-        numeric = float(value)
-    except (TypeError, ValueError):
-        return "num"
-    if numeric > 0.5:
-        return "num delta-pos"
-    if numeric < -0.5:
-        return "num delta-neg"
-    return "num delta-zero"
-
-
-def _heat_class(value: Any) -> str:
-    """Bucket a 0-100 score for heatmap background shading."""
-    if value is None:
-        return "num"
-    try:
-        numeric = float(value)
-    except (TypeError, ValueError):
-        return "num"
-    if numeric >= 80:
-        return "num heat-5"
-    if numeric >= 60:
-        return "num heat-4"
-    if numeric >= 40:
-        return "num heat-3"
-    if numeric >= 20:
-        return "num heat-2"
-    return "num heat-1"
-
-
-def _status_pill_class(value: Any) -> str:
-    text = str(value or "").strip().lower()
-    if not text:
-        return ""
-    if text in {"succeeded", "success", "completed", "done", "ok"}:
-        return "pill pill-ok"
-    if text in {"failed", "failure", "error"}:
-        return "pill pill-fail"
-    if text in {"running", "in_progress", "started", "active"}:
-        return "pill pill-run"
-    return "pill pill-other"
 
 
 def _reward_to_percent(value: float | None) -> float | None:
@@ -693,10 +638,10 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     recent_events_rows = "\n".join(
         (
             "<tr>"
-            f'<td class="num">{html.escape(str(event.get("index", "")))}</td>'
-            f'<td><span class="{_status_pill_class(event.get("event"))}">{html.escape(str(event.get("event", "")))}</span></td>'
+            f"<td>{html.escape(str(event.get('index', '')))}</td>"
+            f"<td>{html.escape(str(event.get('event', '')))}</td>"
             f"<td>{html.escape(str(event.get('pair_id', '')))}</td>"
-            f'<td class="num">{html.escape(str(event.get("observed_at", "")))}</td>'
+            f"<td>{html.escape(str(event.get('observed_at', '')))}</td>"
             "</tr>"
         )
         for event in reversed(recent_events)
@@ -718,22 +663,15 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
 
     pair_detail_block = ""
     if pair_detail:
-        def _stage_cell(state: Any) -> str:
-            text = str(state or "")
-            pill_class = _status_pill_class(text)
-            if pill_class:
-                return f'<td><span class="{pill_class}">{html.escape(text)}</span></td>'
-            return f"<td>{html.escape(text)}</td>"
-
         round_rows_html = "\n".join(
             (
                 "<tr>"
-                f"<td class=\"num num-strong\">R{html.escape(str(row.get('round_index', '')))}</td>"
-                f"{_stage_cell(row.get('stage_states', {}).get('executor', ''))}"
-                f"{_stage_cell(row.get('stage_states', {}).get('role_a', ''))}"
-                f"{_stage_cell(row.get('stage_states', {}).get('role_b', ''))}"
+                f"<td>R{html.escape(str(row.get('round_index', '')))}</td>"
+                f"<td>{html.escape(str(row.get('stage_states', {}).get('executor', '')))}</td>"
+                f"<td>{html.escape(str(row.get('stage_states', {}).get('role_a', '')))}</td>"
+                f"<td>{html.escape(str(row.get('stage_states', {}).get('role_b', '')))}</td>"
                 f"<td>{html.escape(str(row.get('latest_event_type', '')))}</td>"
-                f"<td class=\"num\">{html.escape(str(row.get('latest_event_timestamp', '')))}</td>"
+                f"<td>{html.escape(str(row.get('latest_event_timestamp', '')))}</td>"
                 "</tr>"
             )
             for row in round_rows
@@ -747,56 +685,32 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             f"<dt>Last completed stage</dt><dd>{html.escape(str(pair_detail.get('last_completed_stage') or 'none'))}</dd>"
             "</dl>"
             '<div class="table-wrap"><table>'
-            '<thead><tr><th class="num">Round</th><th>Executor</th><th>Role A</th><th>Role B</th><th>Latest Event</th><th class="num">Event Time</th></tr></thead>'
+            "<thead><tr><th>Round</th><th>Executor</th><th>Role A</th><th>Role B</th><th>Latest Event</th><th>Event Time</th></tr></thead>"
             f"<tbody>{round_rows_html}</tbody>"
             "</table></div>"
             "</section>"
         )
 
-    pair_row_items: list[str] = []
-    previous_task: str | None = None
-    group_toggle = False
-    for row in pair_rows:
-        task_name = str(row.get("task_name", ""))
-        if task_name != previous_task:
-            group_toggle = not group_toggle
-            previous_task = task_name
-        group_class = "group-a" if group_toggle else "group-b"
-        round_scores = row.get("round_scores") or {}
-        r0 = round_scores.get("R0")
-        r1 = round_scores.get("R1")
-        r2 = round_scores.get("R2")
-        r3 = round_scores.get("R3")
-        d0 = row.get("delta_vs_c0")
-        d1 = row.get("delta_vs_c1")
-        status_value = row.get("pair_status") or ""
-        status_pill_class = _status_pill_class(status_value)
-        status_cell = (
-            f'<span class="{status_pill_class}">{html.escape(str(status_value))}</span>'
-            if status_pill_class
-            else html.escape(str(status_value))
-        )
-        pair_row_items.append(
-            f'<tr class="{group_class}">'
-            f'<td class="col-task">{html.escape(task_name)}</td>'
-            f'<td class="col-schema">{html.escape(str(row.get("schema_id", "")))}</td>'
-            f'<td class="num">{html.escape(_format_metric(row.get("official_c0")))}</td>'
-            f'<td class="num">{html.escape(_format_metric(row.get("official_c1")))}</td>'
-            f'<td class="{_heat_class(r0)}">{html.escape(_format_metric(r0))}</td>'
-            f'<td class="{_heat_class(r1)}">{html.escape(_format_metric(r1))}</td>'
-            f'<td class="{_heat_class(r2)}">{html.escape(_format_metric(r2))}</td>'
-            f'<td class="{_heat_class(r3)}">{html.escape(_format_metric(r3))}</td>'
-            f'<td class="num">{html.escape(str(row.get("selected_round") or ""))}</td>'
-            f'<td class="num num-strong">{html.escape(_format_metric(row.get("selected_score")))}</td>'
-            f'<td class="{_delta_class(d0)}">{html.escape(_format_metric(d0))}</td>'
-            f'<td class="{_delta_class(d1)}">{html.escape(_format_metric(d1))}</td>'
-            f'<td class="col-status">{status_cell}</td>'
+    pair_rows_html = "\n".join(
+        (
+            "<tr>"
+            f"<td>{html.escape(str(row.get('task_name', '')))}</td>"
+            f"<td>{html.escape(str(row.get('schema_id', '')))}</td>"
+            f"<td>{html.escape(_format_metric(row.get('official_c0')))}</td>"
+            f"<td>{html.escape(_format_metric(row.get('official_c1')))}</td>"
+            f"<td>{html.escape(_format_metric((row.get('round_scores') or {}).get('R0')))}</td>"
+            f"<td>{html.escape(_format_metric((row.get('round_scores') or {}).get('R1')))}</td>"
+            f"<td>{html.escape(_format_metric((row.get('round_scores') or {}).get('R2')))}</td>"
+            f"<td>{html.escape(_format_metric((row.get('round_scores') or {}).get('R3')))}</td>"
+            f"<td>{html.escape(str(row.get('selected_round') or ''))}</td>"
+            f"<td>{html.escape(_format_metric(row.get('selected_score')))}</td>"
+            f"<td>{html.escape(_format_metric(row.get('delta_vs_c0')))}</td>"
+            f"<td>{html.escape(_format_metric(row.get('delta_vs_c1')))}</td>"
+            f"<td>{html.escape(str(row.get('pair_status') or ''))}</td>"
             "</tr>"
         )
-    pair_rows_html = (
-        "\n".join(pair_row_items)
-        or '<tr><td colspan="13">No pair rows available.</td></tr>'
-    )
+        for row in pair_rows
+    ) or '<tr><td colspan="13">No pair rows available.</td></tr>'
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -807,409 +721,160 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
   <title>SkillX Round0 Monitor</title>
   <style>
     :root {{
-      --bg: #000000;
-      --panel: #0f0f11;
-      --panel-alt: #17171a;
-      --panel-hover: #1e1e22;
-      --ink: #fafafa;
-      --ink-soft: #d4d4d8;
-      --muted: #a1a1aa;
-      --muted-dim: #71717a;
-      --border: #2a2a2e;
-      --border-strong: #3f3f46;
+      --bg: #f7f4ea;
+      --panel: #fffdf8;
+      --ink: #16202a;
+      --muted: #57646f;
+      --border: #d8d0c2;
       --accent: {health_color};
-      --pos: #4ade80;
-      --pos-bg: rgba(74, 222, 128, 0.14);
-      --pos-border: rgba(74, 222, 128, 0.35);
-      --neg: #f87171;
-      --neg-bg: rgba(248, 113, 113, 0.14);
-      --neg-border: rgba(248, 113, 113, 0.35);
-      --run: #60a5fa;
-      --run-bg: rgba(96, 165, 250, 0.14);
-      --run-border: rgba(96, 165, 250, 0.35);
+      --accent-soft: #e8f0ff;
     }}
     * {{ box-sizing: border-box; }}
-    html, body {{ height: 100%; }}
     body {{
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        "Inter", system-ui, sans-serif;
+      font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
       color: var(--ink);
-      background: var(--bg);
-      font-size: 14px;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      color-scheme: dark;
+      background:
+        radial-gradient(circle at top left, #fff5d6 0, transparent 28%),
+        linear-gradient(180deg, #f4efe3 0%, var(--bg) 100%);
     }}
     main {{
-      max-width: 1480px;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 24px 24px 48px;
+      padding: 28px 20px 40px;
     }}
-
-    /* Hero */
     .hero {{
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 20px;
+      display: grid;
+      gap: 12px;
       margin-bottom: 20px;
-      flex-wrap: wrap;
-    }}
-    .hero-main {{
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
     }}
     .eyebrow {{
-      font-size: 11px;
-      letter-spacing: 0.14em;
+      font-size: 12px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--muted);
-      font-weight: 600;
     }}
     h1 {{
       margin: 0;
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-      word-break: break-word;
-      color: var(--ink);
+      font-size: 40px;
+      line-height: 1.05;
     }}
     .subhead {{
       color: var(--muted);
-      font-size: 13px;
+      font-size: 16px;
     }}
     .badge {{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
+      display: inline-block;
+      padding: 6px 10px;
       border-radius: 999px;
       background: var(--accent);
-      color: #0a0a0b;
-      font-size: 12px;
-      font-weight: 700;
+      color: white;
+      font-size: 13px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      white-space: nowrap;
-      border: 1px solid var(--accent);
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4),
-        0 0 20px rgba(255, 255, 255, 0.05);
     }}
-    .badge::before {{
-      content: "";
-      width: 8px;
-      height: 8px;
-      background: #0a0a0b;
-      border-radius: 50%;
-    }}
-
-    /* Metric cards */
     .metrics {{
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 12px;
-      margin: 0 0 16px;
+      margin: 18px 0 22px;
     }}
     .metric-card, .panel {{
       background: var(--panel);
-      border: 1px solid var(--border-strong);
-      border-radius: 10px;
-      padding: 14px 18px;
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset,
-        0 4px 12px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: 0 10px 30px rgba(22, 32, 42, 0.06);
     }}
     .metric-label {{
       color: var(--muted);
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 13px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }}
     .metric-value {{
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      color: var(--ink);
     }}
-    .metric-bar {{
-      margin-top: 10px;
-      height: 6px;
-      background: var(--border);
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid var(--border-strong);
-    }}
-    .metric-bar-fill {{
-      height: 100%;
-      background: var(--accent);
-      border-radius: 999px;
-      transition: width 0.3s ease;
-      box-shadow: 0 0 8px var(--accent);
-    }}
-    .metric-card.metric-ok .metric-value {{ color: var(--pos); }}
-    .metric-card.metric-bad .metric-value {{ color: var(--neg); }}
-
-    /* Grid layout for snapshot / tasks */
     .grid {{
       display: grid;
       gap: 16px;
-      grid-template-columns: 1.4fr 1fr;
+      grid-template-columns: 1.25fr 1fr;
       align-items: start;
-      margin-bottom: 16px;
     }}
     .panel h2 {{
-      margin: 0 0 14px;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
+      margin: 0 0 12px;
+      font-size: 22px;
     }}
-    .panel > .subhead {{
-      margin: -6px 0 12px;
-    }}
-
     dl {{
       display: grid;
-      grid-template-columns: max-content 1fr;
-      gap: 8px 18px;
+      grid-template-columns: 150px 1fr;
+      gap: 8px 12px;
       margin: 0;
-      font-size: 13px;
     }}
     dt {{
       color: var(--muted);
-      font-weight: 500;
+      font-size: 14px;
     }}
     dd {{
       margin: 0;
       word-break: break-word;
-      font-variant-numeric: tabular-nums;
-      color: var(--ink-soft);
-    }}
-
-    /* Tasks as chips */
-    .tasks {{
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }}
-    .tasks li {{
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: var(--panel-alt);
-      border: 1px solid var(--border-strong);
-      color: var(--ink-soft);
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }}
-
-    /* Tables */
-    .table-wrap {{
-      overflow-x: auto;
-      border-radius: 8px;
-      border: 1px solid var(--border-strong);
-      max-height: 70vh;
-      background: var(--panel);
-    }}
-    .events-wrap {{
-      max-height: 320px;
-      overflow-y: auto;
-      border-radius: 8px;
-      border: 1px solid var(--border-strong);
-      background: var(--panel);
     }}
     table {{
       width: 100%;
       border-collapse: collapse;
-      background: var(--panel);
     }}
     th, td {{
       text-align: left;
-      padding: 8px 12px;
+      padding: 10px 8px;
       border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      vertical-align: middle;
-      white-space: nowrap;
-      color: var(--ink-soft);
+      font-size: 14px;
+      vertical-align: top;
     }}
-    thead th {{
-      position: sticky;
-      top: 0;
-      background: var(--panel-alt);
+    th {{
       color: var(--muted);
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      font-size: 11px;
-      border-bottom: 2px solid var(--border-strong);
-      z-index: 1;
-    }}
-    tbody tr:last-child td {{ border-bottom: none; }}
-    tbody tr.group-a td {{ background: var(--panel); }}
-    tbody tr.group-b td {{ background: var(--panel-alt); }}
-    tbody tr:hover td {{ background: var(--panel-hover); }}
-
-    td.num, th.num {{
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-      font-family: "SF Mono", Menlo, "Cascadia Code",
-        "Roboto Mono", Consolas, monospace;
+      letter-spacing: 0.06em;
       font-size: 12px;
     }}
-    td.num-strong {{ font-weight: 700; color: var(--ink); }}
-    td.col-task {{
-      font-weight: 600;
-      max-width: 210px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: var(--ink);
+    .tasks {{
+      margin: 0;
+      padding-left: 20px;
     }}
-    td.col-schema {{
-      color: var(--muted);
-      font-size: 12px;
+    .table-wrap {{
+      overflow-x: auto;
     }}
-    td.col-status {{ text-align: center; }}
-
-    /* Delta cells: sign-coded */
-    .delta-pos {{
-      color: var(--pos) !important;
-      background: var(--pos-bg) !important;
-      font-weight: 700;
-      box-shadow: inset 0 0 0 1px var(--pos-border);
-    }}
-    .delta-neg {{
-      color: var(--neg) !important;
-      background: var(--neg-bg) !important;
-      font-weight: 700;
-      box-shadow: inset 0 0 0 1px var(--neg-border);
-    }}
-    .delta-zero {{
-      color: var(--muted) !important;
-    }}
-
-    /* Heatmap for round score cells (dark variants) */
-    .heat-1 {{
-      background: rgba(248, 113, 113, 0.10) !important;
-      color: #fca5a5 !important;
-    }}
-    .heat-2 {{
-      background: rgba(251, 146, 60, 0.10) !important;
-      color: #fdba74 !important;
-    }}
-    .heat-3 {{
-      background: rgba(234, 179, 8, 0.10) !important;
-      color: #fde047 !important;
-    }}
-    .heat-4 {{
-      background: rgba(132, 204, 22, 0.12) !important;
-      color: #bef264 !important;
-    }}
-    .heat-5 {{
-      background: rgba(74, 222, 128, 0.14) !important;
-      color: #86efac !important;
-    }}
-
-    /* Status pills */
-    .pill {{
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      border: 1px solid transparent;
-    }}
-    .pill-ok {{
-      background: var(--pos-bg);
-      color: var(--pos);
-      border-color: var(--pos-border);
-    }}
-    .pill-fail {{
-      background: var(--neg-bg);
-      color: var(--neg);
-      border-color: var(--neg-border);
-    }}
-    .pill-run {{
-      background: var(--run-bg);
-      color: var(--run);
-      border-color: var(--run-border);
-    }}
-    .pill-other {{
-      background: var(--panel-alt);
-      color: var(--muted);
-      border-color: var(--border-strong);
-    }}
-
     .footer {{
-      margin-top: 24px;
-      color: var(--muted-dim);
-      font-size: 12px;
-      text-align: center;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
     }}
-    .footer code {{
-      background: var(--panel);
-      color: var(--ink-soft);
-      padding: 2px 8px;
-      border-radius: 4px;
-      border: 1px solid var(--border-strong);
-    }}
-    ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
-    ::-webkit-scrollbar-track {{ background: var(--panel); }}
-    ::-webkit-scrollbar-thumb {{
-      background: var(--border-strong);
-      border-radius: 6px;
-      border: 2px solid var(--panel);
-    }}
-    ::-webkit-scrollbar-thumb:hover {{ background: var(--muted-dim); }}
-
-    @media (max-width: 1080px) {{
-      .metrics {{ grid-template-columns: repeat(2, 1fr); }}
-      .grid {{ grid-template-columns: 1fr; }}
-    }}
-    @media (max-width: 640px) {{
-      main {{ padding: 16px 12px 32px; }}
-      .metrics {{ grid-template-columns: 1fr 1fr; }}
-      dl {{ grid-template-columns: 1fr; }}
-      h1 {{ font-size: 22px; }}
+    @media (max-width: 860px) {{
+      .grid {{
+        grid-template-columns: 1fr;
+      }}
+      dl {{
+        grid-template-columns: 1fr;
+      }}
     }}
   </style>
 </head>
 <body>
   <main>
     <section class="hero">
-      <div class="hero-main">
-        <div class="eyebrow">SkillX Round0 Launcher Monitor</div>
-        <h1>{html.escape(str(status.get("run_label") or ""))}</h1>
-        <div class="subhead">Observed at {html.escape(observed_at)} · Auto-refreshes every {refresh_seconds}s</div>
-      </div>
-      <span class="badge">{html.escape(health)}</span>
+      <div class="eyebrow">SkillX Round0 Launcher Monitor</div>
+      <h1>{html.escape(str(status.get("run_label") or ""))}</h1>
+      <div><span class="badge">{html.escape(health)}</span></div>
+      <div class="subhead">Observed at {html.escape(observed_at)}. This page refreshes every {refresh_seconds} seconds.</div>
     </section>
 
     <section class="metrics">
       {_metric_card("Completed", f"{status.get('completed_pairs', 0)} / {status.get('total_pairs', 0)}")}
-      <div class="metric-card metric-ok">
-        <div class="metric-label">Succeeded</div>
-        <div class="metric-value">{html.escape(str(status.get("succeeded_pairs", 0)))}</div>
-      </div>
-      <div class="metric-card{' metric-bad' if int(status.get('failed_pairs', 0) or 0) > 0 else ''}">
-        <div class="metric-label">Failed</div>
-        <div class="metric-value">{html.escape(str(status.get("failed_pairs", 0)))}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Progress</div>
-        <div class="metric-value">{float(status.get('progress_percent', 0.0)):.1f}%</div>
-        <div class="metric-bar"><div class="metric-bar-fill" style="width: {max(0.0, min(100.0, float(status.get('progress_percent', 0.0)))):.1f}%"></div></div>
-      </div>
+      {_metric_card("Succeeded", str(status.get("succeeded_pairs", 0)))}
+      {_metric_card("Failed", str(status.get("failed_pairs", 0)))}
+      {_metric_card("Progress", f"{float(status.get('progress_percent', 0.0)):.1f}%")}
     </section>
 
     <section class="grid">
@@ -1247,16 +912,16 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             <tr>
               <th>Task</th>
               <th>Schema</th>
-              <th class="num">C0</th>
-              <th class="num">C1</th>
-              <th class="num">R0</th>
-              <th class="num">R1</th>
-              <th class="num">R2</th>
-              <th class="num">R3</th>
-              <th class="num">Best Round</th>
-              <th class="num">Best Score</th>
-              <th class="num">Δ vs C0</th>
-              <th class="num">Δ vs C1</th>
+              <th>C0</th>
+              <th>C1</th>
+              <th>R0</th>
+              <th>R1</th>
+              <th>R2</th>
+              <th>R3</th>
+              <th>Best Round</th>
+              <th>Best Score</th>
+              <th>Δ vs C0</th>
+              <th>Δ vs C1</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -1269,21 +934,19 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
 
     <section class="panel">
       <h2>Recent Events</h2>
-      <div class="events-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="num">Index</th>
-              <th>Event</th>
-              <th>Pair</th>
-              <th>Observed At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recent_events_rows}
-          </tbody>
-        </table>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Index</th>
+            <th>Event</th>
+            <th>Pair</th>
+            <th>Observed At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recent_events_rows}
+        </tbody>
+      </table>
     </section>
 
     <div class="footer">JSON API: <code>/api/status</code></div>
