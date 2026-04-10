@@ -108,6 +108,22 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
         self.assertIsNone(payload["agents"][0]["name"])
         self.assertEqual(payload["agents"][0]["import_path"], "skillx.harbor_agents:AuthBackedCodex")
 
+    def test_build_job_config_uses_custom_claude_agent_wrapper(self) -> None:
+        payload = self.module.build_job_config(
+            job_name="demo-job",
+            jobs_dir=Path("/tmp/jobs"),
+            task_path=Path("/tmp/task"),
+            agent_name=None,
+            model_name="anthropic/claude-sonnet-4-5",
+            timeout_multiplier=1.0,
+            n_concurrent_trials=1,
+        )
+        self.assertIsNone(payload["agents"][0]["name"])
+        self.assertEqual(
+            payload["agents"][0]["import_path"],
+            "skillx.harbor_agents:AuthBackedClaudeCode",
+        )
+
     def test_find_executor_session_log_path_accepts_codex_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             trial_dir = Path(tmpdir) / "trial-001"
@@ -594,6 +610,114 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertIsNotNone(row)
             self.assertEqual(row["reward"], 0.6)
             self.assertTrue((tune_root / "result.json").exists())
+
+    def test_parse_job_result_normalizes_false_claude_timeout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            job_dir = Path(tmpdir) / "job-a"
+            trial_dir = job_dir / "trial-a"
+            (trial_dir / "agent").mkdir(parents=True)
+            (job_dir / "result.json").write_text(
+                json.dumps(
+                    {
+                        "stats": {
+                            "evals": {
+                                "demo": {
+                                    "metrics": [{"mean": 0.5}],
+                                    "exception_stats": {
+                                        "AgentTimeoutError": ["trial-a"],
+                                    },
+                                }
+                            }
+                        }
+                    }
+                )
+            )
+            (trial_dir / "result.json").write_text(
+                json.dumps(
+                    {
+                        "verifier_result": {"rewards": {"reward": 0.5}},
+                        "exception_info": {
+                            "exception_type": "AgentTimeoutError",
+                        },
+                    }
+                )
+            )
+            (trial_dir / "agent" / "claude-code.txt").write_text(
+                '{"type":"result","subtype":"success","is_error":false}\n'
+            )
+
+            row = self.module.parse_job_result(
+                job_dir,
+                condition="c4",
+                task_id="demo-task",
+                skill_source="/tmp/skillpack",
+            )
+            self.assertEqual(row["reward"], 0.5)
+            self.assertEqual(row["exception_stats"], {})
+
+    def test_existing_tune_result_rewrites_cached_false_timeout_row(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            round_dir = root / "round-1"
+            tune_root = round_dir / "tune_check"
+            tune_root.mkdir(parents=True)
+            (tune_root / "config.json").write_text(
+                json.dumps({"job_name": "demo-task-round-1-c4-tune"})
+            )
+            (tune_root / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c4",
+                        "reward": 0.5,
+                        "exception_stats": {"AgentTimeoutError": ["trial-a"]},
+                    }
+                )
+            )
+            job_dir = tune_root / "demo-task-round-1-c4-tune"
+            trial_dir = job_dir / "trial-a"
+            (trial_dir / "agent").mkdir(parents=True)
+            (job_dir / "result.json").write_text(
+                json.dumps(
+                    {
+                        "stats": {
+                            "evals": {
+                                "demo": {
+                                    "metrics": [{"mean": 0.5}],
+                                    "exception_stats": {
+                                        "AgentTimeoutError": ["trial-a"],
+                                    },
+                                }
+                            }
+                        }
+                    }
+                )
+            )
+            (trial_dir / "result.json").write_text(
+                json.dumps(
+                    {
+                        "verifier_result": {"rewards": {"reward": 0.5}},
+                        "exception_info": {
+                            "exception_type": "AgentTimeoutError",
+                        },
+                    }
+                )
+            )
+            (trial_dir / "agent" / "claude-code.txt").write_text(
+                '{"type":"result","subtype":"success","is_error":false}\n'
+            )
+
+            row = self.module.existing_tune_result(
+                task_id="demo-task",
+                round_dir_path=round_dir,
+                skill_source="/tmp/skillpack",
+            )
+            self.assertIsNotNone(row)
+            self.assertEqual(row["exception_stats"], {})
+            self.assertEqual(
+                json.loads((tune_root / "result.json").read_text())["exception_stats"],
+                {},
+            )
 
     def test_is_round_materialized_checks_required_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
