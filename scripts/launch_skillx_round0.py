@@ -19,6 +19,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.model_routing import resolve_benchmark_agent_name
+from skillx.path_utils import repo_record_path, resolve_repo_path
 
 DEFAULT_TASK_SLICE = (
     ROOT
@@ -144,7 +145,7 @@ def resolve_pair_run_id_and_output_dir(
     *,
     output_suffix: str | None,
 ) -> tuple[str, Path]:
-    pair_dir = Path(str(pair_spec["pair_dir"])).resolve()
+    pair_dir = resolve_repo_path(str(pair_spec["pair_dir"]))
     pair_id = str(pair_spec["pair_id"])
     normalized_suffix = normalize_output_suffix(output_suffix)
     if normalized_suffix is None:
@@ -200,9 +201,9 @@ def build_refine_command(
     bundle_contract_path: Path,
     output_suffix: str | None,
 ) -> list[str]:
-    pair_dir = Path(str(pair_spec["pair_dir"])).resolve()
+    pair_dir = resolve_repo_path(str(pair_spec["pair_dir"]))
     task_name = str(pair_spec["task_name"])
-    task_dir = Path(str(pair_spec["skillsbench_task_dir"])).resolve()
+    task_dir = resolve_repo_path(str(pair_spec["skillsbench_task_dir"]))
     skillsbench_root = task_dir.parents[1]
     source_stub = pair_dir / "source_stub"
     source_stub.mkdir(parents=True, exist_ok=True)
@@ -228,7 +229,7 @@ def build_refine_command(
         "--source-run-dir",
         str(source_stub),
         "--starting-skillpack-dir",
-        str(Path(str(pair_spec["starting_skillpack_dir"])).resolve()),
+        str(resolve_repo_path(str(pair_spec["starting_skillpack_dir"]))),
         "--starting-label",
         str(pair_spec.get("starting_label", "C1")),
         "--round-budget",

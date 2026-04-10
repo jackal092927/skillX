@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,6 +18,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.io_utils import ensure_dir, write_json
+from skillx.path_utils import repo_record_path, resolve_repo_path
 
 
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
@@ -246,21 +248,21 @@ def build_refine_command(
     ensure_dir(source_stub)
     return [
         "python3.12",
-        str(ROOT / "scripts" / "run_skillx_refine_benchmark.py"),
+        repo_record_path(ROOT / "scripts" / "run_skillx_refine_benchmark.py"),
         "--skillsbench-root",
-        str(skillsbench_root),
+        repo_record_path(skillsbench_root),
         "--task",
         task.task_name,
         "--run-id",
         pair_dir.name,
         "--output-dir",
-        str(run_dir),
+        repo_record_path(run_dir),
         "--oauth-file",
-        str(oauth_file),
+        repo_record_path(oauth_file),
         "--source-run-dir",
-        str(source_stub),
+        repo_record_path(source_stub),
         "--starting-skillpack-dir",
-        str(task.skills_dir),
+        repo_record_path(task.skills_dir),
         "--starting-label",
         "C1",
         "--round-budget",
@@ -272,6 +274,23 @@ def build_refine_command(
         "--orchestration-mode",
         "c4ar",
     ]
+
+
+def build_launch_round0_script(pair_specs: list[dict[str, Any]]) -> str:
+    lines = [
+        "#!/bin/sh",
+        "set -eu",
+        "",
+        'ROOT_DIR="$(git -C -- "$(dirname "$0")" rev-parse --show-toplevel)"',
+        'cd "$ROOT_DIR"',
+        "",
+    ]
+    for pair in pair_specs:
+        command = pair.get("refine_command")
+        if not isinstance(command, list):
+            continue
+        lines.append(" ".join(shlex.quote(str(part)) for part in command))
+    return "\n".join(lines) + "\n"
 
 
 def build_round0_materialization(
@@ -325,15 +344,15 @@ def build_round0_materialization(
                 "run_id": run_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
-                "pair_dir": str(pair_dir),
-                "skillsbench_task_dir": str(task.task_dir),
-                "starting_skillpack_dir": str(task.skills_dir),
+                "pair_dir": repo_record_path(pair_dir),
+                "skillsbench_task_dir": repo_record_path(task.task_dir),
+                "starting_skillpack_dir": repo_record_path(task.skills_dir),
                 "starting_label": "C1",
                 "official_scores": {
                     "no_skills": baseline_scores.get("No Skills"),
                     "with_skills": baseline_scores.get("With Skills"),
                 },
-                "rendered_meta_skill_path": str(pair_dir / "rendered_meta_skill.md"),
+                "rendered_meta_skill_path": repo_record_path(pair_dir / "rendered_meta_skill.md"),
                 "refine_command": build_refine_command(
                     pair_dir=pair_dir,
                     skillsbench_root=skillsbench_root,
@@ -351,12 +370,12 @@ def build_round0_materialization(
         "artifact_type": "skillx_round0_materialization_manifest",
         "run_id": run_id,
         "round_id": "pilot-round-0",
-        "render_template_path": str(render_template_path),
-        "task_slice_path": str(task_slice_path),
-        "prompt_bank_path": str(prompt_bank_path),
-        "inventory_path": str(inventory_path),
-        "official_results_path": str(official_results_path),
-        "skillsbench_root": str(skillsbench_root),
+        "render_template_path": repo_record_path(render_template_path),
+        "task_slice_path": repo_record_path(task_slice_path),
+        "prompt_bank_path": repo_record_path(prompt_bank_path),
+        "inventory_path": repo_record_path(inventory_path),
+        "official_results_path": repo_record_path(official_results_path),
+        "skillsbench_root": repo_record_path(skillsbench_root),
         "task_count": len(task_slice),
         "schema_count": len(schema_ids),
         "pair_count": len(pair_specs),
@@ -370,9 +389,7 @@ def build_round0_materialization(
     (output_dir / "pair_specs.jsonl").write_text(
         "".join(json.dumps(pair_spec) + "\n" for pair_spec in pair_specs)
     )
-    (output_dir / "launch_round0.sh").write_text(
-        "#!/bin/sh\nset -eu\n\n" + "\n".join(" ".join(pair["refine_command"]) for pair in pair_specs) + "\n"
-    )
+    (output_dir / "launch_round0.sh").write_text(build_launch_round0_script(pair_specs))
     return {"manifest": manifest, "pair_specs": pair_specs}
 
 

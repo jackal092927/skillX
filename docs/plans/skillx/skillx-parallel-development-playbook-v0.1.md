@@ -28,6 +28,20 @@ The object that gets merged is the `branch`, not the `worktree`.
 - Any write-capable coding session should default to its own worktree.
 - If unsure, create a new `branch + worktree` instead of reusing a dirty workspace.
 
+## Clone Bootstrap
+
+After cloning the repo, enable the repo-managed hooks once:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+This turns on the local `pre-commit` check that blocks:
+
+- machine-specific absolute paths
+- hardcoded credential strings
+- raw `experiments/**/agent/**` runtime logs
+
 ## Preferred Directory Layout
 
 The default project-local worktree directory is:

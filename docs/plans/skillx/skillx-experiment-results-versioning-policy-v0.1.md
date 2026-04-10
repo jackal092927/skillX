@@ -75,20 +75,51 @@
 - Harbor 中间产物全量拷贝
 - 大量临时调试文件
 - 可以从已提交 summary 重新定位出来的冗余文件
+- `experiments/**/agent/**` 下面的原始 agent 运行目录
+  - 包括 `claude-code.txt`
+  - `trajectory.json`
+  - `command-*`
+  - `sessions/**`
+  - setup/install stdout
 
 一句话规则：
 
 - 能摘要就不要全量提交
 - 能提 metadata 就不要提整目录日志
 
+## 提交前的敏感信息检查
+
+从现在开始，结果分支也要经过同一套敏感信息检查。
+
+默认命令：
+
+```bash
+python3 scripts/check_sensitive_info.py
+```
+
+如果只想检查当前 staged 改动：
+
+```bash
+python3 scripts/check_sensitive_info.py --staged
+```
+
+这个检查会重点拦截：
+
+- 本机绝对 home 路径
+- 硬编码 token / API key
+- 原始 `agent/` 运行日志目录
+
+所以如果某轮实验结果里还带着本机路径或整棵 agent transcript，应该先清理，再提交 summary。
+
 ## 推荐工作流
 
 1. 在干净的代码分支上跑实验。
 2. 实验完成后，从最新 `main` 或当前代码基线切一个 `exp/*` 分支。
 3. 只挑选必要结果文件放进仓库。
-4. 写一份简短结果说明，记录 run 的背景和结论。
-5. 提交到 `exp/*` 分支。
-6. 需要 review 或归档时，再决定是否 PR。
+4. 先运行 `python3 scripts/check_sensitive_info.py --staged`。
+5. 写一份简短结果说明，记录 run 的背景和结论。
+6. 提交到 `exp/*` 分支。
+7. 需要 review 或归档时，再决定是否 PR。
 
 ## 推荐目录习惯
 
@@ -122,6 +153,16 @@
   - 走 `exp/*` 分支
 - 当前本地正在生成的 experiment output 目录
   - 暂不直接提交到 `main`
+
+## Hook 安装
+
+为了让本地提交默认带敏感信息检查，clone 后建议执行：
+
+```bash
+git config core.hooksPath .githooks
+```
+
+这样 `pre-commit` 会自动运行 `scripts/check_sensitive_info.py --staged`。
 
 ## 相关文档
 

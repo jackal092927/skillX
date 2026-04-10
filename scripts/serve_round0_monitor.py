@@ -11,7 +11,15 @@ import json
 import re
 from pathlib import Path
 import subprocess
+import sys
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from skillx.path_utils import resolve_repo_path
 
 
 SELECTED_LINE_PATTERN = re.compile(r"Selected\s+(\d+)\s+task\(s\)\s+->\s+(\d+)\s+pair\(s\)")
@@ -221,7 +229,7 @@ def _read_materialized_manifest(materialized_root: Path) -> dict[str, Any] | Non
 
 
 def _resolve_pair_run_dir_for_label(pair_spec: dict[str, Any], run_label: str) -> Path:
-    pair_dir = Path(str(pair_spec.get("pair_dir") or "")).resolve()
+    pair_dir = resolve_repo_path(str(pair_spec.get("pair_dir") or ""))
     return pair_dir / f"refine_run_{run_label}"
 
 
@@ -385,7 +393,7 @@ def _collect_pair_rows(
 
         launcher_result = summary_by_pair_id.get(pair_id)
         launcher_output_dir = (
-            Path(str(launcher_result.get("output_dir"))).resolve()
+            resolve_repo_path(str(launcher_result.get("output_dir")))
             if isinstance(launcher_result, dict) and isinstance(launcher_result.get("output_dir"), str)
             else None
         )

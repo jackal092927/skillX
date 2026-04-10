@@ -250,14 +250,20 @@ class ServeRound0MonitorTests(unittest.TestCase):
                     "pair_id": "task-alpha__artifact-generation",
                     "task_name": "task-alpha",
                     "schema_id": "artifact-generation",
-                    "pair_dir": str(materialized_root / "pairs" / "task-alpha__artifact-generation"),
+                    "pair_dir": os.path.relpath(
+                        materialized_root / "pairs" / "task-alpha__artifact-generation",
+                        self.module.ROOT,
+                    ),
                     "official_scores": {"no_skills": 10.0, "with_skills": 20.0},
                 },
                 {
                     "pair_id": "task-alpha__analytic-pipeline",
                     "task_name": "task-alpha",
                     "schema_id": "analytic-pipeline",
-                    "pair_dir": str(materialized_root / "pairs" / "task-alpha__analytic-pipeline"),
+                    "pair_dir": os.path.relpath(
+                        materialized_root / "pairs" / "task-alpha__analytic-pipeline",
+                        self.module.ROOT,
+                    ),
                     "official_scores": {"no_skills": 10.0, "with_skills": 20.0},
                 },
             ]

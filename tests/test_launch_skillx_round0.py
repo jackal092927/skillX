@@ -215,6 +215,54 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertIn("--agent codex", command_text)
             self.assertNotIn("--oauth-file", command_text)
 
+    def test_build_refine_command_resolves_repo_relative_pair_spec_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            root = Path(tmpdir)
+            pair = {
+                "pair_id": "task-alpha__analytic-pipeline",
+                "task_name": "task-alpha",
+                "schema_id": "analytic-pipeline",
+                "pair_dir": self.module.repo_record_path(
+                    fixture["materialized_root"] / "pairs" / "task-alpha__analytic-pipeline"
+                ),
+                "skillsbench_task_dir": self.module.repo_record_path(
+                    root / "skillsbench-src" / "tasks" / "task-alpha"
+                ),
+                "starting_skillpack_dir": self.module.repo_record_path(
+                    root / "skillsbench-src" / "tasks" / "task-alpha" / "environment" / "skills"
+                ),
+                "starting_label": "C1",
+            }
+
+            command = self.module.build_refine_command(
+                pair,
+                oauth_file=fixture["oauth_file"],
+                round_budget=3,
+                agent="claude-code",
+                model="anthropic/claude-sonnet-4-5",
+                refine_protocol_path=fixture["protocol_path"],
+                bundle_contract_path=fixture["bundle_path"],
+                output_suffix="smoke5",
+            )
+
+            command_text = " ".join(command)
+            self.assertIn(
+                str(
+                    (
+                        fixture["materialized_root"]
+                        / "pairs"
+                        / "task-alpha__analytic-pipeline"
+                        / "refine_run_smoke5"
+                    ).resolve()
+                ),
+                command_text,
+            )
+            self.assertIn(
+                str((root / "skillsbench-src" / "tasks" / "task-alpha" / "environment" / "skills").resolve()),
+                command_text,
+            )
+
     def test_main_dry_run_accepts_numeric_target(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))

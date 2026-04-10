@@ -66,7 +66,7 @@ python3.12 scripts/materialize_skillx_round0_runner.py \
   --render-template docs/plans/skillx/skillx-render-template-frozen-v0.1.md \
   --output-dir experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2 \
   --run-id sonnet45-slice20-v0.2 \
-  --oauth-file /Users/Jackal/.claude/claude-code-oauth-token \
+  --oauth-file "$HOME/.claude/claude-code-oauth-token" \
   --round-budget 3
 ```
 

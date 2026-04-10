@@ -7,7 +7,7 @@
   "prompt_bank_path": "docs/plans/skillx/skillx-prompt-bank-v0.1.json",
   "inventory_path": "docs/plans/skillx/skillsbench-task-cluster-inputs-v0.1.jsonl",
   "official_results_path": "experiments/skillx-skillsbench-001/results/official-task-results/official_task_results.jsonl",
-  "skillsbench_root": "/Users/Jackal/iWorld/projects/skillsbench-src",
+  "skillsbench_root": "../skillsbench-src",
   "task_count": 20,
   "schema_count": 7,
   "pair_count": 140,
