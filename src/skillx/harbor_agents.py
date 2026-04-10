@@ -6,8 +6,31 @@ import shlex
 from pathlib import Path
 
 from harbor.agents.installed.base import ExecInput
+from harbor.agents.installed.claude_code import ClaudeCode
 from harbor.agents.installed.codex import Codex
 from harbor.models.trial.paths import EnvironmentPaths
+
+
+class AuthBackedClaudeCode(ClaudeCode):
+    def create_run_agent_commands(self, instruction: str) -> list[ExecInput]:
+        setup_command, run_command = super().create_run_agent_commands(instruction)
+        escaped_instruction = shlex.quote(instruction)
+        log_path = (EnvironmentPaths.agent_dir / "claude-code.txt").as_posix()
+        redirected_run_command = (
+            f"claude --verbose --output-format stream-json "
+            f"-p {escaped_instruction} --allowedTools "
+            f"{' '.join(self.ALLOWED_TOOLS)} "
+            f"> {shlex.quote(log_path)} 2>&1 </dev/null"
+        )
+        return [
+            setup_command,
+            ExecInput(
+                command=redirected_run_command,
+                cwd=run_command.cwd,
+                env=run_command.env,
+                timeout_sec=run_command.timeout_sec,
+            ),
+        ]
 
 
 class AuthBackedCodex(Codex):
@@ -70,5 +93,4 @@ class AuthBackedCodex(Codex):
             ),
         ]
 
-
-__all__ = ["AuthBackedCodex"]
+__all__ = ["AuthBackedClaudeCode", "AuthBackedCodex"]

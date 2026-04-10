@@ -6,6 +6,7 @@ from typing import Literal
 BenchmarkAgentName = Literal["claude-code", "codex"]
 PlaybookCliName = Literal["claude", "codex"]
 ModelFamily = Literal["claude", "codex"]
+AUTH_BACKED_CLAUDE_CODE_IMPORT_PATH = "skillx.harbor_agents:AuthBackedClaudeCode"
 AUTH_BACKED_CODEX_IMPORT_PATH = "skillx.harbor_agents:AuthBackedCodex"
 
 
@@ -61,6 +62,7 @@ def resolve_cli_model_name(model_name: str) -> str:
 
 
 __all__ = [
+    "AUTH_BACKED_CLAUDE_CODE_IMPORT_PATH",
     "AUTH_BACKED_CODEX_IMPORT_PATH",
     "MODEL_NAME_ALIASES",
     "infer_benchmark_agent_name",

@@ -24,7 +24,11 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.io_utils import ensure_dir, read_json, write_json
-from skillx.model_routing import AUTH_BACKED_CODEX_IMPORT_PATH, resolve_benchmark_agent_name
+from skillx.model_routing import (
+    AUTH_BACKED_CLAUDE_CODE_IMPORT_PATH,
+    AUTH_BACKED_CODEX_IMPORT_PATH,
+    resolve_benchmark_agent_name,
+)
 from skillx.c4ar.orchestrator import (
     ExecutorOutputs,
     OrchestratorConfig,
@@ -259,6 +263,46 @@ def copy_tree(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst)
 
 
+def claude_log_has_terminal_success(log_path: Path) -> bool:
+    if not log_path.exists():
+        return False
+    with log_path.open(encoding="utf-8", errors="replace") as handle:
+        for line in handle:
+            if '"type":"result"' not in line or '"subtype":"success"' not in line:
+                continue
+            if '"is_error":false' in line or '"is_error": false' in line:
+                return True
+    return False
+
+
+def trial_is_false_claude_timeout(trial_dir: Path) -> bool:
+    result_path = trial_dir / "result.json"
+    if not result_path.exists():
+        return False
+    payload = read_json(result_path)
+    exception_info = payload.get("exception_info")
+    if not isinstance(exception_info, dict):
+        return False
+    if exception_info.get("exception_type") != "AgentTimeoutError":
+        return False
+    return claude_log_has_terminal_success(trial_dir / "agent" / "claude-code.txt")
+
+
+def normalize_harbor_exception_stats(job_dir: Path, exception_stats: Any) -> dict[str, Any]:
+    if not isinstance(exception_stats, dict):
+        return {"__unparsed__": exception_stats}
+    if "AgentTimeoutError" not in exception_stats:
+        return exception_stats
+    trial_dirs = sorted(path for path in job_dir.iterdir() if path.is_dir() and (path / "result.json").exists())
+    if len(trial_dirs) != 1:
+        return exception_stats
+    if not trial_is_false_claude_timeout(trial_dirs[0]):
+        return exception_stats
+    normalized = dict(exception_stats)
+    normalized.pop("AgentTimeoutError", None)
+    return normalized
+
+
 def parse_job_result(job_dir: Path, condition: str, task_id: str, skill_source: str) -> dict[str, Any]:
     result_path = job_dir / "result.json"
     payload = read_json(result_path)
@@ -272,6 +316,7 @@ def parse_job_result(job_dir: Path, condition: str, task_id: str, skill_source: 
         if metrics:
             reward_mean = metrics[0].get("mean")
         exception_stats = eval_payload.get("exception_stats") or {}
+    exception_stats = normalize_harbor_exception_stats(job_dir, exception_stats)
     return {
         "task_id": task_id,
         "condition": condition,
@@ -304,7 +349,10 @@ def build_job_config(
         "max_timeout_sec": None,
         "kwargs": {},
     }
-    if resolved_agent_name == "codex":
+    if resolved_agent_name == "claude-code":
+        agent_payload["name"] = None
+        agent_payload["import_path"] = AUTH_BACKED_CLAUDE_CODE_IMPORT_PATH
+    elif resolved_agent_name == "codex":
         agent_payload["name"] = None
         agent_payload["import_path"] = AUTH_BACKED_CODEX_IMPORT_PATH
     return {
@@ -2125,7 +2173,22 @@ def existing_tune_result(
     tune_root = round_dir_path / "tune_check"
     top_level_result = tune_root / "result.json"
     if top_level_result.exists():
-        return read_json(top_level_result)
+        cached = read_json(top_level_result)
+        config_path = tune_root / "config.json"
+        if not config_path.exists():
+            return cached
+        config_payload = read_json(config_path)
+        job_name = config_payload.get("job_name")
+        if not isinstance(job_name, str):
+            return cached
+        job_dir = tune_root / job_name
+        result_path = job_dir / "result.json"
+        if not result_path.exists():
+            return cached
+        canonical = parse_job_result(job_dir, condition="c4", task_id=task_id, skill_source=skill_source)
+        if canonical != cached:
+            write_json(top_level_result, canonical)
+        return canonical
     config_path = tune_root / "config.json"
     if not config_path.exists():
         return None
