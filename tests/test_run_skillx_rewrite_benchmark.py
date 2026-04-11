@@ -65,6 +65,50 @@ beta
             self.assertEqual(payload.skill_names, ["skill-a"])
             self.assertEqual(payload.skills_dir, task_root / "environment" / "skills")
 
+    def test_discover_task_inputs_ignores_non_skill_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "tasks" / "demo-task"
+            skill_dir = task_root / "environment" / "skills" / "skill-a"
+            licenses_dir = task_root / "environment" / "skills" / "licenses"
+            skill_dir.mkdir(parents=True)
+            licenses_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text("demo\n")
+            (licenses_dir / "obspy.LICENSE").write_text("license\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            payload = self.module.discover_task_inputs(root, "demo-task")
+
+            self.assertEqual(payload.skill_names, ["skill-a"])
+
+    def test_snapshot_rewrite_inputs_skips_non_skill_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "tasks" / "demo-task"
+            skill_dir = task_root / "environment" / "skills" / "skill-a"
+            licenses_dir = task_root / "environment" / "skills" / "licenses"
+            skill_dir.mkdir(parents=True)
+            licenses_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text("demo\n")
+            (licenses_dir / "obspy.LICENSE").write_text("license\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root, "demo-task")
+            paths = self.module.make_rewrite_paths(root / "run", task.task_id)
+
+            self.module.snapshot_rewrite_inputs(task, paths)
+
+            self.assertTrue((paths.registry_dir / "original__skill-a__SKILL.md").exists())
+            self.assertFalse((paths.registry_dir / "original__licenses__SKILL.md").exists())
+
     def test_parse_condition_skill_sources(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             skillpack_dir = Path(tmpdir) / "skillpack"
