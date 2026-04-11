@@ -61,6 +61,12 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
         )
 
         for task_name in ("task-alpha", "task-beta", "task-gamma"):
+            task_root = root / "skillsbench-src" / "tasks" / task_name
+            (task_root / "environment" / "skills" / "starter").mkdir(parents=True)
+            (task_root / "instruction.md").write_text("instruction\n")
+            (task_root / "task.toml").write_text("[task]\n")
+            skill_file = task_root / "environment" / "skills" / "starter" / "SKILL.md"
+            skill_file.write_text("# starter\n")
             for schema_id in ("analytic-pipeline", "artifact-generation"):
                 pair_dir = pairs_dir / f"{task_name}__{schema_id}"
                 pair_dir.mkdir(parents=True)
@@ -95,6 +101,21 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             "bundle_path": bundle_path,
             "oauth_file": oauth_file,
         }
+
+    def test_validate_selected_pair_inputs_raises_for_missing_task_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            broken_pair = dict(pair_specs[0])
+            broken_pair["skillsbench_task_dir"] = "../missing/tasks/task-alpha"
+
+            with self.assertRaises(FileNotFoundError) as ctx:
+                self.module.validate_selected_pair_inputs(
+                    [broken_pair],
+                    materialized_root=fixture["materialized_root"],
+                )
+
+            self.assertIn("Re-run scripts/rematerialize_round0_root.sh", str(ctx.exception))
 
     def test_select_first_n_tasks_expands_all_schemas(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

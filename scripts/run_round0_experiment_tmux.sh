@@ -19,6 +19,7 @@ Environment overrides:
   SKILLX_TMUX_SESSION   Default tmux session name when arg 3 is omitted
 
 Behavior:
+  - rematerializes the round0 pair specs before launch
   - starts the round0 launcher inside tmux
   - wraps the launcher with caffeinate
   - tees stdout into launcher_logs/<run-label>/launcher.stdout.log
@@ -45,6 +46,12 @@ if [[ ! -d "$EXP_WORKTREE" ]]; then
   exit 1
 fi
 
+if [[ -d "$LAUNCHER_LOG_DIR" ]] && find "$LAUNCHER_LOG_DIR" -mindepth 1 -print -quit | grep -q .; then
+  echo "Launcher log dir already exists and is non-empty: $LAUNCHER_LOG_DIR" >&2
+  echo "Choose a new run label or remove the existing log dir first." >&2
+  exit 1
+fi
+
 mkdir -p "$LAUNCHER_LOG_DIR"
 
 if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
@@ -53,7 +60,7 @@ if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
   exit 1
 fi
 
-COMMAND="cd $EXP_WORKTREE && caffeinate -dimsu uv run python -u scripts/launch_skillx_round0.py $TARGET --output-suffix $RUN_LABEL 2>&1 | tee $STDOUT_LOG_PATH"
+COMMAND="cd $EXP_WORKTREE && scripts/rematerialize_round0_root.sh && caffeinate -dimsu uv run python -u scripts/launch_skillx_round0.py $TARGET --output-suffix $RUN_LABEL 2>&1 | tee $STDOUT_LOG_PATH"
 
 tmux new-session -d -s "$SESSION_NAME"
 tmux send-keys -t "$SESSION_NAME" "$COMMAND" C-m

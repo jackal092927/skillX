@@ -99,6 +99,38 @@ def resolve_materialized_path(raw_path: str, *, materialized_root: Path) -> Path
     return (materialized_root / path).resolve()
 
 
+def validate_selected_pair_inputs(
+    pair_specs: list[dict[str, Any]],
+    *,
+    materialized_root: Path,
+) -> None:
+    missing_by_pair: list[tuple[str, list[str]]] = []
+    for pair_spec in pair_specs:
+        pair_id = str(pair_spec.get("pair_id", "unknown-pair"))
+        task_dir = resolve_materialized_path(str(pair_spec["skillsbench_task_dir"]), materialized_root=materialized_root)
+        skillpack_dir = resolve_materialized_path(
+            str(pair_spec["starting_skillpack_dir"]),
+            materialized_root=materialized_root,
+        )
+        missing = [path for path in (task_dir, skillpack_dir) if not path.exists()]
+        if missing:
+            missing_by_pair.append((pair_id, [str(path) for path in missing]))
+
+    if not missing_by_pair:
+        return
+
+    preview_lines = []
+    for pair_id, missing in missing_by_pair[:3]:
+        preview_lines.append(f"{pair_id}: {missing}")
+    if len(missing_by_pair) > 3:
+        preview_lines.append(f"... and {len(missing_by_pair) - 3} more pair(s)")
+    raise FileNotFoundError(
+        "materialized pair specs reference missing task inputs. "
+        "Re-run scripts/rematerialize_round0_root.sh before launching.\n"
+        + "\n".join(preview_lines)
+    )
+
+
 def select_pair_specs(
     pair_specs: list[dict[str, Any]],
     *,
@@ -423,6 +455,10 @@ def main(argv: list[str] | None = None) -> int:
         schema_ids=schema_ids,
         first_n=first_n,
         explicit_tasks=explicit_tasks,
+    )
+    validate_selected_pair_inputs(
+        selected_pairs,
+        materialized_root=args.materialized_root,
     )
     selected_task_names = sorted({pair["task_name"] for pair in selected_pairs}, key=task_names.index)
 
