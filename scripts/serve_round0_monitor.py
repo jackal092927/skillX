@@ -340,11 +340,47 @@ def _pair_status_from_sources(
     run_status: dict[str, str],
     run_dir: Path,
 ) -> str:
+    status_value = None
     if isinstance(launcher_result, dict) and isinstance(launcher_result.get("status"), str):
-        return str(launcher_result["status"])
-    run_status_value = run_status.get("status")
-    if isinstance(run_status_value, str) and run_status_value:
-        return run_status_value
+        status_value = str(launcher_result["status"])
+    if status_value is None:
+        run_status_value = run_status.get("status")
+        if isinstance(run_status_value, str) and run_status_value:
+            status_value = run_status_value
+
+    if isinstance(status_value, str) and status_value:
+        normalized = status_value.strip().lower()
+        if normalized in {"succeeded", "success", "completed", "done", "ok"}:
+            round_budget_raw = run_status.get("round_budget")
+            try:
+                round_budget = int(round_budget_raw) if round_budget_raw else None
+            except ValueError:
+                round_budget = None
+
+            stop_round_index = None
+            task_root = _find_refine_task_root(run_dir)
+            rounds_root = task_root / "rounds" if isinstance(task_root, Path) else None
+            if isinstance(rounds_root, Path) and rounds_root.exists():
+                for round_dir in sorted(path for path in rounds_root.iterdir() if path.is_dir()):
+                    round_index = _round_index_from_name(round_dir.name)
+                    if round_index is None:
+                        continue
+                    events = _read_ndjson(round_dir / "orchestrator_log.ndjson")
+                    if any(
+                        str(event.get("event_type") or "") == "round_decision_loaded"
+                        and str(event.get("status") or "") == "stop"
+                        for event in events
+                    ):
+                        stop_round_index = round_index
+
+            if stop_round_index is not None and round_budget is not None and stop_round_index < round_budget:
+                return f"completed (stop@R{stop_round_index})"
+            return "completed"
+        if normalized in {"failed", "failure", "error"}:
+            return "failed"
+        if normalized in {"running", "in_progress", "started", "active"}:
+            return "running"
+        return status_value
     if run_dir.exists():
         return "running"
     return "pending"
@@ -535,6 +571,7 @@ def collect_launcher_status(
         current_pair_id=active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
         active_run_dir=active_run_dir if isinstance(active_run_dir, Path) else None,
     )
+    total_pairs = max(total_pairs, len(pair_rows))
 
     if total_pairs > 0:
         progress_percent = 100.0 * completed_pairs / total_pairs
@@ -651,11 +688,11 @@ def _status_pill_class(value: Any) -> str:
     text = str(value or "").strip().lower()
     if not text:
         return ""
-    if text in {"succeeded", "success", "completed", "done", "ok"}:
+    if text in {"succeeded", "success", "completed", "done", "ok"} or text.startswith("completed"):
         return "pill pill-ok"
-    if text in {"failed", "failure", "error"}:
+    if text in {"failed", "failure", "error"} or text.startswith("failed"):
         return "pill pill-fail"
-    if text in {"running", "in_progress", "started", "active"}:
+    if text in {"running", "in_progress", "started", "active"} or text.startswith("running"):
         return "pill pill-run"
     return "pill pill-other"
 
