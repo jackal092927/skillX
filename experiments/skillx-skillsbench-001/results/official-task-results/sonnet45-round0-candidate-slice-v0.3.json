@@ -1,0 +1,168 @@
+{
+  "artifact_type": "skillx_round0_candidate_slice",
+  "version": "v0.3",
+  "date": "2026-04-11",
+  "baseline_model": "Claude Code (Sonnet 4.5)",
+  "baseline_condition": "No Skills + With Skills",
+  "source_cache_manifest": "experiments/skillx-skillsbench-001/results/official-task-results/manifest.json",
+  "selection_policy": {
+    "primary_rule": "From the official Sonnet 4.5 cache, exclude the v0.2 slice20 tasks and rank remaining candidates by descending C0+C1 score, using C1 then C0 as tie-breakers.",
+    "secondary_rule": "Maintain rough balance across available seed-schema buckets so the selected twenty do not collapse into a single dominant task family.",
+    "ordering_rule": "Within the chosen pool, order tasks in a balanced round-robin over seed-schema buckets so partial launches are less schema-skewed than a pure score-sorted list.",
+    "notes": [
+      "This slice is intended for the next twenty-task round-0 outer-loop batch after the original v0.2 slice20.",
+      "The remaining official pool contains no orchestration-delegation tasks after excluding the v0.2 slice.",
+      "The remaining official pool contains only one environment-control candidate and one methodology-guardrail candidate."
+    ]
+  },
+  "counts_by_seed_schema": {
+    "analytic-pipeline": 5,
+    "artifact-generation": 5,
+    "engineering-composition": 4,
+    "retrieval-heavy-synthesis": 4,
+    "environment-control": 1,
+    "methodology-guardrail": 1
+  },
+  "tasks": [
+    {
+      "task_name": "citation-check",
+      "seed_schema_id": "methodology-guardrail",
+      "official_sonnet45_no_skills_score": 100.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "official_sonnet45_c0_c1_sum_score": 200.0
+    },
+    {
+      "task_name": "powerlifting-coef-calc",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_no_skills_score": 100.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "official_sonnet45_c0_c1_sum_score": 200.0
+    },
+    {
+      "task_name": "spring-boot-jakarta-migration",
+      "seed_schema_id": "engineering-composition",
+      "official_sonnet45_no_skills_score": 100.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "official_sonnet45_c0_c1_sum_score": 200.0
+    },
+    {
+      "task_name": "trend-anomaly-causal-inference",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_no_skills_score": 84.3,
+      "official_sonnet45_with_skills_score": 90.6,
+      "official_sonnet45_c0_c1_sum_score": 174.9
+    },
+    {
+      "task_name": "sec-financial-report",
+      "seed_schema_id": "retrieval-heavy-synthesis",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "official_sonnet45_c0_c1_sum_score": 100.0
+    },
+    {
+      "task_name": "virtualhome-agent-planning",
+      "seed_schema_id": "environment-control",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 0.0,
+      "official_sonnet45_c0_c1_sum_score": 0.0
+    },
+    {
+      "task_name": "3d-scan-calc",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_no_skills_score": 80.0,
+      "official_sonnet45_with_skills_score": 80.0,
+      "official_sonnet45_c0_c1_sum_score": 160.0
+    },
+    {
+      "task_name": "data-to-d3",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_no_skills_score": 60.0,
+      "official_sonnet45_with_skills_score": 80.0,
+      "official_sonnet45_c0_c1_sum_score": 140.0
+    },
+    {
+      "task_name": "fix-druid-loophole-cve",
+      "seed_schema_id": "engineering-composition",
+      "official_sonnet45_no_skills_score": 20.0,
+      "official_sonnet45_with_skills_score": 80.0,
+      "official_sonnet45_c0_c1_sum_score": 100.0
+    },
+    {
+      "task_name": "reserves-at-risk-calc",
+      "seed_schema_id": "retrieval-heavy-synthesis",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 0.0,
+      "official_sonnet45_c0_c1_sum_score": 0.0
+    },
+    {
+      "task_name": "mars-clouds-clustering",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_no_skills_score": 40.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "official_sonnet45_c0_c1_sum_score": 140.0
+    },
+    {
+      "task_name": "exceltable-in-ppt",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_no_skills_score": 60.0,
+      "official_sonnet45_with_skills_score": 80.0,
+      "official_sonnet45_c0_c1_sum_score": 140.0
+    },
+    {
+      "task_name": "simpo-code-reproduction",
+      "seed_schema_id": "engineering-composition",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 40.0,
+      "official_sonnet45_c0_c1_sum_score": 40.0
+    },
+    {
+      "task_name": "shock-analysis-demand",
+      "seed_schema_id": "retrieval-heavy-synthesis",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 0.0,
+      "official_sonnet45_c0_c1_sum_score": 0.0
+    },
+    {
+      "task_name": "multilingual-video-dubbing",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_no_skills_score": 40.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "official_sonnet45_c0_c1_sum_score": 140.0
+    },
+    {
+      "task_name": "offer-letter-generator",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "official_sonnet45_c0_c1_sum_score": 100.0
+    },
+    {
+      "task_name": "fix-build-agentops",
+      "seed_schema_id": "engineering-composition",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 0.0,
+      "official_sonnet45_c0_c1_sum_score": 0.0
+    },
+    {
+      "task_name": "shock-analysis-supply",
+      "seed_schema_id": "retrieval-heavy-synthesis",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 0.0,
+      "official_sonnet45_c0_c1_sum_score": 0.0
+    },
+    {
+      "task_name": "lab-unit-harmonization",
+      "seed_schema_id": "analytic-pipeline",
+      "official_sonnet45_no_skills_score": 39.6,
+      "official_sonnet45_with_skills_score": 60.4,
+      "official_sonnet45_c0_c1_sum_score": 100.0
+    },
+    {
+      "task_name": "protein-expression-analysis",
+      "seed_schema_id": "artifact-generation",
+      "official_sonnet45_no_skills_score": 0.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "official_sonnet45_c0_c1_sum_score": 100.0
+    }
+  ]
+}

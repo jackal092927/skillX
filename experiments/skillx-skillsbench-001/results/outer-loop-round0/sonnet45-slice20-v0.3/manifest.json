@@ -1,0 +1,53 @@
+{
+  "artifact_type": "skillx_round0_materialization_manifest",
+  "run_id": "sonnet45-slice20-v0.3",
+  "round_id": "pilot-round-0",
+  "render_template_path": "docs/plans/skillx/skillx-render-template-frozen-v0.1.md",
+  "task_slice_path": "experiments/skillx-skillsbench-001/results/official-task-results/sonnet45-round0-candidate-slice-v0.3.json",
+  "prompt_bank_path": "docs/plans/skillx/skillx-prompt-bank-v0.1.json",
+  "inventory_path": "docs/plans/skillx/skillsbench-task-cluster-inputs-v0.1.jsonl",
+  "official_results_path": "experiments/skillx-skillsbench-001/results/official-task-results/official_task_results.jsonl",
+  "skillsbench_root": "/Users/Jackal/iWorld/projects/skillsbench-src",
+  "task_count": 20,
+  "schema_count": 7,
+  "pair_count": 140,
+  "round_budget": 3,
+  "agent": "claude-code",
+  "model": "anthropic/claude-sonnet-4-5",
+  "schema_ids": [
+    "artifact-generation",
+    "analytic-pipeline",
+    "engineering-composition",
+    "retrieval-heavy-synthesis",
+    "environment-control",
+    "methodology-guardrail",
+    "orchestration-delegation"
+  ],
+  "task_names": [
+    "citation-check",
+    "powerlifting-coef-calc",
+    "spring-boot-jakarta-migration",
+    "trend-anomaly-causal-inference",
+    "sec-financial-report",
+    "virtualhome-agent-planning",
+    "3d-scan-calc",
+    "data-to-d3",
+    "fix-druid-loophole-cve",
+    "reserves-at-risk-calc",
+    "mars-clouds-clustering",
+    "exceltable-in-ppt",
+    "simpo-code-reproduction",
+    "shock-analysis-demand",
+    "multilingual-video-dubbing",
+    "offer-letter-generator",
+    "fix-build-agentops",
+    "shock-analysis-supply",
+    "lab-unit-harmonization",
+    "protein-expression-analysis"
+  ],
+  "path_strategy": {
+    "pair_dir": "materialized_root_relative",
+    "rendered_meta_skill_path": "materialized_root_relative",
+    "refine_command_cwd": "materialized_root"
+  }
+}
