@@ -9,6 +9,7 @@ Usage:
 Defaults:
   run-label: run-3x7-2026-04-10
   port: 8765
+  experiment worktree: current checkout
 
 Environment overrides:
   SKILLX_EXP_WORKTREE   Absolute path to the experiment worktree
@@ -24,10 +25,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 WORKTREE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-GIT_COMMON_DIR="$(git -C "$WORKTREE_ROOT" rev-parse --git-common-dir)"
-SHARED_REPO_ROOT="$(cd "$GIT_COMMON_DIR/.." && pwd)"
-
-EXP_WORKTREE="${SKILLX_EXP_WORKTREE:-$SHARED_REPO_ROOT/.worktrees/exp/2026-04-10-round0-3x7}"
+EXP_WORKTREE="${SKILLX_EXP_WORKTREE:-$WORKTREE_ROOT}"
 RUN_LABEL="${1:-${SKILLX_RUN_LABEL:-run-3x7-2026-04-10}}"
 HOST="${SKILLX_MONITOR_HOST:-127.0.0.1}"
 PORT="${2:-${SKILLX_MONITOR_PORT:-8765}}"
