@@ -12,6 +12,7 @@ import re
 import shutil
 import subprocess
 import sys
+import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,6 +24,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.io_utils import ensure_dir, read_json, write_json
+from skillx.run_failure_utils import build_run_failure_payload, write_run_failure
 from skillx.skillpack_utils import discover_skill_names
 
 EXPERIMENT_ROOT = ROOT / "experiments" / "skillx-skillsbench-001"
@@ -939,64 +941,92 @@ def main() -> int:
     args.conditions = [item.strip().lower() for item in args.conditions.split(",") if item.strip()]
     args.condition_skill_sources = parse_condition_skill_sources(args.condition_skill_source)
     run_dir = ensure_dir(args.output_dir)
-    env_payload = check_environment(args.skillsbench_root, args.oauth_file)
-    write_environment_notes(run_dir, env_payload, args)
-    write_run_status(run_dir, "running", args)
+    run_failure_path = run_dir / "run_failure.json"
+    failure_context: dict[str, Any] = {
+        "failed_stage": None,
+        "manual_intervention": False,
+    }
+    try:
+        failure_context["failed_stage"] = "environment_check"
+        env_payload = check_environment(args.skillsbench_root, args.oauth_file)
+        write_environment_notes(run_dir, env_payload, args)
+        write_run_status(run_dir, "running", args)
 
-    rewrite_summary: list[dict[str, Any]] = []
-    benchmark_summary: list[dict[str, Any]] = []
+        rewrite_summary: list[dict[str, Any]] = []
+        benchmark_summary: list[dict[str, Any]] = []
 
-    for task_id in args.task:
-        task = discover_task_inputs(args.skillsbench_root, task_id)
-        if args.skip_rewrite:
-            rewrite_paths = make_rewrite_paths(run_dir, task.task_id)
-            c2_outputs = {name: rewrite_paths.materialized_dir / "c2_minimal" / name / "SKILL.md" for name in task.skill_names}
-            c3_outputs = {name: rewrite_paths.materialized_dir / "c3_derived" / name / "SKILL.md" for name in task.skill_names}
-            bundle_path = rewrite_paths.registry_dir / "skillx_derived__bundle__notes.yaml"
-        else:
-            rewrite_paths, c2_outputs, c3_outputs, bundle_path = run_rewrite_phase(
-                task=task,
-                run_dir=run_dir,
-                skillsbench_root=args.skillsbench_root,
-                oauth_file=args.oauth_file,
-                agent_name=args.agent,
-                model_name=args.model,
-                reuse_existing=args.reuse_existing_rewrites,
-                max_concurrency=args.max_concurrency,
-            )
-        rewrite_summary.append(
-            {
-                "task_id": task.task_id,
-                "n_original_skills": len(task.skill_names),
-                "n_c2_skills": len(c2_outputs),
-                "n_c3_skills": len(c3_outputs),
-                "bundle_generated": bool(bundle_path and bundle_path.exists()),
-                "rewrite_manifest": str(rewrite_paths.manifest_path),
-            }
-        )
-        if not args.skip_benchmark:
-            benchmark_summary.extend(
-                run_benchmark_phase(
+        for task_id in args.task:
+            failure_context["failed_stage"] = "discover_task_inputs"
+            task = discover_task_inputs(args.skillsbench_root, task_id)
+            if args.skip_rewrite:
+                rewrite_paths = make_rewrite_paths(run_dir, task.task_id)
+                c2_outputs = {name: rewrite_paths.materialized_dir / "c2_minimal" / name / "SKILL.md" for name in task.skill_names}
+                c3_outputs = {name: rewrite_paths.materialized_dir / "c3_derived" / name / "SKILL.md" for name in task.skill_names}
+                bundle_path = rewrite_paths.registry_dir / "skillx_derived__bundle__notes.yaml"
+            else:
+                failure_context["failed_stage"] = "run_rewrite_phase"
+                rewrite_paths, c2_outputs, c3_outputs, bundle_path = run_rewrite_phase(
                     task=task,
                     run_dir=run_dir,
-                    rewrite_paths=rewrite_paths,
                     skillsbench_root=args.skillsbench_root,
-                    conditions=args.conditions,
-                    condition_skill_sources=args.condition_skill_sources,
+                    oauth_file=args.oauth_file,
                     agent_name=args.agent,
                     model_name=args.model,
-                    oauth_file=args.oauth_file,
-                    timeout_multiplier=args.timeout_multiplier,
+                    reuse_existing=args.reuse_existing_rewrites,
                     max_concurrency=args.max_concurrency,
                 )
+            rewrite_summary.append(
+                {
+                    "task_id": task.task_id,
+                    "n_original_skills": len(task.skill_names),
+                    "n_c2_skills": len(c2_outputs),
+                    "n_c3_skills": len(c3_outputs),
+                    "bundle_generated": bool(bundle_path and bundle_path.exists()),
+                    "rewrite_manifest": str(rewrite_paths.manifest_path),
+                }
             )
-
-    results_dir = ensure_dir(run_dir / "results")
-    write_json(results_dir / "rewrite_summary.json", rewrite_summary)
-    write_json(results_dir / "benchmark_summary.json", benchmark_summary)
-    (results_dir / "matrix.md").write_text(render_matrix(benchmark_summary))
-    write_run_status(run_dir, "completed", args)
-    return 0
+            if not args.skip_benchmark:
+                failure_context["failed_stage"] = "run_benchmark_phase"
+                benchmark_summary.extend(
+                    run_benchmark_phase(
+                        task=task,
+                        run_dir=run_dir,
+                        rewrite_paths=rewrite_paths,
+                        skillsbench_root=args.skillsbench_root,
+                        conditions=args.conditions,
+                        condition_skill_sources=args.condition_skill_sources,
+                        agent_name=args.agent,
+                        model_name=args.model,
+                        oauth_file=args.oauth_file,
+                        timeout_multiplier=args.timeout_multiplier,
+                        max_concurrency=args.max_concurrency,
+                    )
+                )
+        results_dir = ensure_dir(run_dir / "results")
+        failure_context["failed_stage"] = "write_results"
+        write_json(results_dir / "rewrite_summary.json", rewrite_summary)
+        write_json(results_dir / "benchmark_summary.json", benchmark_summary)
+        (results_dir / "matrix.md").write_text(render_matrix(benchmark_summary))
+        if run_failure_path.exists():
+            run_failure_path.unlink()
+        write_run_status(run_dir, "completed", args)
+        return 0
+    except Exception as error:
+        write_run_failure(
+            run_failure_path,
+            build_run_failure_payload(
+                error=error,
+                traceback_text=traceback.format_exc(),
+                failed_stage=str(failure_context.get("failed_stage")) if failure_context.get("failed_stage") else None,
+                manual_intervention=bool(failure_context.get("manual_intervention", False)),
+                extra={
+                    "run_id": args.run_id,
+                    "task_ids": list(args.task),
+                },
+            ),
+        )
+        write_run_status(run_dir, "failed", args)
+        raise
 
 
 if __name__ == "__main__":

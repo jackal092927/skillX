@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -231,8 +232,18 @@ def _format_score(value: float | None) -> str:
     return str(value)
 
 
+def materialized_relative_path(path: Path, *, materialized_root: Path) -> str:
+    resolved = path.resolve()
+    root = materialized_root.resolve()
+    try:
+        return str(resolved.relative_to(root))
+    except ValueError:
+        return str(resolved)
+
+
 def build_refine_command(
     *,
+    materialized_root: Path,
     pair_dir: Path,
     skillsbench_root: Path,
     task: TaskMaterialization,
@@ -244,9 +255,10 @@ def build_refine_command(
     run_dir = pair_dir / "refine_run"
     source_stub = pair_dir / "source_stub"
     ensure_dir(source_stub)
+    refine_script_path = Path(os.path.relpath((ROOT / "scripts" / "run_skillx_refine_benchmark.py").resolve(), materialized_root.resolve()))
     return [
         "python3.12",
-        str(ROOT / "scripts" / "run_skillx_refine_benchmark.py"),
+        str(refine_script_path),
         "--skillsbench-root",
         str(skillsbench_root),
         "--task",
@@ -254,11 +266,11 @@ def build_refine_command(
         "--run-id",
         pair_dir.name,
         "--output-dir",
-        str(run_dir),
+        materialized_relative_path(run_dir, materialized_root=materialized_root),
         "--oauth-file",
         str(oauth_file),
         "--source-run-dir",
-        str(source_stub),
+        materialized_relative_path(source_stub, materialized_root=materialized_root),
         "--starting-skillpack-dir",
         str(task.skills_dir),
         "--starting-label",
@@ -325,7 +337,7 @@ def build_round0_materialization(
                 "run_id": run_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
-                "pair_dir": str(pair_dir),
+                "pair_dir": materialized_relative_path(pair_dir, materialized_root=output_dir),
                 "skillsbench_task_dir": str(task.task_dir),
                 "starting_skillpack_dir": str(task.skills_dir),
                 "starting_label": "C1",
@@ -333,8 +345,12 @@ def build_round0_materialization(
                     "no_skills": baseline_scores.get("No Skills"),
                     "with_skills": baseline_scores.get("With Skills"),
                 },
-                "rendered_meta_skill_path": str(pair_dir / "rendered_meta_skill.md"),
+                "rendered_meta_skill_path": materialized_relative_path(
+                    pair_dir / "rendered_meta_skill.md",
+                    materialized_root=output_dir,
+                ),
                 "refine_command": build_refine_command(
+                    materialized_root=output_dir,
                     pair_dir=pair_dir,
                     skillsbench_root=skillsbench_root,
                     task=task,
@@ -365,13 +381,20 @@ def build_round0_materialization(
         "model": model,
         "schema_ids": schema_ids,
         "task_names": [task["task_name"] for task in task_slice],
+        "path_strategy": {
+            "pair_dir": "materialized_root_relative",
+            "rendered_meta_skill_path": "materialized_root_relative",
+            "refine_command_cwd": "materialized_root",
+        },
     }
     write_json(output_dir / "manifest.json", manifest)
     (output_dir / "pair_specs.jsonl").write_text(
         "".join(json.dumps(pair_spec) + "\n" for pair_spec in pair_specs)
     )
     (output_dir / "launch_round0.sh").write_text(
-        "#!/bin/sh\nset -eu\n\n" + "\n".join(" ".join(pair["refine_command"]) for pair in pair_specs) + "\n"
+        "#!/bin/sh\nset -eu\n\nSCRIPT_DIR=$(CDPATH= cd -- \"$(dirname \"$0\")\" && pwd)\ncd \"$SCRIPT_DIR\"\n\n"
+        + "\n".join(" ".join(pair["refine_command"]) for pair in pair_specs)
+        + "\n"
     )
     return {"manifest": manifest, "pair_specs": pair_specs}
 

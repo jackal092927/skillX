@@ -199,6 +199,16 @@ class MaterializeSkillXRound0RunnerTests(unittest.TestCase):
             pair_ids = {pair["pair_id"] for pair in result["pair_specs"]}
             self.assertIn("task-alpha__analytic-pipeline", pair_ids)
             self.assertIn("task-beta__artifact-generation", pair_ids)
+            sample_pair = next(item for item in result["pair_specs"] if item["pair_id"] == "task-alpha__analytic-pipeline")
+            self.assertEqual(sample_pair["pair_dir"], "pairs/task-alpha__analytic-pipeline")
+            self.assertEqual(
+                sample_pair["rendered_meta_skill_path"],
+                "pairs/task-alpha__analytic-pipeline/rendered_meta_skill.md",
+            )
+            self.assertEqual(
+                result["manifest"]["path_strategy"]["pair_dir"],
+                "materialized_root_relative",
+            )
 
     def test_rendered_meta_skill_preserves_frozen_block_order(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -216,7 +226,7 @@ class MaterializeSkillXRound0RunnerTests(unittest.TestCase):
                 oauth_file=Path("/tmp/oauth.json"),
             )
             pair = next(item for item in result["pair_specs"] if item["pair_id"] == "task-alpha__analytic-pipeline")
-            rendered = (Path(pair["pair_dir"]) / "rendered_meta_skill.md").read_text()
+            rendered = ((Path(tmpdir) / "out") / pair["rendered_meta_skill_path"]).read_text()
             expected_order = [
                 "[Common wrapper]",
                 "[Meta schema block]",
@@ -252,6 +262,8 @@ class MaterializeSkillXRound0RunnerTests(unittest.TestCase):
             pair = next(item for item in result["pair_specs"] if item["pair_id"] == "task-beta__artifact-generation")
             command = " ".join(pair["refine_command"])
             self.assertIn("--starting-label C1", command)
+            self.assertIn("--output-dir pairs/task-beta__artifact-generation/refine_run", command)
+            self.assertIn("--source-run-dir pairs/task-beta__artifact-generation/source_stub", command)
             self.assertIn(
                 str(fixture["skillsbench_root"] / "tasks" / "task-beta" / "environment" / "skills"),
                 command,

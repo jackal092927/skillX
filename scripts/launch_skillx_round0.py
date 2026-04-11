@@ -19,6 +19,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.model_routing import resolve_benchmark_agent_name
+from skillx.run_failure_utils import build_run_failure_payload
 
 DEFAULT_TASK_SLICE = (
     ROOT
@@ -91,6 +92,13 @@ def load_materialized_pairs(materialized_root: Path) -> tuple[dict[str, Any], li
     return manifest, pair_specs
 
 
+def resolve_materialized_path(raw_path: str, *, materialized_root: Path) -> Path:
+    path = Path(raw_path)
+    if path.is_absolute():
+        return path.resolve()
+    return (materialized_root / path).resolve()
+
+
 def select_pair_specs(
     pair_specs: list[dict[str, Any]],
     *,
@@ -145,9 +153,10 @@ def resolve_pair_dir(
     materialized_root: Path,
 ) -> Path:
     local_pair_dir = materialized_root / "pairs" / str(pair_spec["pair_id"])
+    pair_dir = resolve_materialized_path(str(pair_spec["pair_dir"]), materialized_root=materialized_root)
     if local_pair_dir.exists():
         return local_pair_dir.resolve()
-    return Path(str(pair_spec["pair_dir"])).resolve()
+    return pair_dir
 
 
 def resolve_pair_run_id_and_output_dir(
@@ -176,6 +185,72 @@ def build_launcher_log_dir(materialized_root: Path, *, output_suffix: str | None
 def append_ndjson(path: Path, payload: dict[str, Any]) -> None:
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(payload, sort_keys=True) + "\n")
+
+
+def write_launcher_failed_run_status(
+    run_dir: Path,
+    *,
+    run_id: str | None,
+    task_name: str,
+    round_budget: int,
+) -> None:
+    body = "\n".join(
+        [
+            "- status: `failed`",
+            f"- run_id: `{run_id or 'unknown-run'}`",
+            f"- task: `{task_name}`",
+            "- source_run_dir: `launcher-synthesized`",
+            f"- round_budget: `{round_budget}`",
+            "- orchestration_mode: `c4ar`",
+            f"- updated_at: `{datetime.now(timezone.utc).isoformat()}`",
+        ]
+    )
+    (run_dir / "RUN_STATUS.md").write_text(body + "\n")
+
+
+def ensure_launcher_failure_artifacts(
+    *,
+    output_dir: str | None,
+    run_id: str | None,
+    task_name: str,
+    schema_id: str,
+    pair_id: str,
+    round_budget: int,
+    stage: str,
+    error: str,
+    traceback_text: str | None = None,
+    returncode: int | None = None,
+    command: list[str] | None = None,
+) -> None:
+    if output_dir is None:
+        return
+    run_dir = Path(output_dir)
+    run_dir.mkdir(parents=True, exist_ok=True)
+    failure_path = run_dir / "run_failure.json"
+    if not failure_path.exists():
+        payload = build_run_failure_payload(
+            error_type="LauncherPairFailure",
+            error_message=error,
+            traceback_text=traceback_text,
+            failed_stage=stage,
+            manual_intervention=bool(returncode is not None and returncode < 0),
+            returncode=returncode,
+            command=command,
+            extra={
+                "pair_id": pair_id,
+                "task_name": task_name,
+                "schema_id": schema_id,
+                "run_id": run_id,
+                "launcher_stage": stage,
+            },
+        )
+        write_json(failure_path, payload)
+    write_launcher_failed_run_status(
+        run_dir,
+        run_id=run_id,
+        task_name=task_name,
+        round_budget=round_budget,
+    )
 
 
 def build_launcher_summary(
@@ -215,7 +290,7 @@ def build_refine_command(
 ) -> list[str]:
     pair_dir = resolve_pair_dir(pair_spec, materialized_root=materialized_root)
     task_name = str(pair_spec["task_name"])
-    task_dir = Path(str(pair_spec["skillsbench_task_dir"])).resolve()
+    task_dir = resolve_materialized_path(str(pair_spec["skillsbench_task_dir"]), materialized_root=materialized_root)
     skillsbench_root = task_dir.parents[1]
     source_stub = pair_dir / "source_stub"
     source_stub.mkdir(parents=True, exist_ok=True)
@@ -242,7 +317,7 @@ def build_refine_command(
         "--source-run-dir",
         str(source_stub),
         "--starting-skillpack-dir",
-        str(Path(str(pair_spec["starting_skillpack_dir"])).resolve()),
+        str(resolve_materialized_path(str(pair_spec["starting_skillpack_dir"]), materialized_root=materialized_root)),
         "--starting-label",
         str(pair_spec.get("starting_label", "C1")),
         "--round-budget",
@@ -420,6 +495,17 @@ def main(argv: list[str] | None = None) -> int:
                 output_suffix=args.output_suffix,
             )
         except Exception as exc:
+            ensure_launcher_failure_artifacts(
+                output_dir=output_dir,
+                run_id=run_id,
+                task_name=task_name,
+                schema_id=schema_id,
+                pair_id=pair_id,
+                round_budget=args.round_budget,
+                stage="build_command",
+                error=str(exc),
+                traceback_text=traceback.format_exc(),
+            )
             result = {
                 "pair_id": pair_id,
                 "task_name": task_name,
@@ -488,6 +574,18 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 print("  OK")
             else:
+                ensure_launcher_failure_artifacts(
+                    output_dir=output_dir,
+                    run_id=run_id,
+                    task_name=task_name,
+                    schema_id=schema_id,
+                    pair_id=pair_id,
+                    round_budget=args.round_budget,
+                    stage="run",
+                    error=f"subprocess exited with code {returncode}",
+                    returncode=returncode,
+                    command=command,
+                )
                 result = {
                     "pair_id": pair_id,
                     "task_name": task_name,
@@ -516,6 +614,19 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 print(f"  FAILED with exit code {returncode}")
         except subprocess.CalledProcessError as exc:
+            ensure_launcher_failure_artifacts(
+                output_dir=output_dir,
+                run_id=run_id,
+                task_name=task_name,
+                schema_id=schema_id,
+                pair_id=pair_id,
+                round_budget=args.round_budget,
+                stage="run",
+                error=str(exc),
+                traceback_text=traceback.format_exc(),
+                returncode=int(exc.returncode),
+                command=command,
+            )
             result = {
                 "pair_id": pair_id,
                 "task_name": task_name,
@@ -546,6 +657,18 @@ def main(argv: list[str] | None = None) -> int:
             )
             print(f"  FAILED with exit code {exc.returncode}")
         except Exception as exc:
+            ensure_launcher_failure_artifacts(
+                output_dir=output_dir,
+                run_id=run_id,
+                task_name=task_name,
+                schema_id=schema_id,
+                pair_id=pair_id,
+                round_budget=args.round_budget,
+                stage="run_exception",
+                error=str(exc),
+                traceback_text=traceback.format_exc(),
+                command=command,
+            )
             result = {
                 "pair_id": pair_id,
                 "task_name": task_name,
