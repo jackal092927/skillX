@@ -485,6 +485,7 @@ def main(argv: list[str] | None = None) -> int:
             output_dir = str(resolved_output_dir)
             command = build_refine_command(
                 pair_spec,
+                materialized_root=args.materialized_root,
                 oauth_file=args.oauth_file,
                 round_budget=args.round_budget,
                 agent=args.agent,
