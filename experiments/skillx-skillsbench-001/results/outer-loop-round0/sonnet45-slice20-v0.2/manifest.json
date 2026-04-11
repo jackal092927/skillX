@@ -44,5 +44,10 @@
     "adaptive-cruise-control",
     "taxonomy-tree-merge",
     "pg-essay-to-audiobook"
-  ]
+  ],
+  "path_strategy": {
+    "pair_dir": "materialized_root_relative",
+    "rendered_meta_skill_path": "materialized_root_relative",
+    "refine_command_cwd": "materialized_root"
+  }
 }
