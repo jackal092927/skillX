@@ -174,6 +174,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
 
             command = self.module.build_refine_command(
                 pair,
+                materialized_root=fixture["materialized_root"],
                 oauth_file=fixture["oauth_file"],
                 round_budget=3,
                 agent="claude-code",
@@ -202,6 +203,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
 
             command = self.module.build_refine_command(
                 pair,
+                materialized_root=fixture["materialized_root"],
                 oauth_file=fixture["oauth_file"],
                 round_budget=3,
                 agent=None,
@@ -214,6 +216,62 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             command_text = " ".join(command)
             self.assertIn("--agent codex", command_text)
             self.assertNotIn("--oauth-file", command_text)
+
+    def test_build_refine_command_prefers_local_materialized_pair_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            pair = next(spec for spec in pair_specs if spec["pair_id"] == "task-beta__artifact-generation")
+            pair["pair_dir"] = str(Path(tmpdir) / "elsewhere" / pair["pair_id"])
+
+            command = self.module.build_refine_command(
+                pair,
+                materialized_root=fixture["materialized_root"],
+                oauth_file=fixture["oauth_file"],
+                round_budget=3,
+                agent="claude-code",
+                model="anthropic/claude-sonnet-4-5",
+                refine_protocol_path=fixture["protocol_path"],
+                bundle_contract_path=fixture["bundle_path"],
+                output_suffix="local-run",
+            )
+
+            expected_output_dir = (
+                fixture["materialized_root"]
+                / "pairs"
+                / "task-beta__artifact-generation"
+                / "refine_run_local-run"
+            )
+            expected_source_stub = (
+                fixture["materialized_root"]
+                / "pairs"
+                / "task-beta__artifact-generation"
+                / "source_stub"
+            )
+            command_text = " ".join(command)
+            self.assertIn(str(expected_output_dir), command_text)
+            self.assertTrue(expected_source_stub.exists())
+
+    def test_build_launcher_summary_keeps_selected_pair_total_during_partial_progress(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            summary = self.module.build_launcher_summary(
+                task_slice_path=root / "task-slice.json",
+                materialized_root=root / "round0-root",
+                selected_task_names=["task-alpha", "task-beta"],
+                selected_pair_count=4,
+                results=[
+                    {
+                        "pair_id": "task-alpha__artifact-generation",
+                        "status": "succeeded",
+                    }
+                ],
+            )
+
+            self.assertEqual(summary["total_pairs"], 4)
+            self.assertEqual(summary["completed_pairs"], 1)
+            self.assertEqual(summary["succeeded_pairs"], 1)
+            self.assertEqual(summary["failed_pairs"], 0)
 
     def test_main_dry_run_accepts_numeric_target(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
