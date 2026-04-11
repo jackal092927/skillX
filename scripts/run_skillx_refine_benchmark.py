@@ -29,6 +29,7 @@ from skillx.model_routing import (
     AUTH_BACKED_CODEX_IMPORT_PATH,
     resolve_benchmark_agent_name,
 )
+from skillx.run_failure_utils import build_run_failure_payload, write_run_failure
 from skillx.skillpack_utils import copy_named_skill_dirs, discover_skill_names
 from skillx.c4ar.orchestrator import (
     ExecutorOutputs,
@@ -148,6 +149,43 @@ SESSION_LOG_SUFFIXES = {".json", ".jsonl", ".ndjson", ".log", ".txt"}
 
 def _timestamp() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def update_failure_context(
+    failure_context: dict[str, Any] | None,
+    *,
+    failed_stage: str | None = None,
+    failed_round: int | None = None,
+    manual_intervention: bool | None = None,
+) -> None:
+    if failure_context is None:
+        return
+    if failed_stage is not None:
+        failure_context["failed_stage"] = failed_stage
+    if failed_round is not None:
+        failure_context["failed_round"] = failed_round
+    if manual_intervention is not None:
+        failure_context["manual_intervention"] = bool(manual_intervention)
+
+
+def build_main_run_failure_payload(
+    *,
+    error: Exception,
+    args: argparse.Namespace,
+    failure_context: dict[str, Any],
+) -> dict[str, Any]:
+    return build_run_failure_payload(
+        error=error,
+        traceback_text=traceback.format_exc(),
+        failed_stage=str(failure_context.get("failed_stage")) if failure_context.get("failed_stage") else None,
+        failed_round=failure_context.get("failed_round"),
+        manual_intervention=bool(failure_context.get("manual_intervention", False)),
+        extra={
+            "run_id": args.run_id,
+            "task_id": args.task,
+            "orchestration_mode": args.orchestration_mode,
+        },
+    )
 
 
 def normalize_skill_files_within_skillpack(payload: dict[str, Any]) -> dict[str, Any]:
@@ -3044,6 +3082,7 @@ def run_refine_rounds(
     tune_rows: list[dict[str, Any]],
     orchestration_mode: str = DEFAULT_ORCHESTRATION_MODE,
     start_round_index: int = 0,
+    failure_context: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     if orchestration_mode == "c4ar":
         round_rows = existing_completed_round_rows(
@@ -3052,10 +3091,16 @@ def run_refine_rounds(
             stop_before_round_index=start_round_index,
         )
         for round_index in range(start_round_index, round_budget + 1):
+            update_failure_context(
+                failure_context,
+                failed_round=round_index,
+                manual_intervention=False,
+            )
             current_round_dir = round_dir(paths, round_index)
             if round_index == start_round_index and round_index > 0:
                 prepare_c4ar_resume_round(task=task, paths=paths, round_index=round_index)
             if round_index == round_budget:
+                update_failure_context(failure_context, failed_stage="terminal_round_executor")
                 tune_result = run_terminal_c4ar_round(
                     task=task,
                     round_index=round_index,
@@ -3083,6 +3128,7 @@ def run_refine_rounds(
                     tune_result=tune_result,
                 )
                 break
+            update_failure_context(failure_context, failed_stage="c4ar_round")
             orchestrator_outputs, tune_result = run_c4ar_round_with_harbor(
                 task=task,
                 round_index=round_index,
@@ -3149,6 +3195,11 @@ def run_refine_rounds(
     )
 
     for round_index in range(1, round_budget + 1):
+        update_failure_context(
+            failure_context,
+            failed_round=round_index,
+            manual_intervention=False,
+        )
         previous_round_dir = round_dir(paths, round_index - 1)
         current_round_dir = paths.rounds_dir / f"round-{round_index}"
         if current_round_dir.exists():
@@ -3176,6 +3227,7 @@ def run_refine_rounds(
                     session_evidence=session_evidence,
                 )
                 continue
+        update_failure_context(failure_context, failed_stage="round_task_sandbox")
         spec = create_refine_round_task_sandbox(
             task=task,
             paths=paths,
@@ -3198,6 +3250,7 @@ def run_refine_rounds(
                 except RuntimeError:
                     clear_job_dir(existing_job_dir)
             if not can_reuse_existing_job:
+                update_failure_context(failure_context, failed_stage="round_harbor_run")
                 run_harbor_job(
                     skillsbench_root=skillsbench_root,
                     config_path=spec.config_path,
@@ -3205,20 +3258,24 @@ def run_refine_rounds(
                     agent_name=agent_name,
                 )
                 try:
+                    update_failure_context(failure_context, failed_stage="round_output_collect")
                     exported_dir = collect_refine_round_output(spec)
                 except RuntimeError:
                     retry_job_dir = spec.jobs_dir / spec.config_path.stem
                     if not is_retryable_refine_contract_failure(retry_job_dir):
                         raise
                     clear_job_dir(retry_job_dir)
+                    update_failure_context(failure_context, failed_stage="round_harbor_run_retry")
                     run_harbor_job(
                         skillsbench_root=skillsbench_root,
                         config_path=spec.config_path,
                         oauth_file=oauth_file,
                         agent_name=agent_name,
                     )
+                    update_failure_context(failure_context, failed_stage="round_output_collect_retry")
                     exported_dir = collect_refine_round_output(spec)
             materialized_round_dir = materialize_round_output(paths, round_index, exported_dir)
+        update_failure_context(failure_context, failed_stage="tune_check")
         tune_result = run_round_tune_check(
             task=task,
             run_dir=run_dir,
@@ -3292,17 +3349,26 @@ def main() -> int:
     args.tune_run_dir = [path.resolve() for path in (args.tune_run_dir or [args.source_run_dir])]
     args.session_log_path = [path.resolve() for path in (args.session_log_path or [])]
     run_dir = ensure_dir(args.output_dir)
+    run_failure_path = run_dir / "run_failure.json"
+    failure_context: dict[str, Any] = {
+        "failed_stage": None,
+        "failed_round": None,
+        "manual_intervention": False,
+    }
     try:
+        update_failure_context(failure_context, failed_stage="discover_task_inputs")
         task = discover_task_inputs(args.skillsbench_root, args.task)
         if args.orchestration_mode == "c4ar" and c4ar_resume_requires_backup(
             run_dir=run_dir,
             task_id=task.task_id,
             round_budget=args.round_budget,
         ):
+            update_failure_context(failure_context, failed_stage="backup_before_resume")
             backup_run_dir_before_resume(
                 run_dir=run_dir,
                 reason="automatic safety backup before c4ar resume that may rewrite existing round artifacts",
             )
+        update_failure_context(failure_context, failed_stage="environment_check")
         env_payload = check_environment(args.skillsbench_root, args.oauth_file, agent_name=args.agent)
         write_environment_notes(run_dir, env_payload, args)
         write_run_status(run_dir, "running", args)
@@ -3312,6 +3378,7 @@ def main() -> int:
             refine_protocol_path=args.refine_protocol_path,
             bundle_contract_path=args.bundle_contract_path,
         )
+        update_failure_context(failure_context, failed_stage="locate_source_artifacts")
         source = locate_source_artifacts(
             task.task_id,
             args.source_run_dir,
@@ -3319,11 +3386,15 @@ def main() -> int:
             starting_bundle_path=args.starting_bundle_path,
             starting_label=args.starting_label,
         )
+        update_failure_context(failure_context, failed_stage="collect_tune_evidence")
         tune_rows = collect_tune_evidence(task.task_id, args.tune_run_dir)
+        update_failure_context(failure_context, failed_stage="expand_session_logs")
         session_log_paths = expand_session_log_paths(args.session_log_path)
+        update_failure_context(failure_context, failed_stage="distill_session_logs")
         session_evidence = distill_session_logs(session_log_paths) if session_log_paths else None
         start_round_index = 0
         if args.orchestration_mode == "c4ar":
+            update_failure_context(failure_context, failed_stage="infer_resume_round")
             start_round_index = infer_c4ar_resume_round_index(
                 run_dir=run_dir,
                 task_id=task.task_id,
@@ -3331,6 +3402,7 @@ def main() -> int:
             )
         r0_row: dict[str, Any] | None = None
         if not (args.orchestration_mode == "c4ar" and start_round_index > 0):
+            update_failure_context(failure_context, failed_stage="write_static_bundle")
             write_static_bundle(
                 task=task,
                 paths=paths,
@@ -3342,7 +3414,9 @@ def main() -> int:
                 source_run_dir=args.source_run_dir,
                 session_evidence=session_evidence,
             )
+            update_failure_context(failure_context, failed_stage="make_round_zero_artifacts")
             r0_row = make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=tune_rows)
+        update_failure_context(failure_context, failed_stage="run_refine_rounds")
         round_rows = run_refine_rounds(
             task=task,
             paths=paths,
@@ -3362,7 +3436,9 @@ def main() -> int:
             tune_rows=tune_rows,
             orchestration_mode=args.orchestration_mode,
             start_round_index=start_round_index,
+            failure_context=failure_context,
         )
+        update_failure_context(failure_context, failed_stage="write_bundle_manifest")
         write_bundle_manifest(
             paths=paths,
             task=task,
@@ -3372,20 +3448,24 @@ def main() -> int:
             round_budget=args.round_budget,
             rounds=round_rows,
         )
+        update_failure_context(failure_context, failed_stage="select_final_candidate")
         selected_row = select_final_candidate(round_rows)
+        update_failure_context(failure_context, failed_stage="write_final_bundle")
         write_final_bundle(task=task, paths=paths, selected_row=selected_row, tune_rows=round_rows)
+        update_failure_context(failure_context, failed_stage="write_summary")
         write_json(paths.summary_path, {"task_id": task.task_id, "selected": selected_row, "rounds": round_rows})
+        if run_failure_path.exists():
+            run_failure_path.unlink()
         write_run_status(run_dir, "completed", args)
         return 0
     except Exception as error:
-        write_json(
-            run_dir / "run_failure.json",
-            {
-                "error_type": type(error).__name__,
-                "error_message": str(error),
-                "traceback": traceback.format_exc(),
-                "observed_at": _timestamp(),
-            },
+        write_run_failure(
+            run_failure_path,
+            build_main_run_failure_payload(
+                error=error,
+                args=args,
+                failure_context=failure_context,
+            ),
         )
         write_run_status(run_dir, "failed", args)
         raise

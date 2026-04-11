@@ -199,6 +199,16 @@ class MaterializeSkillXRound0RunnerTests(unittest.TestCase):
             pair_ids = {pair["pair_id"] for pair in result["pair_specs"]}
             self.assertIn("task-alpha__analytic-pipeline", pair_ids)
             self.assertIn("task-beta__artifact-generation", pair_ids)
+            sample_pair = next(item for item in result["pair_specs"] if item["pair_id"] == "task-alpha__analytic-pipeline")
+            self.assertEqual(sample_pair["pair_dir"], "pairs/task-alpha__analytic-pipeline")
+            self.assertEqual(
+                sample_pair["rendered_meta_skill_path"],
+                "pairs/task-alpha__analytic-pipeline/rendered_meta_skill.md",
+            )
+            self.assertEqual(
+                result["manifest"]["path_strategy"]["pair_dir"],
+                "materialized_root_relative",
+            )
 
     def test_rendered_meta_skill_preserves_frozen_block_order(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -216,7 +226,7 @@ class MaterializeSkillXRound0RunnerTests(unittest.TestCase):
                 oauth_file=Path("/tmp/oauth.json"),
             )
             pair = next(item for item in result["pair_specs"] if item["pair_id"] == "task-alpha__analytic-pipeline")
-            rendered = (self.module.resolve_repo_path(pair["pair_dir"]) / "rendered_meta_skill.md").read_text()
+            rendered = ((Path(tmpdir) / "out") / pair["rendered_meta_skill_path"]).read_text()
             expected_order = [
                 "[Common wrapper]",
                 "[Meta schema block]",
@@ -252,58 +262,14 @@ class MaterializeSkillXRound0RunnerTests(unittest.TestCase):
             pair = next(item for item in result["pair_specs"] if item["pair_id"] == "task-beta__artifact-generation")
             command = " ".join(pair["refine_command"])
             self.assertIn("--starting-label C1", command)
+            self.assertIn("--output-dir pairs/task-beta__artifact-generation/refine_run", command)
+            self.assertIn("--source-run-dir pairs/task-beta__artifact-generation/source_stub", command)
             self.assertIn(
-                "tasks/task-beta/environment/skills",
+                str(fixture["skillsbench_root"] / "tasks" / "task-beta" / "environment" / "skills"),
                 command,
             )
             self.assertIn("--task task-beta", command)
             self.assertIn("--round-budget 3", command)
-
-    def test_materialization_records_repo_relative_paths(self) -> None:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            fixture = self._build_fixture(Path(tmpdir))
-            output_dir = Path(tmpdir) / "out"
-            result = self.module.build_round0_materialization(
-                skillsbench_root=fixture["skillsbench_root"],
-                task_slice_path=fixture["task_slice_path"],
-                prompt_bank_path=fixture["prompt_bank_path"],
-                inventory_path=fixture["inventory_path"],
-                official_results_path=fixture["official_results_path"],
-                render_template_path=fixture["render_template_path"],
-                output_dir=output_dir,
-                run_id="round0-test",
-                round_budget=3,
-                oauth_file=Path.home() / ".claude" / "claude-code-oauth-token",
-            )
-
-            pair = next(item for item in result["pair_specs"] if item["pair_id"] == "task-alpha__analytic-pipeline")
-            self.assertFalse(Path(pair["pair_dir"]).is_absolute())
-            self.assertEqual(
-                self.module.resolve_repo_path(pair["pair_dir"]),
-                (output_dir / "pairs" / "task-alpha__analytic-pipeline").resolve(),
-            )
-            self.assertFalse(Path(pair["skillsbench_task_dir"]).is_absolute())
-            self.assertEqual(
-                self.module.resolve_repo_path(pair["skillsbench_task_dir"]),
-                (fixture["skillsbench_root"] / "tasks" / "task-alpha").resolve(),
-            )
-            self.assertEqual(
-                pair["refine_command"][1],
-                "scripts/run_skillx_refine_benchmark.py",
-            )
-            output_dir_index = pair["refine_command"].index("--output-dir") + 1
-            oauth_index = pair["refine_command"].index("--oauth-file") + 1
-            self.assertFalse(Path(pair["refine_command"][output_dir_index]).is_absolute())
-            self.assertFalse(Path(pair["refine_command"][oauth_index]).is_absolute())
-            manifest = result["manifest"]
-            self.assertFalse(Path(manifest["skillsbench_root"]).is_absolute())
-            self.assertEqual(
-                self.module.resolve_repo_path(manifest["skillsbench_root"]),
-                fixture["skillsbench_root"].resolve(),
-            )
-            launch_script = (output_dir / "launch_round0.sh").read_text()
-            self.assertIn('git -C -- "$(dirname "$0")" rev-parse --show-toplevel', launch_script)
-            self.assertIn("scripts/run_skillx_refine_benchmark.py", launch_script)
 
 
 if __name__ == "__main__":

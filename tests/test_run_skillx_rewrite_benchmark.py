@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 SCRIPT_PATH = (
@@ -154,6 +156,39 @@ beta
             copied_skill = sandbox_dir / "environment" / "skills" / "skill-x" / "SKILL.md"
             self.assertEqual(copied_skill.read_text(), "custom skill\n")
             self.assertFalse((sandbox_dir / "environment" / "skills" / "skill-a").exists())
+
+    def test_main_writes_run_failure_for_rewrite_setup_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            oauth_file = root / "oauth.json"
+            oauth_file.write_text("token\n")
+            output_dir = root / "out"
+
+            with mock.patch.object(self.module, "check_environment", side_effect=RuntimeError("docker missing")):
+                with mock.patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "run_skillx_rewrite_benchmark.py",
+                        "--skillsbench-root",
+                        str(root / "skillsbench"),
+                        "--task",
+                        "demo-task",
+                        "--run-id",
+                        "rewrite-run",
+                        "--output-dir",
+                        str(output_dir),
+                        "--oauth-file",
+                        str(oauth_file),
+                    ],
+                ):
+                    with self.assertRaises(RuntimeError):
+                        self.module.main()
+
+            failure_payload = json.loads((output_dir / "run_failure.json").read_text())
+            self.assertEqual(failure_payload["error_type"], "RuntimeError")
+            self.assertEqual(failure_payload["failed_stage"], "environment_check")
+            self.assertEqual(failure_payload["run_id"], "rewrite-run")
 
 
 if __name__ == "__main__":

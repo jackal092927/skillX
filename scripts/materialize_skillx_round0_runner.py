@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import shlex
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,7 +18,6 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.io_utils import ensure_dir, write_json
-from skillx.path_utils import repo_record_path, resolve_repo_path
 
 
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
@@ -233,8 +232,18 @@ def _format_score(value: float | None) -> str:
     return str(value)
 
 
+def materialized_relative_path(path: Path, *, materialized_root: Path) -> str:
+    resolved = path.resolve()
+    root = materialized_root.resolve()
+    try:
+        return str(resolved.relative_to(root))
+    except ValueError:
+        return str(resolved)
+
+
 def build_refine_command(
     *,
+    materialized_root: Path,
     pair_dir: Path,
     skillsbench_root: Path,
     task: TaskMaterialization,
@@ -246,23 +255,24 @@ def build_refine_command(
     run_dir = pair_dir / "refine_run"
     source_stub = pair_dir / "source_stub"
     ensure_dir(source_stub)
+    refine_script_path = Path(os.path.relpath((ROOT / "scripts" / "run_skillx_refine_benchmark.py").resolve(), materialized_root.resolve()))
     return [
         "python3.12",
-        repo_record_path(ROOT / "scripts" / "run_skillx_refine_benchmark.py"),
+        str(refine_script_path),
         "--skillsbench-root",
-        repo_record_path(skillsbench_root),
+        str(skillsbench_root),
         "--task",
         task.task_name,
         "--run-id",
         pair_dir.name,
         "--output-dir",
-        repo_record_path(run_dir),
+        materialized_relative_path(run_dir, materialized_root=materialized_root),
         "--oauth-file",
-        repo_record_path(oauth_file),
+        str(oauth_file),
         "--source-run-dir",
-        repo_record_path(source_stub),
+        materialized_relative_path(source_stub, materialized_root=materialized_root),
         "--starting-skillpack-dir",
-        repo_record_path(task.skills_dir),
+        str(task.skills_dir),
         "--starting-label",
         "C1",
         "--round-budget",
@@ -274,23 +284,6 @@ def build_refine_command(
         "--orchestration-mode",
         "c4ar",
     ]
-
-
-def build_launch_round0_script(pair_specs: list[dict[str, Any]]) -> str:
-    lines = [
-        "#!/bin/sh",
-        "set -eu",
-        "",
-        'ROOT_DIR="$(git -C -- "$(dirname "$0")" rev-parse --show-toplevel)"',
-        'cd "$ROOT_DIR"',
-        "",
-    ]
-    for pair in pair_specs:
-        command = pair.get("refine_command")
-        if not isinstance(command, list):
-            continue
-        lines.append(" ".join(shlex.quote(str(part)) for part in command))
-    return "\n".join(lines) + "\n"
 
 
 def build_round0_materialization(
@@ -344,16 +337,20 @@ def build_round0_materialization(
                 "run_id": run_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
-                "pair_dir": repo_record_path(pair_dir),
-                "skillsbench_task_dir": repo_record_path(task.task_dir),
-                "starting_skillpack_dir": repo_record_path(task.skills_dir),
+                "pair_dir": materialized_relative_path(pair_dir, materialized_root=output_dir),
+                "skillsbench_task_dir": str(task.task_dir),
+                "starting_skillpack_dir": str(task.skills_dir),
                 "starting_label": "C1",
                 "official_scores": {
                     "no_skills": baseline_scores.get("No Skills"),
                     "with_skills": baseline_scores.get("With Skills"),
                 },
-                "rendered_meta_skill_path": repo_record_path(pair_dir / "rendered_meta_skill.md"),
+                "rendered_meta_skill_path": materialized_relative_path(
+                    pair_dir / "rendered_meta_skill.md",
+                    materialized_root=output_dir,
+                ),
                 "refine_command": build_refine_command(
+                    materialized_root=output_dir,
                     pair_dir=pair_dir,
                     skillsbench_root=skillsbench_root,
                     task=task,
@@ -370,12 +367,12 @@ def build_round0_materialization(
         "artifact_type": "skillx_round0_materialization_manifest",
         "run_id": run_id,
         "round_id": "pilot-round-0",
-        "render_template_path": repo_record_path(render_template_path),
-        "task_slice_path": repo_record_path(task_slice_path),
-        "prompt_bank_path": repo_record_path(prompt_bank_path),
-        "inventory_path": repo_record_path(inventory_path),
-        "official_results_path": repo_record_path(official_results_path),
-        "skillsbench_root": repo_record_path(skillsbench_root),
+        "render_template_path": str(render_template_path),
+        "task_slice_path": str(task_slice_path),
+        "prompt_bank_path": str(prompt_bank_path),
+        "inventory_path": str(inventory_path),
+        "official_results_path": str(official_results_path),
+        "skillsbench_root": str(skillsbench_root),
         "task_count": len(task_slice),
         "schema_count": len(schema_ids),
         "pair_count": len(pair_specs),
@@ -384,12 +381,21 @@ def build_round0_materialization(
         "model": model,
         "schema_ids": schema_ids,
         "task_names": [task["task_name"] for task in task_slice],
+        "path_strategy": {
+            "pair_dir": "materialized_root_relative",
+            "rendered_meta_skill_path": "materialized_root_relative",
+            "refine_command_cwd": "materialized_root",
+        },
     }
     write_json(output_dir / "manifest.json", manifest)
     (output_dir / "pair_specs.jsonl").write_text(
         "".join(json.dumps(pair_spec) + "\n" for pair_spec in pair_specs)
     )
-    (output_dir / "launch_round0.sh").write_text(build_launch_round0_script(pair_specs))
+    (output_dir / "launch_round0.sh").write_text(
+        "#!/bin/sh\nset -eu\n\nSCRIPT_DIR=$(CDPATH= cd -- \"$(dirname \"$0\")\" && pwd)\ncd \"$SCRIPT_DIR\"\n\n"
+        + "\n".join(" ".join(pair["refine_command"]) for pair in pair_specs)
+        + "\n"
+    )
     return {"manifest": manifest, "pair_specs": pair_specs}
 
 

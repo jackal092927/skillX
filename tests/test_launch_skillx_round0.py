@@ -68,7 +68,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                     "pair_id": f"{task_name}__{schema_id}",
                     "task_name": task_name,
                     "schema_id": schema_id,
-                    "pair_dir": str(pair_dir),
+                    "pair_dir": str(pair_dir.relative_to(materialized_root)),
                     "skillsbench_task_dir": str(root / "skillsbench-src" / "tasks" / task_name),
                     "starting_skillpack_dir": str(
                         root / "skillsbench-src" / "tasks" / task_name / "environment" / "skills"
@@ -252,6 +252,19 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertIn(str(expected_output_dir), command_text)
             self.assertTrue(expected_source_stub.exists())
 
+    def test_resolve_pair_dir_supports_materialized_relative_pair_spec(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            pair = next(spec for spec in pair_specs if spec["pair_id"] == "task-alpha__analytic-pipeline")
+
+            resolved = self.module.resolve_pair_dir(pair, materialized_root=fixture["materialized_root"])
+
+            self.assertEqual(
+                resolved,
+                (fixture["materialized_root"] / "pairs" / "task-alpha__analytic-pipeline").resolve(),
+            )
+
     def test_build_launcher_summary_keeps_selected_pair_total_during_partial_progress(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -385,6 +398,17 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertEqual(len(failed), 1)
             self.assertEqual(failed[0]["pair_id"], "task-alpha__artifact-generation")
             self.assertEqual(failed[0]["returncode"], 17)
+            failure_path = (
+                fixture["materialized_root"]
+                / "pairs"
+                / "task-alpha__artifact-generation"
+                / "refine_run_robust-smoke"
+                / "run_failure.json"
+            )
+            self.assertTrue(failure_path.exists())
+            failure_payload = json.loads(failure_path.read_text())
+            self.assertEqual(failure_payload["launcher_stage"], "run")
+            self.assertEqual(failure_payload["returncode"], 17)
             self.assertIn("launcher_logs/robust-smoke", stdout.getvalue())
 
     def test_main_continues_when_command_build_fails_for_one_pair(self) -> None:
@@ -452,6 +476,17 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertEqual(failed[0]["pair_id"], "task-alpha__artifact-generation")
             self.assertEqual(failed[0]["stage"], "build_command")
             self.assertIn("broken pair spec", failed[0]["error"])
+            failure_path = (
+                fixture["materialized_root"]
+                / "pairs"
+                / "task-alpha__artifact-generation"
+                / "refine_run_build-fail"
+                / "run_failure.json"
+            )
+            self.assertTrue(failure_path.exists())
+            failure_payload = json.loads(failure_path.read_text())
+            self.assertEqual(failure_payload["launcher_stage"], "build_command")
+            self.assertIn("broken pair spec", failure_payload["error_message"])
 
 
 if __name__ == "__main__":

@@ -99,6 +99,53 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 model_name="openai/gpt-5.2-codex",
             )
 
+    def test_main_writes_structured_run_failure_for_setup_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            output_dir = root / "out"
+            source_run_dir = root / "source"
+            source_run_dir.mkdir(parents=True)
+            oauth_file = root / "oauth.json"
+            oauth_file.write_text("token\n")
+            protocol_path = root / "refine.md"
+            protocol_path.write_text("protocol\n")
+            bundle_path = root / "bundle.md"
+            bundle_path.write_text("bundle\n")
+
+            with mock.patch.object(self.module, "discover_task_inputs", side_effect=FileNotFoundError("missing task inputs")):
+                with mock.patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "run_skillx_refine_benchmark.py",
+                        "--skillsbench-root",
+                        str(root / "skillsbench"),
+                        "--task",
+                        "demo-task",
+                        "--run-id",
+                        "demo-run",
+                        "--output-dir",
+                        str(output_dir),
+                        "--oauth-file",
+                        str(oauth_file),
+                        "--source-run-dir",
+                        str(source_run_dir),
+                        "--refine-protocol-path",
+                        str(protocol_path),
+                        "--bundle-contract-path",
+                        str(bundle_path),
+                        "--orchestration-mode",
+                        "c4ar",
+                    ],
+                ):
+                    with self.assertRaises(FileNotFoundError):
+                        self.module.main()
+
+            failure_payload = json.loads((output_dir / "run_failure.json").read_text())
+            self.assertEqual(failure_payload["error_type"], "FileNotFoundError")
+            self.assertEqual(failure_payload["failed_stage"], "discover_task_inputs")
+            self.assertEqual(failure_payload["run_id"], "demo-run")
+
     def test_build_job_config_infers_agent_from_model_when_unspecified(self) -> None:
         payload = self.module.build_job_config(
             job_name="demo-job",
