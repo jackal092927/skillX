@@ -19,7 +19,6 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.model_routing import resolve_benchmark_agent_name
-from skillx.path_utils import repo_record_path, resolve_repo_path
 
 DEFAULT_TASK_SLICE = (
     ROOT
@@ -140,12 +139,24 @@ def normalize_output_suffix(output_suffix: str | None) -> str | None:
     return normalized or None
 
 
+def resolve_pair_dir(
+    pair_spec: dict[str, Any],
+    *,
+    materialized_root: Path,
+) -> Path:
+    local_pair_dir = materialized_root / "pairs" / str(pair_spec["pair_id"])
+    if local_pair_dir.exists():
+        return local_pair_dir.resolve()
+    return Path(str(pair_spec["pair_dir"])).resolve()
+
+
 def resolve_pair_run_id_and_output_dir(
     pair_spec: dict[str, Any],
     *,
+    materialized_root: Path,
     output_suffix: str | None,
 ) -> tuple[str, Path]:
-    pair_dir = resolve_repo_path(str(pair_spec["pair_dir"]))
+    pair_dir = resolve_pair_dir(pair_spec, materialized_root=materialized_root)
     pair_id = str(pair_spec["pair_id"])
     normalized_suffix = normalize_output_suffix(output_suffix)
     if normalized_suffix is None:
@@ -172,7 +183,7 @@ def build_launcher_summary(
     task_slice_path: Path,
     materialized_root: Path,
     selected_task_names: list[str],
-    total_pairs: int,
+    selected_pair_count: int,
     results: list[dict[str, Any]],
 ) -> dict[str, Any]:
     succeeded_pairs = sum(1 for item in results if item.get("status") == "succeeded")
@@ -182,7 +193,7 @@ def build_launcher_summary(
         "task_slice_path": str(task_slice_path.resolve()),
         "materialized_root": str(materialized_root.resolve()),
         "selected_task_names": selected_task_names,
-        "total_pairs": total_pairs,
+        "total_pairs": selected_pair_count,
         "completed_pairs": len(results),
         "succeeded_pairs": succeeded_pairs,
         "failed_pairs": failed_pairs,
@@ -193,6 +204,7 @@ def build_launcher_summary(
 def build_refine_command(
     pair_spec: dict[str, Any],
     *,
+    materialized_root: Path,
     oauth_file: Path | None,
     round_budget: int,
     agent: str | None,
@@ -201,15 +213,16 @@ def build_refine_command(
     bundle_contract_path: Path,
     output_suffix: str | None,
 ) -> list[str]:
-    pair_dir = resolve_repo_path(str(pair_spec["pair_dir"]))
+    pair_dir = resolve_pair_dir(pair_spec, materialized_root=materialized_root)
     task_name = str(pair_spec["task_name"])
-    task_dir = resolve_repo_path(str(pair_spec["skillsbench_task_dir"]))
+    task_dir = Path(str(pair_spec["skillsbench_task_dir"])).resolve()
     skillsbench_root = task_dir.parents[1]
     source_stub = pair_dir / "source_stub"
     source_stub.mkdir(parents=True, exist_ok=True)
 
     run_id, output_dir = resolve_pair_run_id_and_output_dir(
         pair_spec,
+        materialized_root=materialized_root,
         output_suffix=output_suffix,
     )
     resolved_agent = resolve_benchmark_agent_name(agent, model)
@@ -229,7 +242,7 @@ def build_refine_command(
         "--source-run-dir",
         str(source_stub),
         "--starting-skillpack-dir",
-        str(resolve_repo_path(str(pair_spec["starting_skillpack_dir"]))),
+        str(Path(str(pair_spec["starting_skillpack_dir"])).resolve()),
         "--starting-label",
         str(pair_spec.get("starting_label", "C1")),
         "--round-budget",
@@ -346,6 +359,7 @@ def main(argv: list[str] | None = None) -> int:
             pair_id = str(pair_spec["pair_id"])
             command = build_refine_command(
                 pair_spec,
+                materialized_root=args.materialized_root,
                 oauth_file=args.oauth_file,
                 round_budget=args.round_budget,
                 agent=args.agent,
@@ -390,6 +404,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             run_id, resolved_output_dir = resolve_pair_run_id_and_output_dir(
                 pair_spec,
+                materialized_root=args.materialized_root,
                 output_suffix=args.output_suffix,
             )
             output_dir = str(resolved_output_dir)
@@ -435,7 +450,7 @@ def main(argv: list[str] | None = None) -> int:
                     task_slice_path=args.task_slice,
                     materialized_root=args.materialized_root,
                     selected_task_names=selected_task_names,
-                    total_pairs=len(selected_pairs),
+                    selected_pair_count=len(selected_pairs),
                     results=results,
                 ),
             )
@@ -564,7 +579,7 @@ def main(argv: list[str] | None = None) -> int:
                 task_slice_path=args.task_slice,
                 materialized_root=args.materialized_root,
                 selected_task_names=selected_task_names,
-                total_pairs=len(selected_pairs),
+                selected_pair_count=len(selected_pairs),
                 results=results,
             ),
         )
