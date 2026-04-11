@@ -212,6 +212,141 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertIn("# Derived Execution Layer", copied.read_text())
             self.assertIsNone(row["reward"])
 
+    def test_discover_task_inputs_ignores_non_skill_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skill_a = task_root / "environment" / "skills" / "skill-a"
+            skill_b = task_root / "environment" / "skills" / "skill-b"
+            licenses = task_root / "environment" / "skills" / "licenses"
+            skill_a.mkdir(parents=True)
+            skill_b.mkdir(parents=True)
+            licenses.mkdir(parents=True)
+            (skill_a / "SKILL.md").write_text("a\n")
+            (skill_b / "SKILL.md").write_text("b\n")
+            (licenses / "obspy.LICENSE").write_text("license\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            self.assertEqual(task.skill_names, ["skill-a", "skill-b"])
+
+    def test_write_static_bundle_ignores_non_skill_directories_in_starting_pack(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skill_a = task_root / "environment" / "skills" / "skill-a"
+            skill_b = task_root / "environment" / "skills" / "skill-b"
+            licenses = task_root / "environment" / "skills" / "licenses"
+            skill_a.mkdir(parents=True)
+            skill_b.mkdir(parents=True)
+            licenses.mkdir(parents=True)
+            (skill_a / "SKILL.md").write_text("a\n")
+            (skill_b / "SKILL.md").write_text("b\n")
+            (licenses / "obspy.LICENSE").write_text("license\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-b").mkdir(parents=True)
+            (starting_skillpack_dir / "licenses").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\na\n")
+            (starting_skillpack_dir / "skill-b" / "SKILL.md").write_text("# Derived Execution Layer\nb\n")
+            (starting_skillpack_dir / "licenses" / "seisbench.LICENSE").write_text("license\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            source = self._make_source_artifacts(starting_skillpack_dir=starting_skillpack_dir)
+            (root / "protocol.md").write_text("protocol\n")
+            (root / "bundle.md").write_text("bundle\n")
+
+            self.module.write_static_bundle(
+                task=task,
+                paths=paths,
+                protocols=self.module.ProtocolInputs(
+                    refine_protocol_path=root / "protocol.md",
+                    bundle_contract_path=root / "bundle.md",
+                ),
+                source=source,
+                tune_rows=[],
+                tune_run_dirs=[root / "run-a"],
+                round_budget=3,
+                source_run_dir=root / "source",
+                session_evidence=None,
+            )
+
+            copied_root = paths.static_dir / "ancestry" / "current_starting_skillpack"
+            self.assertTrue((copied_root / "skill-a" / "SKILL.md").exists())
+            self.assertTrue((copied_root / "skill-b" / "SKILL.md").exists())
+            self.assertFalse((copied_root / "licenses").exists())
+
+    def test_make_round_zero_artifacts_ignores_non_skill_directories_in_starting_pack(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skill_a = task_root / "environment" / "skills" / "skill-a"
+            licenses = task_root / "environment" / "skills" / "licenses"
+            skill_a.mkdir(parents=True)
+            licenses.mkdir(parents=True)
+            (skill_a / "SKILL.md").write_text("original\n")
+            (licenses / "obspy.LICENSE").write_text("license\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "licenses").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+            (starting_skillpack_dir / "licenses" / "seisbench.LICENSE").write_text("license\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            source = self._make_source_artifacts(starting_skillpack_dir=starting_skillpack_dir)
+
+            self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+
+            copied = paths.rounds_dir / "round-0" / "skillpack" / "skills" / "skill-a" / "SKILL.md"
+            self.assertTrue(copied.exists())
+            self.assertFalse((paths.rounds_dir / "round-0" / "skillpack" / "skills" / "licenses").exists())
+
+    def test_make_round_zero_artifacts_fails_clearly_when_starting_pack_is_missing_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skill_a = task_root / "environment" / "skills" / "skill-a"
+            skill_b = task_root / "environment" / "skills" / "skill-b"
+            skill_a.mkdir(parents=True)
+            skill_b.mkdir(parents=True)
+            (skill_a / "SKILL.md").write_text("a\n")
+            (skill_b / "SKILL.md").write_text("b\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+
+            starting_skillpack_dir = root / "start" / "skillpack"
+            (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+            (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\na\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            source = self._make_source_artifacts(starting_skillpack_dir=starting_skillpack_dir)
+
+            with self.assertRaisesRegex(FileNotFoundError, "starting skillpack missing required skill file"):
+                self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+
     def test_locate_source_artifacts_uses_explicit_starting_pack(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)

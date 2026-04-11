@@ -23,6 +23,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.io_utils import ensure_dir, read_json, write_json
+from skillx.skillpack_utils import discover_skill_names
 
 EXPERIMENT_ROOT = ROOT / "experiments" / "skillx-skillsbench-001"
 DEFAULT_AGENT = "claude-code"
@@ -140,9 +141,7 @@ def discover_task_inputs(skillsbench_root: Path, task_id: str) -> TaskInputs:
     ]
     if missing:
         raise FileNotFoundError(f"missing task inputs for {task_id}: {missing}")
-    skill_names = sorted(path.name for path in skills_dir.iterdir() if path.is_dir())
-    if not skill_names:
-        raise FileNotFoundError(f"no skill directories found for task {task_id} under {skills_dir}")
+    skill_names = discover_skill_names(skills_dir)
     return TaskInputs(
         task_id=task_id,
         task_dir=task_dir,

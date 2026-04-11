@@ -29,6 +29,7 @@ from skillx.model_routing import (
     AUTH_BACKED_CODEX_IMPORT_PATH,
     resolve_benchmark_agent_name,
 )
+from skillx.skillpack_utils import copy_named_skill_dirs, discover_skill_names
 from skillx.c4ar.orchestrator import (
     ExecutorOutputs,
     OrchestratorConfig,
@@ -209,9 +210,7 @@ def discover_task_inputs(skillsbench_root: Path, task_id: str) -> TaskInputs:
     ]
     if missing:
         raise FileNotFoundError(f"missing task inputs for {task_id}: {missing}")
-    skill_names = sorted(path.name for path in skills_dir.iterdir() if path.is_dir())
-    if not skill_names:
-        raise FileNotFoundError(f"no skill directories found for task {task_id} under {skills_dir}")
+    skill_names = discover_skill_names(skills_dir)
     return TaskInputs(
         task_id=task_id,
         task_dir=task_dir,
@@ -968,7 +967,12 @@ def write_static_bundle(
     for skill_name in task.skill_names:
         ensure_dir(original_skills_dir / skill_name)
         shutil.copy2(task.skills_dir / skill_name / "SKILL.md", original_skills_dir / skill_name / "SKILL.md")
-    copy_tree(source.starting_skillpack_dir, current_starting_skillpack_dir)
+    copy_named_skill_dirs(
+        source_skills_dir=source.starting_skillpack_dir,
+        dest_skills_dir=current_starting_skillpack_dir,
+        skill_names=task.skill_names,
+        context_label="starting skillpack",
+    )
     if source.starting_bundle_path:
         shutil.copy2(source.starting_bundle_path, ancestry_dir / source.starting_bundle_path.name)
     if source.rewrite_manifest_path:
@@ -1037,7 +1041,12 @@ def make_round_zero_artifacts(
     r0_dir = round_dir(paths, 0)
     skillpack_root = ensure_dir(r0_dir / "skillpack")
     skills_target = ensure_dir(skillpack_root / "skills")
-    copy_tree(source.starting_skillpack_dir, skills_target)
+    copy_named_skill_dirs(
+        source_skills_dir=source.starting_skillpack_dir,
+        dest_skills_dir=skills_target,
+        skill_names=task.skill_names,
+        context_label="starting skillpack",
+    )
     if source.starting_bundle_path:
         shutil.copy2(source.starting_bundle_path, r0_dir / "skillpack_bundle.yaml")
     starting_condition = normalized_condition_label(source.starting_label)
