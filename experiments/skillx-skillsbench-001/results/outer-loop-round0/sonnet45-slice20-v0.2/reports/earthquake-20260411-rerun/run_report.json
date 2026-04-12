@@ -1,0 +1,2394 @@
+{
+  "artifacts": {
+    "events_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/launcher_logs/earthquake-20260411-rerun/events.ndjson",
+    "launcher_stdout_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/launcher_logs/earthquake-20260411-rerun/launcher.stdout.log",
+    "pair_specs_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pair_specs.jsonl",
+    "summary_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/launcher_logs/earthquake-20260411-rerun/summary.json"
+  },
+  "duration_sec": 17547.428,
+  "failure_groups": [],
+  "finished_at": "2026-04-11T10:39:48.398399+00:00",
+  "generated_at": "2026-04-12T20:17:18.315594+00:00",
+  "materialized_root": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2",
+  "pair_count_completed": 7,
+  "pair_count_failed": 0,
+  "pair_count_succeeded": 7,
+  "pair_count_total": 7,
+  "pair_results": [
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": -20.0,
+      "delta_vs_c1_pp": -20.0,
+      "early_stop": true,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__78gsfwk"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "stop",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__q5dCKc7"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          }
+        ]
+      },
+      "failure": {
+        "error_message": "RuntimeError=['c4-earthquake-phase-association-__78gsfwk']",
+        "error_type": "TuneExceptionStats",
+        "failed_round": 0,
+        "failed_stage": "continue",
+        "manual_intervention": false,
+        "summary": "RuntimeError=['c4-earthquake-phase-association-__78gsfwk']"
+      },
+      "has_intermediate_exceptions": true,
+      "launcher": {
+        "duration_sec": 2076.352,
+        "finished_at": "2026-04-11T06:21:57.321997+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-11T05:47:20.970079+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [],
+      "official_scores": {
+        "c0_pct": 20.0,
+        "c1_pct": 20.0
+      },
+      "pair_id": "earthquake-phase-association__artifact-generation",
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Applied bounded CPU-first SeisBench and output-focused GaMMA edits, plus removed redundant method-selection breadth, so the next round should test a leaner prompt-invariant skillpack against the infra-first failure mode.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__78gsfwk"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T05:53:29.846480+00:00",
+            "role_a_completed": "2026-04-11T05:56:46.123882+00:00",
+            "role_b_completed": "2026-04-11T06:03:42.735795+00:00",
+            "round_decision_loaded": "2026-04-11T06:03:42.736066+00:00",
+            "round_started": "2026-04-11T05:53:29.846010+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__78gsfwk"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__artifact-generation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__artifact-generation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__78gsfwk"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__artifact-generation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/c4-earthquake-phase-association-__78gsfwk/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "stop",
+          "decision_reason": "Both round 0 and round 1 failed during the task Docker build's fixed `pip install seisbench==0.10.2` step before the prompt or staged skills loaded, so further prompt-invariant skillpack edits are unlikely to change the outcome.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__q5dCKc7"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T06:09:59.785086+00:00",
+            "role_a_completed": "2026-04-11T06:13:25.203425+00:00",
+            "role_b_completed": "2026-04-11T06:21:57.293869+00:00",
+            "round_decision_loaded": "2026-04-11T06:21:57.294263+00:00",
+            "round_started": "2026-04-11T06:09:59.784750+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__q5dCKc7"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__artifact-generation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__artifact-generation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__q5dCKc7"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__artifact-generation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__q5dCKc7/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__artifact-generation/refine_run_earthquake-20260411-rerun",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-11T06:21:57.302073+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T05:53:29.846480+00:00",
+              "role_a_completed": "2026-04-11T05:56:46.123882+00:00",
+              "role_b_completed": "2026-04-11T06:03:42.735795+00:00",
+              "round_decision_loaded": "2026-04-11T06:03:42.736066+00:00",
+              "round_started": "2026-04-11T05:53:29.846010+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T06:09:59.785086+00:00",
+              "role_a_completed": "2026-04-11T06:13:25.203425+00:00",
+              "role_b_completed": "2026-04-11T06:21:57.293869+00:00",
+              "round_decision_loaded": "2026-04-11T06:21:57.294263+00:00",
+              "round_started": "2026-04-11T06:09:59.784750+00:00"
+            },
+            "round_index": 1
+          }
+        ],
+        "terminal_round_index": 1
+      },
+      "schema_id": "artifact-generation",
+      "selected": {
+        "classification": {
+          "has_exception_stats": true,
+          "kind": "runtime_failure",
+          "reason": "exception_stats_present",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "earthquake-phase-association",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": -20.0,
+      "delta_vs_c1_pp": -20.0,
+      "early_stop": true,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__SdZ49mx"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "stop",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__6X4P6jc"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          }
+        ]
+      },
+      "failure": {
+        "error_message": "RuntimeError=['c4-earthquake-phase-association-__SdZ49mx']",
+        "error_type": "TuneExceptionStats",
+        "failed_round": 0,
+        "failed_stage": "continue",
+        "manual_intervention": false,
+        "summary": "RuntimeError=['c4-earthquake-phase-association-__SdZ49mx']"
+      },
+      "has_intermediate_exceptions": true,
+      "launcher": {
+        "duration_sec": 2025.364,
+        "finished_at": "2026-04-11T06:55:42.688039+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-11T06:21:57.323658+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [],
+      "official_scores": {
+        "c0_pct": 20.0,
+        "c1_pct": 20.0
+      },
+      "pair_id": "earthquake-phase-association__analytic-pipeline",
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged next skillpack now adds import and gcc bootstrap guardrails, CPU-first execution bounds, and a shorter waveform-to-event contract while preserving the invariant task prompt.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__SdZ49mx"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T06:27:38.057492+00:00",
+            "role_a_completed": "2026-04-11T06:31:44.013939+00:00",
+            "role_b_completed": "2026-04-11T06:40:49.704729+00:00",
+            "round_decision_loaded": "2026-04-11T06:40:49.704998+00:00",
+            "round_started": "2026-04-11T06:27:38.057036+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__SdZ49mx"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__analytic-pipeline/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__analytic-pipeline/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__SdZ49mx"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__analytic-pipeline/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/c4-earthquake-phase-association-__SdZ49mx/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "stop",
+          "decision_reason": "Both round 0 and round 1 failed during the task sandbox Docker build's fixed `pip install seisbench==0.10.2` step before the prompt or staged skills loaded, so further prompt-invariant skillpack edits are unlikely to change the outcome.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__6X4P6jc"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T06:46:21.183820+00:00",
+            "role_a_completed": "2026-04-11T06:49:06.707709+00:00",
+            "role_b_completed": "2026-04-11T06:55:42.660194+00:00",
+            "round_decision_loaded": "2026-04-11T06:55:42.660313+00:00",
+            "round_started": "2026-04-11T06:46:21.183528+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__6X4P6jc"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__analytic-pipeline/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__analytic-pipeline/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__6X4P6jc"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__analytic-pipeline/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__6X4P6jc/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__analytic-pipeline/refine_run_earthquake-20260411-rerun",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-11T06:55:42.667759+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T06:27:38.057492+00:00",
+              "role_a_completed": "2026-04-11T06:31:44.013939+00:00",
+              "role_b_completed": "2026-04-11T06:40:49.704729+00:00",
+              "round_decision_loaded": "2026-04-11T06:40:49.704998+00:00",
+              "round_started": "2026-04-11T06:27:38.057036+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T06:46:21.183820+00:00",
+              "role_a_completed": "2026-04-11T06:49:06.707709+00:00",
+              "role_b_completed": "2026-04-11T06:55:42.660194+00:00",
+              "round_decision_loaded": "2026-04-11T06:55:42.660313+00:00",
+              "round_started": "2026-04-11T06:46:21.183528+00:00"
+            },
+            "round_index": 1
+          }
+        ],
+        "terminal_round_index": 1
+      },
+      "schema_id": "analytic-pipeline",
+      "selected": {
+        "classification": {
+          "has_exception_stats": true,
+          "kind": "runtime_failure",
+          "reason": "exception_stats_present",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "earthquake-phase-association",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": -20.0,
+      "delta_vs_c1_pp": -20.0,
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__WLEPoyX"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__UkYUzpZ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__5G8dTL6"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__HqDk4xJ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "failure": {
+        "error_message": "RuntimeError=['c4-earthquake-phase-association-__WLEPoyX']",
+        "error_type": "TuneExceptionStats",
+        "failed_round": 0,
+        "failed_stage": "continue",
+        "manual_intervention": false,
+        "summary": "RuntimeError=['c4-earthquake-phase-association-__WLEPoyX']"
+      },
+      "has_intermediate_exceptions": true,
+      "launcher": {
+        "duration_sec": 2650.139,
+        "finished_at": "2026-04-11T07:39:52.829178+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-11T06:55:42.689695+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [],
+      "official_scores": {
+        "c0_pct": 20.0,
+        "c1_pct": 20.0
+      },
+      "pair_id": "earthquake-phase-association__engineering-composition",
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The Dockerfile-level `gcc`/`obspy` blocker remains upstream of the skillpack, but this candidate still makes the prompt-side path materially leaner by removing redundant picker-selection breadth and constraining any surviving run to import-first SeisBench plus a lightweight GaMMA output contract.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__WLEPoyX"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T07:01:23.603342+00:00",
+            "role_a_completed": "2026-04-11T07:04:44.997195+00:00",
+            "role_b_completed": "2026-04-11T07:11:56.837091+00:00",
+            "round_decision_loaded": "2026-04-11T07:11:56.837241+00:00",
+            "round_started": "2026-04-11T07:01:23.602889+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__WLEPoyX"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__WLEPoyX"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/c4-earthquake-phase-association-__WLEPoyX/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "A bounded prompt-invariant rewrite landed in the staged next skillpack and directly targets the observed bootstrap failure mode.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__UkYUzpZ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T07:17:15.071033+00:00",
+            "role_a_completed": "2026-04-11T07:18:58.326985+00:00",
+            "role_b_completed": "2026-04-11T07:21:57.336635+00:00",
+            "round_decision_loaded": "2026-04-11T07:21:57.337073+00:00",
+            "round_started": "2026-04-11T07:17:15.070728+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__UkYUzpZ"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__UkYUzpZ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__UkYUzpZ/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged candidate now forces a CPU-first fail-fast bootstrap, blocks secondary install churn before picks exist, and trims ObsPy guidance to the minimal waveform-plus-station path.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__5G8dTL6"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T07:27:39.231379+00:00",
+            "role_a_completed": "2026-04-11T07:30:12.329460+00:00",
+            "role_b_completed": "2026-04-11T07:34:05.314134+00:00",
+            "round_decision_loaded": "2026-04-11T07:34:05.314416+00:00",
+            "round_started": "2026-04-11T07:27:39.231085+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__5G8dTL6"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__5G8dTL6"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2/tune_check/earthquake-phase-association-round-2-c4-tune/c4-earthquake-phase-association-__5G8dTL6/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__HqDk4xJ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T07:39:52.804911+00:00",
+            "round_started": "2026-04-11T07:39:52.804905+00:00",
+            "terminal_round_completed": "2026-04-11T07:39:52.804918+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__HqDk4xJ"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__HqDk4xJ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3/tune_check/earthquake-phase-association-round-3-c4-tune/c4-earthquake-phase-association-__HqDk4xJ/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__engineering-composition/refine_run_earthquake-20260411-rerun",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-11T07:39:52.810215+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T07:01:23.603342+00:00",
+              "role_a_completed": "2026-04-11T07:04:44.997195+00:00",
+              "role_b_completed": "2026-04-11T07:11:56.837091+00:00",
+              "round_decision_loaded": "2026-04-11T07:11:56.837241+00:00",
+              "round_started": "2026-04-11T07:01:23.602889+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T07:17:15.071033+00:00",
+              "role_a_completed": "2026-04-11T07:18:58.326985+00:00",
+              "role_b_completed": "2026-04-11T07:21:57.336635+00:00",
+              "round_decision_loaded": "2026-04-11T07:21:57.337073+00:00",
+              "round_started": "2026-04-11T07:17:15.070728+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T07:27:39.231379+00:00",
+              "role_a_completed": "2026-04-11T07:30:12.329460+00:00",
+              "role_b_completed": "2026-04-11T07:34:05.314134+00:00",
+              "round_decision_loaded": "2026-04-11T07:34:05.314416+00:00",
+              "round_started": "2026-04-11T07:27:39.231085+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T07:39:52.804911+00:00",
+              "round_started": "2026-04-11T07:39:52.804905+00:00",
+              "terminal_round_completed": "2026-04-11T07:39:52.804918+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "engineering-composition",
+      "selected": {
+        "classification": {
+          "has_exception_stats": true,
+          "kind": "runtime_failure",
+          "reason": "exception_stats_present",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "earthquake-phase-association",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": -20.0,
+      "delta_vs_c1_pp": -20.0,
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__jrEToAC"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__bPAzwrQ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__hrez589"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__JGVENvu"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "failure": {
+        "error_message": "RuntimeError=['c4-earthquake-phase-association-__jrEToAC']",
+        "error_type": "TuneExceptionStats",
+        "failed_round": 0,
+        "failed_stage": "continue",
+        "manual_intervention": false,
+        "summary": "RuntimeError=['c4-earthquake-phase-association-__jrEToAC']"
+      },
+      "has_intermediate_exceptions": true,
+      "launcher": {
+        "duration_sec": 2386.927,
+        "finished_at": "2026-04-11T08:19:39.758300+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-11T07:39:52.831189+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [],
+      "official_scores": {
+        "c0_pct": 20.0,
+        "c1_pct": 20.0
+      },
+      "pair_id": "earthquake-phase-association__retrieval-heavy-synthesis",
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged next skillpack now addresses the dominant failure mode with fail-fast bootstrap guidance and a tighter downstream artifact contract, so it is a valid next candidate for execution.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__jrEToAC"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T07:45:41.165558+00:00",
+            "role_a_completed": "2026-04-11T07:47:29.592485+00:00",
+            "role_b_completed": "2026-04-11T07:51:56.128703+00:00",
+            "round_decision_loaded": "2026-04-11T07:51:56.129037+00:00",
+            "round_started": "2026-04-11T07:45:41.165172+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__jrEToAC"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__jrEToAC"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/c4-earthquake-phase-association-__jrEToAC/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "A bounded prompt-invariant rewrite landed in the staged next skillpack and directly targets the observed bootstrap failure mode.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__bPAzwrQ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T07:57:15.440763+00:00",
+            "role_a_completed": "2026-04-11T07:59:35.101665+00:00",
+            "role_b_completed": "2026-04-11T08:02:46.590861+00:00",
+            "round_decision_loaded": "2026-04-11T08:02:46.590997+00:00",
+            "round_started": "2026-04-11T07:57:15.440464+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__bPAzwrQ"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__bPAzwrQ"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__bPAzwrQ/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Applied a bounded rewrite that isolates `obspy` as the first bootstrap gate, makes the SeisBench repair ladder explicitly CPU-first with an early abort on CUDA-heavy resolution, and removes premature GaMMA install guidance without changing the task prompt.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__hrez589"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T08:08:25.859522+00:00",
+            "role_a_completed": "2026-04-11T08:10:07.919201+00:00",
+            "role_b_completed": "2026-04-11T08:14:01.116927+00:00",
+            "round_decision_loaded": "2026-04-11T08:14:01.117153+00:00",
+            "round_started": "2026-04-11T08:08:25.859209+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__hrez589"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__hrez589"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2/tune_check/earthquake-phase-association-round-2-c4-tune/c4-earthquake-phase-association-__hrez589/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__JGVENvu"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T08:19:39.734046+00:00",
+            "round_started": "2026-04-11T08:19:39.734038+00:00",
+            "terminal_round_completed": "2026-04-11T08:19:39.734055+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__JGVENvu"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__JGVENvu"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3/tune_check/earthquake-phase-association-round-3-c4-tune/c4-earthquake-phase-association-__JGVENvu/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__retrieval-heavy-synthesis/refine_run_earthquake-20260411-rerun",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-11T08:19:39.739503+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T07:45:41.165558+00:00",
+              "role_a_completed": "2026-04-11T07:47:29.592485+00:00",
+              "role_b_completed": "2026-04-11T07:51:56.128703+00:00",
+              "round_decision_loaded": "2026-04-11T07:51:56.129037+00:00",
+              "round_started": "2026-04-11T07:45:41.165172+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T07:57:15.440763+00:00",
+              "role_a_completed": "2026-04-11T07:59:35.101665+00:00",
+              "role_b_completed": "2026-04-11T08:02:46.590861+00:00",
+              "round_decision_loaded": "2026-04-11T08:02:46.590997+00:00",
+              "round_started": "2026-04-11T07:57:15.440464+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T08:08:25.859522+00:00",
+              "role_a_completed": "2026-04-11T08:10:07.919201+00:00",
+              "role_b_completed": "2026-04-11T08:14:01.116927+00:00",
+              "round_decision_loaded": "2026-04-11T08:14:01.117153+00:00",
+              "round_started": "2026-04-11T08:08:25.859209+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T08:19:39.734046+00:00",
+              "round_started": "2026-04-11T08:19:39.734038+00:00",
+              "terminal_round_completed": "2026-04-11T08:19:39.734055+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "retrieval-heavy-synthesis",
+      "selected": {
+        "classification": {
+          "has_exception_stats": true,
+          "kind": "runtime_failure",
+          "reason": "exception_stats_present",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "earthquake-phase-association",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": -20.0,
+      "delta_vs_c1_pp": -20.0,
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__gYtWgPw"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__dqeisy2"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__rNqD9a7"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__Dc3nmUz"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "failure": {
+        "error_message": "RuntimeError=['c4-earthquake-phase-association-__gYtWgPw']",
+        "error_type": "TuneExceptionStats",
+        "failed_round": 0,
+        "failed_stage": "continue",
+        "manual_intervention": false,
+        "summary": "RuntimeError=['c4-earthquake-phase-association-__gYtWgPw']"
+      },
+      "has_intermediate_exceptions": true,
+      "launcher": {
+        "duration_sec": 3063.244,
+        "finished_at": "2026-04-11T09:10:43.004930+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-11T08:19:39.760459+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [],
+      "official_scores": {
+        "c0_pct": 20.0,
+        "c1_pct": 20.0
+      },
+      "pair_id": "earthquake-phase-association__environment-control",
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged next skillpack now surfaces the `gcc` bootstrap blocker early, keeps phase picking CPU-first, and removes broad method drift while preserving the invariant task prompt.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__gYtWgPw"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T08:25:19.710863+00:00",
+            "role_a_completed": "2026-04-11T08:28:00.016195+00:00",
+            "role_b_completed": "2026-04-11T08:35:46.958865+00:00",
+            "round_decision_loaded": "2026-04-11T08:35:46.959002+00:00",
+            "round_started": "2026-04-11T08:25:19.710493+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__gYtWgPw"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__gYtWgPw"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/c4-earthquake-phase-association-__gYtWgPw/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged candidate now forces a compiler-aware CPU bootstrap gate, aborts unsupported CUDA expansion, and stops on the first repeated root cause instead of burning turns before any phase-association work starts.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__dqeisy2"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T08:41:18.334414+00:00",
+            "role_a_completed": "2026-04-11T08:43:45.573138+00:00",
+            "role_b_completed": "2026-04-11T08:50:05.358496+00:00",
+            "round_decision_loaded": "2026-04-11T08:50:05.358690+00:00",
+            "round_started": "2026-04-11T08:41:18.334088+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__dqeisy2"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__dqeisy2"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__dqeisy2/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged next skillpack now adds an explicit ObsPy preflight, strengthens root-cause reporting, and removes duplicated bootstrap guidance, so the next round should test this tighter candidate rather than keep the current pack.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__rNqD9a7"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T08:55:44.050084+00:00",
+            "role_a_completed": "2026-04-11T08:58:46.853717+00:00",
+            "role_b_completed": "2026-04-11T09:04:14.499907+00:00",
+            "round_decision_loaded": "2026-04-11T09:04:14.500028+00:00",
+            "round_started": "2026-04-11T08:55:44.049778+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__rNqD9a7"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__rNqD9a7"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2/tune_check/earthquake-phase-association-round-2-c4-tune/c4-earthquake-phase-association-__rNqD9a7/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__Dc3nmUz"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T09:10:42.978286+00:00",
+            "round_started": "2026-04-11T09:10:42.978279+00:00",
+            "terminal_round_completed": "2026-04-11T09:10:42.978295+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__Dc3nmUz"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__Dc3nmUz"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3/tune_check/earthquake-phase-association-round-3-c4-tune/c4-earthquake-phase-association-__Dc3nmUz/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__environment-control/refine_run_earthquake-20260411-rerun",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-11T09:10:42.983890+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T08:25:19.710863+00:00",
+              "role_a_completed": "2026-04-11T08:28:00.016195+00:00",
+              "role_b_completed": "2026-04-11T08:35:46.958865+00:00",
+              "round_decision_loaded": "2026-04-11T08:35:46.959002+00:00",
+              "round_started": "2026-04-11T08:25:19.710493+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T08:41:18.334414+00:00",
+              "role_a_completed": "2026-04-11T08:43:45.573138+00:00",
+              "role_b_completed": "2026-04-11T08:50:05.358496+00:00",
+              "round_decision_loaded": "2026-04-11T08:50:05.358690+00:00",
+              "round_started": "2026-04-11T08:41:18.334088+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T08:55:44.050084+00:00",
+              "role_a_completed": "2026-04-11T08:58:46.853717+00:00",
+              "role_b_completed": "2026-04-11T09:04:14.499907+00:00",
+              "round_decision_loaded": "2026-04-11T09:04:14.500028+00:00",
+              "round_started": "2026-04-11T08:55:44.049778+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T09:10:42.978286+00:00",
+              "round_started": "2026-04-11T09:10:42.978279+00:00",
+              "terminal_round_completed": "2026-04-11T09:10:42.978295+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "environment-control",
+      "selected": {
+        "classification": {
+          "has_exception_stats": true,
+          "kind": "runtime_failure",
+          "reason": "exception_stats_present",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "earthquake-phase-association",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": -20.0,
+      "delta_vs_c1_pp": -20.0,
+      "early_stop": true,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__yNHa3WD"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "stop",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__M7sgTpt"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          }
+        ]
+      },
+      "failure": {
+        "error_message": "RuntimeError=['c4-earthquake-phase-association-__yNHa3WD']",
+        "error_type": "TuneExceptionStats",
+        "failed_round": 0,
+        "failed_stage": "continue",
+        "manual_intervention": false,
+        "summary": "RuntimeError=['c4-earthquake-phase-association-__yNHa3WD']"
+      },
+      "has_intermediate_exceptions": true,
+      "launcher": {
+        "duration_sec": 1876.849,
+        "finished_at": "2026-04-11T09:41:59.855581+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-11T09:10:43.007032+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [],
+      "official_scores": {
+        "c0_pct": 20.0,
+        "c1_pct": 20.0
+      },
+      "pair_id": "earthquake-phase-association__methodology-guardrail",
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue with the prompt-invariant candidate because the staged skillpack now surfaces the `gcc` bootstrap blocker early, bounds GaMMA to one scored contract, and removes broad method drift from the required SeisBench path.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__yNHa3WD"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T09:16:28.046070+00:00",
+            "role_a_completed": "2026-04-11T09:20:31.580435+00:00",
+            "role_b_completed": "2026-04-11T09:28:24.764577+00:00",
+            "round_decision_loaded": "2026-04-11T09:28:24.764698+00:00",
+            "round_started": "2026-04-11T09:16:28.045686+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__yNHa3WD"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__methodology-guardrail/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__methodology-guardrail/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__yNHa3WD"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__methodology-guardrail/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/c4-earthquake-phase-association-__yNHa3WD/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "stop",
+          "decision_reason": "Both round 0 and round 1 failed during the task sandbox Docker build's fixed `pip install seisbench==0.10.2` step before the prompt or staged skills loaded, so further prompt-invariant skillpack edits are unlikely to change the outcome.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__M7sgTpt"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T09:34:16.561891+00:00",
+            "role_a_completed": "2026-04-11T09:37:09.493822+00:00",
+            "role_b_completed": "2026-04-11T09:41:59.818291+00:00",
+            "round_decision_loaded": "2026-04-11T09:41:59.818408+00:00",
+            "round_started": "2026-04-11T09:34:16.561079+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__M7sgTpt"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__methodology-guardrail/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__methodology-guardrail/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__M7sgTpt"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__methodology-guardrail/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__M7sgTpt/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__methodology-guardrail/refine_run_earthquake-20260411-rerun",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-11T09:41:59.825240+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T09:16:28.046070+00:00",
+              "role_a_completed": "2026-04-11T09:20:31.580435+00:00",
+              "role_b_completed": "2026-04-11T09:28:24.764577+00:00",
+              "round_decision_loaded": "2026-04-11T09:28:24.764698+00:00",
+              "round_started": "2026-04-11T09:16:28.045686+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T09:34:16.561891+00:00",
+              "role_a_completed": "2026-04-11T09:37:09.493822+00:00",
+              "role_b_completed": "2026-04-11T09:41:59.818291+00:00",
+              "round_decision_loaded": "2026-04-11T09:41:59.818408+00:00",
+              "round_started": "2026-04-11T09:34:16.561079+00:00"
+            },
+            "round_index": 1
+          }
+        ],
+        "terminal_round_index": 1
+      },
+      "schema_id": "methodology-guardrail",
+      "selected": {
+        "classification": {
+          "has_exception_stats": true,
+          "kind": "runtime_failure",
+          "reason": "exception_stats_present",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "earthquake-phase-association",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": -20.0,
+      "delta_vs_c1_pp": -20.0,
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__6Z69ye8"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__mc5DMnD"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__rVTp5yo"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__wAGME9F"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "failure": {
+        "error_message": "RuntimeError=['c4-earthquake-phase-association-__6Z69ye8']",
+        "error_type": "TuneExceptionStats",
+        "failed_round": 0,
+        "failed_stage": "continue",
+        "manual_intervention": false,
+        "summary": "RuntimeError=['c4-earthquake-phase-association-__6Z69ye8']"
+      },
+      "has_intermediate_exceptions": true,
+      "launcher": {
+        "duration_sec": 3468.538,
+        "finished_at": "2026-04-11T10:39:48.398399+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-11T09:41:59.860465+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [],
+      "official_scores": {
+        "c0_pct": 20.0,
+        "c1_pct": 20.0
+      },
+      "pair_id": "earthquake-phase-association__orchestration-delegation",
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue with the prompt-invariant candidate because the staged skillpack now surfaces the `gcc` bootstrap blocker early, bounds GaMMA to one scored contract, and removes broad method drift from the required SeisBench path.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__6Z69ye8"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T09:47:51.272182+00:00",
+            "role_a_completed": "2026-04-11T09:51:59.408273+00:00",
+            "role_b_completed": "2026-04-11T09:58:22.440267+00:00",
+            "round_decision_loaded": "2026-04-11T09:58:22.440601+00:00",
+            "round_started": "2026-04-11T09:47:51.271699+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__6Z69ye8"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__6Z69ye8"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/c4-earthquake-phase-association-__6Z69ye8/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue with the prompt-invariant candidate because the staged skillpack now gives one owner to bootstrap, makes ObsPy the first hard gate, and keeps picker work behind a passed or failed environment verdict instead of letting the run drift through another long CUDA-heavy install spiral.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__mc5DMnD"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T10:04:04.724301+00:00",
+            "role_a_completed": "2026-04-11T10:08:19.347547+00:00",
+            "role_b_completed": "2026-04-11T10:15:00.828813+00:00",
+            "round_decision_loaded": "2026-04-11T10:15:00.828940+00:00",
+            "round_started": "2026-04-11T10:04:04.723944+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__mc5DMnD"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__mc5DMnD"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__mc5DMnD/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Applied a bounded bootstrap-focused rewrite that makes Dockerfile repair, compiler gating, and CPU-first dependency control explicit before picker execution.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__rVTp5yo"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T10:21:33.294255+00:00",
+            "role_a_completed": "2026-04-11T10:25:04.969135+00:00",
+            "role_b_completed": "2026-04-11T10:33:59.153978+00:00",
+            "round_decision_loaded": "2026-04-11T10:33:59.154096+00:00",
+            "round_started": "2026-04-11T10:21:33.293791+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__rVTp5yo"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__rVTp5yo"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-2/tune_check/earthquake-phase-association-round-2-c4-tune/c4-earthquake-phase-association-__rVTp5yo/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__wAGME9F"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-11T10:39:48.355737+00:00",
+            "round_started": "2026-04-11T10:39:48.355730+00:00",
+            "terminal_round_completed": "2026-04-11T10:39:48.355743+00:00"
+          },
+          "exception_stats": {
+            "RuntimeError": [
+              "c4-earthquake-phase-association-__wAGME9F"
+            ]
+          },
+          "result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {
+              "RuntimeError": [
+                "c4-earthquake-phase-association-__wAGME9F"
+              ]
+            },
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun/refine/earthquake-phase-association/rounds/round-3/tune_check/earthquake-phase-association-round-3-c4-tune/c4-earthquake-phase-association-__wAGME9F/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "~/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2/pairs/earthquake-phase-association__orchestration-delegation/refine_run_earthquake-20260411-rerun",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-11T10:39:48.361801+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T09:47:51.272182+00:00",
+              "role_a_completed": "2026-04-11T09:51:59.408273+00:00",
+              "role_b_completed": "2026-04-11T09:58:22.440267+00:00",
+              "round_decision_loaded": "2026-04-11T09:58:22.440601+00:00",
+              "round_started": "2026-04-11T09:47:51.271699+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T10:04:04.724301+00:00",
+              "role_a_completed": "2026-04-11T10:08:19.347547+00:00",
+              "role_b_completed": "2026-04-11T10:15:00.828813+00:00",
+              "round_decision_loaded": "2026-04-11T10:15:00.828940+00:00",
+              "round_started": "2026-04-11T10:04:04.723944+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T10:21:33.294255+00:00",
+              "role_a_completed": "2026-04-11T10:25:04.969135+00:00",
+              "role_b_completed": "2026-04-11T10:33:59.153978+00:00",
+              "round_decision_loaded": "2026-04-11T10:33:59.154096+00:00",
+              "round_started": "2026-04-11T10:21:33.293791+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-11T10:39:48.355737+00:00",
+              "round_started": "2026-04-11T10:39:48.355730+00:00",
+              "terminal_round_completed": "2026-04-11T10:39:48.355743+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "orchestration-delegation",
+      "selected": {
+        "classification": {
+          "has_exception_stats": true,
+          "kind": "runtime_failure",
+          "reason": "exception_stats_present",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "earthquake-phase-association",
+      "timeout_detected": false
+    }
+  ],
+  "run_label": "earthquake-20260411-rerun",
+  "started_at": "2026-04-11T05:47:20.970079+00:00",
+  "tasks": [
+    "earthquake-phase-association"
+  ]
+}

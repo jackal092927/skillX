@@ -7,6 +7,14 @@
 - original run scope: `3 tasks x 7 schemas = 21 pairs`
 - original run outcome: `13 succeeded / 8 failed`
 
+## Authoritative Follow-Up
+
+- `earthquake-phase-association` should no longer be read from the original `run-3x7-2026-04-10` result rows.
+- The authoritative replacement is the dedicated rerun:
+  `reports/earthquake-20260411-rerun/`
+- Integration details are recorded in:
+  `earthquake_followup_integration.md`
+
 ## Original Run Findings
 
 ### 1. `earthquake-phase-association` failed at bundle construction, not at tuning
