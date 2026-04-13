@@ -44,6 +44,7 @@ incubation repo.
 - `skillx-experiment-results-versioning-policy-v0.1.md`
 - `skillx-round0-launcher-usage-v0.1.md`
 - `skillx-round0-mxn-runbook-v0.1.md`
+- `round0-rerun-recovery-handoff-v0.1.md`
 
 ## SkillsBench Support Material
 
