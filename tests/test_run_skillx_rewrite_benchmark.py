@@ -190,6 +190,11 @@ beta
             self.assertEqual(failure_payload["failed_stage"], "environment_check")
             self.assertEqual(failure_payload["run_id"], "rewrite-run")
 
+    def test_render_rewrite_task_toml_uses_raised_default_limits(self) -> None:
+        payload = self.module.render_rewrite_task_toml()
+        self.assertIn("memory_mb = 8192", payload)
+        self.assertIn("storage_mb = 20480", payload)
+
 
 if __name__ == "__main__":
     unittest.main()

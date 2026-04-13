@@ -23,6 +23,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from skillx.docker_health import probe_docker_health
 from skillx.io_utils import ensure_dir, read_json, write_json
 from skillx.run_failure_utils import build_run_failure_payload, write_run_failure
 from skillx.skillpack_utils import discover_skill_names
@@ -32,6 +33,8 @@ DEFAULT_AGENT = "claude-code"
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
 DEFAULT_CONDITIONS = ("c0", "c1", "c2", "c3")
 MIN_DOCKER_MEMORY_BYTES = 16_000_000_000
+DEFAULT_REWRITE_TASK_MEMORY_MB = 8192
+DEFAULT_REWRITE_TASK_STORAGE_MB = 20480
 DEFAULT_RETRY_EXCLUDE = [
     "AgentTimeoutError",
     "VerifierTimeoutError",
@@ -336,15 +339,18 @@ timeout_sec = 900.0
 [environment]
 build_timeout_sec = 300.0
 cpus = 1
-memory_mb = 2048
-storage_mb = 4096
+memory_mb = {memory_mb}
+storage_mb = {storage_mb}
 gpus = 0
 allow_internet = true
 
 [verifier.env]
 
 [solution.env]
-"""
+""".format(
+        memory_mb=DEFAULT_REWRITE_TASK_MEMORY_MB,
+        storage_mb=DEFAULT_REWRITE_TASK_STORAGE_MB,
+    )
 
 
 def render_rewrite_dockerfile() -> str:
@@ -704,20 +710,16 @@ def check_environment(skillsbench_root: Path, oauth_file: Path) -> dict[str, Any
         raise FileNotFoundError(f"skillsbench root not found: {skillsbench_root}")
     if not oauth_file.exists():
         raise FileNotFoundError(f"oauth file not found: {oauth_file}")
-    docker_info = _run(["docker", "info", "--format", "{{json .MemTotal}}"], check=True)
-    try:
-        docker_mem_bytes = int(json.loads(docker_info.stdout.strip()))
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"unable to parse docker memory: {docker_info.stdout}") from exc
-    if docker_mem_bytes < MIN_DOCKER_MEMORY_BYTES:
-        raise RuntimeError(
-            f"Docker memory too low: {docker_mem_bytes} bytes < required {MIN_DOCKER_MEMORY_BYTES} bytes"
-        )
+    docker_health = probe_docker_health(min_memory_bytes=MIN_DOCKER_MEMORY_BYTES)
+    if not docker_health["healthy"]:
+        raise RuntimeError(f"Docker health check failed: {docker_health['message']}")
+    docker_mem_bytes = int(docker_health["docker_mem_bytes"])
     uv_path = shutil.which("uv")
     if uv_path is None:
         raise RuntimeError("uv is not available in PATH")
     return {
         "docker_mem_bytes": docker_mem_bytes,
+        "docker_health_category": docker_health["category"],
         "uv_path": uv_path,
         "oauth_file": str(oauth_file),
     }
@@ -731,6 +733,7 @@ def write_environment_notes(run_dir: Path, env_payload: dict[str, Any], args: ar
             f"- oauth_file: `{args.oauth_file}`",
             f"- benchmark_agent: `{args.agent}`",
             f"- benchmark_model: `{args.model}`",
+            f"- docker_health_category: `{env_payload['docker_health_category']}`",
             f"- docker_mem_bytes: `{env_payload['docker_mem_bytes']}`",
             f"- uv_path: `{env_payload['uv_path']}`",
             f"- max_concurrency: `{args.max_concurrency}`",
