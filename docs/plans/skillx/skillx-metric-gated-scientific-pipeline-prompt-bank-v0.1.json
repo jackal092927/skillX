@@ -1,0 +1,41 @@
+{
+  "artifact_type": "skillx_prompt_bank",
+  "version": "v0.1",
+  "date": "2026-04-13",
+  "source_markdown": "docs/plans/skillx/skillx-metric-gated-scientific-pipeline-meta-schema-v0.1.md",
+  "status": "sidecar experimental bank",
+  "category_count": 1,
+  "categories": [
+    {
+      "category_id": "metric-gated-scientific-pipeline",
+      "semantic_intent": "Run a scientific or measurement pipeline where upstream data-processing fidelity dominates benchmark score or tolerance-sensitive correctness more than the final artifact shape.",
+      "emphasize": [
+        "preserve the full upstream-to-downstream measurement chain, not just the final output artifact",
+        "explicit metric target, threshold, or tolerance and what upstream stages most affect it",
+        "domain-calibrated preprocessing, model or tool choice, and parameter defaults before generic workflow advice",
+        "stage-level observability such as counts, distributions, spot checks, and quick metric-facing probes",
+        "preserving useful incumbent bundle structure when multiple narrow domain skills jointly matter",
+        "separating runtime or infra failure evidence from measured low-quality evidence"
+      ],
+      "avoid": [
+        "rewriting the task as a generic stage checklist with weak domain content",
+        "optimizing output formatting while neglecting the metric-sensitive measurement path",
+        "collapsing several domain-specific skills into one vague synthetic blob",
+        "treating a score of 0 as true measured failure when verifier evidence is incomplete or exception-heavy",
+        "inventing parameters confidently without sanity checks against the task's metric or tolerance"
+      ],
+      "expected_good_fit": [
+        "scientific signal extraction and event detection tasks",
+        "simulation or calibration tasks with RMSE, F1, or quality thresholds",
+        "observational-data pipelines where preprocessing fidelity dominates final score",
+        "single-value scientific outputs whose correctness still depends on a fragile signal-processing path"
+      ],
+      "expected_bad_fit": [
+        "deterministic exact-answer tasks where the final artifact directly exposes correctness",
+        "code patch or compile-test loops",
+        "action-planning or control tasks where state-action sequencing is the main bottleneck"
+      ],
+      "meta_prompt": "You are revising a skill for a metric-gated scientific pipeline task.\nOptimize the skill to preserve the metric-sensitive scientific workflow, not merely to make it more staged or more polished.\n\nPrioritize:\n1. preserving the full upstream-to-downstream measurement chain,\n2. naming the real target metric or tolerance and the intermediate stages most likely to control it,\n3. keeping domain-calibrated defaults, preprocessing rules, model choices, and tool wrappers that protect scientific fidelity,\n4. adding stage-level observability such as counts, distributions, spot checks, and quick metric-facing probes,\n5. preserving useful incumbent bundle structure when several narrow domain skills jointly matter,\n6. making it easy to tell apart runtime failure, infra failure, and true low-quality scientific output.\n\nIf the task outputs a single number or compact artifact, do not let that collapse the rewrite into an artifact-only prompt.\nTreat the artifact as the end of a measurement pipeline whose upstream quality must still be protected.\n\nIf the task is failing, suspect lost domain calibration, missing intermediate checks, or bad evidence interpretation before adding generic scaffolding."
+    }
+  ]
+}

@@ -82,6 +82,28 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
         selected = self.module.select_final_candidate(rows)
         self.assertEqual(selected["round_index"], 1)
 
+    def test_derive_completed_run_status_marks_runtime_failures(self) -> None:
+        round_rows = [
+            {
+                "round_index": 0,
+                "reward": 0.0,
+                "classification": {"kind": "runtime_failure", "reason": "exception_stats_present"},
+            },
+            {
+                "round_index": 1,
+                "reward": 0.25,
+                "classification": {"kind": "clean_success", "reason": "positive_reward_with_no_exception_stats"},
+            },
+        ]
+
+        status, details = self.module.derive_completed_run_status(round_rows)
+
+        self.assertEqual(status, "completed_with_runtime_failures")
+        self.assertEqual(details["selected_round"], "R1")
+        self.assertEqual(details["selected_reward"], 0.25)
+        self.assertEqual(details["selected_classification"], "clean_success")
+        self.assertEqual(details["runtime_failure_rounds"], "R0")
+
     def test_resolve_benchmark_agent_name_infers_from_model(self) -> None:
         self.assertEqual(
             self.module.resolve_benchmark_agent_name(agent_name=None, model_name="anthropic/claude-sonnet-4-5"),

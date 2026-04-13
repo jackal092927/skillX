@@ -437,6 +437,89 @@ class ServeRound0MonitorTests(unittest.TestCase):
 
             self.assertEqual(status["pair_rows"][0]["pair_status"], "completed (stop@R1)")
 
+    def test_collect_launcher_status_marks_completed_runtime_failures_explicitly(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["artifact-generation"]}) + "\n"
+            )
+            pair_dir = materialized_root / "pairs" / "task-alpha__artifact-generation"
+            pair_dir.mkdir(parents=True)
+            (materialized_root / "pair_specs.jsonl").write_text(
+                json.dumps(
+                    {
+                        "pair_id": "task-alpha__artifact-generation",
+                        "task_name": "task-alpha",
+                        "schema_id": "artifact-generation",
+                        "pair_dir": str(pair_dir),
+                        "official_scores": {"no_skills": 10.0, "with_skills": 20.0},
+                    }
+                )
+                + "\n"
+            )
+            run_dir = pair_dir / "refine_run_run-demo"
+            (run_dir / "refine" / "task-alpha" / "rounds" / "round-0" / "tune_check").mkdir(parents=True)
+            (
+                run_dir
+                / "refine"
+                / "task-alpha"
+                / "rounds"
+                / "round-0"
+                / "tune_check"
+                / "result.json"
+            ).write_text(json.dumps({"reward": 0.0}) + "\n")
+            (run_dir / "RUN_STATUS.md").write_text(
+                "- status: `completed_with_runtime_failures`\n"
+                "- round_budget: `3`\n"
+                "- runtime_failure_rounds: `R0`\n"
+            )
+            (launcher_log_dir / "summary.json").write_text(
+                json.dumps(
+                    {
+                        "selected_task_names": ["task-alpha"],
+                        "total_pairs": 1,
+                        "completed_pairs": 1,
+                        "succeeded_pairs": 1,
+                        "failed_pairs": 0,
+                        "results": [
+                            {
+                                "pair_id": "task-alpha__artifact-generation",
+                                "status": "succeeded",
+                                "returncode": 0,
+                                "output_dir": str(run_dir),
+                            }
+                        ],
+                    }
+                )
+                + "\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text(
+                json.dumps(
+                    {
+                        "event": "pair_succeeded",
+                        "index": 1,
+                        "observed_at": "2026-04-10T08:10:00+00:00",
+                        "pair_id": "task-alpha__artifact-generation",
+                        "schema_id": "artifact-generation",
+                        "task_name": "task-alpha",
+                        "returncode": 0,
+                    }
+                )
+                + "\n"
+            )
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:10:05+00:00",
+            )
+
+            self.assertEqual(status["health"], "completed_with_issues")
+            self.assertEqual(status["issue_pairs"], 1)
+            self.assertEqual(status["pair_rows"][0]["pair_status"], "completed (runtime exceptions)")
+            self.assertTrue(status["pair_rows"][0]["pair_has_issues"])
+
     def test_collect_launcher_status_uses_pair_rows_total_when_summary_total_is_partial_and_stdout_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             materialized_root = Path(tmpdir)

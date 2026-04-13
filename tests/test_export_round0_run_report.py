@@ -221,14 +221,19 @@ class ExportRound0RunReportTests(unittest.TestCase):
 
             self.assertEqual(success_pair["selected"]["round_index"], 1)
             self.assertEqual(success_pair["selected"]["score_pct"], 50.0)
+            self.assertEqual(success_pair["reported_score"]["basis"], "selected")
             self.assertTrue(success_pair["early_stop"])
             self.assertEqual(success_pair["delta_vs_c1_pp"], 40.0)
+            self.assertEqual(success_pair["evidence_class"], "measured")
             self.assertIn("FileNotFoundError", failure_pair["failure"]["summary"])
+            self.assertEqual(failure_pair["evidence_class"], "runtime-blocked")
 
             table = self.module.render_results_table(report)
             self.assertIn("## task-alpha", table)
             self.assertIn("task-beta", table)
             self.assertIn("FileNotFoundError", table)
+            self.assertIn("Evidence", table)
+            self.assertIn("measured", table)
 
     def test_build_run_report_prefers_run_failure_payload_and_detects_timeout(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -316,6 +321,7 @@ class ExportRound0RunReportTests(unittest.TestCase):
             self.assertEqual(pair["failure"]["error_type"], "PlaybookAgentTimeoutError")
             self.assertTrue(pair["timeout_detected"])
             self.assertEqual(pair["failure"]["failed_round"], 1)
+            self.assertEqual(pair["evidence_class"], "runtime-blocked")
 
     def test_build_run_report_marks_stale_running_status_failed_and_sanitizes_home_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -392,12 +398,36 @@ class ExportRound0RunReportTests(unittest.TestCase):
             self.assertTrue(pair["run"]["stale_status"])
             self.assertIn("~/iWorld/projects/skillsbench-src", pair["failure"]["summary"])
             self.assertNotIn(str(Path.home()), pair["failure"]["summary"])
+            self.assertEqual(pair["evidence_class"], "runtime-blocked")
 
             runtime_md = self.module.render_runtime_status(report)
             eval_md = self.module.render_evaluation_matrices(report)
             self.assertIn("task-delta__artifact-generation", runtime_md)
             self.assertIn("Failure", runtime_md)
             self.assertIn("Evaluation Matrices", eval_md)
+
+    def test_classify_evidence_distinguishes_infra_and_ambiguous_scores(self) -> None:
+        infra_class, infra_note = self.module.classify_evidence(
+            launcher_status="failed",
+            run_status="failed",
+            failure={"summary": "RuntimeError: Docker memory too low: 0 bytes < required 16000000000 bytes"},
+            timeout_detected=False,
+            has_intermediate_exceptions=False,
+            reported_score_pct=None,
+        )
+        ambiguous_class, ambiguous_note = self.module.classify_evidence(
+            launcher_status="succeeded",
+            run_status="completed",
+            failure={"summary": "TuneExceptionStats: exception_stats seen"},
+            timeout_detected=False,
+            has_intermediate_exceptions=True,
+            reported_score_pct=0.0,
+        )
+
+        self.assertEqual(infra_class, "infra-blocked")
+        self.assertIn("Infrastructure blocked", infra_note)
+        self.assertEqual(ambiguous_class, "ambiguous")
+        self.assertIn("score exists", ambiguous_note)
 
 
 if __name__ == "__main__":

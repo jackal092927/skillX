@@ -19,6 +19,10 @@ RUN_STATUS_PATTERN = re.compile(r"^- ([a-z_]+): `?(.*?)`?$")
 OUTPUT_DIR_PATTERN = re.compile(r"--output-dir\s+(\S+)")
 ROUND_NAME_PATTERN = re.compile(r"^round-(\d+)$")
 ROUND_STAGE_ORDER = ("executor", "role_a", "role_b")
+COMPLETED_ISSUE_STATUS_LABELS = {
+    "completed_with_runtime_failures": "runtime exceptions",
+    "completed_with_contract_failures": "contract issues",
+}
 
 
 def _utc_now() -> datetime:
@@ -116,6 +120,87 @@ def _parse_run_status(path: Path) -> dict[str, str]:
         if match:
             payload[match.group(1)] = match.group(2)
     return payload
+
+
+def _status_value_from_sources(
+    *,
+    launcher_result: dict[str, Any] | None,
+    run_status: dict[str, str],
+) -> str | None:
+    launcher_status = launcher_result.get("status") if isinstance(launcher_result, dict) else None
+    if isinstance(launcher_status, str) and launcher_status:
+        normalized = launcher_status.strip().lower()
+        if normalized in {"failed", "failure", "error", "running", "in_progress", "started", "active"}:
+            return launcher_status
+
+    run_status_value = run_status.get("status")
+    if isinstance(run_status_value, str) and run_status_value:
+        return run_status_value
+    if isinstance(launcher_status, str) and launcher_status:
+        return launcher_status
+    return None
+
+
+def _find_stop_round_index(run_dir: Path, round_budget: int | None) -> int | None:
+    if round_budget is None:
+        return None
+    task_root = _find_refine_task_root(run_dir)
+    rounds_root = task_root / "rounds" if isinstance(task_root, Path) else None
+    if not isinstance(rounds_root, Path) or not rounds_root.exists():
+        return None
+
+    for round_dir in sorted(path for path in rounds_root.iterdir() if path.is_dir()):
+        round_index = _round_index_from_name(round_dir.name)
+        if round_index is None:
+            continue
+        events = _read_ndjson(round_dir / "orchestrator_log.ndjson")
+        if any(
+            str(event.get("event_type") or "") == "round_decision_loaded"
+            and str(event.get("status") or "") == "stop"
+            for event in events
+        ):
+            return round_index
+    return None
+
+
+def _completed_status_label(
+    *,
+    normalized_status: str,
+    run_status: dict[str, str],
+    run_dir: Path,
+) -> str:
+    round_budget_raw = run_status.get("round_budget")
+    try:
+        round_budget = int(round_budget_raw) if round_budget_raw else None
+    except ValueError:
+        round_budget = None
+
+    detail_parts: list[str] = []
+    issue_label = COMPLETED_ISSUE_STATUS_LABELS.get(normalized_status)
+    if issue_label:
+        detail_parts.append(issue_label)
+
+    stop_round_index = _find_stop_round_index(run_dir, round_budget)
+    if stop_round_index is not None and round_budget is not None and stop_round_index < round_budget:
+        detail_parts.append(f"stop@R{stop_round_index}")
+
+    if detail_parts:
+        return f"completed ({', '.join(detail_parts)})"
+    return "completed"
+
+
+def _pair_has_issues_from_sources(
+    *,
+    launcher_result: dict[str, Any] | None,
+    run_status: dict[str, str],
+) -> bool:
+    status_value = _status_value_from_sources(
+        launcher_result=launcher_result,
+        run_status=run_status,
+    )
+    if not isinstance(status_value, str):
+        return False
+    return status_value.strip().lower() in COMPLETED_ISSUE_STATUS_LABELS
 
 
 def _resolve_active_run_dir(launcher_log_dir: Path, pair_id: str | None) -> Path | None:
@@ -340,42 +425,19 @@ def _pair_status_from_sources(
     run_status: dict[str, str],
     run_dir: Path,
 ) -> str:
-    status_value = None
-    if isinstance(launcher_result, dict) and isinstance(launcher_result.get("status"), str):
-        status_value = str(launcher_result["status"])
-    if status_value is None:
-        run_status_value = run_status.get("status")
-        if isinstance(run_status_value, str) and run_status_value:
-            status_value = run_status_value
+    status_value = _status_value_from_sources(
+        launcher_result=launcher_result,
+        run_status=run_status,
+    )
 
     if isinstance(status_value, str) and status_value:
         normalized = status_value.strip().lower()
-        if normalized in {"succeeded", "success", "completed", "done", "ok"}:
-            round_budget_raw = run_status.get("round_budget")
-            try:
-                round_budget = int(round_budget_raw) if round_budget_raw else None
-            except ValueError:
-                round_budget = None
-
-            stop_round_index = None
-            task_root = _find_refine_task_root(run_dir)
-            rounds_root = task_root / "rounds" if isinstance(task_root, Path) else None
-            if isinstance(rounds_root, Path) and rounds_root.exists():
-                for round_dir in sorted(path for path in rounds_root.iterdir() if path.is_dir()):
-                    round_index = _round_index_from_name(round_dir.name)
-                    if round_index is None:
-                        continue
-                    events = _read_ndjson(round_dir / "orchestrator_log.ndjson")
-                    if any(
-                        str(event.get("event_type") or "") == "round_decision_loaded"
-                        and str(event.get("status") or "") == "stop"
-                        for event in events
-                    ):
-                        stop_round_index = round_index
-
-            if stop_round_index is not None and round_budget is not None and stop_round_index < round_budget:
-                return f"completed (stop@R{stop_round_index})"
-            return "completed"
+        if normalized in {"succeeded", "success", "completed", "done", "ok"} or normalized in COMPLETED_ISSUE_STATUS_LABELS:
+            return _completed_status_label(
+                normalized_status=normalized,
+                run_status=run_status,
+                run_dir=run_dir,
+            )
         if normalized in {"failed", "failure", "error"}:
             return "failed"
         if normalized in {"running", "in_progress", "started", "active"}:
@@ -481,6 +543,10 @@ def _collect_pair_rows(
                     run_status=run_status,
                     run_dir=run_dir,
                 ),
+                "pair_has_issues": _pair_has_issues_from_sources(
+                    launcher_result=launcher_result,
+                    run_status=run_status,
+                ),
             }
         )
 
@@ -573,6 +639,8 @@ def collect_launcher_status(
     )
     total_pairs = max(total_pairs, len(pair_rows))
 
+    issue_pairs = sum(1 for row in pair_rows if row.get("pair_has_issues"))
+
     if total_pairs > 0:
         progress_percent = 100.0 * completed_pairs / total_pairs
     else:
@@ -585,7 +653,12 @@ def collect_launcher_status(
         latest_activity_dt = active_run_activity_dt
 
     if total_pairs > 0 and completed_pairs >= total_pairs:
-        health = "completed_with_failures" if failed_pairs else "completed"
+        if failed_pairs:
+            health = "completed_with_failures"
+        elif issue_pairs:
+            health = "completed_with_issues"
+        else:
+            health = "completed"
     elif latest_activity_dt is None:
         health = "waiting"
     elif (now_dt - latest_activity_dt).total_seconds() > stale_seconds:
@@ -603,6 +676,7 @@ def collect_launcher_status(
         "completed_pairs": completed_pairs,
         "succeeded_pairs": succeeded_pairs,
         "failed_pairs": failed_pairs,
+        "issue_pairs": issue_pairs,
         "progress_percent": progress_percent,
         "selected_task_names": selected_task_names,
         "pair_rows": pair_rows,
@@ -625,6 +699,7 @@ def _health_color(health: str) -> str:
     return {
         "completed": "#22c55e",
         "completed_with_failures": "#c084fc",
+        "completed_with_issues": "#f59e0b",
         "running": "#3b82f6",
         "stalled": "#ef4444",
         "waiting": "#a78bfa",
@@ -688,6 +763,10 @@ def _status_pill_class(value: Any) -> str:
     text = str(value or "").strip().lower()
     if not text:
         return ""
+    if text.startswith("completed") and any(
+        marker in text for marker in ("runtime exception", "contract issue", "issues")
+    ):
+        return "pill pill-warn"
     if text in {"succeeded", "success", "completed", "done", "ok"} or text.startswith("completed"):
         return "pill pill-ok"
     if text in {"failed", "failure", "error"} or text.startswith("failed"):
@@ -856,6 +935,9 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
       --run: #60a5fa;
       --run-bg: rgba(96, 165, 250, 0.14);
       --run-border: rgba(96, 165, 250, 0.35);
+      --warn: #f59e0b;
+      --warn-bg: rgba(245, 158, 11, 0.14);
+      --warn-border: rgba(245, 158, 11, 0.35);
     }}
     * {{ box-sizing: border-box; }}
     html, body {{ height: 100%; }}
@@ -939,7 +1021,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     /* Metric cards */
     .metrics {{
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
       margin: 0 0 16px;
     }}
@@ -982,6 +1064,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     }}
     .metric-card.metric-ok .metric-value {{ color: var(--pos); }}
     .metric-card.metric-bad .metric-value {{ color: var(--neg); }}
+    .metric-card.metric-warn .metric-value {{ color: var(--warn); }}
 
     /* Grid layout for snapshot / tasks */
     .grid {{
@@ -1173,6 +1256,11 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
       color: var(--run);
       border-color: var(--run-border);
     }}
+    .pill-warn {{
+      background: var(--warn-bg);
+      color: var(--warn);
+      border-color: var(--warn-border);
+    }}
     .pill-other {{
       background: var(--panel-alt);
       color: var(--muted);
@@ -1229,6 +1317,10 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
       <div class="metric-card metric-ok">
         <div class="metric-label">Succeeded</div>
         <div class="metric-value">{html.escape(str(status.get("succeeded_pairs", 0)))}</div>
+      </div>
+      <div class="metric-card{' metric-warn' if int(status.get('issue_pairs', 0) or 0) > 0 else ''}">
+        <div class="metric-label">Issues</div>
+        <div class="metric-value">{html.escape(str(status.get("issue_pairs", 0)))}</div>
       </div>
       <div class="metric-card{' metric-bad' if int(status.get('failed_pairs', 0) or 0) > 0 else ''}">
         <div class="metric-label">Failed</div>

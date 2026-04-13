@@ -1,0 +1,50 @@
+{
+  "artifact_type": "skillx_sidecar_task_slice",
+  "version": "v0.1",
+  "date": "2026-04-13",
+  "schema_under_test": "metric-gated-scientific-pipeline",
+  "baseline_model": "Claude Code (Sonnet 4.5)",
+  "baseline_conditions": {
+    "c0": "No Skills",
+    "c1": "With Skills"
+  },
+  "selection_policy": {
+    "primary_rule": "Select the strongest current candidates for the new metric-gated scientific pipeline family.",
+    "secondary_rule": "Prefer tasks where intermediate scientific measurement fidelity is likely more important than generic stage decomposition.",
+    "notes": [
+      "This is a sidecar experiment slice, not part of the main round-0 candidate bank.",
+      "The first pass compares only against C0/C1, not against the existing 7-schema bank.",
+      "The slice intentionally mixes benchmark-threshold and tolerance-sensitive scientific tasks to stress-test whether the schema preserves metric-critical upstream reasoning."
+    ]
+  },
+  "tasks": [
+    {
+      "task_name": "earthquake-phase-association",
+      "original_seed_schema_id": "analytic-pipeline",
+      "c0_score": 20.0,
+      "c1_score": 20.0,
+      "selection_note": "Waveform -> pick -> associate -> event-time F1 gate; clearest motivating outlier."
+    },
+    {
+      "task_name": "seismic-phase-picking",
+      "original_seed_schema_id": "analytic-pipeline",
+      "c0_score": 0.0,
+      "c1_score": 0.0,
+      "selection_note": "Raw traces -> P/S picks -> F1 thresholds; direct stress test for signal-measurement fidelity."
+    },
+    {
+      "task_name": "glm-lake-mendota",
+      "original_seed_schema_id": "environment-control",
+      "c0_score": 0.0,
+      "c1_score": 80.0,
+      "selection_note": "Scientific simulation and calibration task; useful to test whether the schema helps outside pure signal extraction."
+    },
+    {
+      "task_name": "exoplanet-detection-period",
+      "original_seed_schema_id": "analytic-pipeline",
+      "c0_score": 0.0,
+      "c1_score": 0.0,
+      "selection_note": "Noisy lightcurve preprocessing with a compact final output; tests whether the schema still protects upstream signal analysis."
+    }
+  ]
+}

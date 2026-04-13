@@ -3083,19 +3083,80 @@ def write_environment_notes(run_dir: Path, env_payload: dict[str, Any], args: ar
     (run_dir / "ENVIRONMENT_NOTES.md").write_text(notes + "\n")
 
 
-def write_run_status(run_dir: Path, status: str, args: argparse.Namespace) -> None:
-    body = "\n".join(
-        [
-            f"- status: `{status}`",
-            f"- run_id: `{args.run_id}`",
-            f"- task: `{args.task}`",
-            f"- source_run_dir: `{args.source_run_dir}`",
-            f"- round_budget: `{args.round_budget}`",
-            f"- orchestration_mode: `{args.orchestration_mode}`",
-            f"- updated_at: `{_timestamp()}`",
-        ]
-    )
+def write_run_status(
+    run_dir: Path,
+    status: str,
+    args: argparse.Namespace,
+    *,
+    extra_fields: dict[str, Any] | None = None,
+) -> None:
+    lines = [
+        f"- status: `{status}`",
+        f"- run_id: `{args.run_id}`",
+        f"- task: `{args.task}`",
+        f"- source_run_dir: `{args.source_run_dir}`",
+        f"- round_budget: `{args.round_budget}`",
+        f"- orchestration_mode: `{args.orchestration_mode}`",
+    ]
+    for key, value in (extra_fields or {}).items():
+        if value is None:
+            continue
+        lines.append(f"- {key}: `{value}`")
+    lines.append(f"- updated_at: `{_timestamp()}`")
+    body = "\n".join(lines)
     (run_dir / "RUN_STATUS.md").write_text(body + "\n")
+
+
+def derive_completed_run_status(round_rows: list[dict[str, Any]]) -> tuple[str, dict[str, Any]]:
+    runtime_failure_rounds: list[int] = []
+    contract_failure_rounds: list[int] = []
+
+    for row in round_rows:
+        classification = row.get("classification") or {}
+        if not isinstance(classification, dict):
+            continue
+        kind = classification.get("kind")
+        round_index = row.get("round_index")
+        if not isinstance(round_index, int):
+            continue
+        if kind == "runtime_failure":
+            runtime_failure_rounds.append(round_index)
+        elif kind == "contract_failure":
+            contract_failure_rounds.append(round_index)
+
+    selected = select_final_candidate(round_rows)
+    selected_classification = selected.get("classification") or {}
+    if not isinstance(selected_classification, dict):
+        selected_classification = {}
+
+    if runtime_failure_rounds:
+        status = "completed_with_runtime_failures"
+    elif contract_failure_rounds:
+        status = "completed_with_contract_failures"
+    else:
+        status = "completed"
+
+    details = {
+        "selected_round": (
+            f"R{selected['round_index']}"
+            if isinstance(selected.get("round_index"), int)
+            else None
+        ),
+        "selected_reward": selected.get("reward"),
+        "selected_classification": selected_classification.get("kind"),
+        "selected_reason": selected_classification.get("reason"),
+        "runtime_failure_rounds": (
+            ", ".join(f"R{round_index}" for round_index in runtime_failure_rounds)
+            if runtime_failure_rounds
+            else None
+        ),
+        "contract_failure_rounds": (
+            ", ".join(f"R{round_index}" for round_index in contract_failure_rounds)
+            if contract_failure_rounds
+            else None
+        ),
+    }
+    return status, details
 
 
 def run_refine_rounds(
@@ -3506,7 +3567,13 @@ def main() -> int:
         write_json(paths.summary_path, {"task_id": task.task_id, "selected": selected_row, "rounds": round_rows})
         if run_failure_path.exists():
             run_failure_path.unlink()
-        write_run_status(run_dir, "completed", args)
+        completed_status, completed_status_details = derive_completed_run_status(round_rows)
+        write_run_status(
+            run_dir,
+            completed_status,
+            args,
+            extra_fields=completed_status_details,
+        )
         return 0
     except Exception as error:
         write_run_failure(
