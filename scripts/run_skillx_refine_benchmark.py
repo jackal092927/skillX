@@ -24,6 +24,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from skillx.io_utils import ensure_dir, read_json, write_json
+from skillx.docker_health import probe_docker_health
 from skillx.model_routing import (
     AUTH_BACKED_CLAUDE_CODE_IMPORT_PATH,
     AUTH_BACKED_CODEX_IMPORT_PATH,
@@ -84,6 +85,8 @@ DEFAULT_AGENT = "claude-code"
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
 DEFAULT_ORCHESTRATION_MODE = "legacy"
 MIN_DOCKER_MEMORY_BYTES = 16_000_000_000
+DEFAULT_REFINED_TASK_MEMORY_MB = 8192
+DEFAULT_REFINED_TASK_STORAGE_MB = 20480
 DEFAULT_RETRY_EXCLUDE = [
     "AgentTimeoutError",
     "VerifierTimeoutError",
@@ -382,6 +385,8 @@ def build_job_config(
     model_name: str,
     timeout_multiplier: float,
     n_concurrent_trials: int,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
 ) -> dict[str, Any]:
     resolved_agent_name = resolve_benchmark_agent_name(agent_name, model_name)
     agent_payload: dict[str, Any] = {
@@ -425,8 +430,8 @@ def build_job_config(
             "force_build": False,
             "delete": True,
             "override_cpus": None,
-            "override_memory_mb": None,
-            "override_storage_mb": None,
+            "override_memory_mb": override_memory_mb,
+            "override_storage_mb": override_storage_mb,
             "override_gpus": None,
             "kwargs": {},
         },
@@ -492,17 +497,16 @@ def check_environment(skillsbench_root: Path, oauth_file: Path | None, *, agent_
             raise FileNotFoundError(f"codex auth file not found: {codex_auth_file}")
     else:
         raise ValueError(f"unsupported benchmark agent: {agent_name}")
-    docker_info = _run(["docker", "info", "--format", "{{json .MemTotal}}"])
-    docker_mem_bytes = int(json.loads(docker_info.stdout.strip()))
-    if docker_mem_bytes < MIN_DOCKER_MEMORY_BYTES:
-        raise RuntimeError(
-            f"Docker memory too low: {docker_mem_bytes} bytes < required {MIN_DOCKER_MEMORY_BYTES} bytes"
-        )
+    docker_health = probe_docker_health(min_memory_bytes=MIN_DOCKER_MEMORY_BYTES)
+    if not docker_health["healthy"]:
+        raise RuntimeError(f"Docker health check failed: {docker_health['message']}")
+    docker_mem_bytes = int(docker_health["docker_mem_bytes"])
     uv_path = shutil.which("uv")
     if uv_path is None:
         raise RuntimeError("uv is not available in PATH")
     return {
         "docker_mem_bytes": docker_mem_bytes,
+        "docker_health_category": docker_health["category"],
         "uv_path": uv_path,
         "oauth_file": None if oauth_file is None else str(oauth_file),
         "benchmark_agent": agent_name,
@@ -1264,7 +1268,11 @@ echo 1 > /logs/verifier/reward.txt
 """
 
 
-def render_refine_task_toml() -> str:
+def render_refine_task_toml(
+    *,
+    memory_mb: int = DEFAULT_REFINED_TASK_MEMORY_MB,
+    storage_mb: int = DEFAULT_REFINED_TASK_STORAGE_MB,
+) -> str:
     return """version = "1.0"
 
 [metadata]
@@ -1283,15 +1291,15 @@ timeout_sec = 1200.0
 [environment]
 build_timeout_sec = 300.0
 cpus = 1
-memory_mb = 2048
-storage_mb = 4096
+memory_mb = {memory_mb}
+storage_mb = {storage_mb}
 gpus = 0
 allow_internet = true
 
 [verifier.env]
 
 [solution.env]
-"""
+""".format(memory_mb=memory_mb, storage_mb=storage_mb)
 
 
 def render_refine_dockerfile() -> str:
@@ -1346,6 +1354,8 @@ def create_refine_round_task_sandbox(
     agent_name: str,
     model_name: str,
     round_timeout_multiplier: float,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
 ) -> RefineRoundSpec:
     slug = f"round-{round_index}"
     task_dir = paths.root_dir / "refine_tasks" / slug
@@ -1355,7 +1365,12 @@ def create_refine_round_task_sandbox(
     ensure_dir(task_dir / "tests")
     ensure_dir(task_dir / "solution")
     (task_dir / "instruction.md").write_text(render_refine_instruction(task=task, round_index=round_index))
-    (task_dir / "task.toml").write_text(render_refine_task_toml())
+    (task_dir / "task.toml").write_text(
+        render_refine_task_toml(
+            memory_mb=override_memory_mb or DEFAULT_REFINED_TASK_MEMORY_MB,
+            storage_mb=override_storage_mb or DEFAULT_REFINED_TASK_STORAGE_MB,
+        )
+    )
     (task_dir / "environment" / "Dockerfile").write_text(render_refine_dockerfile())
     populate_refine_inputs_dir(
         task=task,
@@ -1384,6 +1399,8 @@ def create_refine_round_task_sandbox(
             model_name=model_name,
             timeout_multiplier=round_timeout_multiplier,
             n_concurrent_trials=1,
+            override_memory_mb=override_memory_mb,
+            override_storage_mb=override_storage_mb,
         ),
     )
     return RefineRoundSpec(
@@ -2351,6 +2368,8 @@ def ensure_c4ar_executor_outputs(
     model_name: str,
     tune_timeout_multiplier: float,
     run_dir: Path,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
 ) -> tuple[ExecutorOutputs, dict[str, Any]]:
     cached_executor = existing_executor_outputs(round_dir_path=round_dir_path, task_id=task.task_id)
     if cached_executor is not None:
@@ -2368,6 +2387,8 @@ def ensure_c4ar_executor_outputs(
         agent_name=agent_name,
         model_name=model_name,
         timeout_multiplier=tune_timeout_multiplier,
+        override_memory_mb=override_memory_mb,
+        override_storage_mb=override_storage_mb,
     )
     if tune_result_has_executor_unavailable(tune_result):
         return write_executor_soft_failure_artifacts(round_dir_path=round_dir_path, tune_result=tune_result), tune_result
@@ -2570,6 +2591,8 @@ def run_c4ar_round_with_harbor(
     model_name: str,
     tune_timeout_multiplier: float,
     run_dir: Path,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
     role_a_model_name: str = "codex-5.3",
     role_b_model_name: str = "gpt-5.4",
     role_a_playbook_path: Path = DEFAULT_ROLE_A_PLAYBOOK,
@@ -2590,6 +2613,8 @@ def run_c4ar_round_with_harbor(
         model_name=model_name,
         tune_timeout_multiplier=tune_timeout_multiplier,
         run_dir=run_dir,
+        override_memory_mb=override_memory_mb,
+        override_storage_mb=override_storage_mb,
     )
     if tune_result_has_executor_unavailable(tune_result):
         synthetic_outputs = build_synthetic_c4ar_executor_failure_outputs(
@@ -2719,6 +2744,8 @@ def run_terminal_c4ar_round(
     model_name: str,
     tune_timeout_multiplier: float,
     run_dir: Path,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
 ) -> dict[str, Any]:
     del round_index
     _, tune_result = ensure_c4ar_executor_outputs(
@@ -2730,6 +2757,8 @@ def run_terminal_c4ar_round(
         model_name=model_name,
         tune_timeout_multiplier=tune_timeout_multiplier,
         run_dir=run_dir,
+        override_memory_mb=override_memory_mb,
+        override_storage_mb=override_storage_mb,
     )
     return tune_result
 
@@ -2831,6 +2860,8 @@ def run_round_tune_check(
     agent_name: str,
     model_name: str,
     timeout_multiplier: float,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
 ) -> dict[str, Any]:
     tune_root = ensure_dir(round_dir_path / "tune_check")
     existing = existing_tune_result(task_id=task.task_id, round_dir_path=round_dir_path, skill_source=str(round_dir_path / "skillpack"))
@@ -2852,6 +2883,8 @@ def run_round_tune_check(
                 model_name=model_name,
                 timeout_multiplier=attempt_timeout_multiplier,
                 n_concurrent_trials=1,
+                override_memory_mb=override_memory_mb,
+                override_storage_mb=override_storage_mb,
             ),
         )
         clear_job_dir(job_dir)
@@ -3039,7 +3072,10 @@ def write_environment_notes(run_dir: Path, env_payload: dict[str, Any], args: ar
             f"- round_budget: `{args.round_budget}`",
             f"- round_timeout_multiplier: `{args.round_timeout_multiplier}`",
             f"- tune_timeout_multiplier: `{args.tune_timeout_multiplier}`",
+            f"- override_memory_mb: `{args.override_memory_mb}`",
+            f"- override_storage_mb: `{args.override_storage_mb}`",
             f"- orchestration_mode: `{args.orchestration_mode}`",
+            f"- docker_health_category: `{env_payload['docker_health_category']}`",
             f"- docker_mem_bytes: `{env_payload['docker_mem_bytes']}`",
             f"- uv_path: `{env_payload['uv_path']}`",
         ]
@@ -3083,6 +3119,8 @@ def run_refine_rounds(
     orchestration_mode: str = DEFAULT_ORCHESTRATION_MODE,
     start_round_index: int = 0,
     failure_context: dict[str, Any] | None = None,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
 ) -> list[dict[str, Any]]:
     if orchestration_mode == "c4ar":
         round_rows = existing_completed_round_rows(
@@ -3111,6 +3149,8 @@ def run_refine_rounds(
                     model_name=model_name,
                     tune_timeout_multiplier=tune_timeout_multiplier,
                     run_dir=run_dir,
+                    override_memory_mb=override_memory_mb,
+                    override_storage_mb=override_storage_mb,
                 )
                 round_row = build_round_row(round_index, current_round_dir, tune_result)
                 round_rows.append(round_row)
@@ -3139,6 +3179,8 @@ def run_refine_rounds(
                 model_name=model_name,
                 tune_timeout_multiplier=tune_timeout_multiplier,
                 run_dir=run_dir,
+                override_memory_mb=override_memory_mb,
+                override_storage_mb=override_storage_mb,
             )
             round_row = build_round_row(round_index, current_round_dir, tune_result)
             round_rows.append(round_row)
@@ -3237,6 +3279,8 @@ def run_refine_rounds(
             agent_name=agent_name,
             model_name=model_name,
             round_timeout_multiplier=round_timeout_multiplier,
+            override_memory_mb=override_memory_mb,
+            override_storage_mb=override_storage_mb,
         )
         if is_round_materialized(task=task, round_dir_path=current_round_dir, round_index=round_index):
             materialized_round_dir = current_round_dir
@@ -3285,6 +3329,8 @@ def run_refine_rounds(
             agent_name=agent_name,
             model_name=model_name,
             timeout_multiplier=tune_timeout_multiplier,
+            override_memory_mb=override_memory_mb,
+            override_storage_mb=override_storage_mb,
         )
         append_refine_ledger(paths=paths, round_index=round_index, parent_round_index=round_index - 1, tune_result=tune_result)
         round_row = build_round_row(round_index, materialized_round_dir, tune_result)
@@ -3330,6 +3376,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--round-timeout-multiplier", type=float, default=2.0)
     parser.add_argument("--tune-timeout-multiplier", type=float, default=1.0)
+    parser.add_argument("--override-memory-mb", type=int)
+    parser.add_argument("--override-storage-mb", type=int)
     parser.add_argument("--orchestration-mode", choices=("legacy", "c4ar"), default=DEFAULT_ORCHESTRATION_MODE)
     return parser
 
@@ -3437,6 +3485,8 @@ def main() -> int:
             orchestration_mode=args.orchestration_mode,
             start_round_index=start_round_index,
             failure_context=failure_context,
+            override_memory_mb=args.override_memory_mb,
+            override_storage_mb=args.override_storage_mb,
         )
         update_failure_context(failure_context, failed_stage="write_bundle_manifest")
         write_bundle_manifest(

@@ -214,13 +214,13 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             with mock.patch.object(self.module.Path, "home", return_value=codex_home):
                 with mock.patch.object(
                     self.module,
-                    "_run",
-                    return_value=self.module.subprocess.CompletedProcess(
-                        ["docker", "info"],
-                        0,
-                        stdout="17179869184\n",
-                        stderr="",
-                    ),
+                    "probe_docker_health",
+                    return_value={
+                        "healthy": True,
+                        "category": "healthy",
+                        "message": "ok",
+                        "docker_mem_bytes": 17179869184,
+                    },
                 ):
                     with mock.patch.object(self.module.shutil, "which", return_value="/usr/bin/uv"):
                         payload = self.module.check_environment(
@@ -232,6 +232,53 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertEqual(payload["benchmark_agent"], "codex")
             self.assertIsNone(payload["oauth_file"])
             self.assertEqual(payload["codex_auth_file"], str(auth_file))
+            self.assertEqual(payload["docker_health_category"], "healthy")
+
+    def test_check_environment_raises_clear_error_when_docker_unhealthy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skillsbench_root = Path(tmpdir) / "skillsbench"
+            skillsbench_root.mkdir()
+            oauth_file = Path(tmpdir) / "oauth.txt"
+            oauth_file.write_text("token\n")
+
+            with mock.patch.object(
+                self.module,
+                "probe_docker_health",
+                return_value={
+                    "healthy": False,
+                    "category": "daemon_internal_error",
+                    "message": "Docker daemon returned an internal API error",
+                    "docker_mem_bytes": 0,
+                },
+            ):
+                with self.assertRaises(RuntimeError) as ctx:
+                    self.module.check_environment(
+                        skillsbench_root,
+                        oauth_file=oauth_file,
+                        agent_name="claude-code",
+                    )
+
+            self.assertIn("Docker health check failed", str(ctx.exception))
+
+    def test_build_job_config_records_environment_overrides(self) -> None:
+        payload = self.module.build_job_config(
+            job_name="demo-job",
+            jobs_dir=Path("/tmp/jobs"),
+            task_path=Path("/tmp/task"),
+            agent_name="codex",
+            model_name="openai/gpt-5.2-codex",
+            timeout_multiplier=1.0,
+            n_concurrent_trials=1,
+            override_memory_mb=8192,
+            override_storage_mb=12288,
+        )
+        self.assertEqual(payload["environment"]["override_memory_mb"], 8192)
+        self.assertEqual(payload["environment"]["override_storage_mb"], 12288)
+
+    def test_render_refine_task_toml_uses_override_limits(self) -> None:
+        payload = self.module.render_refine_task_toml(memory_mb=8192, storage_mb=12288)
+        self.assertIn("memory_mb = 8192", payload)
+        self.assertIn("storage_mb = 12288", payload)
 
     def test_make_round_zero_artifacts_copies_c3_skillpack(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

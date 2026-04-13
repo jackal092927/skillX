@@ -273,6 +273,30 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertIn(str(expected_output_dir), command_text)
             self.assertTrue(expected_source_stub.exists())
 
+    def test_build_refine_command_forwards_environment_overrides(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            pair = next(spec for spec in pair_specs if spec["pair_id"] == "task-beta__artifact-generation")
+
+            command = self.module.build_refine_command(
+                pair,
+                materialized_root=fixture["materialized_root"],
+                oauth_file=fixture["oauth_file"],
+                round_budget=3,
+                agent="claude-code",
+                model="anthropic/claude-sonnet-4-5",
+                refine_protocol_path=fixture["protocol_path"],
+                bundle_contract_path=fixture["bundle_path"],
+                output_suffix="override-check",
+                override_memory_mb=8192,
+                override_storage_mb=12288,
+            )
+
+            command_text = " ".join(command)
+            self.assertIn("--override-memory-mb 8192", command_text)
+            self.assertIn("--override-storage-mb 12288", command_text)
+
     def test_resolve_pair_dir_supports_materialized_relative_pair_spec(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))
@@ -399,6 +423,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                             str(fixture["bundle_path"]),
                             "--output-suffix",
                             "robust-smoke",
+                            "--no-docker-health-check",
                         ]
                     )
 
@@ -431,6 +456,133 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertEqual(failure_payload["launcher_stage"], "run")
             self.assertEqual(failure_payload["returncode"], 17)
             self.assertIn("launcher_logs/robust-smoke", stdout.getvalue())
+
+    def test_main_aborts_early_when_docker_health_gate_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+
+            with mock.patch.object(
+                self.module,
+                "probe_docker_health",
+                return_value={
+                    "healthy": False,
+                    "category": "daemon_internal_error",
+                    "message": "Docker daemon returned an internal API error",
+                    "observed_at": "2026-04-13T00:00:00+00:00",
+                },
+            ):
+                with mock.patch.object(self.module.subprocess, "run") as mock_run:
+                    exit_code = self.module.main(
+                        [
+                            "2",
+                            "--task-slice",
+                            str(fixture["task_slice_path"]),
+                            "--materialized-root",
+                            str(fixture["materialized_root"]),
+                            "--oauth-file",
+                            str(fixture["oauth_file"]),
+                            "--refine-protocol-path",
+                            str(fixture["protocol_path"]),
+                            "--bundle-contract-path",
+                            str(fixture["bundle_path"]),
+                            "--output-suffix",
+                            "health-stop",
+                            "--no-docker-auto-recover",
+                        ]
+                    )
+
+            self.assertEqual(exit_code, 1)
+            mock_run.assert_not_called()
+            summary_path = fixture["materialized_root"] / "launcher_logs" / "health-stop" / "summary.json"
+            summary = json.loads(summary_path.read_text())
+            self.assertTrue(summary["aborted"])
+            self.assertEqual(summary["failed_pairs"], 1)
+            self.assertEqual(summary["completed_pairs"], 1)
+            self.assertEqual(summary["results"][0]["stage"], "docker_health_gate")
+            failure_path = (
+                fixture["materialized_root"]
+                / "pairs"
+                / "task-alpha__analytic-pipeline"
+                / "refine_run_health-stop"
+                / "run_failure.json"
+            )
+            failure_payload = json.loads(failure_path.read_text())
+            self.assertEqual(failure_payload["launcher_stage"], "docker_health_gate")
+            self.assertEqual(failure_payload["docker_health_category"], "daemon_internal_error")
+
+    def test_main_recovers_when_cleanup_restores_docker_health(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+
+            probe_reports = [
+                {
+                    "healthy": False,
+                    "category": "invalid_memory",
+                    "message": "Docker info reported MemTotal=0 bytes",
+                    "observed_at": "2026-04-13T00:00:00+00:00",
+                },
+                {
+                    "healthy": True,
+                    "category": "healthy",
+                    "message": "ok",
+                    "observed_at": "2026-04-13T00:00:05+00:00",
+                },
+                {
+                    "healthy": True,
+                    "category": "healthy",
+                    "message": "ok",
+                    "observed_at": "2026-04-13T00:00:10+00:00",
+                },
+            ]
+
+            with mock.patch.object(self.module, "probe_docker_health", side_effect=probe_reports):
+                with mock.patch.object(
+                    self.module,
+                    "attempt_docker_recovery",
+                    return_value={
+                        "attempted": True,
+                        "observed_at": "2026-04-13T00:00:03+00:00",
+                        "commands": [],
+                        "successful": True,
+                    },
+                ) as mock_recovery:
+                    with mock.patch.object(
+                        self.module.subprocess,
+                        "run",
+                        return_value=mock.Mock(returncode=0),
+                    ) as mock_run:
+                        exit_code = self.module.main(
+                            [
+                                "1",
+                                "--task-slice",
+                                str(fixture["task_slice_path"]),
+                                "--materialized-root",
+                                str(fixture["materialized_root"]),
+                                "--oauth-file",
+                                str(fixture["oauth_file"]),
+                                "--refine-protocol-path",
+                                str(fixture["protocol_path"]),
+                                "--bundle-contract-path",
+                                str(fixture["bundle_path"]),
+                                "--output-suffix",
+                                "health-recover",
+                                "--docker-auto-recover",
+                            ]
+                        )
+
+            self.assertEqual(exit_code, 0)
+            mock_recovery.assert_called_once()
+            self.assertEqual(mock_run.call_count, 2)
+            health_path = (
+                fixture["materialized_root"]
+                / "pairs"
+                / "task-alpha__analytic-pipeline"
+                / "refine_run_health-recover"
+                / "docker_health.json"
+            )
+            recovery_path = health_path.with_name("docker_recovery.json")
+            self.assertTrue(health_path.exists())
+            self.assertTrue(recovery_path.exists())
 
     def test_main_continues_when_command_build_fails_for_one_pair(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -472,6 +624,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                             str(fixture["bundle_path"]),
                             "--output-suffix",
                             "build-fail",
+                            "--no-docker-health-check",
                         ]
                     )
 
