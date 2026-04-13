@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import re
 from pathlib import Path
+import shlex
 import subprocess
 from typing import Any
 
@@ -244,6 +245,104 @@ def _scan_active_process_commands(pair_id: str | None, run_label: str) -> list[s
         ):
             matches.append(line)
     return matches
+
+
+def _scan_launcher_process_commands(run_label: str) -> list[str]:
+    proc = subprocess.run(
+        ["ps", "-axo", "command"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return []
+
+    matches: list[str] = []
+    for raw_line in proc.stdout.splitlines():
+        line = raw_line.strip()
+        if not line or "serve_round0_monitor.py" in line:
+            continue
+        if "launch_skillx_round0.py" not in line:
+            continue
+        if run_label not in line:
+            continue
+        matches.append(line)
+    return matches
+
+
+def _extract_cli_args(command: str, flag: str) -> list[str]:
+    try:
+        parts = shlex.split(command)
+    except ValueError:
+        return []
+
+    values: list[str] = []
+    for index, part in enumerate(parts):
+        if part == flag and index + 1 < len(parts):
+            values.append(parts[index + 1])
+            continue
+        prefix = f"{flag}="
+        if part.startswith(prefix):
+            values.append(part[len(prefix) :])
+    return values
+
+
+def _load_selection_from_pair_manifest(path: Path) -> tuple[int | None, list[str], list[str]]:
+    payload = _safe_read_json(path)
+    if not isinstance(payload, dict):
+        return None, [], []
+
+    selected_pair_ids = [
+        str(item)
+        for item in (payload.get("selected_pair_ids") or [])
+        if isinstance(item, str) and item
+    ]
+    selected_task_names = [
+        str(item)
+        for item in (payload.get("selected_task_names") or [])
+        if isinstance(item, str) and item
+    ]
+    pair_count_total = payload.get("pair_count_total")
+    total_pairs = int(pair_count_total) if isinstance(pair_count_total, int) else None
+    return total_pairs, selected_task_names, selected_pair_ids
+
+
+def _load_selection_from_launcher_processes(
+    launcher_log_dir: Path,
+) -> tuple[int | None, list[str], list[str] | None]:
+    commands = _scan_launcher_process_commands(launcher_log_dir.name)
+    if not commands:
+        return None, [], None
+
+    materialized_root = launcher_log_dir.parent.parent
+    pair_specs = _read_pair_specs(materialized_root)
+    pair_to_task_name = {
+        str(pair_spec.get("pair_id")): str(pair_spec.get("task_name"))
+        for pair_spec in pair_specs
+        if isinstance(pair_spec.get("pair_id"), str) and isinstance(pair_spec.get("task_name"), str)
+    }
+
+    for command in commands:
+        pair_manifest_values = _extract_cli_args(command, "--pair-manifest")
+        if pair_manifest_values:
+            total_pairs, selected_task_names, selected_pair_ids = _load_selection_from_pair_manifest(
+                Path(pair_manifest_values[-1]).expanduser()
+            )
+            if selected_pair_ids:
+                return total_pairs, selected_task_names, selected_pair_ids
+
+        explicit_pair_ids = _extract_cli_args(command, "--pair-id")
+        if explicit_pair_ids:
+            selected_task_names: list[str] = []
+            seen_tasks: set[str] = set()
+            for pair_id in explicit_pair_ids:
+                task_name = pair_to_task_name.get(pair_id)
+                if task_name and task_name not in seen_tasks:
+                    selected_task_names.append(task_name)
+                    seen_tasks.add(task_name)
+            return len(explicit_pair_ids), selected_task_names, explicit_pair_ids
+
+    return None, [], None
 
 
 def _resolve_active_run_dir_from_processes(process_commands: list[str]) -> Path | None:
@@ -493,6 +592,7 @@ def _collect_pair_rows(
     *,
     launcher_log_dir: Path,
     selected_task_names: list[str],
+    selected_pair_ids: list[str] | None,
     summary: dict[str, Any] | None,
     current_pair_id: str | None,
     active_run_dir: Path | None,
@@ -504,6 +604,11 @@ def _collect_pair_rows(
     ]
     pair_specs = _read_pair_specs(materialized_root)
     task_order = {task_name: index for index, task_name in enumerate(selected_task_names)}
+    pair_order = (
+        {pair_id: index for index, pair_id in enumerate(selected_pair_ids)}
+        if selected_pair_ids is not None
+        else {}
+    )
     schema_order = {schema_id: index for index, schema_id in enumerate(schema_ids)}
     summary_results = summary.get("results") if isinstance(summary, dict) else None
     summary_by_pair_id = {
@@ -519,7 +624,10 @@ def _collect_pair_rows(
         pair_id = pair_spec.get("pair_id")
         if not isinstance(task_name, str) or not isinstance(schema_id, str) or not isinstance(pair_id, str):
             continue
-        if task_name not in task_order:
+        if selected_pair_ids is not None:
+            if pair_id not in pair_order:
+                continue
+        elif selected_task_names and task_name not in task_order:
             continue
 
         launcher_result = summary_by_pair_id.get(pair_id)
@@ -593,7 +701,9 @@ def _collect_pair_rows(
 
     rows.sort(
         key=lambda row: (
-            task_order.get(str(row.get("task_name")), 10**6),
+            pair_order.get(str(row.get("pair_id")), 10**6)
+            if selected_pair_ids is not None
+            else task_order.get(str(row.get("task_name")), 10**6),
             schema_order.get(str(row.get("schema_id")), 10**6),
             str(row.get("pair_id")),
         )
@@ -629,6 +739,9 @@ def collect_launcher_status(
     summary = _safe_read_json(summary_path)
     events = _read_ndjson(events_path)
     parsed_total_pairs, parsed_task_names = _parse_stdout_metadata(stdout_log_path)
+    fallback_total_pairs, fallback_task_names, fallback_pair_ids = _load_selection_from_launcher_processes(
+        launcher_log_dir
+    )
     active_pair = _active_pair_from_events(events)
     process_commands = _scan_active_process_commands(
         active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
@@ -663,17 +776,25 @@ def collect_launcher_status(
         completed_pairs = int(summary.get("completed_pairs", 0))
         succeeded_pairs = int(summary.get("succeeded_pairs", 0))
         failed_pairs = int(summary.get("failed_pairs", 0))
-        selected_task_names = summary.get("selected_task_names") or parsed_task_names
-        total_pairs = max(summary_total_pairs, parsed_total_pairs or 0, completed_pairs)
+        selected_task_names = (
+            summary.get("selected_task_names") or parsed_task_names or fallback_task_names
+        )
+        total_pairs = max(
+            summary_total_pairs,
+            parsed_total_pairs or 0,
+            fallback_total_pairs or 0,
+            completed_pairs,
+        )
     else:
         succeeded_pairs = sum(1 for event in events if event.get("event") == "pair_succeeded")
         failed_pairs = sum(1 for event in events if event.get("event") == "pair_failed")
         completed_pairs = succeeded_pairs + failed_pairs
-        total_pairs = parsed_total_pairs or completed_pairs
-        selected_task_names = parsed_task_names
+        total_pairs = parsed_total_pairs or fallback_total_pairs or completed_pairs
+        selected_task_names = parsed_task_names or fallback_task_names
     pair_rows = _collect_pair_rows(
         launcher_log_dir=launcher_log_dir,
         selected_task_names=selected_task_names,
+        selected_pair_ids=fallback_pair_ids,
         summary=summary if isinstance(summary, dict) else None,
         current_pair_id=active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
         active_run_dir=active_run_dir if isinstance(active_run_dir, Path) else None,
