@@ -305,6 +305,11 @@ def _read_materialized_manifest(materialized_root: Path) -> dict[str, Any] | Non
     return payload if isinstance(payload, dict) else None
 
 
+def _read_preflight_risk_audit(launcher_log_dir: Path) -> dict[str, Any] | None:
+    payload = _safe_read_json(launcher_log_dir / "preflight_docker_risk_audit.json")
+    return payload if isinstance(payload, dict) else None
+
+
 def _resolve_pair_run_dir_for_label(pair_spec: dict[str, Any], run_label: str) -> Path:
     pair_dir = Path(str(pair_spec.get("pair_dir") or "")).resolve()
     return pair_dir / f"refine_run_{run_label}"
@@ -390,6 +395,42 @@ def _collect_pair_detail(active_run_dir: Path) -> dict[str, Any] | None:
         "current_stage": current_stage,
         "last_completed_stage": last_completed_stage,
         "round_rows": round_rows,
+    }
+
+
+def _synthesize_active_run_event(
+    *,
+    active_pair: dict[str, Any] | None,
+    active_run_status: dict[str, str],
+    pair_detail: dict[str, Any] | None,
+    observed_at: datetime | None,
+) -> dict[str, Any] | None:
+    if observed_at is None:
+        return None
+    if not isinstance(active_pair, dict):
+        return None
+
+    current_stage = pair_detail.get("current_stage") if isinstance(pair_detail, dict) else None
+    current_round_index = pair_detail.get("current_round_index") if isinstance(pair_detail, dict) else None
+    task_name = active_run_status.get("task") or active_pair.get("task_name")
+    status_value = active_run_status.get("status") or "running"
+
+    note_parts = [f"status={status_value}"]
+    if isinstance(current_round_index, int):
+        note_parts.append(f"round=R{current_round_index}")
+    if isinstance(current_stage, str) and current_stage:
+        note_parts.append(f"stage={current_stage}")
+    elif isinstance(pair_detail, dict) and pair_detail.get("round_rows"):
+        note_parts.append("stage=bootstrap")
+
+    return {
+        "event": "active_run_heartbeat",
+        "observed_at": _isoformat(observed_at),
+        "pair_id": active_pair.get("pair_id"),
+        "schema_id": active_pair.get("schema_id"),
+        "task_name": task_name,
+        "status": status_value,
+        "note": ", ".join(note_parts),
     }
 
 
@@ -637,6 +678,7 @@ def collect_launcher_status(
         current_pair_id=active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
         active_run_dir=active_run_dir if isinstance(active_run_dir, Path) else None,
     )
+    preflight_risk_audit = _read_preflight_risk_audit(launcher_log_dir)
     total_pairs = max(total_pairs, len(pair_rows))
 
     issue_pairs = sum(1 for row in pair_rows if row.get("pair_has_issues"))
@@ -651,6 +693,15 @@ def collect_launcher_status(
         latest_activity_dt is None or active_run_activity_dt > latest_activity_dt
     ):
         latest_activity_dt = active_run_activity_dt
+        synthetic_event = _synthesize_active_run_event(
+            active_pair=active_pair if isinstance(active_pair, dict) else None,
+            active_run_status=active_run_status,
+            pair_detail=pair_detail,
+            observed_at=active_run_activity_dt,
+        )
+        if synthetic_event is not None:
+            latest_event = synthetic_event
+            latest_event_at_dt = active_run_activity_dt
 
     if total_pairs > 0 and completed_pairs >= total_pairs:
         if failed_pairs:
@@ -680,6 +731,7 @@ def collect_launcher_status(
         "progress_percent": progress_percent,
         "selected_task_names": selected_task_names,
         "pair_rows": pair_rows,
+        "preflight_risk_audit": preflight_risk_audit,
         "current_pair_id": active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
         "current_pair_index": active_pair.get("index") if isinstance(active_pair, dict) else None,
         "active_run_dir": str(active_run_dir) if isinstance(active_run_dir, Path) else None,
@@ -792,6 +844,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     pair_detail = status.get("pair_detail") or {}
     round_rows = pair_detail.get("round_rows") or []
     pair_rows = status.get("pair_rows") or []
+    preflight_risk_audit = status.get("preflight_risk_audit") or {}
     observed_at = str(status.get("observed_at") or "")
     latest_event_type = latest_event.get("event") or "none"
     latest_event_at = status.get("latest_event_at") or "none"
@@ -823,6 +876,44 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             "</dl>"
             "</section>"
         )
+
+    preflight_block = ""
+    if isinstance(preflight_risk_audit, dict) and preflight_risk_audit:
+        audit_pairs = preflight_risk_audit.get("pairs") or []
+        affected_pairs = int(preflight_risk_audit.get("affected_pairs") or 0)
+        if affected_pairs:
+            rows = []
+            for pair in audit_pairs:
+                if not isinstance(pair, dict) or not pair.get("risk_count"):
+                    continue
+                summaries = "; ".join(
+                    html.escape(str(item.get("summary", "")))
+                    for item in (pair.get("risks") or [])
+                    if isinstance(item, dict)
+                )
+                rows.append(
+                    "<tr>"
+                    f"<td>{html.escape(str(pair.get('pair_id', '')))}</td>"
+                    f"<td><span class=\"{_status_pill_class(str(pair.get('risk_level', '')))}\">{html.escape(str(pair.get('risk_level', '')))}</span></td>"
+                    f"<td class=\"num\">{html.escape(str(pair.get('risk_count', '')))}</td>"
+                    f"<td>{summaries}</td>"
+                    "</tr>"
+                )
+            rows_html = "\n".join(rows) or '<tr><td colspan="4">No preflight risks detected.</td></tr>'
+            preflight_block = (
+                '<section class="panel">'
+                "<h2>Preflight Risks</h2>"
+                "<dl>"
+                f"<dt>Docker server</dt><dd>{html.escape(str(preflight_risk_audit.get('docker_server_os') or 'unknown'))}/{html.escape(str(preflight_risk_audit.get('docker_server_arch') or 'unknown'))}</dd>"
+                f"<dt>Affected pairs</dt><dd>{html.escape(str(preflight_risk_audit.get('affected_pairs') or 0))}</dd>"
+                f"<dt>High / Medium / Low</dt><dd>{html.escape(str(preflight_risk_audit.get('high_risk_pairs') or 0))} / {html.escape(str(preflight_risk_audit.get('medium_risk_pairs') or 0))} / {html.escape(str(preflight_risk_audit.get('low_risk_pairs') or 0))}</dd>"
+                "</dl>"
+                '<div class="table-wrap"><table>'
+                '<thead><tr><th>Pair</th><th>Level</th><th class="num">Count</th><th>Notes</th></tr></thead>'
+                f"<tbody>{rows_html}</tbody>"
+                "</table></div>"
+                "</section>"
+            )
 
     pair_detail_block = ""
     if pair_detail:
@@ -1356,8 +1447,9 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
       </section>
     </section>
 
-    {failure_block}
-    {pair_detail_block}
+        {failure_block}
+        {preflight_block}
+        {pair_detail_block}
 
     <section class="panel">
       <h2>Task / Pair Results</h2>
