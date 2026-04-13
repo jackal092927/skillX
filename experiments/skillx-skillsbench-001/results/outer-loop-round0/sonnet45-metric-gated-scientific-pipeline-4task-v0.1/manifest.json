@@ -1,0 +1,31 @@
+{
+  "artifact_type": "skillx_round0_materialization_manifest",
+  "run_id": "sonnet45-metric-gated-scientific-pipeline-4task-v0.1",
+  "round_id": "pilot-round-0",
+  "render_template_path": "docs/plans/skillx/skillx-render-template-frozen-v0.1.md",
+  "task_slice_path": "experiments/skillx-skillsbench-001/results/official-task-results/metric-gated-scientific-pipeline-strong-candidates-v0.1.json",
+  "prompt_bank_path": "docs/plans/skillx/skillx-metric-gated-scientific-pipeline-prompt-bank-v0.1.json",
+  "inventory_path": "docs/plans/skillx/skillsbench-task-cluster-inputs-v0.1.jsonl",
+  "official_results_path": "experiments/skillx-skillsbench-001/results/official-task-results/official_task_results.jsonl",
+  "skillsbench_root": "/Users/Jackal/iWorld/projects/skillsbench-src",
+  "task_count": 4,
+  "schema_count": 1,
+  "pair_count": 4,
+  "round_budget": 3,
+  "agent": "claude-code",
+  "model": "anthropic/claude-sonnet-4-5",
+  "schema_ids": [
+    "metric-gated-scientific-pipeline"
+  ],
+  "task_names": [
+    "earthquake-phase-association",
+    "seismic-phase-picking",
+    "glm-lake-mendota",
+    "exoplanet-detection-period"
+  ],
+  "path_strategy": {
+    "pair_dir": "materialized_root_relative",
+    "rendered_meta_skill_path": "materialized_root_relative",
+    "refine_command_cwd": "materialized_root"
+  }
+}

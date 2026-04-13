@@ -1,0 +1,44 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "title": "Status",
+      "type": "string"
+    },
+    "refine_plan_json_path": {
+      "title": "Refine Plan Json Path",
+      "type": "string"
+    },
+    "refine_plan_markdown_path": {
+      "title": "Refine Plan Markdown Path",
+      "type": "string"
+    },
+    "next_skillpack_manifest_json_path": {
+      "title": "Next Skillpack Manifest Json Path",
+      "type": "string"
+    },
+    "round_decision_json_path": {
+      "title": "Round Decision Json Path",
+      "type": "string"
+    },
+    "next_skillpack_dir": {
+      "title": "Next Skillpack Dir",
+      "type": "string"
+    },
+    "notes": {
+      "title": "Notes",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "refine_plan_json_path",
+    "refine_plan_markdown_path",
+    "next_skillpack_manifest_json_path",
+    "round_decision_json_path",
+    "next_skillpack_dir",
+    "notes"
+  ],
+  "title": "RoleBFinalResponse",
+  "type": "object"
+}

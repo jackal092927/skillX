@@ -1,0 +1,16 @@
+{
+  "task_id": "earthquake-phase-association",
+  "round_index": 0,
+  "role": "role_b",
+  "model_name": "gpt-5.4",
+  "skillpack_dir": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-0/role_b/next_skillpack",
+  "skill_files": [
+    "skills/gamma-phase-associator/SKILL.md",
+    "skills/obspy-data-api/SKILL.md",
+    "skills/seisbench-model-api/SKILL.md",
+    "skills/seismic-picker-selection/SKILL.md"
+  ],
+  "prompt_invariant": true,
+  "derived_from_round": 0,
+  "bundle_path": null
+}

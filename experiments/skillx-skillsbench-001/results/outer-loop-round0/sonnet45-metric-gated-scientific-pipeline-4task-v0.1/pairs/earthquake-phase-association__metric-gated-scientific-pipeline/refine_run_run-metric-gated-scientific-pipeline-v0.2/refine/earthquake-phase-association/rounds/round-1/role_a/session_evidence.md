@@ -1,0 +1,48 @@
+# Session-Derived Evidence
+
+- task_id: `earthquake-phase-association`
+- round_index: `1`
+- role: `role_a`
+- model_name: `claude-sonnet-4-5-20250929`
+- dominant_failure_pattern: `recoverable runtime API mismatch followed by metric-blind completion (format checks without quality gating)`
+- source_log_paths: `/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt`
+
+## Wasted Loop Signals
+
+- After backgrounding the pipeline, monitoring fell into repeated `sleep + cat` polling (5s, 30s, 60s) instead of one bounded wait.
+- A `tail -f` monitor was launched and then superseded by manual polling, creating duplicate low-signal monitoring turns.
+
+## Tool Misuse Signals
+
+- Redundant station inspection used both `Read` and `head -20` before any downstream transformation.
+- Dependencies were installed unconditionally in-session (`pip install ...`) rather than guarded by environment checks.
+
+## Critical Turns
+
+- First full run failed with `TypeError: object of type 'ClassifyOutput' has no len()` during pick counting.
+- Script was patched to extract `classify_output.picks`, which unblocked the run.
+- Run completed with 222 events and was accepted after format/stat checks, without metric-grounded validation.
+
+## Skill Misguidance Signals
+
+- Loaded skill guidance did not enforce the `PhaseNet.classify()` return-type contract, allowing a predictable first-run API misuse.
+- No explicit skill-level guardrail required post-run quality gating (e.g., evaluator call or precision proxy) before success declaration.
+
+## Recommended Edit Targets
+
+- seisbench-model-api/SKILL.md: add a canonical `classify_output = model.classify(...); picks = classify_output.picks` snippet and warn that `ClassifyOutput` is not list-like.
+- metric-gated-scientific-pipeline skill: require a quality gate after first successful run (evaluator or explicit precision proxy), not only schema/time checks.
+- earthquake-phase-association guidance: add a post-association sanity checklist (event-count and picks-per-event bounds) and require one retune pass when out of range.
+
+## Evidence Refs
+
+- /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt:14
+- /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt:32
+- /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt:35
+- /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt:43
+- /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt:55
+- /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt:58
+- /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt:66
+- /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check/earthquake-phase-association-round-1-c4-tune/c4-earthquake-phase-association-__7xqoVQb/agent/claude-code.txt:69
+
+- observed_at: `2026-04-13T07:09:47.491594+00:00`

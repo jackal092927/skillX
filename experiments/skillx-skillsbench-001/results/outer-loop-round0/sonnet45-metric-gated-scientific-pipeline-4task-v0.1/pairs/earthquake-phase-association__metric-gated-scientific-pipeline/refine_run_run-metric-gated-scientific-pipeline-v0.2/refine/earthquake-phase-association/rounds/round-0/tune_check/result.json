@@ -1,0 +1,10 @@
+{
+  "task_id": "earthquake-phase-association",
+  "condition": "c4",
+  "job_dir": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune",
+  "result_path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/result.json",
+  "reward": 1.0,
+  "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+  "exception_stats": {},
+  "skill_source": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-0/skillpack"
+}

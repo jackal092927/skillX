@@ -1,0 +1,36 @@
+{
+  "task_id": "earthquake-phase-association",
+  "round_index": 0,
+  "role": "role_b",
+  "model_name": "gpt-5.4",
+  "summary": "Expose the full GaMMA BGMM config contract up front so executors stop doing serial missing-key reruns.",
+  "atomic_operations": [
+    {
+      "op_id": "op-1",
+      "action_type": "tighten_block",
+      "target_id": "skills/gamma-phase-associator/SKILL.md#association-preflight",
+      "rationale": "Round 0 wasted two retries because the skill did not force a one-pass audit of the required station columns and config keys before rerun.",
+      "expected_effect": "Executors check `oversample_factor` plus `x(km)`/`y(km)`/`z(km)` in one pass after the first GaMMA `KeyError` instead of patching one key per retry.",
+      "risk": "A stricter preflight may add a small amount of up-front checklist overhead.",
+      "status": "applied"
+    },
+    {
+      "op_id": "op-2",
+      "action_type": "rewrite_block",
+      "target_id": "skills/gamma-phase-associator/SKILL.md#config-required-keys",
+      "rationale": "The current required-keys table lists `oversample_factor` but does not surface `config[\"x(km)\"]`, `config[\"y(km)\"]`, and `config[\"z(km)\"]`, which caused the second runtime failure.",
+      "expected_effect": "The documented config contract now matches the key set the executor needed to reach the first successful BGMM run.",
+      "risk": "The table is slightly denser because the config bounds and station-coordinate names now coexist in the same section.",
+      "status": "applied"
+    },
+    {
+      "op_id": "op-3",
+      "action_type": "rewrite_block",
+      "target_id": "skills/gamma-phase-associator/SKILL.md#minimal-bgmm-config",
+      "rationale": "The executor eventually succeeded only after assembling a complete BGMM config; the skill lacked a single copyable snippet that included all of those keys together.",
+      "expected_effect": "Executors can paste a known-good `use_amplitude=False` BGMM starter config without omitting `oversample_factor` or the `x(km)`/`y(km)`/`z(km)` bounds.",
+      "risk": "Users with materially different tuning targets may still need to adjust thresholds after the first successful run.",
+      "status": "applied"
+    }
+  ]
+}

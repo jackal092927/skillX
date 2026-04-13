@@ -1,0 +1,18 @@
+{
+  "firstStartTime": "2026-04-13T06:49:36.211Z",
+  "opusProMigrationComplete": true,
+  "sonnet1m45MigrationComplete": true,
+  "migrationVersion": 11,
+  "userID": "6f8c2e839a11db8f3bb948b9d2c4c5b277d23ee7bf22714b2e932054f804a68e",
+  "cachedExtraUsageDisabledReason": "org_level_disabled_until",
+  "skillUsage": {
+    "seisbench-model-api": {
+      "usageCount": 1,
+      "lastUsedAt": 1776062997520
+    },
+    "gamma-phase-associator": {
+      "usageCount": 1,
+      "lastUsedAt": 1776062997528
+    }
+  }
+}

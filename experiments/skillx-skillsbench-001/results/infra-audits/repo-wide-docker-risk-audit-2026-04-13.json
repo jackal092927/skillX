@@ -1,0 +1,2456 @@
+{
+  "affected_pairs": 66,
+  "docker_health_observed_at": "2026-04-13T07:15:58.643783+00:00",
+  "docker_mem_bytes": 16748032000,
+  "docker_server_arch": "arm64",
+  "docker_server_os": "linux",
+  "high_risk_pairs": 0,
+  "low_risk_pairs": 54,
+  "medium_risk_pairs": 12,
+  "observed_at": "2026-04-13T07:15:58.692329+00:00",
+  "pairs": [
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/3d-scan-calc/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "3d-scan-calc__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/3d-scan-calc",
+      "task_memory_mb": 4096,
+      "task_name": "3d-scan-calc",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/3d-scan-calc/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/adaptive-cruise-control/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "adaptive-cruise-control__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/adaptive-cruise-control",
+      "task_memory_mb": 2048,
+      "task_name": "adaptive-cruise-control",
+      "task_storage_mb": 5120,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/adaptive-cruise-control/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/azure-bgp-oscillation-route-leak/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "azure-bgp-oscillation-route-leak__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/azure-bgp-oscillation-route-leak",
+      "task_memory_mb": 2048,
+      "task_name": "azure-bgp-oscillation-route-leak",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/azure-bgp-oscillation-route-leak/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/citation-check/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "citation-check__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/citation-check",
+      "task_memory_mb": 2048,
+      "task_name": "citation-check",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/citation-check/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/civ6-adjacency-optimizer/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "civ6-adjacency-optimizer__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/civ6-adjacency-optimizer",
+      "task_memory_mb": 2048,
+      "task_name": "civ6-adjacency-optimizer",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/civ6-adjacency-optimizer/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/court-form-filling/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "court-form-filling__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/court-form-filling",
+      "task_memory_mb": 4096,
+      "task_name": "court-form-filling",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/court-form-filling/task.toml"
+    },
+    {
+      "base_image": "python:3.12-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/crystallographic-wyckoff-position-analysis/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "crystallographic-wyckoff-position-analysis__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/crystallographic-wyckoff-position-analysis",
+      "task_memory_mb": 4096,
+      "task_name": "crystallographic-wyckoff-position-analysis",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/crystallographic-wyckoff-position-analysis/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dapt-intrusion-detection/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "dapt-intrusion-detection__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dapt-intrusion-detection",
+      "task_memory_mb": 2048,
+      "task_name": "dapt-intrusion-detection",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dapt-intrusion-detection/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/data-to-d3/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "data-to-d3__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/data-to-d3",
+      "task_memory_mb": 4096,
+      "task_name": "data-to-d3",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/data-to-d3/task.toml"
+    },
+    {
+      "base_image": "python:3.12.8-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dialogue-parser/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "dialogue-parser__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dialogue-parser",
+      "task_memory_mb": 4096,
+      "task_name": "dialogue-parser",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dialogue-parser/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 1200,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dynamic-object-aware-egomotion/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "dynamic-object-aware-egomotion__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dynamic-object-aware-egomotion",
+      "task_memory_mb": 4096,
+      "task_name": "dynamic-object-aware-egomotion",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/dynamic-object-aware-egomotion/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [
+        "obspy",
+        "seisbench"
+      ],
+      "pair_id": "earthquake-phase-association__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 8192
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 8192 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association",
+      "task_memory_mb": 8192,
+      "task_name": "earthquake-phase-association",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association/task.toml"
+    },
+    {
+      "base_image": "python:3.10-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-plate-calculation/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "earthquake-plate-calculation__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-plate-calculation",
+      "task_memory_mb": 4096,
+      "task_name": "earthquake-plate-calculation",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-plate-calculation/task.toml"
+    },
+    {
+      "base_image": "python:3.10-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/econ-detrending-correlation/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "econ-detrending-correlation__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/econ-detrending-correlation",
+      "task_memory_mb": 4096,
+      "task_name": "econ-detrending-correlation",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/econ-detrending-correlation/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/energy-ac-optimal-power-flow/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "energy-ac-optimal-power-flow__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 8192
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 8192 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/energy-ac-optimal-power-flow",
+      "task_memory_mb": 8192,
+      "task_name": "energy-ac-optimal-power-flow",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/energy-ac-optimal-power-flow/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/energy-market-pricing/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "energy-market-pricing__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/energy-market-pricing",
+      "task_memory_mb": 4096,
+      "task_name": "energy-market-pricing",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/energy-market-pricing/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/enterprise-information-search/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "enterprise-information-search__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/enterprise-information-search",
+      "task_memory_mb": 2048,
+      "task_name": "enterprise-information-search",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/enterprise-information-search/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exceltable-in-ppt/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "exceltable-in-ppt__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exceltable-in-ppt",
+      "task_memory_mb": 4096,
+      "task_name": "exceltable-in-ppt",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exceltable-in-ppt/task.toml"
+    },
+    {
+      "base_image": "python:3.9.19-slim",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exoplanet-detection-period/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "exoplanet-detection-period__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exoplanet-detection-period",
+      "task_memory_mb": 2048,
+      "task_name": "exoplanet-detection-period",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exoplanet-detection-period/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/financial-modeling-qa/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "financial-modeling-qa__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/financial-modeling-qa",
+      "task_memory_mb": 2048,
+      "task_name": "financial-modeling-qa",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/financial-modeling-qa/task.toml"
+    },
+    {
+      "base_image": "python:3.12.9-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/find-topk-similiar-chemicals/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "find-topk-similiar-chemicals__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/find-topk-similiar-chemicals",
+      "task_memory_mb": 4096,
+      "task_name": "find-topk-similiar-chemicals",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/find-topk-similiar-chemicals/task.toml"
+    },
+    {
+      "base_image": "bugswarm/cached-images:AgentOps-AI-agentops-24579293289",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-build-agentops/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "fix-build-agentops__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-build-agentops",
+      "task_memory_mb": 4096,
+      "task_name": "fix-build-agentops",
+      "task_storage_mb": 8192,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-build-agentops/task.toml"
+    },
+    {
+      "base_image": "bugswarm/cached-images:google-auto-101506036 AS auto",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-build-google-auto/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "fix-build-google-auto__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-build-google-auto",
+      "task_memory_mb": 4096,
+      "task_name": "fix-build-google-auto",
+      "task_storage_mb": 8192,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-build-google-auto/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 3600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-druid-loophole-cve/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "fix-druid-loophole-cve__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 24576
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 24576 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-druid-loophole-cve",
+      "task_memory_mb": 24576,
+      "task_name": "fix-druid-loophole-cve",
+      "task_storage_mb": 20480,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-druid-loophole-cve/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-erlang-ssh-cve/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "fix-erlang-ssh-cve__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-erlang-ssh-cve",
+      "task_memory_mb": 4096,
+      "task_name": "fix-erlang-ssh-cve",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-erlang-ssh-cve/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-visual-stability/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "fix-visual-stability__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-visual-stability",
+      "task_memory_mb": 4096,
+      "task_name": "fix-visual-stability",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/fix-visual-stability/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/flink-query/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "flink-query__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/flink-query",
+      "task_memory_mb": 4096,
+      "task_name": "flink-query",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/flink-query/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/flood-risk-analysis/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "flood-risk-analysis__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/flood-risk-analysis",
+      "task_memory_mb": 4096,
+      "task_name": "flood-risk-analysis",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/flood-risk-analysis/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/gh-repo-analytics/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "gh-repo-analytics__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/gh-repo-analytics",
+      "task_memory_mb": 4096,
+      "task_name": "gh-repo-analytics",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/gh-repo-analytics/task.toml"
+    },
+    {
+      "base_image": "--platform=linux/amd64 ubuntu:20.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "glm-lake-mendota__repo-wide-docker-audit",
+      "pinned_amd64": true,
+      "python_slim_base": false,
+      "risk_count": 2,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "amd64_platform_pin",
+          "evidence": {
+            "base_image": "--platform=linux/amd64 ubuntu:20.04",
+            "docker_server_arch": "arm64"
+          },
+          "severity": "medium",
+          "summary": "Dockerfile pins linux/amd64 while Docker server arch is arm64; current Docker may rely on cross-architecture emulation"
+        },
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota",
+      "task_memory_mb": 4096,
+      "task_name": "glm-lake-mendota",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota/task.toml"
+    },
+    {
+      "base_image": "python:3.9.19-slim",
+      "build_timeout_sec": 1800,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/gravitational-wave-detection/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "gravitational-wave-detection__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/gravitational-wave-detection",
+      "task_memory_mb": 4096,
+      "task_name": "gravitational-wave-detection",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/gravitational-wave-detection/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/grid-dispatch-operator/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "grid-dispatch-operator__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/grid-dispatch-operator",
+      "task_memory_mb": 2048,
+      "task_name": "grid-dispatch-operator",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/grid-dispatch-operator/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/hvac-control/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "hvac-control__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/hvac-control",
+      "task_memory_mb": 2048,
+      "task_name": "hvac-control",
+      "task_storage_mb": 5120,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/hvac-control/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/invoice-fraud-detection/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "invoice-fraud-detection__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/invoice-fraud-detection",
+      "task_memory_mb": 4096,
+      "task_name": "invoice-fraud-detection",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/invoice-fraud-detection/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/jax-computing-basics/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "jax-computing-basics__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/jax-computing-basics",
+      "task_memory_mb": 2048,
+      "task_name": "jax-computing-basics",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/jax-computing-basics/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/jpg-ocr-stat/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "jpg-ocr-stat__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/jpg-ocr-stat",
+      "task_memory_mb": 4096,
+      "task_name": "jpg-ocr-stat",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/jpg-ocr-stat/task.toml"
+    },
+    {
+      "base_image": "python:3.9.19-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lab-unit-harmonization/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "lab-unit-harmonization__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lab-unit-harmonization",
+      "task_memory_mb": 4096,
+      "task_name": "lab-unit-harmonization",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lab-unit-harmonization/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 300,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lake-warming-attribution/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "lake-warming-attribution__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lake-warming-attribution",
+      "task_memory_mb": 4096,
+      "task_name": "lake-warming-attribution",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lake-warming-attribution/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/latex-formula-extraction/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "latex-formula-extraction__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 10240
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 10240 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/latex-formula-extraction",
+      "task_memory_mb": 10240,
+      "task_name": "latex-formula-extraction",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/latex-formula-extraction/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lean4-proof/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "lean4-proof__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lean4-proof",
+      "task_memory_mb": 4096,
+      "task_name": "lean4-proof",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/lean4-proof/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-codebook-normalization/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "manufacturing-codebook-normalization__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-codebook-normalization",
+      "task_memory_mb": 4096,
+      "task_name": "manufacturing-codebook-normalization",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-codebook-normalization/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-equipment-maintenance/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "manufacturing-equipment-maintenance__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-equipment-maintenance",
+      "task_memory_mb": 4096,
+      "task_name": "manufacturing-equipment-maintenance",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-equipment-maintenance/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-fjsp-optimization/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "manufacturing-fjsp-optimization__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-fjsp-optimization",
+      "task_memory_mb": 4096,
+      "task_name": "manufacturing-fjsp-optimization",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/manufacturing-fjsp-optimization/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mario-coin-counting/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "mario-coin-counting__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mario-coin-counting",
+      "task_memory_mb": 4096,
+      "task_name": "mario-coin-counting",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mario-coin-counting/task.toml"
+    },
+    {
+      "base_image": "python:3.9.19-slim",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mars-clouds-clustering/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "mars-clouds-clustering__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mars-clouds-clustering",
+      "task_memory_mb": 4096,
+      "task_name": "mars-clouds-clustering",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mars-clouds-clustering/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mhc-layer-impl/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "mhc-layer-impl__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mhc-layer-impl",
+      "task_memory_mb": 4096,
+      "task_name": "mhc-layer-impl",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/mhc-layer-impl/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 1200,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/multilingual-video-dubbing/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "multilingual-video-dubbing__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/multilingual-video-dubbing",
+      "task_memory_mb": 4096,
+      "task_name": "multilingual-video-dubbing",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/multilingual-video-dubbing/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/offer-letter-generator/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "offer-letter-generator__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/offer-letter-generator",
+      "task_memory_mb": 4096,
+      "task_name": "offer-letter-generator",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/offer-letter-generator/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/organize-messy-files/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "organize-messy-files__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/organize-messy-files",
+      "task_memory_mb": 4096,
+      "task_name": "organize-messy-files",
+      "task_storage_mb": 20480,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/organize-messy-files/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 300,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/paper-anonymizer/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "paper-anonymizer__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/paper-anonymizer",
+      "task_memory_mb": 4096,
+      "task_name": "paper-anonymizer",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/paper-anonymizer/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/parallel-tfidf-search/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "parallel-tfidf-search__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/parallel-tfidf-search",
+      "task_memory_mb": 4096,
+      "task_name": "parallel-tfidf-search",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/parallel-tfidf-search/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pddl-tpp-planning/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "pddl-tpp-planning__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pddl-tpp-planning",
+      "task_memory_mb": 2048,
+      "task_name": "pddl-tpp-planning",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pddl-tpp-planning/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pdf-excel-diff/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "pdf-excel-diff__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pdf-excel-diff",
+      "task_memory_mb": 4096,
+      "task_name": "pdf-excel-diff",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pdf-excel-diff/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pedestrian-traffic-counting/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "pedestrian-traffic-counting__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pedestrian-traffic-counting",
+      "task_memory_mb": 4096,
+      "task_name": "pedestrian-traffic-counting",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pedestrian-traffic-counting/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 300,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pg-essay-to-audiobook/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "pg-essay-to-audiobook__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pg-essay-to-audiobook",
+      "task_memory_mb": 4096,
+      "task_name": "pg-essay-to-audiobook",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pg-essay-to-audiobook/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/powerlifting-coef-calc/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "powerlifting-coef-calc__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/powerlifting-coef-calc",
+      "task_memory_mb": 2048,
+      "task_name": "powerlifting-coef-calc",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/powerlifting-coef-calc/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pptx-reference-formatting/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "pptx-reference-formatting__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pptx-reference-formatting",
+      "task_memory_mb": 2048,
+      "task_name": "pptx-reference-formatting",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/pptx-reference-formatting/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/protein-expression-analysis/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "protein-expression-analysis__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 8192
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 8192 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/protein-expression-analysis",
+      "task_memory_mb": 8192,
+      "task_name": "protein-expression-analysis",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/protein-expression-analysis/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/python-scala-translation/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "python-scala-translation__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/python-scala-translation",
+      "task_memory_mb": 2048,
+      "task_name": "python-scala-translation",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/python-scala-translation/task.toml"
+    },
+    {
+      "base_image": "python:3.10-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/quantum-numerical-simulation/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "quantum-numerical-simulation__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 10240
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 10240 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/quantum-numerical-simulation",
+      "task_memory_mb": 10240,
+      "task_name": "quantum-numerical-simulation",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/quantum-numerical-simulation/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/r2r-mpc-control/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "r2r-mpc-control__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/r2r-mpc-control",
+      "task_memory_mb": 4096,
+      "task_name": "r2r-mpc-control",
+      "task_storage_mb": 5120,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/r2r-mpc-control/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/react-performance-debugging/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "react-performance-debugging__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/react-performance-debugging",
+      "task_memory_mb": 4096,
+      "task_name": "react-performance-debugging",
+      "task_storage_mb": null,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/react-performance-debugging/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/reserves-at-risk-calc/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "reserves-at-risk-calc__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/reserves-at-risk-calc",
+      "task_memory_mb": 2048,
+      "task_name": "reserves-at-risk-calc",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/reserves-at-risk-calc/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/sales-pivot-analysis/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "sales-pivot-analysis__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/sales-pivot-analysis",
+      "task_memory_mb": 4096,
+      "task_name": "sales-pivot-analysis",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/sales-pivot-analysis/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/scheduling-email-assistant/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "scheduling-email-assistant__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/scheduling-email-assistant",
+      "task_memory_mb": 4096,
+      "task_name": "scheduling-email-assistant",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/scheduling-email-assistant/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/sec-financial-report/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "sec-financial-report__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/sec-financial-report",
+      "task_memory_mb": 4096,
+      "task_name": "sec-financial-report",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/sec-financial-report/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [
+        "obspy",
+        "seisbench"
+      ],
+      "pair_id": "seismic-phase-picking__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking",
+      "task_memory_mb": 2048,
+      "task_name": "seismic-phase-picking",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking/task.toml"
+    },
+    {
+      "base_image": "gcr.io/oss-fuzz-base/base-builder-python",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/setup-fuzzing-py/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "setup-fuzzing-py__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/setup-fuzzing-py",
+      "task_memory_mb": 2048,
+      "task_name": "setup-fuzzing-py",
+      "task_storage_mb": 5120,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/setup-fuzzing-py/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/shock-analysis-demand/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "shock-analysis-demand__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/shock-analysis-demand",
+      "task_memory_mb": 4096,
+      "task_name": "shock-analysis-demand",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/shock-analysis-demand/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/shock-analysis-supply/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "shock-analysis-supply__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/shock-analysis-supply",
+      "task_memory_mb": 4096,
+      "task_name": "shock-analysis-supply",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/shock-analysis-supply/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/simpo-code-reproduction/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "simpo-code-reproduction__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/simpo-code-reproduction",
+      "task_memory_mb": 2048,
+      "task_name": "simpo-code-reproduction",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/simpo-code-reproduction/task.toml"
+    },
+    {
+      "base_image": "python:3.10-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/software-dependency-audit/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "software-dependency-audit__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/software-dependency-audit",
+      "task_memory_mb": 4096,
+      "task_name": "software-dependency-audit",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/software-dependency-audit/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/speaker-diarization-subtitles/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "speaker-diarization-subtitles__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 8192
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 8192 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/speaker-diarization-subtitles",
+      "task_memory_mb": 8192,
+      "task_name": "speaker-diarization-subtitles",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/speaker-diarization-subtitles/task.toml"
+    },
+    {
+      "base_image": "ubuntu:22.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/spring-boot-jakarta-migration/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "spring-boot-jakarta-migration__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/spring-boot-jakarta-migration",
+      "task_memory_mb": 4096,
+      "task_name": "spring-boot-jakarta-migration",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/spring-boot-jakarta-migration/task.toml"
+    },
+    {
+      "base_image": "jasonish/suricata:7.0.11",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/suricata-custom-exfil/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "suricata-custom-exfil__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/suricata-custom-exfil",
+      "task_memory_mb": 4096,
+      "task_name": "suricata-custom-exfil",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/suricata-custom-exfil/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 1200,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/syzkaller-ppdev-syzlang/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "syzkaller-ppdev-syzlang__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 8192
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 8192 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/syzkaller-ppdev-syzlang",
+      "task_memory_mb": 8192,
+      "task_name": "syzkaller-ppdev-syzlang",
+      "task_storage_mb": 20480,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/syzkaller-ppdev-syzlang/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 200,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/taxonomy-tree-merge/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "taxonomy-tree-merge__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 16384
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 16384 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/taxonomy-tree-merge",
+      "task_memory_mb": 16384,
+      "task_name": "taxonomy-tree-merge",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/taxonomy-tree-merge/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/threejs-structure-parser/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "threejs-structure-parser__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/threejs-structure-parser",
+      "task_memory_mb": 4096,
+      "task_name": "threejs-structure-parser",
+      "task_storage_mb": 8192,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/threejs-structure-parser/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/threejs-to-obj/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "threejs-to-obj__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/threejs-to-obj",
+      "task_memory_mb": 4096,
+      "task_name": "threejs-to-obj",
+      "task_storage_mb": 8192,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/threejs-to-obj/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/travel-planning/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "travel-planning__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/travel-planning",
+      "task_memory_mb": 4096,
+      "task_name": "travel-planning",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/travel-planning/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 200,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/trend-anomaly-causal-inference/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "trend-anomaly-causal-inference__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 8192
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 8192 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/trend-anomaly-causal-inference",
+      "task_memory_mb": 8192,
+      "task_name": "trend-anomaly-causal-inference",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/trend-anomaly-causal-inference/task.toml"
+    },
+    {
+      "base_image": "python:3.12-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-filler-word-remover/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "video-filler-word-remover__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-filler-word-remover",
+      "task_memory_mb": 4096,
+      "task_name": "video-filler-word-remover",
+      "task_storage_mb": 15360,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-filler-word-remover/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-silence-remover/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "video-silence-remover__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-silence-remover",
+      "task_memory_mb": 4096,
+      "task_name": "video-silence-remover",
+      "task_storage_mb": 1024,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-silence-remover/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 1200,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-tutorial-indexer/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "video-tutorial-indexer__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 8192
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 8192 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-tutorial-indexer",
+      "task_memory_mb": 8192,
+      "task_name": "video-tutorial-indexer",
+      "task_storage_mb": 20480,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/video-tutorial-indexer/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/virtualhome-agent-planning/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "virtualhome-agent-planning__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/virtualhome-agent-planning",
+      "task_memory_mb": 2048,
+      "task_name": "virtualhome-agent-planning",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/virtualhome-agent-planning/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/weighted-gdp-calc/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "weighted-gdp-calc__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 1,
+      "risk_level": "low",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/weighted-gdp-calc",
+      "task_memory_mb": 4096,
+      "task_name": "weighted-gdp-calc",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/weighted-gdp-calc/task.toml"
+    },
+    {
+      "base_image": "ubuntu:24.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/xlsx-recover-data/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "xlsx-recover-data__repo-wide-docker-audit",
+      "pinned_amd64": false,
+      "python_slim_base": false,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "repo-wide-docker-audit",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/xlsx-recover-data",
+      "task_memory_mb": 2048,
+      "task_name": "xlsx-recover-data",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/xlsx-recover-data/task.toml"
+    }
+  ],
+  "required_memory_bytes": 16000000000,
+  "risk_counts": {
+    "high": 0,
+    "low": 55,
+    "medium": 12
+  },
+  "total_pairs": 87
+}

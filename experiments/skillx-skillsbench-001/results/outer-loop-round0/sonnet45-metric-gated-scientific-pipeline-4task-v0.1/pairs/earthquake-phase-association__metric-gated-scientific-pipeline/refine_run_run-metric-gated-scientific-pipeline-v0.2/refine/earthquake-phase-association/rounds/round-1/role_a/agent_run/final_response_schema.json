@@ -1,0 +1,29 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "title": "Status",
+      "type": "string"
+    },
+    "json_path": {
+      "title": "Json Path",
+      "type": "string"
+    },
+    "markdown_path": {
+      "title": "Markdown Path",
+      "type": "string"
+    },
+    "notes": {
+      "title": "Notes",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "json_path",
+    "markdown_path",
+    "notes"
+  ],
+  "title": "RoleAFinalResponse",
+  "type": "object"
+}

@@ -1,0 +1,29 @@
+{
+    "id": "2ef5b3e0-1880-402f-9083-ea81e0b6bb76",
+    "started_at": "2026-04-13T02:31:31.236259",
+    "finished_at": "2026-04-13T02:38:54.615406",
+    "n_total_trials": 1,
+    "stats": {
+        "n_trials": 1,
+        "n_errors": 0,
+        "evals": {
+            "claude-code__claude-sonnet-4-5__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "mean": 1.0
+                    }
+                ],
+                "reward_stats": {
+                    "reward": {
+                        "1.0": [
+                            "c4-earthquake-phase-association-__o7iTAMw"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        }
+    }
+}

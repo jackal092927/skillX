@@ -6,9 +6,11 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import re
 import shlex
 import subprocess
 import sys
+import tomllib
 import traceback
 from pathlib import Path
 from typing import Any
@@ -44,6 +46,12 @@ DEFAULT_BUNDLE_CONTRACT_PATH = ROOT / "docs" / "protocols" / "skillx-refine-bund
 DEFAULT_AGENT = "claude-code"
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
 MIN_DOCKER_MEMORY_BYTES = 16_000_000_000
+HIGH_TASK_MEMORY_MB = 8192
+MEDIUM_TASK_MEMORY_MB = 4096
+BUILDTOOL_TOKENS = ("build-essential", " gcc", "g++", "clang", "make")
+SEISMIC_NATIVE_TOKENS = ("seisbench", "obspy")
+FROM_LINE_PATTERN = re.compile(r"^FROM\s+(.+)$", re.MULTILINE)
+MEMORY_STRING_PATTERN = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*([KMGTP])B?\s*$", re.IGNORECASE)
 
 
 def read_json(path: Path) -> Any:
@@ -355,6 +363,311 @@ def resolve_skillsbench_root(
     return task_dir.parents[1]
 
 
+def resolve_task_dir(
+    pair_spec: dict[str, Any],
+    *,
+    materialized_root: Path,
+) -> Path:
+    return resolve_materialized_path(
+        str(pair_spec["skillsbench_task_dir"]),
+        materialized_root=materialized_root,
+    )
+
+
+def _coerce_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(value.strip())
+        except ValueError:
+            return None
+    return None
+
+
+def _parse_memory_megabytes(value: Any) -> int | None:
+    numeric = _coerce_int(value)
+    if numeric is not None:
+        return numeric
+    if not isinstance(value, str):
+        return None
+    match = MEMORY_STRING_PATTERN.match(value)
+    if match is None:
+        return None
+    quantity = float(match.group(1))
+    unit = match.group(2).upper()
+    scale = {
+        "K": 1 / 1024,
+        "M": 1,
+        "G": 1024,
+        "T": 1024 * 1024,
+        "P": 1024 * 1024 * 1024,
+    }[unit]
+    return int(quantity * scale)
+
+
+def _extract_server_platform(health_report: dict[str, Any]) -> tuple[str | None, str | None]:
+    version_payload = health_report.get("docker_version_server")
+    info_payload = health_report.get("docker_info")
+    os_name: str | None = None
+    arch: str | None = None
+    for payload in (version_payload, info_payload):
+        if not isinstance(payload, dict):
+            continue
+        if os_name is None:
+            raw_os = payload.get("Os") or payload.get("OSType") or payload.get("os")
+            if isinstance(raw_os, str) and raw_os.strip():
+                os_name = raw_os.strip()
+        if arch is None:
+            raw_arch = payload.get("Arch") or payload.get("Architecture") or payload.get("arch")
+            if isinstance(raw_arch, str) and raw_arch.strip():
+                arch = raw_arch.strip()
+    return os_name, arch
+
+
+def _read_task_environment_metadata(task_dir: Path) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "task_toml_path": str((task_dir / "task.toml").resolve()),
+        "dockerfile_path": str((task_dir / "environment" / "Dockerfile").resolve()),
+        "task_memory_mb": None,
+        "task_storage_mb": None,
+        "build_timeout_sec": None,
+        "base_image": None,
+        "python_slim_base": False,
+        "pinned_amd64": False,
+        "has_build_tools": False,
+        "native_stack_tokens": [],
+    }
+
+    task_toml_path = task_dir / "task.toml"
+    if task_toml_path.exists():
+        try:
+            task_toml = tomllib.loads(task_toml_path.read_text())
+        except tomllib.TOMLDecodeError:
+            task_toml = {}
+        environment = task_toml.get("environment") if isinstance(task_toml, dict) else None
+        if isinstance(environment, dict):
+            payload["task_memory_mb"] = _parse_memory_megabytes(
+                environment.get("memory_mb", environment.get("memory"))
+            )
+            payload["task_storage_mb"] = _parse_memory_megabytes(
+                environment.get("storage_mb", environment.get("storage"))
+            )
+            payload["build_timeout_sec"] = _coerce_int(environment.get("build_timeout_sec"))
+
+    dockerfile_path = task_dir / "environment" / "Dockerfile"
+    if dockerfile_path.exists():
+        docker_text = dockerfile_path.read_text(errors="ignore")
+        lowered = docker_text.lower()
+        from_match = FROM_LINE_PATTERN.search(docker_text)
+        base_image = from_match.group(1).strip() if from_match else None
+        tokens = [
+            token
+            for token in SEISMIC_NATIVE_TOKENS
+            if token in lowered
+        ]
+        payload.update(
+            {
+                "base_image": base_image,
+                "python_slim_base": bool(base_image and "python:" in base_image and "slim" in base_image),
+                "pinned_amd64": "--platform=linux/amd64" in lowered,
+                "has_build_tools": any(token in lowered for token in BUILDTOOL_TOKENS),
+                "native_stack_tokens": sorted(set(tokens)),
+            }
+        )
+
+    return payload
+
+
+def _severity_rank(value: str) -> int:
+    return {"none": 0, "low": 1, "medium": 2, "high": 3}.get(value, 0)
+
+
+def _detect_preflight_risks(
+    *,
+    task_name: str,
+    docker_server_arch: str | None,
+    metadata: dict[str, Any],
+) -> list[dict[str, Any]]:
+    arch = (docker_server_arch or "").strip().lower()
+    is_arm64 = arch in {"arm64", "aarch64"}
+    pinned_amd64 = bool(metadata.get("pinned_amd64"))
+    has_build_tools = bool(metadata.get("has_build_tools"))
+    python_slim_base = bool(metadata.get("python_slim_base"))
+    native_tokens = [str(token) for token in metadata.get("native_stack_tokens") or []]
+    native_token_set = set(native_tokens)
+    task_memory_mb = _coerce_int(metadata.get("task_memory_mb"))
+    risks: list[dict[str, Any]] = []
+
+    if pinned_amd64:
+        severity = "medium" if is_arm64 else "low"
+        summary = "Dockerfile pins linux/amd64"
+        if is_arm64:
+            summary += (
+                f" while Docker server arch is {docker_server_arch};"
+                " current Docker may rely on cross-architecture emulation"
+            )
+        risks.append(
+            {
+                "code": "amd64_platform_pin",
+                "severity": severity,
+                "summary": summary,
+                "evidence": {
+                    "base_image": metadata.get("base_image"),
+                    "docker_server_arch": docker_server_arch,
+                },
+            }
+        )
+
+    if is_arm64 and not has_build_tools:
+        if native_token_set.intersection(SEISMIC_NATIVE_TOKENS):
+            risks.append(
+                {
+                    "code": "arm64_native_build_toolchain_gap",
+                    "severity": "high",
+                    "summary": (
+                        f"{task_name} uses seismic native packages on arm64 without a build toolchain"
+                    ),
+                    "evidence": {
+                        "packages": sorted(native_token_set.intersection(SEISMIC_NATIVE_TOKENS)),
+                        "base_image": metadata.get("base_image"),
+                    },
+                }
+            )
+
+    if python_slim_base and native_tokens and not has_build_tools:
+        seismic_packages = sorted(native_token_set.intersection(SEISMIC_NATIVE_TOKENS))
+        if seismic_packages:
+            risks.append(
+                {
+                    "code": "native_build_toolchain_gap",
+                    "severity": "medium",
+                    "summary": "python:slim image installs seismic native-extension packages without a build toolchain",
+                    "evidence": {
+                        "packages": seismic_packages,
+                        "base_image": metadata.get("base_image"),
+                    },
+                }
+            )
+
+    if isinstance(task_memory_mb, int):
+        if task_memory_mb >= HIGH_TASK_MEMORY_MB:
+            severity = "medium"
+        elif task_memory_mb >= MEDIUM_TASK_MEMORY_MB:
+            severity = "low"
+        else:
+            severity = "none"
+        if severity != "none":
+            risks.append(
+                {
+                    "code": "high_task_memory_requirement",
+                    "severity": severity,
+                    "summary": f"Task environment requests {task_memory_mb} MB of memory",
+                    "evidence": {
+                        "task_memory_mb": task_memory_mb,
+                    },
+                }
+            )
+
+    return risks
+
+
+def build_preflight_docker_risk_audit(
+    *,
+    selected_pairs: list[dict[str, Any]],
+    materialized_root: Path,
+    docker_health_report: dict[str, Any],
+) -> dict[str, Any]:
+    docker_server_os, docker_server_arch = _extract_server_platform(docker_health_report)
+    pair_rows: list[dict[str, Any]] = []
+    counts = {"high": 0, "medium": 0, "low": 0}
+
+    for pair_spec in selected_pairs:
+        pair_id = str(pair_spec.get("pair_id", "unknown-pair"))
+        task_name = str(pair_spec.get("task_name", "unknown-task"))
+        schema_id = str(pair_spec.get("schema_id", "unknown-schema"))
+        task_dir = resolve_task_dir(pair_spec, materialized_root=materialized_root)
+        metadata = _read_task_environment_metadata(task_dir)
+        risks = _detect_preflight_risks(
+            task_name=task_name,
+            docker_server_arch=docker_server_arch,
+            metadata=metadata,
+        )
+        risk_level = "none"
+        for risk in risks:
+            severity = str(risk.get("severity", "none"))
+            if severity in counts:
+                counts[severity] += 1
+            if _severity_rank(severity) > _severity_rank(risk_level):
+                risk_level = severity
+        pair_rows.append(
+            {
+                "pair_id": pair_id,
+                "task_name": task_name,
+                "schema_id": schema_id,
+                "task_dir": str(task_dir.resolve()),
+                "docker_server_os": docker_server_os,
+                "docker_server_arch": docker_server_arch,
+                "risk_level": risk_level,
+                "risk_count": len(risks),
+                "risks": risks,
+                **metadata,
+            }
+        )
+
+    affected_pairs = sum(1 for row in pair_rows if row["risk_count"] > 0)
+    high_risk_pairs = sum(1 for row in pair_rows if row["risk_level"] == "high")
+    medium_risk_pairs = sum(1 for row in pair_rows if row["risk_level"] == "medium")
+    low_risk_pairs = sum(1 for row in pair_rows if row["risk_level"] == "low")
+    return {
+        "observed_at": datetime.now(timezone.utc).isoformat(),
+        "docker_health_observed_at": docker_health_report.get("observed_at"),
+        "docker_server_os": docker_server_os,
+        "docker_server_arch": docker_server_arch,
+        "docker_mem_bytes": docker_health_report.get("docker_mem_bytes"),
+        "required_memory_bytes": docker_health_report.get("required_memory_bytes"),
+        "total_pairs": len(selected_pairs),
+        "affected_pairs": affected_pairs,
+        "high_risk_pairs": high_risk_pairs,
+        "medium_risk_pairs": medium_risk_pairs,
+        "low_risk_pairs": low_risk_pairs,
+        "risk_counts": counts,
+        "pairs": pair_rows,
+    }
+
+
+def write_preflight_docker_risk_artifacts(
+    *,
+    launcher_log_dir: Path,
+    audit_payload: dict[str, Any],
+    selected_pairs: list[dict[str, Any]],
+    materialized_root: Path,
+    output_suffix: str | None,
+) -> None:
+    write_json(launcher_log_dir / "preflight_docker_risk_audit.json", audit_payload)
+    pair_index = {
+        str(item.get("pair_id")): item
+        for item in audit_payload.get("pairs", [])
+        if isinstance(item, dict) and isinstance(item.get("pair_id"), str)
+    }
+    for pair_spec in selected_pairs:
+        pair_id = str(pair_spec.get("pair_id", "unknown-pair"))
+        pair_payload = pair_index.get(pair_id)
+        if pair_payload is None:
+            continue
+        _, output_dir = resolve_pair_run_id_and_output_dir(
+            pair_spec,
+            materialized_root=materialized_root,
+            output_suffix=output_suffix,
+        )
+        output_dir.mkdir(parents=True, exist_ok=True)
+        write_json(output_dir / "docker_preflight_risk.json", pair_payload)
+
+
 def write_docker_health_artifacts(
     output_dir: str | None,
     *,
@@ -381,11 +694,12 @@ def ensure_launcher_docker_health(
     events_path: Path,
     index: int,
     total_pairs: int,
+    initial_health_report: dict[str, Any] | None = None,
 ) -> tuple[bool, dict[str, Any], dict[str, Any] | None]:
     pair_id = str(pair_spec.get("pair_id", f"pair-{index}"))
     task_name = str(pair_spec.get("task_name", "unknown-task"))
     schema_id = str(pair_spec.get("schema_id", "unknown-schema"))
-    health_report = probe_docker_health(min_memory_bytes=MIN_DOCKER_MEMORY_BYTES)
+    health_report = initial_health_report or probe_docker_health(min_memory_bytes=MIN_DOCKER_MEMORY_BYTES)
     append_ndjson(
         events_path,
         {
@@ -688,6 +1002,78 @@ def main(argv: list[str] | None = None) -> int:
     events_path = launcher_log_dir / "events.ndjson"
     print(f"Launcher logs: {launcher_log_dir}")
 
+    if args.no_docker_health_check:
+        preflight_docker_report = {
+            "healthy": None,
+            "category": "skipped",
+            "message": "Docker health probe skipped because --no-docker-health-check was set",
+            "observed_at": datetime.now(timezone.utc).isoformat(),
+            "docker_mem_bytes": None,
+            "required_memory_bytes": MIN_DOCKER_MEMORY_BYTES,
+            "docker_info": {},
+            "docker_version_server": {},
+        }
+    else:
+        preflight_docker_report = probe_docker_health(min_memory_bytes=MIN_DOCKER_MEMORY_BYTES)
+    preflight_risk_audit = build_preflight_docker_risk_audit(
+        selected_pairs=selected_pairs,
+        materialized_root=args.materialized_root,
+        docker_health_report=preflight_docker_report,
+    )
+    write_preflight_docker_risk_artifacts(
+        launcher_log_dir=launcher_log_dir,
+        audit_payload=preflight_risk_audit,
+        selected_pairs=selected_pairs,
+        materialized_root=args.materialized_root,
+        output_suffix=args.output_suffix,
+    )
+    append_ndjson(
+        events_path,
+        {
+            "event": "preflight_risk_audit_completed",
+            "observed_at": datetime.now(timezone.utc).isoformat(),
+            "affected_pairs": preflight_risk_audit["affected_pairs"],
+            "high_risk_pairs": preflight_risk_audit["high_risk_pairs"],
+            "medium_risk_pairs": preflight_risk_audit["medium_risk_pairs"],
+            "low_risk_pairs": preflight_risk_audit["low_risk_pairs"],
+            "docker_server_os": preflight_risk_audit.get("docker_server_os"),
+            "docker_server_arch": preflight_risk_audit.get("docker_server_arch"),
+        },
+    )
+    if preflight_risk_audit["affected_pairs"]:
+        print(
+            "Preflight Docker risk audit:"
+            f" affected_pairs={preflight_risk_audit['affected_pairs']}"
+            f" high={preflight_risk_audit['high_risk_pairs']}"
+            f" medium={preflight_risk_audit['medium_risk_pairs']}"
+            f" low={preflight_risk_audit['low_risk_pairs']}"
+        )
+        for pair_row in preflight_risk_audit["pairs"]:
+            risk_level = str(pair_row.get("risk_level", "none"))
+            risks = pair_row.get("risks") or []
+            if not risks:
+                continue
+            risk_codes = ", ".join(str(item.get("code", "unknown")) for item in risks)
+            append_ndjson(
+                events_path,
+                {
+                    "event": "preflight_risk_detected",
+                    "observed_at": datetime.now(timezone.utc).isoformat(),
+                    "pair_id": pair_row.get("pair_id"),
+                    "task_name": pair_row.get("task_name"),
+                    "schema_id": pair_row.get("schema_id"),
+                    "risk_level": risk_level,
+                    "risk_count": len(risks),
+                    "risk_codes": [str(item.get("code", "unknown")) for item in risks],
+                    "risk_summaries": [str(item.get("summary", "")) for item in risks],
+                },
+            )
+            print(
+                f"  preflight[{risk_level}] {pair_row['pair_id']}: {risk_codes}"
+            )
+    else:
+        print("Preflight Docker risk audit: no task-specific risks detected")
+
     results: list[dict[str, Any]] = []
     aborted = False
     abort_reason: str | None = None
@@ -794,6 +1180,7 @@ def main(argv: list[str] | None = None) -> int:
                 events_path=events_path,
                 index=index,
                 total_pairs=len(selected_pairs),
+                initial_health_report=preflight_docker_report if index == 1 else None,
             )
             if not healthy:
                 abort_reason = health_report["message"]

@@ -403,6 +403,24 @@ def build_pair_report(
         }
         for round_info in rounds
     ]
+    reported_round_index = selected.get("round_index") if isinstance(selected, dict) else None
+    reported_reward_raw = selected_reward
+    reported_score_pct = selected_score_pct
+    score_basis = "selected"
+    if reported_score_pct is None and best_observed is not None:
+        reported_round_index = best_observed.get("round_index")
+        reported_reward_raw = best_observed.get("reward_raw")
+        reported_score_pct = best_observed.get("score_pct")
+        score_basis = "best_observed"
+
+    evidence_class, diagnosis_note = classify_evidence(
+        launcher_status=launcher_status,
+        run_status=effective_run_status,
+        failure=failure,
+        timeout_detected=timeout_detected,
+        has_intermediate_exceptions=any(bool(round_info.get("exception_stats")) for round_info in rounds),
+        reported_score_pct=reported_score_pct,
+    )
 
     return {
         "pair_id": launcher_result["pair_id"],
@@ -439,18 +457,26 @@ def build_pair_report(
             "reward_raw": None if best_observed is None else best_observed.get("reward_raw"),
             "score_pct": None if best_observed is None else best_observed.get("score_pct"),
         },
+        "reported_score": {
+            "basis": score_basis,
+            "round_index": reported_round_index,
+            "reward_raw": reported_reward_raw,
+            "score_pct": reported_score_pct,
+        },
         "delta_vs_c0_pp": (
-            round(selected_score_pct - float(c0_pct), 2)
-            if selected_score_pct is not None and isinstance(c0_pct, (int, float))
+            round(reported_score_pct - float(c0_pct), 2)
+            if reported_score_pct is not None and isinstance(c0_pct, (int, float))
             else None
         ),
         "delta_vs_c1_pp": (
-            round(selected_score_pct - float(c1_pct), 2)
-            if selected_score_pct is not None and isinstance(c1_pct, (int, float))
+            round(reported_score_pct - float(c1_pct), 2)
+            if reported_score_pct is not None and isinstance(c1_pct, (int, float))
             else None
         ),
         "early_stop": detect_early_stop(run_status=run_status, rounds=rounds),
         "timeout_detected": timeout_detected,
+        "evidence_class": evidence_class,
+        "diagnosis_note": diagnosis_note,
         "failure": failure,
         "has_intermediate_exceptions": any(bool(round_info.get("exception_stats")) for round_info in rounds),
         "runtime": {
@@ -539,6 +565,53 @@ def _format_bool(value: bool) -> str:
     return "yes" if value else "no"
 
 
+def _looks_infra_blocked(text: str) -> bool:
+    lowered = text.lower()
+    return any(
+        needle in lowered
+        for needle in (
+            "docker memory too low",
+            "out of memory",
+            "cannot connect to the docker daemon",
+            "failed to pull image",
+            "image not found",
+            "no space left on device",
+        )
+    )
+
+
+def classify_evidence(
+    *,
+    launcher_status: str | None,
+    run_status: str | None,
+    failure: dict[str, Any] | None,
+    timeout_detected: bool,
+    has_intermediate_exceptions: bool,
+    reported_score_pct: float | None,
+) -> tuple[str, str]:
+    failure_summary = ""
+    if failure:
+        failure_summary = " ".join(
+            str(part)
+            for part in (
+                failure.get("summary"),
+                failure.get("error_type"),
+                failure.get("error_message"),
+                failure.get("failed_stage"),
+            )
+            if part
+        )
+    if _looks_infra_blocked(failure_summary):
+        return "infra-blocked", "Infrastructure blocked a fair task evaluation."
+    if reported_score_pct is None:
+        if timeout_detected or launcher_status == "failed" or run_status == "failed":
+            return "runtime-blocked", "Run failed before clean verifier evidence was produced."
+        return "ambiguous", "No clean score and no definitive blocker classification was available."
+    if timeout_detected or has_intermediate_exceptions or failure:
+        return "ambiguous", "A score exists, but runtime exceptions or failures make it hard to treat as clean evidence."
+    return "measured", "Clean verifier-facing score available for comparison against C0/C1."
+
+
 def render_results_table(report: dict[str, Any]) -> str:
     lines = [
         f"# SkillX Round0 Result Table: `{report['run_label']}`",
@@ -559,18 +632,23 @@ def render_results_table(report: dict[str, Any]) -> str:
             [
                 f"## {task_name}",
                 "",
-                "| Schema | Launcher | Return | Run | C0 | C1 | R0 | R1 | R2 | R3 | Final Best | dC0 | dC1 | Early Stop | Timeout |",
-                "| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: | --- | --- |",
+                "| Schema | Launcher | Return | Run | C0 | C1 | R0 | R1 | R2 | R3 | Final Best | dC0 | dC1 | Evidence | Early Stop | Timeout |",
+                "| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: | --- | --- | --- |",
             ]
         )
         for pair in [item for item in pair_results if item["task_name"] == task_name]:
             round_scores = {round_info["round_index"]: round_info.get("score_pct") for round_info in pair["rounds"]}
-            selected_round_index = pair["selected"]["round_index"]
-            selected_score_pct = pair["selected"]["score_pct"]
+            reported_round_index = pair["reported_score"]["round_index"]
+            reported_score_pct = pair["reported_score"]["score_pct"]
+            reported_basis = pair["reported_score"]["basis"]
             final_best = (
-                f"R{selected_round_index} ({_format_number(selected_score_pct)})"
-                if selected_round_index is not None and selected_score_pct is not None
-                else "-"
+                f"R{reported_round_index} ({_format_number(reported_score_pct)})"
+                if reported_round_index is not None and reported_score_pct is not None and reported_basis == "selected"
+                else (
+                    f"BestObs R{reported_round_index} ({_format_number(reported_score_pct)})"
+                    if reported_round_index is not None and reported_score_pct is not None
+                    else "-"
+                )
             )
             lines.append(
                 "| "
@@ -589,6 +667,7 @@ def render_results_table(report: dict[str, Any]) -> str:
                         final_best,
                         _format_number(pair["delta_vs_c0_pp"]),
                         _format_number(pair["delta_vs_c1_pp"]),
+                        str(pair["evidence_class"]),
                         _format_bool(pair["early_stop"]),
                         _format_bool(pair["timeout_detected"]),
                     ]
@@ -596,6 +675,13 @@ def render_results_table(report: dict[str, Any]) -> str:
                 + " |"
             )
         lines.append("")
+
+    lines.extend(["## Evidence Notes", ""])
+    for pair in pair_results:
+        lines.append(
+            f"- `{pair['pair_id']}`: `{pair['evidence_class']}` - {pair['diagnosis_note']}"
+        )
+    lines.append("")
 
     failed_pairs = [pair for pair in pair_results if pair["launcher"]["status"] == "failed"]
     if failed_pairs:
@@ -615,8 +701,8 @@ def render_runtime_status(report: dict[str, Any]) -> str:
     lines = [
         f"# SkillX Round0 Runtime Status: `{report['run_label']}`",
         "",
-        "| Pair | Launcher | Return | Run | Failure | Timeout | Early Stop | Started | Finished | Duration (s) |",
-        "| --- | --- | ---: | --- | --- | --- | --- | --- | --- | ---: |",
+        "| Pair | Launcher | Return | Run | Evidence | Failure | Timeout | Early Stop | Started | Finished | Duration (s) |",
+        "| --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | ---: |",
     ]
     for pair in report["pair_results"]:
         failure_summary = (pair.get("failure") or {}).get("summary") or "-"
@@ -628,6 +714,7 @@ def render_runtime_status(report: dict[str, Any]) -> str:
                     str(pair["launcher"]["status"]),
                     str(pair["launcher"]["returncode"]),
                     str(pair["run"]["status"]),
+                    str(pair["evidence_class"]),
                     failure_summary,
                     _format_bool(bool(pair["timeout_detected"])),
                     _format_bool(bool(pair["early_stop"])),
@@ -650,6 +737,8 @@ def render_runtime_status(report: dict[str, Any]) -> str:
                 f"- stale_run_status: `{pair['run']['stale_status']}`",
                 f"- timeout_detected: `{pair['timeout_detected']}`",
                 f"- early_stop: `{pair['early_stop']}`",
+                f"- evidence_class: `{pair['evidence_class']}`",
+                f"- diagnosis_note: `{pair['diagnosis_note']}`",
             ]
         )
         failure = pair.get("failure") or {}

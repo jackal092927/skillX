@@ -158,6 +158,76 @@ class ServeRound0MonitorTests(unittest.TestCase):
             self.assertEqual(pair_detail["round_rows"][1]["stage_states"]["role_a"], "pending")
             self.assertEqual(pair_detail["round_rows"][1]["stage_states"]["role_b"], "pending")
 
+    def test_collect_launcher_status_synthesizes_latest_event_from_active_run_activity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            active_run_dir = (
+                materialized_root
+                / "pairs"
+                / "task-alpha__artifact-generation"
+                / "refine_run_run-demo"
+            )
+            round0 = active_run_dir / "refine" / "task-alpha" / "rounds" / "round-0"
+            round0.mkdir(parents=True)
+            (active_run_dir / "RUN_STATUS.md").write_text(
+                "- status: `running`\n"
+                "- task: `task-alpha`\n"
+            )
+            (round0 / "placeholder.txt").write_text("working\n")
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 1 pair(s)\n"
+                "Tasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "event": "pair_started",
+                                "index": 1,
+                                "observed_at": "2026-04-10T07:56:04+00:00",
+                                "pair_id": "task-alpha__artifact-generation",
+                                "schema_id": "artifact-generation",
+                                "task_name": "task-alpha",
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "event": "docker_health_probe",
+                                "observed_at": "2026-04-10T07:56:05+00:00",
+                                "pair_id": "task-alpha__artifact-generation",
+                                "schema_id": "artifact-generation",
+                                "task_name": "task-alpha",
+                            }
+                        ),
+                    ]
+                )
+                + "\n"
+            )
+            fresh_ts = self.module._coerce_datetime("2026-04-10T08:04:30+00:00").timestamp()
+            for path in [
+                active_run_dir,
+                active_run_dir / "refine",
+                active_run_dir / "refine" / "task-alpha",
+                active_run_dir / "refine" / "task-alpha" / "rounds",
+                round0,
+                active_run_dir / "RUN_STATUS.md",
+                round0 / "placeholder.txt",
+            ]:
+                os.utime(path, (fresh_ts, fresh_ts))
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:04:35+00:00",
+            )
+
+            self.assertEqual(status["latest_event"]["event"], "active_run_heartbeat")
+            self.assertEqual(status["latest_event"]["task_name"], "task-alpha")
+            self.assertEqual(status["latest_event"]["status"], "running")
+            self.assertEqual(status["latest_event_at"], "2026-04-10T08:04:30+00:00")
+
     def test_collect_launcher_status_prefers_summary_counts_after_pairs_finish(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             launcher_log_dir = Path(tmpdir) / "launcher_logs" / "run-demo"
@@ -236,6 +306,53 @@ class ServeRound0MonitorTests(unittest.TestCase):
             self.assertEqual(status["health"], "running")
             self.assertEqual(status["progress_percent"], 100.0 * 7 / 21)
             self.assertEqual(status["last_failure"]["pair_id"], "civ6-adjacency-optimizer__analytic-pipeline")
+
+    def test_collect_launcher_status_reads_preflight_risk_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            launcher_log_dir = Path(tmpdir) / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 1 pair(s)\n"
+                "Tasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text("")
+            (launcher_log_dir / "preflight_docker_risk_audit.json").write_text(
+                json.dumps(
+                    {
+                        "docker_server_os": "linux",
+                        "docker_server_arch": "arm64",
+                        "affected_pairs": 1,
+                        "high_risk_pairs": 1,
+                        "medium_risk_pairs": 0,
+                        "low_risk_pairs": 0,
+                        "pairs": [
+                            {
+                                "pair_id": "task-alpha__artifact-generation",
+                                "task_name": "task-alpha",
+                                "schema_id": "artifact-generation",
+                                "risk_level": "high",
+                                "risk_count": 1,
+                                "risks": [
+                                    {
+                                        "code": "amd64_platform_pin",
+                                        "severity": "high",
+                                        "summary": "Dockerfile pins linux/amd64 while Docker server arch is arm64",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                )
+            )
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:04:35+00:00",
+            )
+
+            audit = status["preflight_risk_audit"]
+            self.assertEqual(audit["affected_pairs"], 1)
+            self.assertEqual(audit["pairs"][0]["risk_level"], "high")
 
     def test_collect_launcher_status_builds_pair_result_rows(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -436,6 +553,89 @@ class ServeRound0MonitorTests(unittest.TestCase):
             )
 
             self.assertEqual(status["pair_rows"][0]["pair_status"], "completed (stop@R1)")
+
+    def test_collect_launcher_status_marks_completed_runtime_failures_explicitly(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["artifact-generation"]}) + "\n"
+            )
+            pair_dir = materialized_root / "pairs" / "task-alpha__artifact-generation"
+            pair_dir.mkdir(parents=True)
+            (materialized_root / "pair_specs.jsonl").write_text(
+                json.dumps(
+                    {
+                        "pair_id": "task-alpha__artifact-generation",
+                        "task_name": "task-alpha",
+                        "schema_id": "artifact-generation",
+                        "pair_dir": str(pair_dir),
+                        "official_scores": {"no_skills": 10.0, "with_skills": 20.0},
+                    }
+                )
+                + "\n"
+            )
+            run_dir = pair_dir / "refine_run_run-demo"
+            (run_dir / "refine" / "task-alpha" / "rounds" / "round-0" / "tune_check").mkdir(parents=True)
+            (
+                run_dir
+                / "refine"
+                / "task-alpha"
+                / "rounds"
+                / "round-0"
+                / "tune_check"
+                / "result.json"
+            ).write_text(json.dumps({"reward": 0.0}) + "\n")
+            (run_dir / "RUN_STATUS.md").write_text(
+                "- status: `completed_with_runtime_failures`\n"
+                "- round_budget: `3`\n"
+                "- runtime_failure_rounds: `R0`\n"
+            )
+            (launcher_log_dir / "summary.json").write_text(
+                json.dumps(
+                    {
+                        "selected_task_names": ["task-alpha"],
+                        "total_pairs": 1,
+                        "completed_pairs": 1,
+                        "succeeded_pairs": 1,
+                        "failed_pairs": 0,
+                        "results": [
+                            {
+                                "pair_id": "task-alpha__artifact-generation",
+                                "status": "succeeded",
+                                "returncode": 0,
+                                "output_dir": str(run_dir),
+                            }
+                        ],
+                    }
+                )
+                + "\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text(
+                json.dumps(
+                    {
+                        "event": "pair_succeeded",
+                        "index": 1,
+                        "observed_at": "2026-04-10T08:10:00+00:00",
+                        "pair_id": "task-alpha__artifact-generation",
+                        "schema_id": "artifact-generation",
+                        "task_name": "task-alpha",
+                        "returncode": 0,
+                    }
+                )
+                + "\n"
+            )
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:10:05+00:00",
+            )
+
+            self.assertEqual(status["health"], "completed_with_issues")
+            self.assertEqual(status["issue_pairs"], 1)
+            self.assertEqual(status["pair_rows"][0]["pair_status"], "completed (runtime exceptions)")
+            self.assertTrue(status["pair_rows"][0]["pair_has_issues"])
 
     def test_collect_launcher_status_uses_pair_rows_total_when_summary_total_is_partial_and_stdout_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

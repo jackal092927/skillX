@@ -1,0 +1,24 @@
+{
+  "base_image": "python:3.11-slim",
+  "build_timeout_sec": 900,
+  "docker_server_arch": "arm64",
+  "docker_server_os": "linux",
+  "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking/environment/Dockerfile",
+  "has_build_tools": true,
+  "native_stack_tokens": [
+    "obspy",
+    "seisbench"
+  ],
+  "pair_id": "seismic-phase-picking__metric-gated-scientific-pipeline",
+  "pinned_amd64": false,
+  "python_slim_base": true,
+  "risk_count": 0,
+  "risk_level": "none",
+  "risks": [],
+  "schema_id": "metric-gated-scientific-pipeline",
+  "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking",
+  "task_memory_mb": 2048,
+  "task_name": "seismic-phase-picking",
+  "task_storage_mb": 10240,
+  "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking/task.toml"
+}

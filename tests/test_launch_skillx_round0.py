@@ -73,7 +73,29 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             task_root = root / "skillsbench-src" / "tasks" / task_name
             (task_root / "environment" / "skills" / "starter").mkdir(parents=True)
             (task_root / "instruction.md").write_text("instruction\n")
-            (task_root / "task.toml").write_text("[task]\n")
+            (task_root / "task.toml").write_text(
+                "\n".join(
+                    [
+                        '[metadata]',
+                        f'id = "{task_name}"',
+                        '',
+                        '[environment]',
+                        'memory_mb = 2048',
+                        'storage_mb = 10240',
+                        'build_timeout_sec = 600',
+                        '',
+                    ]
+                )
+            )
+            (task_root / "environment" / "Dockerfile").write_text(
+                "\n".join(
+                    [
+                        "FROM python:3.11-slim",
+                        "RUN pip install --no-cache-dir pandas==2.2.3",
+                        "",
+                    ]
+                )
+            )
             skill_file = task_root / "environment" / "skills" / "starter" / "SKILL.md"
             skill_file.write_text("# starter\n")
             for schema_id in ("analytic-pipeline", "artifact-generation"):
@@ -384,6 +406,153 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertEqual(summary["completed_pairs"], 1)
             self.assertEqual(summary["succeeded_pairs"], 1)
             self.assertEqual(summary["failed_pairs"], 0)
+
+    def test_build_preflight_docker_risk_audit_flags_amd64_pin_as_medium_risk(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            task_root = Path(tmpdir) / "skillsbench-src" / "tasks" / "task-beta"
+            (task_root / "task.toml").write_text(
+                "\n".join(
+                    [
+                        '[metadata]',
+                        'id = "task-beta"',
+                        '',
+                        '[environment]',
+                        'memory_mb = 8192',
+                        'storage_mb = 10240',
+                        'build_timeout_sec = 900',
+                        '',
+                    ]
+                )
+            )
+            (task_root / "environment" / "Dockerfile").write_text(
+                "\n".join(
+                    [
+                        "FROM --platform=linux/amd64 ubuntu:20.04",
+                        "RUN pip install netCDF4==1.6.5",
+                        "",
+                    ]
+                )
+            )
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            selected_pairs = [spec for spec in pair_specs if spec["pair_id"] == "task-beta__analytic-pipeline"]
+
+            audit = self.module.build_preflight_docker_risk_audit(
+                selected_pairs=selected_pairs,
+                materialized_root=fixture["materialized_root"],
+                docker_health_report={
+                    "observed_at": "2026-04-13T00:00:00+00:00",
+                    "docker_mem_bytes": 17_179_869_184,
+                    "required_memory_bytes": 16_000_000_000,
+                    "docker_version_server": {"Os": "linux", "Arch": "arm64"},
+                    "docker_info": {"MemTotal": 17_179_869_184},
+                },
+            )
+
+            self.assertEqual(audit["affected_pairs"], 1)
+            self.assertEqual(audit["high_risk_pairs"], 0)
+            self.assertEqual(audit["medium_risk_pairs"], 1)
+            pair = audit["pairs"][0]
+            self.assertEqual(pair["risk_level"], "medium")
+            risk_codes = {item["code"] for item in pair["risks"]}
+            self.assertIn("amd64_platform_pin", risk_codes)
+            self.assertIn("high_task_memory_requirement", risk_codes)
+
+    def test_main_writes_preflight_docker_risk_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            task_root = Path(tmpdir) / "skillsbench-src" / "tasks" / "task-alpha"
+            (task_root / "task.toml").write_text(
+                "\n".join(
+                    [
+                        '[metadata]',
+                        'id = "task-alpha"',
+                        '',
+                        '[environment]',
+                        'memory_mb = 8192',
+                        'storage_mb = 10240',
+                        'build_timeout_sec = 900',
+                        '',
+                    ]
+                )
+            )
+            (task_root / "environment" / "Dockerfile").write_text(
+                "\n".join(
+                    [
+                        "FROM --platform=linux/amd64 ubuntu:20.04",
+                        "RUN pip install netCDF4==1.6.5",
+                        "",
+                    ]
+                )
+            )
+
+            with mock.patch.object(
+                self.module,
+                "probe_docker_health",
+                return_value={
+                    "healthy": True,
+                    "category": "healthy",
+                    "message": "ok",
+                    "observed_at": "2026-04-13T00:00:00+00:00",
+                    "docker_mem_bytes": 17_179_869_184,
+                    "required_memory_bytes": 16_000_000_000,
+                    "docker_version_server": {"Os": "linux", "Arch": "arm64"},
+                    "docker_info": {"MemTotal": 17_179_869_184},
+                },
+            ):
+                with mock.patch.object(
+                    self.module.subprocess,
+                    "run",
+                    return_value=mock.Mock(returncode=0),
+                ):
+                    exit_code = self.module.main(
+                        [
+                            "1",
+                            "--task-slice",
+                            str(fixture["task_slice_path"]),
+                            "--materialized-root",
+                            str(fixture["materialized_root"]),
+                            "--oauth-file",
+                            str(fixture["oauth_file"]),
+                            "--refine-protocol-path",
+                            str(fixture["protocol_path"]),
+                            "--bundle-contract-path",
+                            str(fixture["bundle_path"]),
+                            "--output-suffix",
+                            "preflight-audit",
+                        ]
+                    )
+
+            self.assertEqual(exit_code, 0)
+            audit_path = (
+                fixture["materialized_root"]
+                / "launcher_logs"
+                / "preflight-audit"
+                / "preflight_docker_risk_audit.json"
+            )
+            self.assertTrue(audit_path.exists())
+            audit_payload = json.loads(audit_path.read_text())
+            self.assertEqual(audit_payload["affected_pairs"], 2)
+            pair_risk_path = (
+                fixture["materialized_root"]
+                / "pairs"
+                / "task-alpha__analytic-pipeline"
+                / "refine_run_preflight-audit"
+                / "docker_preflight_risk.json"
+            )
+            self.assertTrue(pair_risk_path.exists())
+            pair_payload = json.loads(pair_risk_path.read_text())
+            self.assertEqual(pair_payload["pair_id"], "task-alpha__analytic-pipeline")
+            events_path = (
+                fixture["materialized_root"]
+                / "launcher_logs"
+                / "preflight-audit"
+                / "events.ndjson"
+            )
+            events = [json.loads(line) for line in events_path.read_text().splitlines() if line.strip()]
+            event_names = [event["event"] for event in events]
+            self.assertIn("preflight_risk_audit_completed", event_names)
+            self.assertIn("preflight_risk_detected", event_names)
 
     def test_main_dry_run_accepts_numeric_target(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
