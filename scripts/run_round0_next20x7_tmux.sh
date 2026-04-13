@@ -18,6 +18,8 @@ Environment overrides:
   SKILLX_TMUX_SESSION       Default tmux session name when arg 2 is omitted
   SKILLX_MONITOR_PORT       Explicit dashboard port
   SKILLX_MONITOR_PORT_BASE  Starting port for auto-selection, default 8769
+  SKILLX_OVERRIDE_MEMORY_MB   Synthetic task memory override, default 8192
+  SKILLX_OVERRIDE_STORAGE_MB  Synthetic task storage override, default 20480
 
 Behavior:
   - rematerializes the v0.3 round0 pair specs before launch
@@ -40,6 +42,8 @@ RUN_LABEL="${1:-${SKILLX_RUN_LABEL:-run-next20x7-2026-04-11}}"
 SESSION_NAME="${2:-${SKILLX_TMUX_SESSION:-skillx-round0-next20x7}}"
 REQUESTED_MONITOR_PORT="${3:-${SKILLX_MONITOR_PORT:-}}"
 MONITOR_PORT_BASE="${SKILLX_MONITOR_PORT_BASE:-8769}"
+OVERRIDE_MEMORY_MB="${SKILLX_OVERRIDE_MEMORY_MB:-8192}"
+OVERRIDE_STORAGE_MB="${SKILLX_OVERRIDE_STORAGE_MB:-20480}"
 
 TASK_SLICE="$EXP_WORKTREE/experiments/skillx-skillsbench-001/results/official-task-results/sonnet45-round0-candidate-slice-v0.3.json"
 RESULTS_ROOT="$EXP_WORKTREE/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.3"
@@ -117,6 +121,11 @@ launcher_cmd=(
   "$RESULTS_ROOT"
   --output-suffix
   "$RUN_LABEL"
+  --override-memory-mb
+  "$OVERRIDE_MEMORY_MB"
+  --override-storage-mb
+  "$OVERRIDE_STORAGE_MB"
+  --docker-auto-recover
 )
 
 printf -v launcher_cmd_quoted '%q ' "${launcher_cmd[@]}"
@@ -140,6 +149,8 @@ echo "  session: $SESSION_NAME"
 echo "  windows: run, dashboard"
 echo "  slice: sonnet45-round0-candidate-slice-v0.3"
 echo "  run-label: $RUN_LABEL"
+echo "  override-memory-mb: $OVERRIDE_MEMORY_MB"
+echo "  override-storage-mb: $OVERRIDE_STORAGE_MB"
 echo "  worktree: $EXP_WORKTREE"
 echo "  stdout-log: $STDOUT_LOG_PATH"
 echo "  dashboard: http://127.0.0.1:$MONITOR_PORT/"

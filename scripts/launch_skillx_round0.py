@@ -18,6 +18,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from skillx.docker_health import attempt_docker_recovery, probe_docker_health
 from skillx.model_routing import resolve_benchmark_agent_name
 from skillx.run_failure_utils import build_run_failure_payload
 
@@ -42,6 +43,7 @@ DEFAULT_REFINE_PROTOCOL_PATH = ROOT / "docs" / "protocols" / "skillx-refine-prot
 DEFAULT_BUNDLE_CONTRACT_PATH = ROOT / "docs" / "protocols" / "skillx-refine-bundle-contract-v0.1.md"
 DEFAULT_AGENT = "claude-code"
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
+MIN_DOCKER_MEMORY_BYTES = 16_000_000_000
 
 
 def read_json(path: Path) -> Any:
@@ -253,6 +255,7 @@ def ensure_launcher_failure_artifacts(
     traceback_text: str | None = None,
     returncode: int | None = None,
     command: list[str] | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> None:
     if output_dir is None:
         return
@@ -274,6 +277,7 @@ def ensure_launcher_failure_artifacts(
                 "schema_id": schema_id,
                 "run_id": run_id,
                 "launcher_stage": stage,
+                **(extra or {}),
             },
         )
         write_json(failure_path, payload)
@@ -292,6 +296,8 @@ def build_launcher_summary(
     selected_task_names: list[str],
     selected_pair_count: int,
     results: list[dict[str, Any]],
+    aborted: bool = False,
+    abort_reason: str | None = None,
 ) -> dict[str, Any]:
     succeeded_pairs = sum(1 for item in results if item.get("status") == "succeeded")
     failed_pairs = sum(1 for item in results if item.get("status") == "failed")
@@ -304,8 +310,130 @@ def build_launcher_summary(
         "completed_pairs": len(results),
         "succeeded_pairs": succeeded_pairs,
         "failed_pairs": failed_pairs,
+        "aborted": aborted,
+        "abort_reason": abort_reason,
         "results": results,
     }
+
+
+def resolve_skillsbench_root(
+    pair_spec: dict[str, Any],
+    *,
+    materialized_root: Path,
+) -> Path:
+    task_dir = resolve_materialized_path(str(pair_spec["skillsbench_task_dir"]), materialized_root=materialized_root)
+    return task_dir.parents[1]
+
+
+def write_docker_health_artifacts(
+    output_dir: str | None,
+    *,
+    health_report: dict[str, Any],
+    recovery_report: dict[str, Any] | None = None,
+) -> None:
+    if output_dir is None:
+        return
+    run_dir = Path(output_dir)
+    run_dir.mkdir(parents=True, exist_ok=True)
+    write_json(run_dir / "docker_health.json", health_report)
+    if recovery_report is not None:
+        write_json(run_dir / "docker_recovery.json", recovery_report)
+
+
+def ensure_launcher_docker_health(
+    *,
+    pair_spec: dict[str, Any],
+    materialized_root: Path,
+    output_dir: str | None,
+    run_id: str | None,
+    round_budget: int,
+    auto_recover: bool,
+    events_path: Path,
+    index: int,
+    total_pairs: int,
+) -> tuple[bool, dict[str, Any], dict[str, Any] | None]:
+    pair_id = str(pair_spec.get("pair_id", f"pair-{index}"))
+    task_name = str(pair_spec.get("task_name", "unknown-task"))
+    schema_id = str(pair_spec.get("schema_id", "unknown-schema"))
+    health_report = probe_docker_health(min_memory_bytes=MIN_DOCKER_MEMORY_BYTES)
+    append_ndjson(
+        events_path,
+        {
+            "event": "docker_health_probe",
+            "index": index,
+            "pair_id": pair_id,
+            "task_name": task_name,
+            "schema_id": schema_id,
+            "healthy": health_report["healthy"],
+            "category": health_report["category"],
+            "message": health_report["message"],
+            "observed_at": health_report["observed_at"],
+        },
+    )
+    if health_report["healthy"]:
+        return True, health_report, None
+
+    recovery_report: dict[str, Any] | None = None
+    if auto_recover:
+        recovery_report = attempt_docker_recovery(
+            skillsbench_root=resolve_skillsbench_root(pair_spec, materialized_root=materialized_root)
+        )
+        append_ndjson(
+            events_path,
+            {
+                "event": "docker_recovery_attempted",
+                "index": index,
+                "pair_id": pair_id,
+                "task_name": task_name,
+                "schema_id": schema_id,
+                "successful": recovery_report["successful"],
+                "observed_at": recovery_report["observed_at"],
+            },
+        )
+        health_report = probe_docker_health(min_memory_bytes=MIN_DOCKER_MEMORY_BYTES)
+        append_ndjson(
+            events_path,
+            {
+                "event": "docker_health_reprobe",
+                "index": index,
+                "pair_id": pair_id,
+                "task_name": task_name,
+                "schema_id": schema_id,
+                "healthy": health_report["healthy"],
+                "category": health_report["category"],
+                "message": health_report["message"],
+                "observed_at": health_report["observed_at"],
+            },
+        )
+        if health_report["healthy"]:
+            write_docker_health_artifacts(
+                output_dir,
+                health_report=health_report,
+                recovery_report=recovery_report,
+            )
+            return True, health_report, recovery_report
+
+    write_docker_health_artifacts(
+        output_dir,
+        health_report=health_report,
+        recovery_report=recovery_report,
+    )
+    ensure_launcher_failure_artifacts(
+        output_dir=output_dir,
+        run_id=run_id,
+        task_name=task_name,
+        schema_id=schema_id,
+        pair_id=pair_id,
+        round_budget=round_budget,
+        stage="docker_health_gate",
+        error=health_report["message"],
+        extra={
+            "docker_health_category": health_report["category"],
+            "docker_health_observed_at": health_report["observed_at"],
+            "docker_auto_recover_attempted": auto_recover,
+        },
+    )
+    return False, health_report, recovery_report
 
 
 def build_refine_command(
@@ -319,11 +447,12 @@ def build_refine_command(
     refine_protocol_path: Path,
     bundle_contract_path: Path,
     output_suffix: str | None,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
 ) -> list[str]:
     pair_dir = resolve_pair_dir(pair_spec, materialized_root=materialized_root)
     task_name = str(pair_spec["task_name"])
-    task_dir = resolve_materialized_path(str(pair_spec["skillsbench_task_dir"]), materialized_root=materialized_root)
-    skillsbench_root = task_dir.parents[1]
+    skillsbench_root = resolve_skillsbench_root(pair_spec, materialized_root=materialized_root)
     source_stub = pair_dir / "source_stub"
     source_stub.mkdir(parents=True, exist_ok=True)
 
@@ -365,6 +494,10 @@ def build_refine_command(
         "--bundle-contract-path",
         str(bundle_contract_path.resolve()),
     ]
+    if override_memory_mb is not None:
+        command.extend(["--override-memory-mb", str(override_memory_mb)])
+    if override_storage_mb is not None:
+        command.extend(["--override-storage-mb", str(override_storage_mb)])
     if resolved_agent == "claude-code":
         if oauth_file is None:
             raise ValueError("oauth_file is required for claude-code launches")
@@ -401,6 +534,19 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--round-budget", type=int, default=3)
     parser.add_argument("--agent")
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--override-memory-mb", type=int)
+    parser.add_argument("--override-storage-mb", type=int)
+    parser.add_argument(
+        "--no-docker-health-check",
+        action="store_true",
+        help="Disable Docker health probes before each pair launch.",
+    )
+    parser.add_argument(
+        "--docker-auto-recover",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Attempt Docker recovery before aborting an unhealthy batch.",
+    )
     parser.add_argument(
         "--output-suffix",
         help="Optional suffix for run-id/output-dir, e.g. smoke3 -> refine_run_smoke3.",
@@ -478,6 +624,8 @@ def main(argv: list[str] | None = None) -> int:
                 refine_protocol_path=args.refine_protocol_path,
                 bundle_contract_path=args.bundle_contract_path,
                 output_suffix=args.output_suffix,
+                override_memory_mb=args.override_memory_mb,
+                override_storage_mb=args.override_storage_mb,
             )
             print(f"\n# {pair_id}")
             print(shlex.join(command))
@@ -492,6 +640,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Launcher logs: {launcher_log_dir}")
 
     results: list[dict[str, Any]] = []
+    aborted = False
+    abort_reason: str | None = None
 
     for index, pair_spec in enumerate(selected_pairs, start=1):
         pair_id = str(pair_spec.get("pair_id", f"pair-{index}"))
@@ -529,6 +679,8 @@ def main(argv: list[str] | None = None) -> int:
                 refine_protocol_path=args.refine_protocol_path,
                 bundle_contract_path=args.bundle_contract_path,
                 output_suffix=args.output_suffix,
+                override_memory_mb=args.override_memory_mb,
+                override_storage_mb=args.override_storage_mb,
             )
         except Exception as exc:
             ensure_launcher_failure_artifacts(
@@ -575,10 +727,70 @@ def main(argv: list[str] | None = None) -> int:
                     selected_task_names=selected_task_names,
                     selected_pair_count=len(selected_pairs),
                     results=results,
+                    aborted=aborted,
+                    abort_reason=abort_reason,
                 ),
             )
             print(f"  FAILED during command build: {exc}")
             continue
+
+        if not args.no_docker_health_check:
+            healthy, health_report, recovery_report = ensure_launcher_docker_health(
+                pair_spec=pair_spec,
+                materialized_root=args.materialized_root,
+                output_dir=output_dir,
+                run_id=run_id,
+                round_budget=args.round_budget,
+                auto_recover=args.docker_auto_recover,
+                events_path=events_path,
+                index=index,
+                total_pairs=len(selected_pairs),
+            )
+            if not healthy:
+                abort_reason = health_report["message"]
+                aborted = True
+                result = {
+                    "pair_id": pair_id,
+                    "task_name": task_name,
+                    "schema_id": schema_id,
+                    "status": "failed",
+                    "stage": "docker_health_gate",
+                    "run_id": run_id,
+                    "output_dir": output_dir,
+                    "error": health_report["message"],
+                    "docker_health_category": health_report["category"],
+                    "docker_recovery_attempted": bool(recovery_report),
+                }
+                results.append(result)
+                append_ndjson(
+                    events_path,
+                    {
+                        "event": "pair_failed",
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "stage": "docker_health_gate",
+                        "error": health_report["message"],
+                        "observed_at": datetime.now(timezone.utc).isoformat(),
+                    },
+                )
+                write_json(
+                    summary_path,
+                    build_launcher_summary(
+                        task_slice_path=args.task_slice,
+                        materialized_root=args.materialized_root,
+                        selected_task_names=selected_task_names,
+                        selected_pair_count=len(selected_pairs),
+                        results=results,
+                        aborted=aborted,
+                        abort_reason=abort_reason,
+                    ),
+                )
+                print(f"  ABORTING: Docker unhealthy before launch: {health_report['message']}")
+                break
+            if recovery_report is not None:
+                print("  Docker recovered after cleanup")
 
         try:
             completed = subprocess.run(command, cwd=str(ROOT), check=False)
@@ -741,6 +953,8 @@ def main(argv: list[str] | None = None) -> int:
                 selected_task_names=selected_task_names,
                 selected_pair_count=len(selected_pairs),
                 results=results,
+                aborted=aborted,
+                abort_reason=abort_reason,
             ),
         )
 
