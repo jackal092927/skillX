@@ -4,11 +4,12 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/run_round0_monitor.sh [run-label] [port]
+  scripts/run_round0_monitor.sh [run-label] [port] [results-root]
 
 Defaults:
   run-label: run-3x7-2026-04-10
   port: 8765
+  results-root: experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2
   experiment worktree: current checkout
 
 Environment overrides:
@@ -16,6 +17,7 @@ Environment overrides:
   SKILLX_RUN_LABEL      Default run label when arg 1 is omitted
   SKILLX_MONITOR_HOST   Bind host, default 127.0.0.1
   SKILLX_MONITOR_PORT   Default port when arg 2 is omitted
+  SKILLX_RESULTS_ROOT   Override the materialized results root
 EOF
 }
 
@@ -29,8 +31,8 @@ EXP_WORKTREE="${SKILLX_EXP_WORKTREE:-$WORKTREE_ROOT}"
 RUN_LABEL="${1:-${SKILLX_RUN_LABEL:-run-3x7-2026-04-10}}"
 HOST="${SKILLX_MONITOR_HOST:-127.0.0.1}"
 PORT="${2:-${SKILLX_MONITOR_PORT:-8765}}"
-
-RESULTS_ROOT="$EXP_WORKTREE/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2"
+DEFAULT_RESULTS_ROOT="$EXP_WORKTREE/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2"
+RESULTS_ROOT="${3:-${SKILLX_RESULTS_ROOT:-$DEFAULT_RESULTS_ROOT}}"
 LAUNCHER_LOG_DIR="$RESULTS_ROOT/launcher_logs/$RUN_LABEL"
 
 if [[ ! -d "$EXP_WORKTREE" ]]; then

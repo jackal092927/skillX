@@ -1,0 +1,103 @@
+{
+  "tasks": [
+    {
+      "task_name": "3d-scan-calc"
+    },
+    {
+      "task_name": "adaptive-cruise-control"
+    },
+    {
+      "task_name": "data-to-d3"
+    },
+    {
+      "task_name": "exceltable-in-ppt"
+    },
+    {
+      "task_name": "find-topk-similiar-chemicals"
+    },
+    {
+      "task_name": "fix-build-agentops"
+    },
+    {
+      "task_name": "fix-druid-loophole-cve"
+    },
+    {
+      "task_name": "fix-erlang-ssh-cve"
+    },
+    {
+      "task_name": "gh-repo-analytics"
+    },
+    {
+      "task_name": "glm-lake-mendota"
+    },
+    {
+      "task_name": "lab-unit-harmonization"
+    },
+    {
+      "task_name": "latex-formula-extraction"
+    },
+    {
+      "task_name": "mars-clouds-clustering"
+    },
+    {
+      "task_name": "multilingual-video-dubbing"
+    },
+    {
+      "task_name": "offer-letter-generator"
+    },
+    {
+      "task_name": "organize-messy-files"
+    },
+    {
+      "task_name": "parallel-tfidf-search"
+    },
+    {
+      "task_name": "pddl-tpp-planning"
+    },
+    {
+      "task_name": "pg-essay-to-audiobook"
+    },
+    {
+      "task_name": "protein-expression-analysis"
+    },
+    {
+      "task_name": "reserves-at-risk-calc"
+    },
+    {
+      "task_name": "sec-financial-report"
+    },
+    {
+      "task_name": "setup-fuzzing-py"
+    },
+    {
+      "task_name": "shock-analysis-demand"
+    },
+    {
+      "task_name": "shock-analysis-supply"
+    },
+    {
+      "task_name": "simpo-code-reproduction"
+    },
+    {
+      "task_name": "spring-boot-jakarta-migration"
+    },
+    {
+      "task_name": "syzkaller-ppdev-syzlang"
+    },
+    {
+      "task_name": "taxonomy-tree-merge"
+    },
+    {
+      "task_name": "threejs-to-obj"
+    },
+    {
+      "task_name": "travel-planning"
+    },
+    {
+      "task_name": "trend-anomaly-causal-inference"
+    },
+    {
+      "task_name": "virtualhome-agent-planning"
+    }
+  ]
+}

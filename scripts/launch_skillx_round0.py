@@ -174,11 +174,41 @@ def select_pair_specs(
     return selected
 
 
+def select_pair_specs_by_pair_ids(
+    pair_specs: list[dict[str, Any]],
+    *,
+    pair_ids: list[str],
+) -> list[dict[str, Any]]:
+    pair_index: dict[str, dict[str, Any]] = {}
+    for pair_spec in pair_specs:
+        pair_id = pair_spec.get("pair_id")
+        if isinstance(pair_id, str):
+            pair_index[pair_id] = pair_spec
+
+    missing = [pair_id for pair_id in pair_ids if pair_id not in pair_index]
+    if missing:
+        preview = ", ".join(missing[:5])
+        if len(missing) > 5:
+            preview += f", ... ({len(missing)} missing total)"
+        raise KeyError(f"missing pair spec(s): {preview}")
+    return [pair_index[pair_id] for pair_id in pair_ids]
+
+
 def normalize_output_suffix(output_suffix: str | None) -> str | None:
     if output_suffix is None:
         return None
     normalized = output_suffix.strip().replace("/", "_")
     return normalized or None
+
+
+def load_pair_ids_from_manifest(path: Path) -> list[str]:
+    payload = read_json(path)
+    pair_ids = payload.get("selected_pair_ids")
+    if not isinstance(pair_ids, list) or not pair_ids:
+        raise ValueError(f"pair manifest missing selected_pair_ids: {path}")
+    if not all(isinstance(item, str) and item for item in pair_ids):
+        raise ValueError(f"pair manifest contains invalid pair ids: {path}")
+    return list(pair_ids)
 
 
 def resolve_pair_dir(
@@ -524,6 +554,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         type=int,
         help="1-based task index from --list-tasks. Repeatable.",
     )
+    parser.add_argument("--pair-id", action="append", help="Specific pair id to run. Repeatable.")
+    parser.add_argument(
+        "--pair-manifest",
+        type=Path,
+        help="JSON file containing selected_pair_ids for a frozen rerun batch.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Print selected commands without executing them.")
     parser.add_argument("--list-tasks", action="store_true", help="Print the ordered task list and exit.")
     parser.add_argument("--task-slice", type=Path, default=DEFAULT_TASK_SLICE)
@@ -558,21 +594,30 @@ def _resolve_selection_args(
     args: argparse.Namespace,
     *,
     task_names: list[str],
-) -> tuple[int | None, list[str] | None]:
+) -> tuple[int | None, list[str] | None, list[str] | None]:
     explicit_tasks = list(args.task or [])
+    explicit_pair_ids = list(args.pair_id or [])
+    if args.pair_manifest is not None:
+        if explicit_tasks or args.target or args.task_index:
+            raise ValueError("cannot combine --pair-manifest with task-based selection")
+        explicit_pair_ids.extend(load_pair_ids_from_manifest(args.pair_manifest))
     for index in args.task_index or []:
         if index <= 0 or index > len(task_names):
             raise IndexError(f"task index out of range: {index}")
         explicit_tasks.append(task_names[index - 1])
     first_n: int | None = None
     if args.target:
+        if explicit_pair_ids:
+            raise ValueError("cannot combine positional target with pair-based selection")
         if args.target.isdigit():
             if explicit_tasks:
                 raise ValueError("cannot combine numeric target with explicit task selection")
             first_n = int(args.target)
         else:
             explicit_tasks.append(args.target)
-    return first_n, explicit_tasks or None
+    if explicit_pair_ids and (first_n is not None or explicit_tasks):
+        raise ValueError("cannot combine pair-based selection with task-based selection")
+    return first_n, explicit_tasks or None, explicit_pair_ids or None
 
 
 def _print_task_list(task_names: list[str]) -> None:
@@ -594,19 +639,23 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(schema_ids, list) or not all(isinstance(item, str) for item in schema_ids):
         raise ValueError(f"materialized manifest missing schema_ids: {args.materialized_root / 'manifest.json'}")
 
-    first_n, explicit_tasks = _resolve_selection_args(args, task_names=task_names)
-    selected_pairs = select_pair_specs(
-        pair_specs,
-        task_names=task_names,
-        schema_ids=schema_ids,
-        first_n=first_n,
-        explicit_tasks=explicit_tasks,
-    )
+    first_n, explicit_tasks, explicit_pair_ids = _resolve_selection_args(args, task_names=task_names)
+    if explicit_pair_ids:
+        selected_pairs = select_pair_specs_by_pair_ids(pair_specs, pair_ids=explicit_pair_ids)
+        selected_task_names = list(dict.fromkeys(str(pair["task_name"]) for pair in selected_pairs))
+    else:
+        selected_pairs = select_pair_specs(
+            pair_specs,
+            task_names=task_names,
+            schema_ids=schema_ids,
+            first_n=first_n,
+            explicit_tasks=explicit_tasks,
+        )
+        selected_task_names = sorted({pair["task_name"] for pair in selected_pairs}, key=task_names.index)
     validate_selected_pair_inputs(
         selected_pairs,
         materialized_root=args.materialized_root,
     )
-    selected_task_names = sorted({pair["task_name"] for pair in selected_pairs}, key=task_names.index)
 
     print(f"Selected {len(selected_task_names)} task(s) -> {len(selected_pairs)} pair(s)")
     print("Tasks: " + ", ".join(selected_task_names))

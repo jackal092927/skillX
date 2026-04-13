@@ -196,6 +196,51 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                 ],
             )
 
+    def test_select_pair_specs_by_pair_ids_preserves_manifest_order(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+
+            selected = self.module.select_pair_specs_by_pair_ids(
+                pair_specs,
+                pair_ids=[
+                    "task-gamma__artifact-generation",
+                    "task-alpha__analytic-pipeline",
+                ],
+            )
+
+            self.assertEqual(
+                [pair["pair_id"] for pair in selected],
+                [
+                    "task-gamma__artifact-generation",
+                    "task-alpha__analytic-pipeline",
+                ],
+            )
+
+    def test_load_pair_ids_from_manifest_reads_selected_pair_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manifest_path = Path(tmpdir) / "pair-manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "selected_pair_ids": [
+                            "task-beta__artifact-generation",
+                            "task-alpha__analytic-pipeline",
+                        ]
+                    }
+                )
+            )
+
+            pair_ids = self.module.load_pair_ids_from_manifest(manifest_path)
+
+            self.assertEqual(
+                pair_ids,
+                [
+                    "task-beta__artifact-generation",
+                    "task-alpha__analytic-pipeline",
+                ],
+            )
+
     def test_build_refine_command_uses_uv_and_explicit_protocol_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))
@@ -401,6 +446,47 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertIn("task-beta__analytic-pipeline", output)
             self.assertIn("task-gamma__artifact-generation", output)
             self.assertNotIn("task-alpha__analytic-pipeline", output)
+
+    def test_main_dry_run_accepts_pair_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            pair_manifest_path = Path(tmpdir) / "pair-manifest.json"
+            pair_manifest_path.write_text(
+                json.dumps(
+                    {
+                        "selected_pair_ids": [
+                            "task-gamma__artifact-generation",
+                            "task-alpha__analytic-pipeline",
+                        ]
+                    }
+                )
+            )
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = self.module.main(
+                    [
+                        "--dry-run",
+                        "--pair-manifest",
+                        str(pair_manifest_path),
+                        "--task-slice",
+                        str(fixture["task_slice_path"]),
+                        "--materialized-root",
+                        str(fixture["materialized_root"]),
+                        "--oauth-file",
+                        str(fixture["oauth_file"]),
+                        "--refine-protocol-path",
+                        str(fixture["protocol_path"]),
+                        "--bundle-contract-path",
+                        str(fixture["bundle_path"]),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            output = stdout.getvalue()
+            self.assertIn("Selected 2 task(s) -> 2 pair(s)", output)
+            self.assertIn("task-gamma__artifact-generation", output)
+            self.assertIn("task-alpha__analytic-pipeline", output)
+            self.assertNotIn("task-beta__artifact-generation", output)
 
     def test_main_continues_after_subprocess_failure_and_writes_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
