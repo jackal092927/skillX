@@ -87,6 +87,26 @@ beta
 
             self.assertEqual(payload.skill_names, ["skill-a"])
 
+    def test_discover_task_inputs_accepts_tasks_without_test_outputs_py(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "tasks" / "demo-task"
+            skill_dir = task_root / "environment" / "skills" / "skill-a"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text("demo\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            tests_dir = task_root / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test.sh").write_text("pytest /tests/test_performance.py\n")
+            (tests_dir / "conftest.py").write_text("FIXTURE = True\n")
+            (tests_dir / "test_performance.py").write_text("def test_ok():\n    assert True\n")
+
+            payload = self.module.discover_task_inputs(root, "demo-task")
+
+            self.assertEqual(payload.tests_dir, tests_dir)
+            self.assertEqual(payload.skill_names, ["skill-a"])
+
     def test_snapshot_rewrite_inputs_skips_non_skill_directories(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -110,6 +130,32 @@ beta
 
             self.assertTrue((paths.registry_dir / "original__skill-a__SKILL.md").exists())
             self.assertFalse((paths.registry_dir / "original__licenses__SKILL.md").exists())
+
+    def test_snapshot_rewrite_inputs_copies_full_tests_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "tasks" / "demo-task"
+            skill_dir = task_root / "environment" / "skills" / "skill-a"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text("demo\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            tests_dir = task_root / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test.sh").write_text("pytest /tests/test_performance.py\n")
+            (tests_dir / "conftest.py").write_text("FIXTURE = True\n")
+            (tests_dir / "test_performance.py").write_text("def test_ok():\n    assert True\n")
+
+            task = self.module.discover_task_inputs(root, "demo-task")
+            paths = self.module.make_rewrite_paths(root / "run", task.task_id)
+
+            self.module.snapshot_rewrite_inputs(task, paths)
+
+            copied_tests_dir = paths.inputs_dir / "tests"
+            self.assertTrue((copied_tests_dir / "test.sh").exists())
+            self.assertTrue((copied_tests_dir / "conftest.py").exists())
+            self.assertTrue((copied_tests_dir / "test_performance.py").exists())
+            self.assertFalse((copied_tests_dir / "test_outputs.py").exists())
 
     def test_parse_condition_skill_sources(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -156,6 +202,38 @@ beta
             copied_skill = sandbox_dir / "environment" / "skills" / "skill-x" / "SKILL.md"
             self.assertEqual(copied_skill.read_text(), "custom skill\n")
             self.assertFalse((sandbox_dir / "environment" / "skills" / "skill-a").exists())
+
+    def test_populate_rewrite_inputs_dir_copies_full_tests_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skill_dir = task_root / "environment" / "skills" / "skill-a"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text("demo\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            tests_dir = task_root / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test.sh").write_text("pytest /tests/test_performance.py\n")
+            (tests_dir / "conftest.py").write_text("FIXTURE = True\n")
+            (tests_dir / "test_performance.py").write_text("def test_ok():\n    assert True\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            target_dir = root / "rewrite-inputs"
+
+            self.module.populate_rewrite_inputs_dir(
+                target_dir=target_dir,
+                task=task,
+                skill_name=None,
+                mode="c2",
+                c2_outputs=None,
+            )
+
+            copied_tests_dir = target_dir / "task" / "tests"
+            self.assertTrue((copied_tests_dir / "test.sh").exists())
+            self.assertTrue((copied_tests_dir / "conftest.py").exists())
+            self.assertTrue((copied_tests_dir / "test_performance.py").exists())
+            self.assertFalse((copied_tests_dir / "test_outputs.py").exists())
 
     def test_main_writes_run_failure_for_rewrite_setup_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

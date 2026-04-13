@@ -52,7 +52,7 @@ class TaskInputs:
     instruction_path: Path
     task_toml_path: Path
     test_sh_path: Path
-    test_outputs_path: Path
+    tests_dir: Path
     skills_dir: Path
     skill_names: list[str]
 
@@ -136,12 +136,12 @@ def discover_task_inputs(skillsbench_root: Path, task_id: str) -> TaskInputs:
     no_skills_task_dir = skillsbench_root / "tasks-no-skills" / task_id
     instruction_path = task_dir / "instruction.md"
     task_toml_path = task_dir / "task.toml"
-    test_sh_path = task_dir / "tests" / "test.sh"
-    test_outputs_path = task_dir / "tests" / "test_outputs.py"
+    tests_dir = task_dir / "tests"
+    test_sh_path = tests_dir / "test.sh"
     skills_dir = task_dir / "environment" / "skills"
     missing = [
         str(path)
-        for path in [instruction_path, task_toml_path, test_sh_path, test_outputs_path, skills_dir]
+        for path in [instruction_path, task_toml_path, tests_dir, test_sh_path, skills_dir]
         if not path.exists()
     ]
     if missing:
@@ -154,7 +154,7 @@ def discover_task_inputs(skillsbench_root: Path, task_id: str) -> TaskInputs:
         instruction_path=instruction_path,
         task_toml_path=task_toml_path,
         test_sh_path=test_sh_path,
-        test_outputs_path=test_outputs_path,
+        tests_dir=tests_dir,
         skills_dir=skills_dir,
         skill_names=skill_names,
     )
@@ -187,8 +187,9 @@ def snapshot_rewrite_inputs(task: TaskInputs, paths: RewritePaths) -> None:
         target.write_text(source.read_text())
         copied = paths.inputs_dir / f"{skill_name}__original__SKILL.md"
         copied.write_text(source.read_text())
-    for src in [task.instruction_path, task.task_toml_path, task.test_sh_path, task.test_outputs_path]:
+    for src in [task.instruction_path, task.task_toml_path]:
         shutil.copy2(src, paths.inputs_dir / src.name)
+    copy_tree(task.tests_dir, paths.inputs_dir / "tests")
     for src in [
         EXPERIMENT_ROOT / "C2_REWRITE_PROTOCOL.md",
         EXPERIMENT_ROOT / "C3_REWRITE_PROTOCOL.md",
@@ -375,9 +376,7 @@ def populate_rewrite_inputs_dir(
     original_dir = ensure_dir(target_dir / "original_skills")
     shutil.copy2(task.instruction_path, task_dir / "instruction.md")
     shutil.copy2(task.task_toml_path, task_dir / "task.toml")
-    ensure_dir(task_dir / "tests")
-    shutil.copy2(task.test_sh_path, task_dir / "tests" / "test.sh")
-    shutil.copy2(task.test_outputs_path, task_dir / "tests" / "test_outputs.py")
+    copy_tree(task.tests_dir, task_dir / "tests")
     shutil.copy2(EXPERIMENT_ROOT / "conditions.md", target_dir / "conditions.md")
     shutil.copy2(EXPERIMENT_ROOT / "C2_REWRITE_PROTOCOL.md", protocols_dir / "C2_REWRITE_PROTOCOL.md")
     shutil.copy2(EXPERIMENT_ROOT / "C3_REWRITE_PROTOCOL.md", protocols_dir / "C3_REWRITE_PROTOCOL.md")

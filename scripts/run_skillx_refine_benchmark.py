@@ -105,7 +105,7 @@ class TaskInputs:
     instruction_path: Path
     task_toml_path: Path
     test_sh_path: Path
-    test_outputs_path: Path
+    tests_dir: Path
     skills_dir: Path
     skill_names: list[str]
 
@@ -241,12 +241,12 @@ def discover_task_inputs(skillsbench_root: Path, task_id: str) -> TaskInputs:
     task_dir = skillsbench_root / "tasks" / task_id
     instruction_path = task_dir / "instruction.md"
     task_toml_path = task_dir / "task.toml"
-    test_sh_path = task_dir / "tests" / "test.sh"
-    test_outputs_path = task_dir / "tests" / "test_outputs.py"
+    tests_dir = task_dir / "tests"
+    test_sh_path = tests_dir / "test.sh"
     skills_dir = task_dir / "environment" / "skills"
     missing = [
         str(path)
-        for path in [instruction_path, task_toml_path, test_sh_path, test_outputs_path, skills_dir]
+        for path in [instruction_path, task_toml_path, tests_dir, test_sh_path, skills_dir]
         if not path.exists()
     ]
     if missing:
@@ -258,7 +258,7 @@ def discover_task_inputs(skillsbench_root: Path, task_id: str) -> TaskInputs:
         instruction_path=instruction_path,
         task_toml_path=task_toml_path,
         test_sh_path=test_sh_path,
-        test_outputs_path=test_outputs_path,
+        tests_dir=tests_dir,
         skills_dir=skills_dir,
         skill_names=skill_names,
     )
@@ -1022,9 +1022,7 @@ def write_static_bundle(
 
     shutil.copy2(task.instruction_path, task_context_dir / "instruction.md")
     shutil.copy2(task.task_toml_path, task_context_dir / "task.toml")
-    ensure_dir(task_context_dir / "tests")
-    shutil.copy2(task.test_sh_path, task_context_dir / "tests" / "test.sh")
-    shutil.copy2(task.test_outputs_path, task_context_dir / "tests" / "test_outputs.py")
+    copy_tree(task.tests_dir, task_context_dir / "tests")
 
     write_json(tune_dir / "condition_summary.json", tune_rows)
     (tune_dir / "contrastive_summary.md").write_text(build_contrastive_summary(tune_rows))
@@ -1339,9 +1337,7 @@ def populate_refine_inputs_dir(
     task_context_dir = ensure_dir(target_dir / "task_context")
     shutil.copy2(task.instruction_path, task_context_dir / "instruction.md")
     shutil.copy2(task.task_toml_path, task_context_dir / "task.toml")
-    ensure_dir(task_context_dir / "tests")
-    shutil.copy2(task.test_sh_path, task_context_dir / "tests" / "test.sh")
-    shutil.copy2(task.test_outputs_path, task_context_dir / "tests" / "test_outputs.py")
+    copy_tree(task.tests_dir, task_context_dir / "tests")
 
 
 def create_refine_round_task_sandbox(

@@ -329,6 +329,26 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
 
             self.assertEqual(task.skill_names, ["skill-a", "skill-b"])
 
+    def test_discover_task_inputs_accepts_tasks_without_test_outputs_py(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("demo\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            tests_dir = task_root / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test.sh").write_text("pytest /tests/test_setup.py\n")
+            (tests_dir / "testing_utils.py").write_text("HELPER = True\n")
+            (tests_dir / "test_setup.py").write_text("def test_ok():\n    assert True\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            self.assertEqual(task.tests_dir, tests_dir)
+            self.assertEqual(task.skill_names, ["skill-a"])
+
     def test_write_static_bundle_ignores_non_skill_directories_in_starting_pack(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -381,6 +401,52 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertTrue((copied_root / "skill-a" / "SKILL.md").exists())
             self.assertTrue((copied_root / "skill-b" / "SKILL.md").exists())
             self.assertFalse((copied_root / "licenses").exists())
+
+    def test_write_static_bundle_copies_full_tests_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("demo\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            tests_dir = task_root / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test.sh").write_text("pytest /tests/test_setup.py\n")
+            (tests_dir / "testing_utils.py").write_text("HELPER = True\n")
+            (tests_dir / "test_setup.py").write_text("def test_ok():\n    assert True\n")
+
+            starting_skillpack_dir = root / "start" / "skillpack" / "skill-a"
+            starting_skillpack_dir.mkdir(parents=True)
+            (starting_skillpack_dir / "SKILL.md").write_text("# Derived Execution Layer\ndemo\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            source = self._make_source_artifacts(starting_skillpack_dir=starting_skillpack_dir.parent)
+            (root / "protocol.md").write_text("protocol\n")
+            (root / "bundle.md").write_text("bundle\n")
+
+            self.module.write_static_bundle(
+                task=task,
+                paths=paths,
+                protocols=self.module.ProtocolInputs(
+                    refine_protocol_path=root / "protocol.md",
+                    bundle_contract_path=root / "bundle.md",
+                ),
+                source=source,
+                tune_rows=[],
+                tune_run_dirs=[root / "run-a"],
+                round_budget=3,
+                source_run_dir=root / "source",
+                session_evidence=None,
+            )
+
+            copied_tests_dir = paths.static_dir / "task_context" / "tests"
+            self.assertTrue((copied_tests_dir / "test.sh").exists())
+            self.assertTrue((copied_tests_dir / "testing_utils.py").exists())
+            self.assertTrue((copied_tests_dir / "test_setup.py").exists())
+            self.assertFalse((copied_tests_dir / "test_outputs.py").exists())
 
     def test_make_round_zero_artifacts_ignores_non_skill_directories_in_starting_pack(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1534,6 +1600,52 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertTrue((target_dir / "decision_context" / "round_0_decision.json").exists())
             self.assertTrue((target_dir / "static" / "session_evidence" / "session_evidence.json").exists())
             self.assertFalse((target_dir / "static" / "session_logs").exists())
+
+    def test_populate_refine_inputs_dir_copies_full_tests_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            tests_dir = task_root / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test.sh").write_text("pytest /tests/test_setup.py\n")
+            (tests_dir / "testing_utils.py").write_text("HELPER = True\n")
+            (tests_dir / "test_setup.py").write_text("def test_ok():\n    assert True\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+            previous_round = paths.rounds_dir / "round-0"
+            (previous_round / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (previous_round / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text(
+                "# Derived Execution Layer\nrefined\n"
+            )
+            paths.ledger_path.write_text("# ledger\n")
+
+            protocols = self.module.ProtocolInputs(
+                refine_protocol_path=root / "proto.md",
+                bundle_contract_path=root / "bundle.md",
+            )
+            protocols.refine_protocol_path.write_text("proto\n")
+            protocols.bundle_contract_path.write_text("bundle\n")
+
+            target_dir = root / "sandbox" / "environment" / "refine_inputs"
+            self.module.populate_refine_inputs_dir(
+                task=task,
+                paths=paths,
+                protocols=protocols,
+                target_dir=target_dir,
+                previous_round_dir=previous_round,
+            )
+
+            copied_tests_dir = target_dir / "task_context" / "tests"
+            self.assertTrue((copied_tests_dir / "test.sh").exists())
+            self.assertTrue((copied_tests_dir / "testing_utils.py").exists())
+            self.assertTrue((copied_tests_dir / "test_setup.py").exists())
+            self.assertFalse((copied_tests_dir / "test_outputs.py").exists())
 
     def test_materialize_c4_sandbox_excludes_refine_plan_and_decision_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
