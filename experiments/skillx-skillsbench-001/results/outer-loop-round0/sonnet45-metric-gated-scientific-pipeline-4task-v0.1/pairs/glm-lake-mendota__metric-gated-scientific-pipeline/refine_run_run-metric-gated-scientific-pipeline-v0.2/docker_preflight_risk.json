@@ -1,0 +1,39 @@
+{
+  "base_image": "--platform=linux/amd64 ubuntu:20.04",
+  "build_timeout_sec": 600,
+  "docker_server_arch": "arm64",
+  "docker_server_os": "linux",
+  "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota/environment/Dockerfile",
+  "has_build_tools": false,
+  "native_stack_tokens": [],
+  "pair_id": "glm-lake-mendota__metric-gated-scientific-pipeline",
+  "pinned_amd64": true,
+  "python_slim_base": false,
+  "risk_count": 2,
+  "risk_level": "medium",
+  "risks": [
+    {
+      "code": "amd64_platform_pin",
+      "evidence": {
+        "base_image": "--platform=linux/amd64 ubuntu:20.04",
+        "docker_server_arch": "arm64"
+      },
+      "severity": "medium",
+      "summary": "Dockerfile pins linux/amd64 while Docker server arch is arm64; current Docker may rely on cross-architecture emulation"
+    },
+    {
+      "code": "high_task_memory_requirement",
+      "evidence": {
+        "task_memory_mb": 4096
+      },
+      "severity": "low",
+      "summary": "Task environment requests 4096 MB of memory"
+    }
+  ],
+  "schema_id": "metric-gated-scientific-pipeline",
+  "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota",
+  "task_memory_mb": 4096,
+  "task_name": "glm-lake-mendota",
+  "task_storage_mb": 10240,
+  "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota/task.toml"
+}

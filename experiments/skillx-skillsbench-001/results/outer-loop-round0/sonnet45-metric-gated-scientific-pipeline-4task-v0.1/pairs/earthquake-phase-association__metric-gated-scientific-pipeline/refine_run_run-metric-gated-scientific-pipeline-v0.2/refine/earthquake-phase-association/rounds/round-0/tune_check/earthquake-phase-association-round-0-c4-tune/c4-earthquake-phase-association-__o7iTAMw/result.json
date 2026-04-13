@@ -1,0 +1,90 @@
+{
+    "id": "08a54cb7-726c-4ea0-a716-e29bd62947af",
+    "task_name": "c4-earthquake-phase-association-round-0",
+    "trial_name": "c4-earthquake-phase-association-__o7iTAMw",
+    "trial_uri": "file:///Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune/c4-earthquake-phase-association-__o7iTAMw",
+    "task_id": {
+        "path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/artifacts/task_sandboxes/c4-earthquake-phase-association-round-0"
+    },
+    "source": null,
+    "task_checksum": "cfd52ff464e794a9132641ce5c74a09f8040be60565c4d2caf262a8dd0a1c731",
+    "config": {
+        "task": {
+            "path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/artifacts/task_sandboxes/c4-earthquake-phase-association-round-0",
+            "git_url": null,
+            "git_commit_id": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "c4-earthquake-phase-association-__o7iTAMw",
+        "trials_dir": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-0/tune_check/earthquake-phase-association-round-0-c4-tune",
+        "timeout_multiplier": 2.0,
+        "agent": {
+            "name": null,
+            "import_path": "skillx.harbor_agents:AuthBackedClaudeCode",
+            "model_name": "anthropic/claude-sonnet-4-5",
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "kwargs": {}
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "kwargs": {}
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": false
+        },
+        "job_id": "2ef5b3e0-1880-402f-9083-ea81e0b6bb76"
+    },
+    "agent_info": {
+        "name": "claude-code",
+        "version": "unknown",
+        "model_info": {
+            "name": "claude-sonnet-4-5",
+            "provider": "anthropic"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 1057102,
+        "n_cache_tokens": 1056842,
+        "n_output_tokens": 28767,
+        "cost_usd": null,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 1.0
+        }
+    },
+    "exception_info": null,
+    "started_at": "2026-04-13T02:31:31.241246",
+    "finished_at": "2026-04-13T02:38:54.609845",
+    "environment_setup": {
+        "started_at": "2026-04-13T02:31:31.260067",
+        "finished_at": "2026-04-13T02:31:32.462029"
+    },
+    "agent_setup": {
+        "started_at": "2026-04-13T02:31:32.462088",
+        "finished_at": "2026-04-13T02:31:47.185791"
+    },
+    "agent_execution": {
+        "started_at": "2026-04-13T02:31:47.185856",
+        "finished_at": "2026-04-13T02:38:22.082854"
+    },
+    "verifier": {
+        "started_at": "2026-04-13T02:38:22.083587",
+        "finished_at": "2026-04-13T02:38:52.821596"
+    }
+}

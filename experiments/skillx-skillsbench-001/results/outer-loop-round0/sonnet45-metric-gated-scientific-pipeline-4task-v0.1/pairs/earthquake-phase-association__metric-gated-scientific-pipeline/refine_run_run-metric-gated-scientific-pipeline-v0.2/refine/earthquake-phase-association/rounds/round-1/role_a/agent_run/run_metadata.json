@@ -1,0 +1,26 @@
+{
+  "role_name": "role_a",
+  "model_name": "codex-5.3",
+  "cli_name": "codex",
+  "cli_model_name": "gpt-5.3-codex",
+  "playbook_path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/playbooks/C4AR_ROLE_A_SESSION_DISTILL_PLAYBOOK.md",
+  "expected_output_paths": [
+    "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/role_a/session_evidence.json",
+    "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/role_a/session_evidence.md"
+  ],
+  "timeout_sec": 1200.0,
+  "max_attempts": 3,
+  "retry_backoff_sec": 5.0,
+  "attempts": [
+    {
+      "attempt_index": 1,
+      "timeout_sec": 1200.0,
+      "timed_out": false,
+      "returncode": 0,
+      "duration_sec": 321.484659910202,
+      "stdout_path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/role_a/agent_run/stdout.attempt-1.jsonl",
+      "stderr_path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/role_a/agent_run/stderr.attempt-1.txt",
+      "timeout_message": null
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "affected_pairs": 2,
+  "docker_health_observed_at": "2026-04-13T07:16:36.461423+00:00",
+  "docker_mem_bytes": 16748032000,
+  "docker_server_arch": "arm64",
+  "docker_server_os": "linux",
+  "high_risk_pairs": 0,
+  "low_risk_pairs": 0,
+  "medium_risk_pairs": 2,
+  "observed_at": "2026-04-13T07:16:36.465211+00:00",
+  "pairs": [
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [
+        "obspy",
+        "seisbench"
+      ],
+      "pair_id": "earthquake-phase-association__metric-gated-scientific-pipeline",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 1,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 8192
+          },
+          "severity": "medium",
+          "summary": "Task environment requests 8192 MB of memory"
+        }
+      ],
+      "schema_id": "metric-gated-scientific-pipeline",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association",
+      "task_memory_mb": 8192,
+      "task_name": "earthquake-phase-association",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association/task.toml"
+    },
+    {
+      "base_image": "python:3.11-slim",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [
+        "obspy",
+        "seisbench"
+      ],
+      "pair_id": "seismic-phase-picking__metric-gated-scientific-pipeline",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "metric-gated-scientific-pipeline",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking",
+      "task_memory_mb": 2048,
+      "task_name": "seismic-phase-picking",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/seismic-phase-picking/task.toml"
+    },
+    {
+      "base_image": "--platform=linux/amd64 ubuntu:20.04",
+      "build_timeout_sec": 600,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota/environment/Dockerfile",
+      "has_build_tools": false,
+      "native_stack_tokens": [],
+      "pair_id": "glm-lake-mendota__metric-gated-scientific-pipeline",
+      "pinned_amd64": true,
+      "python_slim_base": false,
+      "risk_count": 2,
+      "risk_level": "medium",
+      "risks": [
+        {
+          "code": "amd64_platform_pin",
+          "evidence": {
+            "base_image": "--platform=linux/amd64 ubuntu:20.04",
+            "docker_server_arch": "arm64"
+          },
+          "severity": "medium",
+          "summary": "Dockerfile pins linux/amd64 while Docker server arch is arm64; current Docker may rely on cross-architecture emulation"
+        },
+        {
+          "code": "high_task_memory_requirement",
+          "evidence": {
+            "task_memory_mb": 4096
+          },
+          "severity": "low",
+          "summary": "Task environment requests 4096 MB of memory"
+        }
+      ],
+      "schema_id": "metric-gated-scientific-pipeline",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota",
+      "task_memory_mb": 4096,
+      "task_name": "glm-lake-mendota",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/glm-lake-mendota/task.toml"
+    },
+    {
+      "base_image": "python:3.9.19-slim",
+      "build_timeout_sec": 900,
+      "docker_server_arch": "arm64",
+      "docker_server_os": "linux",
+      "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exoplanet-detection-period/environment/Dockerfile",
+      "has_build_tools": true,
+      "native_stack_tokens": [],
+      "pair_id": "exoplanet-detection-period__metric-gated-scientific-pipeline",
+      "pinned_amd64": false,
+      "python_slim_base": true,
+      "risk_count": 0,
+      "risk_level": "none",
+      "risks": [],
+      "schema_id": "metric-gated-scientific-pipeline",
+      "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exoplanet-detection-period",
+      "task_memory_mb": 2048,
+      "task_name": "exoplanet-detection-period",
+      "task_storage_mb": 10240,
+      "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/exoplanet-detection-period/task.toml"
+    }
+  ],
+  "required_memory_bytes": 16000000000,
+  "risk_counts": {
+    "high": 0,
+    "low": 1,
+    "medium": 2
+  },
+  "total_pairs": 4
+}

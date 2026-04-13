@@ -1,0 +1,7 @@
+- status: `running`
+- run_id: `earthquake-phase-association__metric-gated-scientific-pipeline__run-metric-gated-scientific-pipeline-v0.2`
+- task: `earthquake-phase-association`
+- source_run_dir: `/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/source_stub`
+- round_budget: `3`
+- orchestration_mode: `c4ar`
+- updated_at: `2026-04-13T06:10:44.656727+00:00`

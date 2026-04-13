@@ -50,16 +50,6 @@ HIGH_TASK_MEMORY_MB = 8192
 MEDIUM_TASK_MEMORY_MB = 4096
 BUILDTOOL_TOKENS = ("build-essential", " gcc", "g++", "clang", "make")
 SEISMIC_NATIVE_TOKENS = ("seisbench", "obspy")
-GEOSPATIAL_NATIVE_TOKENS = ("geopandas", "pyogrio", "rasterio", "fiona", "shapely", "pyproj", "gdal")
-SCIENTIFIC_NATIVE_TOKENS = (
-    "netcdf4",
-    "h5py",
-    "llvmlite",
-    "numba",
-    "batman-package",
-    "lightkurve",
-    "transitleastsquares",
-)
 FROM_LINE_PATTERN = re.compile(r"^FROM\s+(.+)$", re.MULTILINE)
 MEMORY_STRING_PATTERN = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*([KMGTP])B?\s*$", re.IGNORECASE)
 
@@ -447,7 +437,7 @@ def _read_task_environment_metadata(task_dir: Path) -> dict[str, Any]:
         base_image = from_match.group(1).strip() if from_match else None
         tokens = [
             token
-            for token in (*SEISMIC_NATIVE_TOKENS, *GEOSPATIAL_NATIVE_TOKENS, *SCIENTIFIC_NATIVE_TOKENS)
+            for token in SEISMIC_NATIVE_TOKENS
             if token in lowered
         ]
         payload.update(
@@ -484,10 +474,13 @@ def _detect_preflight_risks(
     risks: list[dict[str, Any]] = []
 
     if pinned_amd64:
-        severity = "high" if is_arm64 else "medium"
+        severity = "medium" if is_arm64 else "low"
         summary = "Dockerfile pins linux/amd64"
         if is_arm64:
-            summary += f" while Docker server arch is {docker_server_arch}"
+            summary += (
+                f" while Docker server arch is {docker_server_arch};"
+                " current Docker may rely on cross-architecture emulation"
+            )
         risks.append(
             {
                 "code": "amd64_platform_pin",
@@ -515,47 +508,21 @@ def _detect_preflight_risks(
                     },
                 }
             )
-        elif native_token_set.intersection(GEOSPATIAL_NATIVE_TOKENS):
-            risks.append(
-                {
-                    "code": "arm64_native_build_toolchain_gap",
-                    "severity": "high",
-                    "summary": (
-                        f"{task_name} uses geospatial native packages on arm64 without a build toolchain"
-                    ),
-                    "evidence": {
-                        "packages": sorted(native_token_set.intersection(GEOSPATIAL_NATIVE_TOKENS)),
-                        "base_image": metadata.get("base_image"),
-                    },
-                }
-            )
-        elif native_token_set.intersection(SCIENTIFIC_NATIVE_TOKENS):
-            risks.append(
-                {
-                    "code": "arm64_native_build_toolchain_gap",
-                    "severity": "medium",
-                    "summary": (
-                        f"{task_name} may require native builds on arm64 without a build toolchain"
-                    ),
-                    "evidence": {
-                        "packages": sorted(native_token_set.intersection(SCIENTIFIC_NATIVE_TOKENS)),
-                        "base_image": metadata.get("base_image"),
-                    },
-                }
-            )
 
     if python_slim_base and native_tokens and not has_build_tools:
-        risks.append(
-            {
-                "code": "native_build_toolchain_gap",
-                "severity": "medium",
-                "summary": "python:slim image installs native-extension packages without a build toolchain",
-                "evidence": {
-                    "packages": native_tokens,
-                    "base_image": metadata.get("base_image"),
-                },
-            }
-        )
+        seismic_packages = sorted(native_token_set.intersection(SEISMIC_NATIVE_TOKENS))
+        if seismic_packages:
+            risks.append(
+                {
+                    "code": "native_build_toolchain_gap",
+                    "severity": "medium",
+                    "summary": "python:slim image installs seismic native-extension packages without a build toolchain",
+                    "evidence": {
+                        "packages": seismic_packages,
+                        "base_image": metadata.get("base_image"),
+                    },
+                }
+            )
 
     if isinstance(task_memory_mb, int):
         if task_memory_mb >= HIGH_TASK_MEMORY_MB:

@@ -1,0 +1,33 @@
+{
+  "base_image": "python:3.11-slim",
+  "build_timeout_sec": 900,
+  "docker_server_arch": "arm64",
+  "docker_server_os": "linux",
+  "dockerfile_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association/environment/Dockerfile",
+  "has_build_tools": true,
+  "native_stack_tokens": [
+    "obspy",
+    "seisbench"
+  ],
+  "pair_id": "earthquake-phase-association__metric-gated-scientific-pipeline",
+  "pinned_amd64": false,
+  "python_slim_base": true,
+  "risk_count": 1,
+  "risk_level": "medium",
+  "risks": [
+    {
+      "code": "high_task_memory_requirement",
+      "evidence": {
+        "task_memory_mb": 8192
+      },
+      "severity": "medium",
+      "summary": "Task environment requests 8192 MB of memory"
+    }
+  ],
+  "schema_id": "metric-gated-scientific-pipeline",
+  "task_dir": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association",
+  "task_memory_mb": 8192,
+  "task_name": "earthquake-phase-association",
+  "task_storage_mb": 10240,
+  "task_toml_path": "/Users/Jackal/iWorld/projects/skillsbench-src/tasks/earthquake-phase-association/task.toml"
+}

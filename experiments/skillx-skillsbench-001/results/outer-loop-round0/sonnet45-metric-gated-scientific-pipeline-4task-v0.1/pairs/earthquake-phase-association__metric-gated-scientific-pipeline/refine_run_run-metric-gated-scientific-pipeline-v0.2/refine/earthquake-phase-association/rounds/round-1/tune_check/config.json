@@ -1,0 +1,66 @@
+{
+  "job_name": "earthquake-phase-association-round-1-c4-tune",
+  "jobs_dir": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/refine/earthquake-phase-association/rounds/round-1/tune_check",
+  "n_attempts": 1,
+  "timeout_multiplier": 1.0,
+  "debug": false,
+  "orchestrator": {
+    "type": "local",
+    "n_concurrent_trials": 1,
+    "quiet": false,
+    "retry": {
+      "max_retries": 0,
+      "include_exceptions": null,
+      "exclude_exceptions": [
+        "AgentTimeoutError",
+        "VerifierTimeoutError",
+        "RewardFileNotFoundError",
+        "RewardFileEmptyError",
+        "VerifierOutputParseError"
+      ],
+      "wait_multiplier": 1.0,
+      "min_wait_sec": 1.0,
+      "max_wait_sec": 60.0
+    },
+    "kwargs": {}
+  },
+  "environment": {
+    "type": "docker",
+    "import_path": null,
+    "force_build": false,
+    "delete": true,
+    "override_cpus": null,
+    "override_memory_mb": null,
+    "override_storage_mb": null,
+    "override_gpus": null,
+    "kwargs": {}
+  },
+  "verifier": {
+    "override_timeout_sec": null,
+    "max_timeout_sec": null,
+    "disable": false
+  },
+  "metrics": [],
+  "agents": [
+    {
+      "name": null,
+      "import_path": "skillx.harbor_agents:AuthBackedClaudeCode",
+      "model_name": "anthropic/claude-sonnet-4-5",
+      "override_timeout_sec": null,
+      "override_setup_timeout_sec": null,
+      "max_timeout_sec": null,
+      "kwargs": {}
+    }
+  ],
+  "datasets": [],
+  "tasks": [
+    {
+      "path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/pairs/earthquake-phase-association__metric-gated-scientific-pipeline/refine_run_run-metric-gated-scientific-pipeline-v0.2/artifacts/task_sandboxes/c4-earthquake-phase-association-round-1",
+      "git_url": null,
+      "git_commit_id": null,
+      "overwrite": false,
+      "download_dir": null,
+      "source": null
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+Selected 4 task(s) -> 4 pair(s)
+Tasks: earthquake-phase-association, seismic-phase-picking, glm-lake-mendota, exoplanet-detection-period
+Launcher logs: /Users/Jackal/iWorld/projects/skillX/.worktrees/bug/issue-16-earthquake-negative-lift/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-metric-gated-scientific-pipeline-4task-v0.1/launcher_logs/run-metric-gated-scientific-pipeline-v0.2
+[1/4] earthquake-phase-association__metric-gated-scientific-pipeline

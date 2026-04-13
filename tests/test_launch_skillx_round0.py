@@ -362,7 +362,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertEqual(summary["succeeded_pairs"], 1)
             self.assertEqual(summary["failed_pairs"], 0)
 
-    def test_build_preflight_docker_risk_audit_flags_amd64_pin_and_memory(self) -> None:
+    def test_build_preflight_docker_risk_audit_flags_amd64_pin_as_medium_risk(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))
             task_root = Path(tmpdir) / "skillsbench-src" / "tasks" / "task-beta"
@@ -405,9 +405,10 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             )
 
             self.assertEqual(audit["affected_pairs"], 1)
-            self.assertEqual(audit["high_risk_pairs"], 1)
+            self.assertEqual(audit["high_risk_pairs"], 0)
+            self.assertEqual(audit["medium_risk_pairs"], 1)
             pair = audit["pairs"][0]
-            self.assertEqual(pair["risk_level"], "high")
+            self.assertEqual(pair["risk_level"], "medium")
             risk_codes = {item["code"] for item in pair["risks"]}
             self.assertIn("amd64_platform_pin", risk_codes)
             self.assertIn("high_task_memory_requirement", risk_codes)

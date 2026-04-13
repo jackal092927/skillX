@@ -1,0 +1,36 @@
+{
+  "task_id": "earthquake-phase-association",
+  "round_index": 1,
+  "role": "role_b",
+  "model_name": "gpt-5.4",
+  "summary": "Tighten the SeisBench classify contract and add a post-run metric gate plus a one-pass retune ladder so executors do not stop at a merely runnable but over-split catalog.",
+  "atomic_operations": [
+    {
+      "op_id": "op-1",
+      "action_type": "tighten_block",
+      "target_id": "skills/seisbench-model-api/SKILL.md#classify-function",
+      "rationale": "Round 1's first full run failed on `TypeError: object of type 'ClassifyOutput' has no len()` because the skill still described `model.classify()` as list-like output instead of a container with `.picks`.",
+      "expected_effect": "Executors extract `classify_output.picks` on the first pass and avoid the predictable API-contract retry.",
+      "risk": "Some non-picking models may expose additional fields beyond `.picks`, so users still need to inspect model-specific extras when relevant.",
+      "status": "applied"
+    },
+    {
+      "op_id": "op-2",
+      "action_type": "tighten_block",
+      "target_id": "skills/gamma-phase-associator/SKILL.md#post-association-acceptance-gate",
+      "rationale": "After the API fix, the run was accepted with 222 predicted events, but the evaluator showed 0.468 precision against 102 catalog events even though F1 only barely cleared 0.6; the skill lacked any requirement to run a quality gate after the first successful association.",
+      "expected_effect": "Executors treat the first successful `results.csv` as a candidate, run the evaluator or a bounded sanity check, and retune once instead of stopping at a metric-blind completion.",
+      "risk": "The extra acceptance pass adds one evaluation step and can trigger a retune on borderline-but-passing runs.",
+      "status": "applied"
+    },
+    {
+      "op_id": "op-3",
+      "action_type": "tighten_block",
+      "target_id": "skills/seismic-picker-selection/SKILL.md#precision-retune-ladder",
+      "rationale": "The remaining failure mode was over-splitting from a recall-first picker configuration, but the picker skill offered no concrete first retune knob before method switching.",
+      "expected_effect": "Executors raise PhaseNet thresholds before touching association or swapping methods, which should improve precision with one bounded retune pass.",
+      "risk": "Higher picker thresholds can reduce recall if the first pass was already conservative.",
+      "status": "applied"
+    }
+  ]
+}
