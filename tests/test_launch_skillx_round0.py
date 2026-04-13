@@ -10,6 +10,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import path_setup
+from skillx import docker_health
+
 
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[1]
@@ -32,6 +35,12 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.module = _load_module()
+
+    def setUp(self) -> None:
+        docker_health._reset_fake_docker_health_state()
+
+    def tearDown(self) -> None:
+        docker_health._reset_fake_docker_health_state()
 
     def _build_fixture(self, root: Path) -> dict[str, Path]:
         task_slice_path = root / "task-slice.json"
@@ -583,6 +592,107 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             recovery_path = health_path.with_name("docker_recovery.json")
             self.assertTrue(health_path.exists())
             self.assertTrue(recovery_path.exists())
+
+    def test_main_recovers_with_fault_injected_docker_health(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+
+            with mock.patch.dict(
+                "os.environ",
+                {
+                    docker_health.FAKE_DOCKER_HEALTH_ENV: "internal_error_once,healthy_always",
+                    docker_health.FAKE_DOCKER_RECOVERY_ENV: "success",
+                },
+                clear=False,
+            ):
+                with mock.patch.object(
+                    self.module.subprocess,
+                    "run",
+                    return_value=mock.Mock(returncode=0),
+                ) as mock_run:
+                    exit_code = self.module.main(
+                        [
+                            "1",
+                            "--task-slice",
+                            str(fixture["task_slice_path"]),
+                            "--materialized-root",
+                            str(fixture["materialized_root"]),
+                            "--oauth-file",
+                            str(fixture["oauth_file"]),
+                            "--refine-protocol-path",
+                            str(fixture["protocol_path"]),
+                            "--bundle-contract-path",
+                            str(fixture["bundle_path"]),
+                            "--output-suffix",
+                            "fault-injected-recover",
+                            "--docker-auto-recover",
+                        ]
+                    )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(mock_run.call_count, 2)
+            health_path = (
+                fixture["materialized_root"]
+                / "pairs"
+                / "task-alpha__analytic-pipeline"
+                / "refine_run_fault-injected-recover"
+                / "docker_health.json"
+            )
+            recovery_path = health_path.with_name("docker_recovery.json")
+            self.assertTrue(health_path.exists())
+            self.assertTrue(recovery_path.exists())
+            health_payload = json.loads(health_path.read_text())
+            recovery_payload = json.loads(recovery_path.read_text())
+            self.assertTrue(health_payload["healthy"])
+            self.assertTrue(health_payload["fault_injected"])
+            self.assertEqual(health_payload["fault_injection_scenario"], "healthy")
+            self.assertTrue(recovery_payload["successful"])
+            self.assertTrue(recovery_payload["fault_injected"])
+
+    def test_main_aborts_with_persistent_fault_injected_docker_health(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+
+            with mock.patch.dict(
+                "os.environ",
+                {
+                    docker_health.FAKE_DOCKER_HEALTH_ENV: "internal_error_always",
+                    docker_health.FAKE_DOCKER_RECOVERY_ENV: "failure",
+                },
+                clear=False,
+            ):
+                with mock.patch.object(self.module.subprocess, "run") as mock_run:
+                    exit_code = self.module.main(
+                        [
+                            "1",
+                            "--task-slice",
+                            str(fixture["task_slice_path"]),
+                            "--materialized-root",
+                            str(fixture["materialized_root"]),
+                            "--oauth-file",
+                            str(fixture["oauth_file"]),
+                            "--refine-protocol-path",
+                            str(fixture["protocol_path"]),
+                            "--bundle-contract-path",
+                            str(fixture["bundle_path"]),
+                            "--output-suffix",
+                            "fault-injected-stop",
+                            "--docker-auto-recover",
+                        ]
+                    )
+
+            self.assertEqual(exit_code, 1)
+            mock_run.assert_not_called()
+            summary_path = (
+                fixture["materialized_root"]
+                / "launcher_logs"
+                / "fault-injected-stop"
+                / "summary.json"
+            )
+            summary = json.loads(summary_path.read_text())
+            self.assertTrue(summary["aborted"])
+            self.assertEqual(summary["results"][0]["stage"], "docker_health_gate")
+            self.assertTrue(summary["results"][0]["docker_recovery_attempted"])
 
     def test_main_continues_when_command_build_fails_for_one_pair(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import subprocess
 import time
@@ -15,10 +16,36 @@ DOCKER_INTERNAL_ERROR_MARKERS = (
     "docker daemon is not running",
     "error during connect",
 )
+FAKE_DOCKER_HEALTH_ENV = "SKILLX_FAKE_DOCKER_HEALTH"
+FAKE_DOCKER_RECOVERY_ENV = "SKILLX_FAKE_DOCKER_RECOVERY"
+FAKE_DOCKER_HEALTH_MEM_BYTES = 17_179_869_184
+SUPPORTED_FAKE_DOCKER_HEALTH_SCENARIOS = {
+    "healthy",
+    "internal_error",
+    "memtotal_zero",
+    "low_memory",
+    "passthrough",
+}
+_fake_docker_health_state: dict[str, Any] = {
+    "raw": None,
+    "sequence": [],
+    "repeat": None,
+    "invalid": [],
+}
 
 
 def _timestamp() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _reset_fake_docker_health_state() -> None:
+    global _fake_docker_health_state
+    _fake_docker_health_state = {
+        "raw": None,
+        "sequence": [],
+        "repeat": None,
+        "invalid": [],
+    }
 
 
 def _trim_output(text: str | None, *, limit: int = 4000) -> str:
@@ -51,6 +78,8 @@ def _run_command(
             "returncode": None,
             "stdout": "",
             "stderr": "",
+            "stdout_excerpt": "",
+            "stderr_excerpt": "",
             "timed_out": False,
             "error": f"{type(exc).__name__}: {exc}",
         }
@@ -58,16 +87,20 @@ def _run_command(
         return {
             "command": list(command),
             "returncode": None,
-            "stdout": _trim_output(exc.stdout),
-            "stderr": _trim_output(exc.stderr),
+            "stdout": exc.stdout or "",
+            "stderr": exc.stderr or "",
+            "stdout_excerpt": _trim_output(exc.stdout),
+            "stderr_excerpt": _trim_output(exc.stderr),
             "timed_out": True,
             "error": f"command timed out after {timeout_sec} seconds",
         }
     return {
         "command": list(command),
         "returncode": proc.returncode,
-        "stdout": _trim_output(proc.stdout),
-        "stderr": _trim_output(proc.stderr),
+        "stdout": proc.stdout or "",
+        "stderr": proc.stderr or "",
+        "stdout_excerpt": _trim_output(proc.stdout),
+        "stderr_excerpt": _trim_output(proc.stderr),
         "timed_out": False,
         "error": None,
     }
@@ -99,11 +132,285 @@ def _coerce_int(value: Any) -> int | None:
         return None
 
 
+def _parse_fake_health_env(raw: str) -> dict[str, Any]:
+    sequence: list[str] = []
+    repeat: str | None = None
+    invalid: list[str] = []
+    for chunk in raw.split(","):
+        token = chunk.strip().lower()
+        if not token:
+            continue
+        if token.endswith("_once"):
+            token = token[: -len("_once")]
+            if token in SUPPORTED_FAKE_DOCKER_HEALTH_SCENARIOS:
+                sequence.append(token)
+            else:
+                invalid.append(chunk.strip())
+            continue
+        if token.endswith("_always"):
+            token = token[: -len("_always")]
+            if token in SUPPORTED_FAKE_DOCKER_HEALTH_SCENARIOS:
+                repeat = token
+            else:
+                invalid.append(chunk.strip())
+            continue
+        if token in SUPPORTED_FAKE_DOCKER_HEALTH_SCENARIOS:
+            sequence.append(token)
+        else:
+            invalid.append(chunk.strip())
+    return {
+        "raw": raw,
+        "sequence": sequence,
+        "repeat": repeat,
+        "invalid": invalid,
+    }
+
+
+def _consume_fake_health_scenario() -> tuple[str | None, list[str]]:
+    global _fake_docker_health_state
+    raw = os.environ.get(FAKE_DOCKER_HEALTH_ENV, "").strip()
+    if not raw:
+        _reset_fake_docker_health_state()
+        return None, []
+    if raw != _fake_docker_health_state["raw"]:
+        _fake_docker_health_state = _parse_fake_health_env(raw)
+    invalid = list(_fake_docker_health_state["invalid"])
+    if invalid:
+        return "invalid", invalid
+    sequence = _fake_docker_health_state["sequence"]
+    if sequence:
+        return str(sequence.pop(0)), []
+    repeat = _fake_docker_health_state["repeat"]
+    return (str(repeat), []) if repeat else (None, [])
+
+
+def _build_command_result(
+    command: list[str],
+    *,
+    returncode: int | None,
+    stdout: str = "",
+    stderr: str = "",
+    error: str | None = None,
+) -> dict[str, Any]:
+    return {
+        "command": list(command),
+        "returncode": returncode,
+        "stdout": stdout,
+        "stderr": stderr,
+        "stdout_excerpt": _trim_output(stdout),
+        "stderr_excerpt": _trim_output(stderr),
+        "timed_out": False,
+        "error": error,
+    }
+
+
+def _build_injected_health_report(
+    scenario: str,
+    *,
+    min_memory_bytes: int,
+) -> dict[str, Any]:
+    observed_at = _timestamp()
+    if scenario == "invalid":
+        invalid_chunks = ", ".join(_consume_fake_health_scenario()[1])
+        return {
+            "healthy": False,
+            "category": "fault_injection_invalid",
+            "message": f"Invalid {FAKE_DOCKER_HEALTH_ENV} value: {invalid_chunks}",
+            "observed_at": observed_at,
+            "docker_mem_bytes": None,
+            "required_memory_bytes": min_memory_bytes,
+            "docker_info": None,
+            "docker_version_server": None,
+            "checks": {},
+            "issues": [f"Invalid {FAKE_DOCKER_HEALTH_ENV} value: {invalid_chunks}"],
+            "fault_injected": True,
+            "fault_injection_scenario": scenario,
+        }
+
+    docker_info_command = ["docker", "info", "--format", "{{json .}}"]
+    docker_version_command = ["docker", "version", "--format", "{{json .Server}}"]
+    docker_ps_command = ["docker", "ps", "--format", "{{json .Names}}"]
+
+    if scenario == "healthy":
+        docker_mem_bytes = max(min_memory_bytes, FAKE_DOCKER_HEALTH_MEM_BYTES)
+        info_payload = {"MemTotal": docker_mem_bytes}
+        version_payload = {"Version": "fault-injected"}
+        checks = {
+            "docker_info": _build_command_result(
+                docker_info_command,
+                returncode=0,
+                stdout=json.dumps(info_payload),
+            ),
+            "docker_version": _build_command_result(
+                docker_version_command,
+                returncode=0,
+                stdout=json.dumps(version_payload),
+            ),
+            "docker_ps": _build_command_result(
+                docker_ps_command,
+                returncode=0,
+                stdout='"fault-injected-container"',
+            ),
+        }
+        return {
+            "healthy": True,
+            "category": "healthy",
+            "message": (
+                "Injected healthy Docker report: "
+                f"MemTotal={docker_mem_bytes} bytes >= required {min_memory_bytes} bytes"
+            ),
+            "observed_at": observed_at,
+            "docker_mem_bytes": docker_mem_bytes,
+            "required_memory_bytes": min_memory_bytes,
+            "docker_info": info_payload,
+            "docker_version_server": version_payload,
+            "checks": checks,
+            "issues": [],
+            "fault_injected": True,
+            "fault_injection_scenario": scenario,
+        }
+
+    if scenario == "internal_error":
+        checks = {
+            "docker_info": _build_command_result(
+                docker_info_command,
+                returncode=1,
+                stdout="Internal Server Error\n",
+            ),
+            "docker_version": _build_command_result(
+                docker_version_command,
+                returncode=1,
+                stdout="Internal Server Error\n",
+            ),
+            "docker_ps": _build_command_result(
+                docker_ps_command,
+                returncode=1,
+                stdout="Internal Server Error\n",
+            ),
+        }
+        message = f"Injected Docker daemon internal API error via {FAKE_DOCKER_HEALTH_ENV}"
+        return {
+            "healthy": False,
+            "category": "daemon_internal_error",
+            "message": message,
+            "observed_at": observed_at,
+            "docker_mem_bytes": None,
+            "required_memory_bytes": min_memory_bytes,
+            "docker_info": None,
+            "docker_version_server": None,
+            "checks": checks,
+            "issues": [message],
+            "fault_injected": True,
+            "fault_injection_scenario": scenario,
+        }
+
+    if scenario == "memtotal_zero":
+        info_payload = {"MemTotal": 0}
+        version_payload = {"Version": "fault-injected"}
+        checks = {
+            "docker_info": _build_command_result(
+                docker_info_command,
+                returncode=0,
+                stdout=json.dumps(info_payload),
+            ),
+            "docker_version": _build_command_result(
+                docker_version_command,
+                returncode=0,
+                stdout=json.dumps(version_payload),
+            ),
+            "docker_ps": _build_command_result(
+                docker_ps_command,
+                returncode=0,
+                stdout='"fault-injected-container"',
+            ),
+        }
+        message = f"Injected Docker info reported MemTotal=0 bytes via {FAKE_DOCKER_HEALTH_ENV}"
+        return {
+            "healthy": False,
+            "category": "invalid_memory",
+            "message": message,
+            "observed_at": observed_at,
+            "docker_mem_bytes": 0,
+            "required_memory_bytes": min_memory_bytes,
+            "docker_info": info_payload,
+            "docker_version_server": version_payload,
+            "checks": checks,
+            "issues": [message],
+            "fault_injected": True,
+            "fault_injection_scenario": scenario,
+        }
+
+    if scenario == "low_memory":
+        docker_mem_bytes = max(min_memory_bytes - 1, 1)
+        info_payload = {"MemTotal": docker_mem_bytes}
+        version_payload = {"Version": "fault-injected"}
+        checks = {
+            "docker_info": _build_command_result(
+                docker_info_command,
+                returncode=0,
+                stdout=json.dumps(info_payload),
+            ),
+            "docker_version": _build_command_result(
+                docker_version_command,
+                returncode=0,
+                stdout=json.dumps(version_payload),
+            ),
+            "docker_ps": _build_command_result(
+                docker_ps_command,
+                returncode=0,
+                stdout='"fault-injected-container"',
+            ),
+        }
+        message = (
+            "Injected Docker memory too low: "
+            f"{docker_mem_bytes} bytes < required {min_memory_bytes} bytes"
+        )
+        return {
+            "healthy": False,
+            "category": "insufficient_memory",
+            "message": message,
+            "observed_at": observed_at,
+            "docker_mem_bytes": docker_mem_bytes,
+            "required_memory_bytes": min_memory_bytes,
+            "docker_info": info_payload,
+            "docker_version_server": version_payload,
+            "checks": checks,
+            "issues": [message],
+            "fault_injected": True,
+            "fault_injection_scenario": scenario,
+        }
+
+    raise ValueError(f"unsupported injected Docker health scenario: {scenario}")
+
+
 def probe_docker_health(
     *,
     min_memory_bytes: int,
     timeout_sec: float = 20.0,
 ) -> dict[str, Any]:
+    injected_scenario, invalid = _consume_fake_health_scenario()
+    if injected_scenario == "invalid":
+        invalid_chunks = ", ".join(invalid)
+        return {
+            "healthy": False,
+            "category": "fault_injection_invalid",
+            "message": f"Invalid {FAKE_DOCKER_HEALTH_ENV} value: {invalid_chunks}",
+            "observed_at": _timestamp(),
+            "docker_mem_bytes": None,
+            "required_memory_bytes": min_memory_bytes,
+            "docker_info": None,
+            "docker_version_server": None,
+            "checks": {},
+            "issues": [f"Invalid {FAKE_DOCKER_HEALTH_ENV} value: {invalid_chunks}"],
+            "fault_injected": True,
+            "fault_injection_scenario": injected_scenario,
+        }
+    if injected_scenario is not None and injected_scenario != "passthrough":
+        return _build_injected_health_report(
+            injected_scenario,
+            min_memory_bytes=min_memory_bytes,
+        )
+
     info_result = _run_command(
         ["docker", "info", "--format", "{{json .}}"],
         timeout_sec=timeout_sec,
@@ -190,6 +497,8 @@ def probe_docker_health(
         "docker_version_server": version_payload,
         "checks": commands,
         "issues": issues,
+        "fault_injected": False,
+        "fault_injection_scenario": None,
     }
 
 
@@ -272,6 +581,33 @@ def _restart_docker_desktop(*, startup_timeout_sec: float = 180.0) -> dict[str, 
 
 
 def attempt_docker_recovery(*, skillsbench_root: Path | None = None) -> dict[str, Any]:
+    injected_mode = os.environ.get(FAKE_DOCKER_RECOVERY_ENV, "").strip().lower()
+    if injected_mode:
+        successful = injected_mode == "success"
+        message = (
+            f"Injected Docker recovery {injected_mode} via {FAKE_DOCKER_RECOVERY_ENV}"
+            if injected_mode in {"success", "failure"}
+            else f"Invalid {FAKE_DOCKER_RECOVERY_ENV} value: {injected_mode}"
+        )
+        return {
+            "attempted": True,
+            "observed_at": _timestamp(),
+            "commands": [],
+            "pre_cleanup": [],
+            "desktop_restart": {
+                "attempted": False,
+                "supported": True,
+                "message": "Skipped real Docker recovery because fault injection is enabled",
+                "commands": [],
+                "successful": successful,
+            },
+            "post_cleanup": [],
+            "successful": successful if injected_mode in {"success", "failure"} else False,
+            "message": message,
+            "fault_injected": True,
+            "fault_injection_mode": injected_mode,
+        }
+
     pre_cleanup = _run_recovery_commands(skillsbench_root=skillsbench_root)
     desktop_restart = _restart_docker_desktop()
     post_cleanup = _run_recovery_commands(skillsbench_root=skillsbench_root)
@@ -288,4 +624,6 @@ def attempt_docker_recovery(*, skillsbench_root: Path | None = None) -> dict[str
         "desktop_restart": desktop_restart,
         "post_cleanup": post_cleanup,
         "successful": successful,
+        "fault_injected": False,
+        "fault_injection_mode": None,
     }
