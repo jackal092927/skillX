@@ -1,32 +1,38 @@
 {
   "config": {
+    "assignment_score_mode": "trajectory",
     "dominant_share_threshold": 0.6,
     "epsilon_pp": 5.0,
     "flat_column_range_pp": 10.0,
-    "global_pair_status_path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/feat/2026-04-19-outer-loop-optimization/experiments/skillx-skillsbench-001/results/outer-loop-round0/reports/global-round0-status/global_pair_status.json",
+    "global_pair_status_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/reports/global-round0-status/global_pair_status.json",
+    "growth_score_weight": 0.2,
     "high_confidence_margin_pp": 10.0,
     "medium_confidence_margin_pp": 5.0,
     "near_empty_threshold": 3,
-    "prompt_bank_path": "/Users/Jackal/iWorld/projects/skillX/.worktrees/feat/2026-04-19-outer-loop-optimization/docs/plans/skillx/skillx-prompt-bank-v0.1.json",
+    "prompt_bank_path": "docs/plans/skillx/skillx-prompt-bank-v0.1.json",
     "require_full_coverage": true,
-    "round0_root": "/Users/Jackal/iWorld/projects/skillX/.worktrees/feat/2026-04-19-outer-loop-optimization/experiments/skillx-skillsbench-001/results/outer-loop-round0",
+    "round0_root": "experiments/skillx-skillsbench-001/results/outer-loop-round0",
     "round_id": "outer-loop-round0",
+    "round_mean_score_weight": 0.3,
+    "round_score_weights": {
+      "0": 0.15,
+      "1": 0.2,
+      "2": 0.3,
+      "3": 0.35
+    },
+    "terminal_score_weight": 0.5,
     "top3_tie_threshold_pp": 10.0,
     "update_floor_fraction": 0.1
   },
   "diagnostics": {
     "collapse_warnings": [
       {
-        "kind": "low_occupied_cluster_count",
-        "message": "Only 1 schemas are occupied by primary assignment."
-      },
-      {
         "kind": "dominant_schema",
-        "message": "Largest cluster share is 1.00."
+        "message": "Largest cluster share is 0.67."
       },
       {
         "kind": "high_low_margin_fraction",
-        "message": "Low-margin fraction is 1.00."
+        "message": "Low-margin fraction is 0.83."
       }
     ],
     "flat_schema_columns": [],
@@ -1582,11 +1588,13 @@
       {
         "ambiguous_schema_ids": "",
         "assigned_category": "analytic-pipeline",
-        "assigned_score": 100.0,
+        "assigned_reported_score": 100.0,
+        "assigned_score": 90.0,
         "assignment_confidence": "low",
         "assignment_status": "assigned",
         "best_observed_category": "analytic-pipeline",
-        "best_score": 100.0,
+        "best_reported_score": 100.0,
+        "best_score": 90.0,
         "full_coverage": true,
         "infra_blocked_schema_ids": "",
         "margin_pp": 0.0,
@@ -1594,7 +1602,8 @@
         "observed_schema_count": 7,
         "runtime_blocked_schema_ids": "",
         "second_best_category": "artifact-generation",
-        "second_best_score": 100.0,
+        "second_best_score": 90.0,
+        "second_reported_score": 100.0,
         "task_name": "citation-check",
         "tie_break_reason": "deterministic_fallback",
         "tie_break_used": true,
@@ -1605,60 +1614,68 @@
       },
       {
         "ambiguous_schema_ids": "",
-        "assigned_category": "analytic-pipeline",
-        "assigned_score": 55.0,
+        "assigned_category": "artifact-generation",
+        "assigned_reported_score": 60.0,
+        "assigned_score": 55.4,
         "assignment_confidence": "low",
         "assignment_status": "assigned",
-        "best_observed_category": "artifact-generation",
-        "best_score": 60.0,
+        "best_observed_category": "environment-control",
+        "best_reported_score": 60.0,
+        "best_score": 55.95,
         "full_coverage": true,
         "infra_blocked_schema_ids": "",
-        "margin_pp": 0.0,
-        "missing_schema_ids": "",
-        "observed_schema_count": 7,
-        "runtime_blocked_schema_ids": "",
-        "second_best_category": "engineering-composition",
-        "second_best_score": 60.0,
-        "task_name": "civ6-adjacency-optimizer",
-        "tie_break_reason": "deterministic_fallback",
-        "tie_break_used": true,
-        "tie_candidate_count": 5,
-        "tie_candidate_schema_ids": "artifact-generation;engineering-composition;environment-control;retrieval-heavy-synthesis;analytic-pipeline",
-        "tie_candidate_score_range_pp": 5.0,
-        "top3_spread_pp": 0.0
-      },
-      {
-        "ambiguous_schema_ids": "",
-        "assigned_category": "analytic-pipeline",
-        "assigned_score": 100.0,
-        "assignment_confidence": "low",
-        "assignment_status": "assigned",
-        "best_observed_category": "analytic-pipeline",
-        "best_score": 100.0,
-        "full_coverage": true,
-        "infra_blocked_schema_ids": "",
-        "margin_pp": 0.0,
+        "margin_pp": 0.55,
         "missing_schema_ids": "",
         "observed_schema_count": 7,
         "runtime_blocked_schema_ids": "",
         "second_best_category": "artifact-generation",
-        "second_best_score": 100.0,
+        "second_best_score": 55.4,
+        "second_reported_score": 60.0,
+        "task_name": "civ6-adjacency-optimizer",
+        "tie_break_reason": "deterministic_fallback",
+        "tie_break_used": true,
+        "tie_candidate_count": 3,
+        "tie_candidate_schema_ids": "environment-control;artifact-generation;engineering-composition",
+        "tie_candidate_score_range_pp": 3.95,
+        "top3_spread_pp": 3.95
+      },
+      {
+        "ambiguous_schema_ids": "",
+        "assigned_category": "methodology-guardrail",
+        "assigned_reported_score": 100.0,
+        "assigned_score": 85.0,
+        "assignment_confidence": "low",
+        "assignment_status": "assigned",
+        "best_observed_category": "analytic-pipeline",
+        "best_reported_score": 100.0,
+        "best_score": 85.0,
+        "full_coverage": true,
+        "infra_blocked_schema_ids": "",
+        "margin_pp": 0.0,
+        "missing_schema_ids": "",
+        "observed_schema_count": 7,
+        "runtime_blocked_schema_ids": "",
+        "second_best_category": "methodology-guardrail",
+        "second_best_score": 85.0,
+        "second_reported_score": 100.0,
         "task_name": "court-form-filling",
         "tie_break_reason": "deterministic_fallback",
         "tie_break_used": true,
-        "tie_candidate_count": 5,
-        "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;methodology-guardrail;orchestration-delegation",
-        "tie_candidate_score_range_pp": 0.0,
-        "top3_spread_pp": 0.0
+        "tie_candidate_count": 3,
+        "tie_candidate_schema_ids": "analytic-pipeline;methodology-guardrail;orchestration-delegation",
+        "tie_candidate_score_range_pp": 4.5,
+        "top3_spread_pp": 4.5
       },
       {
         "ambiguous_schema_ids": "artifact-generation;analytic-pipeline;engineering-composition;retrieval-heavy-synthesis;environment-control;methodology-guardrail;orchestration-delegation",
         "assigned_category": "analytic-pipeline",
-        "assigned_score": 0.0,
+        "assigned_reported_score": 0.0,
+        "assigned_score": 10.0,
         "assignment_confidence": "low",
         "assignment_status": "assigned",
         "best_observed_category": "analytic-pipeline",
-        "best_score": 0.0,
+        "best_reported_score": 0.0,
+        "best_score": 10.0,
         "full_coverage": true,
         "infra_blocked_schema_ids": "",
         "margin_pp": 0.0,
@@ -1666,7 +1683,8 @@
         "observed_schema_count": 7,
         "runtime_blocked_schema_ids": "",
         "second_best_category": "artifact-generation",
-        "second_best_score": 0.0,
+        "second_best_score": 10.0,
+        "second_reported_score": 0.0,
         "task_name": "earthquake-phase-association",
         "tie_break_reason": "deterministic_fallback",
         "tie_break_used": true,
@@ -1678,11 +1696,13 @@
       {
         "ambiguous_schema_ids": "",
         "assigned_category": "analytic-pipeline",
-        "assigned_score": 100.0,
+        "assigned_reported_score": 100.0,
+        "assigned_score": 90.0,
         "assignment_confidence": "low",
         "assignment_status": "assigned",
         "best_observed_category": "analytic-pipeline",
-        "best_score": 100.0,
+        "best_reported_score": 100.0,
+        "best_score": 90.0,
         "full_coverage": true,
         "infra_blocked_schema_ids": "",
         "margin_pp": 0.0,
@@ -1690,31 +1710,8 @@
         "observed_schema_count": 7,
         "runtime_blocked_schema_ids": "",
         "second_best_category": "artifact-generation",
-        "second_best_score": 100.0,
-        "task_name": "pdf-excel-diff",
-        "tie_break_reason": "deterministic_fallback",
-        "tie_break_used": true,
-        "tie_candidate_count": 7,
-        "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
-        "tie_candidate_score_range_pp": 0.0,
-        "top3_spread_pp": 0.0
-      },
-      {
-        "ambiguous_schema_ids": "",
-        "assigned_category": "analytic-pipeline",
-        "assigned_score": 100.0,
-        "assignment_confidence": "low",
-        "assignment_status": "assigned",
-        "best_observed_category": "analytic-pipeline",
-        "best_score": 100.0,
-        "full_coverage": true,
-        "infra_blocked_schema_ids": "",
-        "margin_pp": 0.0,
-        "missing_schema_ids": "",
-        "observed_schema_count": 7,
-        "runtime_blocked_schema_ids": "",
-        "second_best_category": "artifact-generation",
-        "second_best_score": 100.0,
+        "second_best_score": 90.0,
+        "second_reported_score": 100.0,
         "task_name": "powerlifting-coef-calc",
         "tie_break_reason": "deterministic_fallback",
         "tie_break_used": true,
@@ -1727,43 +1724,40 @@
     "schema_diagnostics": [
       {
         "below_update_floor": true,
-        "empty": true,
-        "mean_assigned_score": null,
-        "mean_observed_score": 70.0,
-        "near_empty": false,
+        "empty": false,
+        "mean_assigned_score": 55.95,
+        "mean_observed_score": 63.49,
+        "near_empty": true,
         "observed_task_count": 8,
-        "occupancy_share": 0.0,
-        "primary_assigned_count": 0,
+        "occupancy_share": 0.1667,
+        "primary_assigned_count": 1,
         "schema_id": "artifact-generation",
-        "score_range_pp": 100.0,
-        "score_stddev_pp": 42.43,
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 32.75,
         "top_k_tasks_added": [
-          "citation-check",
-          "court-form-filling"
+          "citation-check"
         ],
         "update_evidence_task_names": [
-          "citation-check",
-          "court-form-filling"
+          "civ6-adjacency-optimizer",
+          "citation-check"
         ],
         "update_floor_k": 2
       },
       {
         "below_update_floor": false,
         "empty": false,
-        "mean_assigned_score": 76.67,
-        "mean_observed_score": 72.78,
+        "mean_assigned_score": 71.38,
+        "mean_observed_score": 63.92,
         "near_empty": false,
         "observed_task_count": 9,
-        "occupancy_share": 1.0,
-        "primary_assigned_count": 6,
+        "occupancy_share": 0.6667,
+        "primary_assigned_count": 4,
         "schema_id": "analytic-pipeline",
-        "score_range_pp": 100.0,
-        "score_stddev_pp": 41.31,
+        "score_range_pp": 85.5,
+        "score_stddev_pp": 31.68,
         "top_k_tasks_added": [],
         "update_evidence_task_names": [
           "citation-check",
-          "civ6-adjacency-optimizer",
-          "court-form-filling",
           "earthquake-phase-association",
           "pdf-excel-diff",
           "powerlifting-coef-calc"
@@ -1774,21 +1768,21 @@
         "below_update_floor": true,
         "empty": true,
         "mean_assigned_score": null,
-        "mean_observed_score": 62.22,
+        "mean_observed_score": 57.83,
         "near_empty": false,
         "observed_task_count": 9,
         "occupancy_share": 0.0,
         "primary_assigned_count": 0,
         "schema_id": "engineering-composition",
-        "score_range_pp": 100.0,
-        "score_stddev_pp": 45.65,
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 35.67,
         "top_k_tasks_added": [
           "citation-check",
-          "court-form-filling"
+          "powerlifting-coef-calc"
         ],
         "update_evidence_task_names": [
           "citation-check",
-          "court-form-filling"
+          "powerlifting-coef-calc"
         ],
         "update_floor_k": 2
       },
@@ -1796,21 +1790,21 @@
         "below_update_floor": true,
         "empty": true,
         "mean_assigned_score": null,
-        "mean_observed_score": 57.5,
+        "mean_observed_score": 54.75,
         "near_empty": false,
         "observed_task_count": 8,
         "occupancy_share": 0.0,
         "primary_assigned_count": 0,
         "schema_id": "retrieval-heavy-synthesis",
-        "score_range_pp": 100.0,
-        "score_stddev_pp": 46.3,
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 37.05,
         "top_k_tasks_added": [
           "citation-check",
-          "energy-ac-optimal-power-flow"
+          "pdf-excel-diff"
         ],
         "update_evidence_task_names": [
           "citation-check",
-          "energy-ac-optimal-power-flow"
+          "pdf-excel-diff"
         ],
         "update_floor_k": 2
       },
@@ -1818,43 +1812,42 @@
         "below_update_floor": true,
         "empty": true,
         "mean_assigned_score": null,
-        "mean_observed_score": 51.43,
+        "mean_observed_score": 48.85,
         "near_empty": false,
         "observed_task_count": 7,
         "occupancy_share": 0.0,
         "primary_assigned_count": 0,
         "schema_id": "environment-control",
-        "score_range_pp": 100.0,
-        "score_stddev_pp": 46.42,
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 35.26,
         "top_k_tasks_added": [
           "citation-check",
-          "pdf-excel-diff"
+          "powerlifting-coef-calc"
         ],
         "update_evidence_task_names": [
           "citation-check",
-          "pdf-excel-diff"
+          "powerlifting-coef-calc"
         ],
         "update_floor_k": 2
       },
       {
         "below_update_floor": true,
-        "empty": true,
-        "mean_assigned_score": null,
-        "mean_observed_score": 71.43,
-        "near_empty": false,
+        "empty": false,
+        "mean_assigned_score": 85.0,
+        "mean_observed_score": 65.93,
+        "near_empty": true,
         "observed_task_count": 7,
-        "occupancy_share": 0.0,
-        "primary_assigned_count": 0,
+        "occupancy_share": 0.1667,
+        "primary_assigned_count": 1,
         "schema_id": "methodology-guardrail",
-        "score_range_pp": 100.0,
-        "score_stddev_pp": 45.18,
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 35.42,
         "top_k_tasks_added": [
-          "citation-check",
-          "court-form-filling"
+          "citation-check"
         ],
         "update_evidence_task_names": [
-          "citation-check",
-          "court-form-filling"
+          "court-form-filling",
+          "citation-check"
         ],
         "update_floor_k": 2
       },
@@ -1862,21 +1855,21 @@
         "below_update_floor": true,
         "empty": true,
         "mean_assigned_score": null,
-        "mean_observed_score": 76.43,
+        "mean_observed_score": 66.02,
         "near_empty": false,
         "observed_task_count": 7,
         "occupancy_share": 0.0,
         "primary_assigned_count": 0,
         "schema_id": "orchestration-delegation",
-        "score_range_pp": 100.0,
-        "score_stddev_pp": 38.43,
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 28.16,
         "top_k_tasks_added": [
           "citation-check",
-          "court-form-filling"
+          "powerlifting-coef-calc"
         ],
         "update_evidence_task_names": [
           "citation-check",
-          "court-form-filling"
+          "powerlifting-coef-calc"
         ],
         "update_floor_k": 2
       }
@@ -1885,147 +1878,149 @@
       {
         "left_schema_id": "artifact-generation",
         "pair_task_count": 8,
-        "pearson_correlation": 0.9993,
+        "pearson_correlation": 0.9837,
         "right_schema_id": "analytic-pipeline"
       },
       {
         "left_schema_id": "artifact-generation",
         "pair_task_count": 8,
-        "pearson_correlation": 1.0,
+        "pearson_correlation": 0.9985,
         "right_schema_id": "engineering-composition"
       },
       {
         "left_schema_id": "artifact-generation",
         "pair_task_count": 7,
-        "pearson_correlation": 0.4166,
+        "pearson_correlation": 0.5102,
         "right_schema_id": "retrieval-heavy-synthesis"
       },
       {
         "left_schema_id": "artifact-generation",
         "pair_task_count": 6,
-        "pearson_correlation": 0.6,
+        "pearson_correlation": 0.7146,
         "right_schema_id": "environment-control"
       },
       {
         "left_schema_id": "artifact-generation",
         "pair_task_count": 6,
-        "pearson_correlation": 0.8854,
+        "pearson_correlation": 0.8799,
         "right_schema_id": "methodology-guardrail"
       },
       {
         "left_schema_id": "artifact-generation",
         "pair_task_count": 6,
-        "pearson_correlation": 0.9739,
+        "pearson_correlation": 0.9653,
         "right_schema_id": "orchestration-delegation"
       },
       {
         "left_schema_id": "analytic-pipeline",
         "pair_task_count": 9,
-        "pearson_correlation": 0.7392,
+        "pearson_correlation": 0.8684,
         "right_schema_id": "engineering-composition"
       },
       {
         "left_schema_id": "analytic-pipeline",
         "pair_task_count": 8,
-        "pearson_correlation": 0.4441,
+        "pearson_correlation": 0.4811,
         "right_schema_id": "retrieval-heavy-synthesis"
       },
       {
         "left_schema_id": "analytic-pipeline",
         "pair_task_count": 7,
-        "pearson_correlation": 0.4078,
+        "pearson_correlation": 0.5927,
         "right_schema_id": "environment-control"
       },
       {
         "left_schema_id": "analytic-pipeline",
         "pair_task_count": 7,
-        "pearson_correlation": 0.9123,
+        "pearson_correlation": 0.8756,
         "right_schema_id": "methodology-guardrail"
       },
       {
         "left_schema_id": "analytic-pipeline",
         "pair_task_count": 7,
-        "pearson_correlation": 0.9846,
+        "pearson_correlation": 0.9338,
         "right_schema_id": "orchestration-delegation"
       },
       {
         "left_schema_id": "engineering-composition",
         "pair_task_count": 8,
-        "pearson_correlation": 0.0891,
+        "pearson_correlation": 0.1532,
         "right_schema_id": "retrieval-heavy-synthesis"
       },
       {
         "left_schema_id": "engineering-composition",
         "pair_task_count": 7,
-        "pearson_correlation": 0.7001,
+        "pearson_correlation": 0.7578,
         "right_schema_id": "environment-control"
       },
       {
         "left_schema_id": "engineering-composition",
         "pair_task_count": 7,
-        "pearson_correlation": 0.5168,
+        "pearson_correlation": 0.5613,
         "right_schema_id": "methodology-guardrail"
       },
       {
         "left_schema_id": "engineering-composition",
         "pair_task_count": 7,
-        "pearson_correlation": 0.5906,
+        "pearson_correlation": 0.65,
         "right_schema_id": "orchestration-delegation"
       },
       {
         "left_schema_id": "retrieval-heavy-synthesis",
         "pair_task_count": 7,
-        "pearson_correlation": 0.7001,
+        "pearson_correlation": 0.683,
         "right_schema_id": "environment-control"
       },
       {
         "left_schema_id": "retrieval-heavy-synthesis",
         "pair_task_count": 7,
-        "pearson_correlation": 0.5168,
+        "pearson_correlation": 0.6021,
         "right_schema_id": "methodology-guardrail"
       },
       {
         "left_schema_id": "retrieval-heavy-synthesis",
         "pair_task_count": 7,
-        "pearson_correlation": 0.5906,
+        "pearson_correlation": 0.647,
         "right_schema_id": "orchestration-delegation"
       },
       {
         "left_schema_id": "environment-control",
         "pair_task_count": 7,
-        "pearson_correlation": 0.2919,
+        "pearson_correlation": 0.3283,
         "right_schema_id": "methodology-guardrail"
       },
       {
         "left_schema_id": "environment-control",
         "pair_task_count": 7,
-        "pearson_correlation": 0.3672,
+        "pearson_correlation": 0.4497,
         "right_schema_id": "orchestration-delegation"
       },
       {
         "left_schema_id": "methodology-guardrail",
         "pair_task_count": 7,
-        "pearson_correlation": 0.9699,
+        "pearson_correlation": 0.9501,
         "right_schema_id": "orchestration-delegation"
       }
     ],
     "summary": {
       "assigned_task_count": 6,
-      "cluster_size_entropy": 0.0,
+      "assignment_score_formula": "0.5*reported_score + 0.3*weighted_mean(R0..R3) + 0.2*clamp(50 + best(R0..R3) - R0, 0, 100)",
+      "assignment_score_mode": "trajectory",
+      "cluster_size_entropy": 0.8676,
       "cluster_sizes": {
-        "analytic-pipeline": 6,
-        "artifact-generation": 0,
+        "analytic-pipeline": 4,
+        "artifact-generation": 1,
         "engineering-composition": 0,
         "environment-control": 0,
-        "methodology-guardrail": 0,
+        "methodology-guardrail": 1,
         "orchestration-delegation": 0,
         "retrieval-heavy-synthesis": 0
       },
-      "largest_cluster_share": 1.0,
-      "low_margin_task_fraction": 1.0,
-      "mean_abs_schema_pair_correlation": 0.6522,
-      "mean_assignment_margin_pp": 0.0,
-      "occupied_cluster_count": 1,
+      "largest_cluster_share": 0.6667,
+      "low_margin_task_fraction": 0.8333,
+      "mean_abs_schema_pair_correlation": 0.6946,
+      "mean_assignment_margin_pp": 1.01,
+      "occupied_cluster_count": 3,
       "task_count_full_coverage": 6,
       "task_count_no_scores": 78,
       "task_count_partial_coverage": 3,
@@ -2037,77 +2032,61 @@
     "top3_tied_tasks": [
       {
         "best_observed_schema": "analytic-pipeline",
-        "best_observed_score": 100.0,
+        "best_observed_score": 90.0,
         "second_observed_schema": "artifact-generation",
-        "second_observed_score": 100.0,
+        "second_observed_score": 90.0,
         "task_name": "citation-check",
         "top3_spread_pp": 0.0
       },
       {
-        "best_observed_schema": "artifact-generation",
-        "best_observed_score": 60.0,
-        "second_observed_schema": "engineering-composition",
-        "second_observed_score": 60.0,
+        "best_observed_schema": "environment-control",
+        "best_observed_score": 55.95,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 55.4,
         "task_name": "civ6-adjacency-optimizer",
-        "top3_spread_pp": 0.0
+        "top3_spread_pp": 3.95
       },
       {
         "best_observed_schema": "analytic-pipeline",
-        "best_observed_score": 100.0,
-        "second_observed_schema": "artifact-generation",
-        "second_observed_score": 100.0,
+        "best_observed_score": 85.0,
+        "second_observed_schema": "methodology-guardrail",
+        "second_observed_score": 85.0,
         "task_name": "court-form-filling",
-        "top3_spread_pp": 0.0
+        "top3_spread_pp": 4.5
       },
       {
         "best_observed_schema": "analytic-pipeline",
-        "best_observed_score": 0.0,
+        "best_observed_score": 10.0,
         "second_observed_schema": "artifact-generation",
-        "second_observed_score": 0.0,
+        "second_observed_score": 10.0,
         "task_name": "earthquake-phase-association",
         "top3_spread_pp": 0.0
       },
       {
         "best_observed_schema": "analytic-pipeline",
-        "best_observed_score": 100.0,
+        "best_observed_score": 95.5,
         "second_observed_schema": "methodology-guardrail",
-        "second_observed_score": 100.0,
-        "task_name": "energy-ac-optimal-power-flow",
-        "top3_spread_pp": 0.0
-      },
-      {
-        "best_observed_schema": "analytic-pipeline",
-        "best_observed_score": 100.0,
-        "second_observed_schema": "artifact-generation",
-        "second_observed_score": 100.0,
+        "second_observed_score": 90.0,
         "task_name": "pdf-excel-diff",
-        "top3_spread_pp": 0.0
+        "top3_spread_pp": 5.5
       },
       {
         "best_observed_schema": "analytic-pipeline",
-        "best_observed_score": 100.0,
+        "best_observed_score": 90.0,
         "second_observed_schema": "artifact-generation",
-        "second_observed_score": 100.0,
+        "second_observed_score": 90.0,
         "task_name": "powerlifting-coef-calc",
         "top3_spread_pp": 0.0
       },
       {
         "best_observed_schema": "analytic-pipeline",
-        "best_observed_score": 100.0,
+        "best_observed_score": 10.0,
         "second_observed_schema": "artifact-generation",
-        "second_observed_score": 100.0,
-        "task_name": "spring-boot-jakarta-migration",
-        "top3_spread_pp": 0.0
-      },
-      {
-        "best_observed_schema": "analytic-pipeline",
-        "best_observed_score": 0.0,
-        "second_observed_schema": "artifact-generation",
-        "second_observed_score": 0.0,
+        "second_observed_score": 10.0,
         "task_name": "syzkaller-ppdev-syzlang",
         "top3_spread_pp": 0.0
       }
     ]
   },
-  "generated_at": "2026-04-20T00:01:16.615692+00:00"
+  "generated_at": "2026-04-23T23:57:20.147518+00:00"
 }

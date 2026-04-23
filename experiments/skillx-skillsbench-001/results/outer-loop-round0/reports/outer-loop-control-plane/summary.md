@@ -1,38 +1,40 @@
 # SkillX Round0 Outer-Loop Control Plane: `outer-loop-round0`
 
-- generated_at: `2026-04-20T00:01:16.615692+00:00`
+- generated_at: `2026-04-23T23:57:20.147518+00:00`
 - output_dir: `experiments/skillx-skillsbench-001/results/outer-loop-round0/reports/outer-loop-control-plane`
 - schemas: `artifact-generation, analytic-pipeline, engineering-composition, retrieval-heavy-synthesis, environment-control, methodology-guardrail, orchestration-delegation`
+- assignment_score_mode: `trajectory`
+- assignment_score_formula: `0.5*reported_score + 0.3*weighted_mean(R0..R3) + 0.2*clamp(50 + best(R0..R3) - R0, 0, 100)`
 - tasks_total: `87`
 - tasks_with_scores: `9`
 - full_coverage_tasks: `6`
 - assigned_tasks: `6`
-- occupied_cluster_count: `1`
-- mean_assignment_margin_pp: `0.0`
-- low_margin_task_fraction: `1.0`
+- occupied_cluster_count: `3`
+- mean_assignment_margin_pp: `1.01`
+- low_margin_task_fraction: `0.8333`
 
 ## Cluster Occupancy
 
 | schema_id | assigned_count | mean_assigned_score | observed_task_count | update_floor_k | below_floor |
 | --- | ---: | ---: | ---: | ---: | --- |
-| artifact-generation | 0 | - | 8 | 2 | yes |
-| analytic-pipeline | 6 | 76.67 | 9 | 2 | no |
+| artifact-generation | 1 | 55.95 | 8 | 2 | yes |
+| analytic-pipeline | 4 | 71.38 | 9 | 2 | no |
 | engineering-composition | 0 | - | 9 | 2 | yes |
 | retrieval-heavy-synthesis | 0 | - | 8 | 2 | yes |
 | environment-control | 0 | - | 7 | 2 | yes |
-| methodology-guardrail | 0 | - | 7 | 2 | yes |
+| methodology-guardrail | 1 | 85.00 | 7 | 2 | yes |
 | orchestration-delegation | 0 | - | 7 | 2 | yes |
 
 ## Assigned Tasks
 
 | task | assigned | best | second | margin_pp | confidence | tie_break |
 | --- | --- | ---: | ---: | ---: | --- | --- |
-| citation-check | analytic-pipeline | 100.00 | 100.00 | 0.00 | low | deterministic_fallback |
-| civ6-adjacency-optimizer | analytic-pipeline | 60.00 | 60.00 | 0.00 | low | deterministic_fallback |
-| court-form-filling | analytic-pipeline | 100.00 | 100.00 | 0.00 | low | deterministic_fallback |
-| earthquake-phase-association | analytic-pipeline | 0.00 | 0.00 | 0.00 | low | deterministic_fallback |
-| pdf-excel-diff | analytic-pipeline | 100.00 | 100.00 | 0.00 | low | deterministic_fallback |
-| powerlifting-coef-calc | analytic-pipeline | 100.00 | 100.00 | 0.00 | low | deterministic_fallback |
+| citation-check | analytic-pipeline | 90.00 | 90.00 | 0.00 | low | deterministic_fallback |
+| civ6-adjacency-optimizer | artifact-generation | 55.95 | 55.40 | 0.55 | low | deterministic_fallback |
+| court-form-filling | methodology-guardrail | 85.00 | 85.00 | 0.00 | low | deterministic_fallback |
+| earthquake-phase-association | analytic-pipeline | 10.00 | 10.00 | 0.00 | low | deterministic_fallback |
+| pdf-excel-diff | analytic-pipeline | 95.50 | 90.00 | 5.50 | medium | no |
+| powerlifting-coef-calc | analytic-pipeline | 90.00 | 90.00 | 0.00 | low | deterministic_fallback |
 
 ## Unassigned Tasks
 
@@ -120,27 +122,23 @@
 
 ## Collapse Warnings
 
-- `low_occupied_cluster_count`: Only 1 schemas are occupied by primary assignment.
-- `dominant_schema`: Largest cluster share is 1.00.
-- `high_low_margin_fraction`: Low-margin fraction is 1.00.
+- `dominant_schema`: Largest cluster share is 0.67.
+- `high_low_margin_fraction`: Low-margin fraction is 0.83.
 
 ## Low-Margin Tasks
 
 - `citation-check`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
-- `civ6-adjacency-optimizer`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
-- `court-form-filling`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
+- `civ6-adjacency-optimizer`: assigned=`artifact-generation`, margin_pp=`0.55`, tie_break=`deterministic_fallback`
+- `court-form-filling`: assigned=`methodology-guardrail`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
 - `earthquake-phase-association`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
-- `pdf-excel-diff`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
 - `powerlifting-coef-calc`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
 
 ## Top-3 Near Ties
 
 - `citation-check`: top3_spread_pp=`0.0`, best=`analytic-pipeline`
-- `civ6-adjacency-optimizer`: top3_spread_pp=`0.0`, best=`artifact-generation`
-- `court-form-filling`: top3_spread_pp=`0.0`, best=`analytic-pipeline`
+- `civ6-adjacency-optimizer`: top3_spread_pp=`3.95`, best=`environment-control`
+- `court-form-filling`: top3_spread_pp=`4.5`, best=`analytic-pipeline`
 - `earthquake-phase-association`: top3_spread_pp=`0.0`, best=`analytic-pipeline`
-- `energy-ac-optimal-power-flow`: top3_spread_pp=`0.0`, best=`analytic-pipeline`
-- `pdf-excel-diff`: top3_spread_pp=`0.0`, best=`analytic-pipeline`
+- `pdf-excel-diff`: top3_spread_pp=`5.5`, best=`analytic-pipeline`
 - `powerlifting-coef-calc`: top3_spread_pp=`0.0`, best=`analytic-pipeline`
-- `spring-boot-jakarta-migration`: top3_spread_pp=`0.0`, best=`analytic-pipeline`
 - `syzkaller-ppdev-syzlang`: top3_spread_pp=`0.0`, best=`analytic-pipeline`

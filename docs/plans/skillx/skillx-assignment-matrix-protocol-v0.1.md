@@ -75,12 +75,45 @@ Operationally this means:
 
 Use the task evaluator score as the primary scalar assignment score.
 
+For `R0 -> R3` inner-loop runs, the executable MVP should not use only
+one terminal scalar when round-level scores are available. The default
+assignment score should be trajectory-aware:
+
+```text
+assignment_score =
+  0.50 * reported_score
+  + 0.30 * weighted_mean(R0, R1, R2, R3)
+  + 0.20 * clamp(50 + best(R0..R3) - R0, 0, 100)
+```
+
+Recommended default round weights:
+
+```yaml
+R0: 0.15
+R1: 0.20
+R2: 0.30
+R3: 0.35
+```
+
+This keeps final quality central while also using:
+- the full reward curve, so two equal final scores can differ if one
+  was consistently better across the loop,
+- R0-relative growth, so the assignment signal captures which schema
+  actually induced useful improvement.
+
+The raw `reported_score`, `selected_score`, `best_observed_score`, and
+per-round scores should still be emitted. The trajectory-aware score is
+the default assignment scalar, not a replacement for the audit fields.
+
 ### 3.2 Optional support metrics
 
 In addition to the scalar score, collect:
 - success / failure flag
 - final score
 - best score (if multiple inner rounds)
+- per-round scores `R0`, `R1`, `R2`, `R3`
+- weighted round mean
+- `R0 -> best` and `R0 -> final` deltas
 - runtime / timeout flags
 - major failure family
 

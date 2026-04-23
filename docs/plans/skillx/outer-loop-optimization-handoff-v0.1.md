@@ -151,6 +151,22 @@ control-plane pieces above are already clean.
 - do not fold `earthquake` directly into generic schema updates
 - do not broaden scope to benchmark-expansion or ablations
 
+## 6.1 Assignment Score Adjustment
+
+The first executable control-plane pass should use a trajectory-aware
+assignment score by default, rather than only the selected/final score.
+The initial formula is:
+
+```text
+0.50 * reported_score
++ 0.30 * weighted_mean(R0..R3)
++ 0.20 * clamp(50 + best(R0..R3) - R0, 0, 100)
+```
+
+This is intended to reduce artificial cluster collapse when several
+schemas tie on final score but have different inner-loop behavior. The
+reported score and all round scores remain in the artifacts for audit.
+
 ## 7. Success Criteria
 
 This branch is successful if it leaves the repo with an auditable and runnable
@@ -165,7 +181,7 @@ outer-loop pipeline that can answer:
 
 ```text
 Work only in this worktree:
-/Users/Jackal/iWorld/projects/skillX/.worktrees/feat/2026-04-19-outer-loop-optimization
+<repo-root>/.worktrees/feat/2026-04-19-outer-loop-optimization
 
 Goal: make the SkillX outer-loop optimization path executable.
 

@@ -43,6 +43,16 @@ DEFAULT_TOP3_TIE_THRESHOLD_PP = 10.0
 DEFAULT_NEAR_EMPTY_THRESHOLD = 3
 DEFAULT_UPDATE_FLOOR_FRACTION = 0.10
 DEFAULT_FLAT_COLUMN_RANGE_PP = 10.0
+DEFAULT_ASSIGNMENT_SCORE_MODE = "trajectory"
+DEFAULT_TERMINAL_SCORE_WEIGHT = 0.50
+DEFAULT_ROUND_MEAN_SCORE_WEIGHT = 0.30
+DEFAULT_GROWTH_SCORE_WEIGHT = 0.20
+DEFAULT_ROUND_SCORE_WEIGHTS = {
+    0: 0.15,
+    1: 0.20,
+    2: 0.30,
+    3: 0.35,
+}
 
 
 def _timestamp() -> str:
@@ -61,7 +71,7 @@ def write_json(path: Path, payload: Any) -> None:
 def write_csv(path: Path, rows: list[dict[str, Any]], fieldnames: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -149,6 +159,91 @@ def coerce_bool(value: Any) -> bool:
     return bool(value)
 
 
+def clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
+
+
+def round_score_key(round_index: int) -> str:
+    return f"round_r{round_index}_score_pct"
+
+
+def extract_round_score_map(pair_report: dict[str, Any] | None) -> dict[int, float]:
+    if not isinstance(pair_report, dict):
+        return {}
+    round_scores: dict[int, float] = {}
+    rounds = pair_report.get("rounds")
+    if not isinstance(rounds, list):
+        return round_scores
+    for round_info in rounds:
+        if not isinstance(round_info, dict):
+            continue
+        round_index = round_info.get("round_index")
+        score_pct = coerce_float(round_info.get("score_pct"))
+        if isinstance(round_index, int) and score_pct is not None:
+            round_scores[round_index] = score_pct
+    return round_scores
+
+
+def weighted_round_mean_score(round_scores: dict[int, float]) -> float | None:
+    weighted_sum = 0.0
+    total_weight = 0.0
+    for round_index, weight in DEFAULT_ROUND_SCORE_WEIGHTS.items():
+        score = round_scores.get(round_index)
+        if score is None:
+            continue
+        weighted_sum += score * weight
+        total_weight += weight
+    if total_weight <= 0:
+        return None
+    return weighted_sum / total_weight
+
+
+def arithmetic_round_mean_score(round_scores: dict[int, float]) -> float | None:
+    if not round_scores:
+        return None
+    return mean(float(value) for value in round_scores.values())
+
+
+def compute_growth_component_score(round_scores: dict[int, float]) -> float | None:
+    r0_score = round_scores.get(0)
+    if r0_score is None:
+        return None
+    best_score = max(round_scores.values(), default=r0_score)
+    # Center at 50 so stable runs are not treated as failures, while positive
+    # R0-relative growth can still break ties between equal final scores.
+    return clamp(50.0 + (best_score - r0_score), 0.0, 100.0)
+
+
+def compute_assignment_score(
+    *,
+    reported_score_pct: float | None,
+    round_scores: dict[int, float],
+    assignment_score_mode: str,
+    terminal_score_weight: float,
+    round_mean_score_weight: float,
+    growth_score_weight: float,
+) -> float | None:
+    if reported_score_pct is None:
+        return None
+    if assignment_score_mode == "reported":
+        return round(reported_score_pct, 4)
+    if assignment_score_mode != "trajectory":
+        raise ValueError(f"unsupported assignment score mode: {assignment_score_mode}")
+
+    trajectory_mean = weighted_round_mean_score(round_scores)
+    growth_component = compute_growth_component_score(round_scores)
+    components = [
+        (reported_score_pct, terminal_score_weight),
+        (trajectory_mean, round_mean_score_weight),
+        (growth_component, growth_score_weight),
+    ]
+    total_weight = sum(weight for value, weight in components if value is not None and weight > 0)
+    if total_weight <= 0:
+        return round(reported_score_pct, 4)
+    score = sum(float(value) * weight for value, weight in components if value is not None and weight > 0)
+    return round(score / total_weight, 4)
+
+
 def _looks_infra_blocked(text: str) -> bool:
     lowered = text.lower()
     return any(
@@ -205,9 +300,29 @@ def summarize_pair_row(
     *,
     pair_status: dict[str, Any],
     pair_report: dict[str, Any] | None,
+    assignment_score_mode: str,
+    terminal_score_weight: float,
+    round_mean_score_weight: float,
+    growth_score_weight: float,
 ) -> dict[str, Any]:
     latest_status = str(pair_status.get("latest_status") or "unrun")
     reported_score_pct, score_basis = extract_reported_score(pair_report, pair_status)
+    round_scores = extract_round_score_map(pair_report)
+    round_mean_score_pct = arithmetic_round_mean_score(round_scores)
+    round_weighted_mean_score_pct = weighted_round_mean_score(round_scores)
+    growth_component_score_pct = compute_growth_component_score(round_scores)
+    r0_score = round_scores.get(0)
+    best_round_score = max(round_scores.values(), default=None)
+    final_round_index = max(round_scores, default=None)
+    final_round_score = round_scores.get(final_round_index) if final_round_index is not None else None
+    assignment_score_pct = compute_assignment_score(
+        reported_score_pct=reported_score_pct,
+        round_scores=round_scores,
+        assignment_score_mode=assignment_score_mode,
+        terminal_score_weight=terminal_score_weight,
+        round_mean_score_weight=round_mean_score_weight,
+        growth_score_weight=growth_score_weight,
+    )
     failure = pair_report.get("failure") if isinstance(pair_report, dict) else {}
     failure_summary = ""
     failure_type = ""
@@ -239,7 +354,7 @@ def summarize_pair_row(
         has_intermediate_exceptions=has_intermediate_exceptions,
         reported_score_pct=reported_score_pct,
     )
-    assignment_eligible = latest_status == "completed" and reported_score_pct is not None and evidence_class != "infra-blocked"
+    assignment_eligible = latest_status == "completed" and assignment_score_pct is not None and evidence_class != "infra-blocked"
 
     notes: list[str] = []
     if latest_status != "completed":
@@ -265,6 +380,31 @@ def summarize_pair_row(
         "latest_output_dir": str(pair_status.get("latest_output_dir") or ""),
         "attempt_count": int(pair_status.get("attempt_count") or 0),
         "reported_score_pct": reported_score_pct,
+        "assignment_score_pct": assignment_score_pct,
+        "assignment_score_mode": assignment_score_mode,
+        "round_mean_score_pct": round(round_mean_score_pct, 4) if round_mean_score_pct is not None else None,
+        "round_weighted_mean_score_pct": (
+            round(round_weighted_mean_score_pct, 4) if round_weighted_mean_score_pct is not None else None
+        ),
+        "growth_component_score_pct": (
+            round(growth_component_score_pct, 4) if growth_component_score_pct is not None else None
+        ),
+        "round_r0_to_best_delta_pp": (
+            round(best_round_score - r0_score, 4)
+            if best_round_score is not None and r0_score is not None
+            else None
+        ),
+        "round_r0_to_final_delta_pp": (
+            round(final_round_score - r0_score, 4)
+            if final_round_score is not None and r0_score is not None
+            else None
+        ),
+        **{
+            round_score_key(round_index): (
+                round(round_scores[round_index], 4) if round_index in round_scores else None
+            )
+            for round_index in DEFAULT_ROUND_SCORE_WEIGHTS
+        },
         "score_basis": score_basis,
         "selected_score_pct": coerce_float(
             (pair_report or {}).get("selected", {}).get("score_pct")
@@ -303,6 +443,10 @@ def build_pair_rows(
     *,
     global_pair_status_path: Path,
     round0_root: Path,
+    assignment_score_mode: str,
+    terminal_score_weight: float,
+    round_mean_score_weight: float,
+    growth_score_weight: float,
 ) -> tuple[list[str], list[dict[str, Any]]]:
     payload = read_json(global_pair_status_path)
     schema_ids = payload.get("schema_ids")
@@ -319,7 +463,16 @@ def build_pair_rows(
         pair_report = None
         if isinstance(pair_id, str) and isinstance(run_label, str):
             pair_report = run_report_index.get((run_label, pair_id))
-        pair_rows.append(summarize_pair_row(pair_status=pair_status, pair_report=pair_report))
+        pair_rows.append(
+            summarize_pair_row(
+                pair_status=pair_status,
+                pair_report=pair_report,
+                assignment_score_mode=assignment_score_mode,
+                terminal_score_weight=terminal_score_weight,
+                round_mean_score_weight=round_mean_score_weight,
+                growth_score_weight=growth_score_weight,
+            )
+        )
     return [str(item) for item in schema_ids], sorted(pair_rows, key=lambda row: (row["task_name"], row["schema_id"]))
 
 
@@ -332,6 +485,14 @@ def group_pair_rows_by_task(pair_rows: list[dict[str, Any]], schema_ids: list[st
     for task_name in sorted(grouped):
         schema_map = grouped[task_name]
         scores = {
+            schema_id: (
+                schema_map[schema_id]["assignment_score_pct"]
+                if schema_id in schema_map and schema_map[schema_id]["assignment_eligible"]
+                else None
+            )
+            for schema_id in schema_ids
+        }
+        reported_scores = {
             schema_id: (
                 schema_map[schema_id]["reported_score_pct"]
                 if schema_id in schema_map and schema_map[schema_id]["assignment_eligible"]
@@ -381,6 +542,7 @@ def group_pair_rows_by_task(pair_rows: list[dict[str, Any]], schema_ids: list[st
             {
                 "task_name": task_name,
                 "scores": scores,
+                "reported_scores": reported_scores,
                 "evidence_classes": evidence_classes,
                 "statuses": statuses,
                 "observed_schema_count": len(observed_scores),
@@ -495,6 +657,15 @@ def assign_tasks(
         assigned_score = (
             task_row["scores"].get(assigned_category) if assigned_category is not None else None
         )
+        assigned_reported_score = (
+            task_row["reported_scores"].get(assigned_category) if assigned_category is not None else None
+        )
+        best_reported_score = (
+            task_row["reported_scores"].get(best_observed["schema_id"]) if best_observed is not None else None
+        )
+        second_reported_score = (
+            task_row["reported_scores"].get(second_observed["schema_id"]) if second_observed is not None else None
+        )
         candidate_scores = [
             float(task_row["scores"][schema_id])
             for schema_id in candidate_schema_ids
@@ -506,8 +677,10 @@ def assign_tasks(
             "assigned_category": assigned_category,
             "best_observed_category": None if best_observed is None else best_observed["schema_id"],
             "best_score": best_score,
+            "best_reported_score": best_reported_score,
             "second_best_category": None if second_observed is None else second_observed["schema_id"],
             "second_best_score": second_score,
+            "second_reported_score": second_reported_score,
             "margin_pp": provisional_margin,
             "assignment_confidence": (
                 classify_margin_confidence(
@@ -535,6 +708,7 @@ def assign_tasks(
             "ambiguous_schema_ids": ";".join(task_row["ambiguous_schema_ids"]),
             "top3_spread_pp": task_row["top3_spread_pp"],
             "assigned_score": assigned_score,
+            "assigned_reported_score": assigned_reported_score,
         }
         assignments.append(assignment_row)
     return assignments
@@ -814,7 +988,18 @@ def build_score_matrix_artifacts(
                 "task_name": row["task_name"],
                 "schema_id": row["schema_id"],
                 "pair_id": row["pair_id"],
-                "score": row["reported_score_pct"],
+                "score": row["assignment_score_pct"],
+                "reported_score": row["reported_score_pct"],
+                "assignment_score_mode": row["assignment_score_mode"],
+                "round_mean_score_pct": row["round_mean_score_pct"],
+                "round_weighted_mean_score_pct": row["round_weighted_mean_score_pct"],
+                "growth_component_score_pct": row["growth_component_score_pct"],
+                "round_r0_to_best_delta_pp": row["round_r0_to_best_delta_pp"],
+                "round_r0_to_final_delta_pp": row["round_r0_to_final_delta_pp"],
+                "round_r0_score_pct": row[round_score_key(0)],
+                "round_r1_score_pct": row[round_score_key(1)],
+                "round_r2_score_pct": row[round_score_key(2)],
+                "round_r3_score_pct": row[round_score_key(3)],
                 "success": row["latest_status"] == "completed",
                 "best_score": row["best_observed_score_pct"],
                 "final_score": row["selected_score_pct"],
@@ -877,6 +1062,8 @@ def render_summary_markdown(
         f"- generated_at: `{generated_at}`",
         f"- output_dir: `{display_path(output_dir)}`",
         f"- schemas: `{', '.join(schema_ids)}`",
+        f"- assignment_score_mode: `{summary.get('assignment_score_mode')}`",
+        f"- assignment_score_formula: `{summary.get('assignment_score_formula')}`",
         f"- tasks_total: `{summary['task_count_total']}`",
         f"- tasks_with_scores: `{summary['task_count_with_scores']}`",
         f"- full_coverage_tasks: `{summary['task_count_full_coverage']}`",
@@ -962,6 +1149,10 @@ def build_outer_loop_artifacts(
     global_pair_status_path: Path,
     prompt_bank_path: Path,
     round_id: str,
+    assignment_score_mode: str,
+    terminal_score_weight: float,
+    round_mean_score_weight: float,
+    growth_score_weight: float,
     epsilon_pp: float,
     high_confidence_margin_pp: float,
     medium_confidence_margin_pp: float,
@@ -976,6 +1167,10 @@ def build_outer_loop_artifacts(
     discovered_schema_ids, pair_rows = build_pair_rows(
         global_pair_status_path=global_pair_status_path,
         round0_root=round0_root,
+        assignment_score_mode=assignment_score_mode,
+        terminal_score_weight=terminal_score_weight,
+        round_mean_score_weight=round_mean_score_weight,
+        growth_score_weight=growth_score_weight,
     )
     schema_ids = [
         schema_id for schema_id in prompt_bank_schema_ids if schema_id in discovered_schema_ids
@@ -1002,6 +1197,15 @@ def build_outer_loop_artifacts(
         update_floor_fraction=update_floor_fraction,
         flat_column_range_pp=flat_column_range_pp,
     )
+    diagnostics["summary"]["assignment_score_mode"] = assignment_score_mode
+    diagnostics["summary"]["assignment_score_formula"] = (
+        "reported_score" if assignment_score_mode == "reported"
+        else (
+            f"{terminal_score_weight:g}*reported_score + "
+            f"{round_mean_score_weight:g}*weighted_mean(R0..R3) + "
+            f"{growth_score_weight:g}*clamp(50 + best(R0..R3) - R0, 0, 100)"
+        )
+    )
     score_matrix = build_score_matrix_artifacts(
         pair_rows=pair_rows,
         task_rows=task_rows,
@@ -1012,9 +1216,14 @@ def build_outer_loop_artifacts(
         "generated_at": _timestamp(),
         "config": {
             "round_id": round_id,
-            "round0_root": str(round0_root.resolve()),
-            "global_pair_status_path": str(global_pair_status_path.resolve()),
-            "prompt_bank_path": str(prompt_bank_path.resolve()),
+            "round0_root": display_path(round0_root.resolve()),
+            "global_pair_status_path": display_path(global_pair_status_path.resolve()),
+            "prompt_bank_path": display_path(prompt_bank_path.resolve()),
+            "assignment_score_mode": assignment_score_mode,
+            "terminal_score_weight": terminal_score_weight,
+            "round_mean_score_weight": round_mean_score_weight,
+            "growth_score_weight": growth_score_weight,
+            "round_score_weights": DEFAULT_ROUND_SCORE_WEIGHTS,
             "epsilon_pp": epsilon_pp,
             "high_confidence_margin_pp": high_confidence_margin_pp,
             "medium_confidence_margin_pp": medium_confidence_margin_pp,
@@ -1057,6 +1266,17 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
             "schema_id",
             "pair_id",
             "score",
+            "reported_score",
+            "assignment_score_mode",
+            "round_mean_score_pct",
+            "round_weighted_mean_score_pct",
+            "growth_component_score_pct",
+            "round_r0_to_best_delta_pp",
+            "round_r0_to_final_delta_pp",
+            "round_r0_score_pct",
+            "round_r1_score_pct",
+            "round_r2_score_pct",
+            "round_r3_score_pct",
             "success",
             "best_score",
             "final_score",
@@ -1112,8 +1332,10 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
             "assigned_category",
             "best_observed_category",
             "best_score",
+            "best_reported_score",
             "second_best_category",
             "second_best_score",
+            "second_reported_score",
             "margin_pp",
             "assignment_confidence",
             "tie_break_used",
@@ -1129,6 +1351,7 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
             "ambiguous_schema_ids",
             "top3_spread_pp",
             "assigned_score",
+            "assigned_reported_score",
         ],
     )
     write_json(
@@ -1177,6 +1400,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prompt-bank-path", type=Path, default=DEFAULT_PROMPT_BANK_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--round-id", default="outer-loop-round0")
+    parser.add_argument(
+        "--assignment-score-mode",
+        choices=["trajectory", "reported"],
+        default=DEFAULT_ASSIGNMENT_SCORE_MODE,
+        help="Use reported final/best score only, or the default trajectory-aware score.",
+    )
+    parser.add_argument(
+        "--terminal-score-weight",
+        type=float,
+        default=DEFAULT_TERMINAL_SCORE_WEIGHT,
+    )
+    parser.add_argument(
+        "--round-mean-score-weight",
+        type=float,
+        default=DEFAULT_ROUND_MEAN_SCORE_WEIGHT,
+    )
+    parser.add_argument(
+        "--growth-score-weight",
+        type=float,
+        default=DEFAULT_GROWTH_SCORE_WEIGHT,
+    )
     parser.add_argument("--epsilon-pp", type=float, default=DEFAULT_MEDIUM_CONFIDENCE_MARGIN_PP)
     parser.add_argument(
         "--high-confidence-margin-pp",
@@ -1224,6 +1468,10 @@ def main() -> int:
         global_pair_status_path=args.global_pair_status_path,
         prompt_bank_path=args.prompt_bank_path,
         round_id=str(args.round_id),
+        assignment_score_mode=str(args.assignment_score_mode),
+        terminal_score_weight=float(args.terminal_score_weight),
+        round_mean_score_weight=float(args.round_mean_score_weight),
+        growth_score_weight=float(args.growth_score_weight),
         epsilon_pp=float(args.epsilon_pp),
         high_confidence_margin_pp=float(args.high_confidence_margin_pp),
         medium_confidence_margin_pp=float(args.medium_confidence_margin_pp),
