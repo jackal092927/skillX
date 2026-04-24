@@ -52,7 +52,7 @@ Inner loop:
 - C4AR Role A model: `codex-5.3`.
 - C4AR Role B model: `gpt-5.4`.
 - Round budget: `3` unless overridden.
-- Launcher is serial by default. One failed pair should be recorded and should not stop later pairs.
+- Launcher runs up to `3` pairs concurrently by default. Set `SKILLX_MAX_CONCURRENT_PAIRS=1` for serial execution. One failed pair should be recorded and should not stop later pairs.
 
 Outer loop:
 
@@ -63,6 +63,8 @@ Outer loop:
 - Default `min_support_size`: `0`.
 - Default `max_update_schemas`: `0`.
 - Default `max_eval_tasks_per_schema`: `6`.
+- Default next-pair plan mode: `full_matrix`, meaning every selected task is materialized against every rewritten candidate schema for the next inner loop.
+- Optional next-pair plan mode: `challenger_eval`, which materializes only the smaller schema-specific challenger subset.
 - Verification: `rewrite_verification.json` must pass before next-round materialization is trusted.
 
 Batch size:
@@ -111,6 +113,13 @@ Run one explicit smoke pair:
 SKILLX_MATERIALIZED_ROOT=experiments/skillx-skillsbench-001/results/outer-loop-round0/outer-loop-round1-candidate-rerun \
   scripts/run_skillx_inner_loop_tmux.sh smoke-r1-pair skillx-smoke-r1 8769 -- \
   --pair-id citation-check__methodology-guardrail
+```
+
+Inner-loop pair concurrency defaults to `3`. Override it with `SKILLX_MAX_CONCURRENT_PAIRS`; use `1` to force the old serial behavior:
+
+```bash
+SKILLX_MAX_CONCURRENT_PAIRS=1 \
+  scripts/run_skillx_inner_loop_tmux.sh run-serial skillx-serial 8767 -- 10
 ```
 
 Attach to the tmux session only when needed:
@@ -209,6 +218,7 @@ export SKILLX_LLM_MODEL=anthropic/claude-sonnet-4-5
 export SKILLX_MIN_SUPPORT_SIZE=0
 export SKILLX_MAX_UPDATE_SCHEMAS=0
 export SKILLX_MAX_EVAL_TASKS_PER_SCHEMA=6
+export SKILLX_NEXT_PAIR_PLAN_MODE=full_matrix
 ```
 
 Task scope knobs:

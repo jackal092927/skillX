@@ -28,6 +28,8 @@ Environment overrides:
   SKILLX_MONITOR_HOST       Dashboard bind host. Default: 127.0.0.1
   SKILLX_MONITOR_PORT       Explicit dashboard port.
   SKILLX_MONITOR_PORT_BASE  Starting port for auto-selection if no port is provided. Default: 8767
+  SKILLX_PYTHON             Python runtime used by uv. Default: 3.11
+  SKILLX_MAX_CONCURRENT_PAIRS  Max task-schema pairs run at once. Default: 3
   SKILLX_ROUND_BUDGET       Inner-loop round budget. Default: 3
   SKILLX_AGENT              Executor agent. Default: claude-code
   SKILLX_MODEL              Executor model. Default: anthropic/claude-sonnet-4-5
@@ -91,6 +93,8 @@ fi
 REMATERIALIZE_CMD="${SKILLX_REMATERIALIZE_CMD:-}"
 HOST="${SKILLX_MONITOR_HOST:-127.0.0.1}"
 MONITOR_PORT_BASE="${SKILLX_MONITOR_PORT_BASE:-8767}"
+PYTHON_RUNTIME="${SKILLX_PYTHON:-3.11}"
+MAX_CONCURRENT_PAIRS="${SKILLX_MAX_CONCURRENT_PAIRS:-3}"
 ROUND_BUDGET="${SKILLX_ROUND_BUDGET:-3}"
 AGENT="${SKILLX_AGENT:-claude-code}"
 MODEL="${SKILLX_MODEL:-anthropic/claude-sonnet-4-5}"
@@ -153,6 +157,8 @@ mkdir -p "$LAUNCHER_LOG_DIR"
 launcher_cmd=(
   uv
   run
+  --python
+  "$PYTHON_RUNTIME"
   python
   -u
   scripts/launch_skillx_round0.py
@@ -163,6 +169,10 @@ launcher_cmd=(
   "$RUN_LABEL"
   --round-budget
   "$ROUND_BUDGET"
+  --max-concurrent-pairs
+  "$MAX_CONCURRENT_PAIRS"
+  --python-runtime
+  "$PYTHON_RUNTIME"
   --agent
   "$AGENT"
   --model
@@ -194,8 +204,9 @@ else
     "$launcher_cmd_quoted" \
     "$STDOUT_LOG_PATH"
 fi
-printf -v dashboard_command 'cd %q && uv run python scripts/serve_round0_monitor.py --launcher-log-dir %q --host %q --port %q' \
+printf -v dashboard_command 'cd %q && uv run --python %q python scripts/serve_round0_monitor.py --launcher-log-dir %q --host %q --port %q' \
   "$EXP_WORKTREE" \
+  "$PYTHON_RUNTIME" \
   "$LAUNCHER_LOG_DIR" \
   "$HOST" \
   "$MONITOR_PORT"
@@ -211,6 +222,8 @@ echo "  session: $SESSION_NAME"
 echo "  windows: inner-loop, dashboard"
 echo "  run-label: $RUN_LABEL"
 echo "  materialized-root: $MATERIALIZED_ROOT"
+echo "  python: $PYTHON_RUNTIME"
+echo "  max-concurrent-pairs: $MAX_CONCURRENT_PAIRS"
 echo "  round-budget: $ROUND_BUDGET"
 echo "  agent/model: $AGENT / $MODEL"
 echo "  stdout-log: $STDOUT_LOG_PATH"

@@ -97,6 +97,8 @@ Next-round materialized root:
 - `pairs/<task>__<schema>/rendered_meta_skill.md`
 - `launch_next_round.sh`
 
+By default, next-round materialization uses `full_matrix`: every selected task is paired with every candidate schema. This preserves enough signal for the next clustering pass. Use `--next-pair-plan-mode challenger_eval` only when intentionally running a smaller, cost-saving challenger subset.
+
 The next-round materialized root is compatible with `scripts/launch_skillx_round0.py` via `--materialized-root`.
 
 ## 6. Running The Next Inner Loop

@@ -20,6 +20,10 @@ for path in (SCRIPTS, SRC):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
+from runtime_guard import assert_supported_python_runtime  # noqa: E402
+
+assert_supported_python_runtime()
+
 import build_round0_outer_loop_artifacts as control_plane  # noqa: E402
 import build_round0_schema_update_package as schema_updates  # noqa: E402
 import materialize_skillx_round0_runner as round_materializer  # noqa: E402
@@ -57,6 +61,11 @@ DEFAULT_ROUND_ID = "outer-loop-round0"
 DEFAULT_NEXT_ROUND_ID = "outer-loop-round1"
 DEFAULT_NEXT_RUN_ID = "outer-loop-round1-candidates"
 DEFAULT_ROUND_BUDGET = 3
+DEFAULT_NEXT_PAIR_PLAN_MODE = "full_matrix"
+
+
+def log_progress(message: str) -> None:
+    print(f"[outer-loop] {message}", file=sys.stderr, flush=True)
 
 
 def read_json(path: Path) -> Any:
@@ -117,7 +126,48 @@ def evidence_task_names(evidence: dict[str, Any], key: str) -> set[str]:
     return names
 
 
-def build_next_round_pair_plan(package: dict[str, Any]) -> list[dict[str, Any]]:
+def package_schema_ids(package: dict[str, Any], candidate_by_schema: dict[str, dict[str, Any]]) -> list[str]:
+    schema_ids = package.get("schema_ids")
+    if isinstance(schema_ids, list):
+        ordered = [str(item) for item in schema_ids if isinstance(item, str) and item in candidate_by_schema]
+        if ordered:
+            return ordered
+    return list(candidate_by_schema)
+
+
+def package_task_names(package: dict[str, Any]) -> list[str]:
+    names: set[str] = set()
+    for plan_row in package.get("challenger_eval_plan", []) or []:
+        if not isinstance(plan_row, dict):
+            continue
+        for task_name in plan_row.get("task_names", []) or []:
+            if isinstance(task_name, str) and task_name:
+                names.add(task_name)
+    for evidence in (package.get("schema_evidence_bundles") or {}).values():
+        if not isinstance(evidence, dict):
+            continue
+        for key in ("assigned_task_summaries", "ambiguous_borderline_cases", "cross_schema_losses"):
+            names.update(evidence_task_names(evidence, key))
+    return sorted(names)
+
+
+def build_pair_reason(evidence: dict[str, Any], task_name: str, *, fallback: str) -> str:
+    assigned_names = evidence_task_names(evidence, "assigned_task_summaries")
+    boundary_names = evidence_task_names(evidence, "ambiguous_borderline_cases")
+    cross_loss_names = evidence_task_names(evidence, "cross_schema_losses")
+    reasons: list[str] = []
+    if task_name in assigned_names:
+        reasons.append("assigned_support")
+    if task_name in boundary_names:
+        reasons.append("boundary_case")
+    if task_name in cross_loss_names:
+        reasons.append("competitor_check")
+    if not reasons:
+        reasons.append(fallback)
+    return ";".join(reasons)
+
+
+def build_challenger_next_round_pair_plan(package: dict[str, Any]) -> list[dict[str, Any]]:
     evidence_by_schema = package.get("schema_evidence_bundles") or {}
     candidate_by_schema = category_by_id(package["candidate_prompt_bank"])
     rows: list[dict[str, Any]] = []
@@ -130,9 +180,6 @@ def build_next_round_pair_plan(package: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         candidate_schema = candidate_by_schema.get(schema_id, {})
         evidence = evidence_by_schema.get(schema_id, {})
-        assigned_names = evidence_task_names(evidence, "assigned_task_summaries")
-        boundary_names = evidence_task_names(evidence, "ambiguous_borderline_cases")
-        cross_loss_names = evidence_task_names(evidence, "cross_schema_losses")
         for task_name in plan_row.get("task_names", []) or []:
             if not isinstance(task_name, str) or not task_name:
                 continue
@@ -140,15 +187,6 @@ def build_next_round_pair_plan(package: dict[str, Any]) -> list[dict[str, Any]]:
             if dedupe_key in seen:
                 continue
             seen.add(dedupe_key)
-            reasons: list[str] = []
-            if task_name in assigned_names:
-                reasons.append("assigned_support")
-            if task_name in boundary_names:
-                reasons.append("boundary_case")
-            if task_name in cross_loss_names:
-                reasons.append("competitor_check")
-            if not reasons:
-                reasons.append("challenger_eval")
             rows.append(
                 {
                     "pair_id": f"{task_name}__{schema_id}",
@@ -156,12 +194,67 @@ def build_next_round_pair_plan(package: dict[str, Any]) -> list[dict[str, Any]]:
                     "schema_id": schema_id,
                     "candidate_mode": plan_row.get("candidate_mode"),
                     "outer_loop_candidate_id": candidate_schema.get("outer_loop_candidate_id"),
-                    "pair_reason": ";".join(reasons),
+                    "pair_reason": build_pair_reason(evidence, task_name, fallback="challenger_eval"),
+                    "next_pair_plan_mode": "challenger_eval",
                     "source_round_id": package["config"]["round_id"],
                     "next_round_id": package["config"]["next_round_id"],
                 }
             )
     return rows
+
+
+def build_full_matrix_next_round_pair_plan(
+    package: dict[str, Any],
+    *,
+    task_names: list[str] | None,
+) -> list[dict[str, Any]]:
+    evidence_by_schema = package.get("schema_evidence_bundles") or {}
+    candidate_by_schema = category_by_id(package["candidate_prompt_bank"])
+    schema_ids = package_schema_ids(package, candidate_by_schema)
+    ordered_task_names = list(task_names or package_task_names(package))
+    challenger_rows = {
+        str(row.get("schema_id")): row
+        for row in package.get("challenger_eval_plan", []) or []
+        if isinstance(row, dict) and isinstance(row.get("schema_id"), str)
+    }
+    rows: list[dict[str, Any]] = []
+    for task_name in ordered_task_names:
+        if not isinstance(task_name, str) or not task_name:
+            continue
+        for schema_id in schema_ids:
+            candidate_schema = candidate_by_schema[schema_id]
+            evidence = evidence_by_schema.get(schema_id, {})
+            challenger_row = challenger_rows.get(schema_id, {})
+            rows.append(
+                {
+                    "pair_id": f"{task_name}__{schema_id}",
+                    "task_name": task_name,
+                    "schema_id": schema_id,
+                    "candidate_mode": (
+                        challenger_row.get("candidate_mode")
+                        or candidate_schema.get("outer_loop_candidate_mode")
+                    ),
+                    "outer_loop_candidate_id": candidate_schema.get("outer_loop_candidate_id"),
+                    "pair_reason": build_pair_reason(evidence, task_name, fallback="full_matrix_eval"),
+                    "next_pair_plan_mode": "full_matrix",
+                    "source_round_id": package["config"]["round_id"],
+                    "next_round_id": package["config"]["next_round_id"],
+                }
+            )
+    return rows
+
+
+def build_next_round_pair_plan(
+    package: dict[str, Any],
+    *,
+    mode: str = DEFAULT_NEXT_PAIR_PLAN_MODE,
+    task_names: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    if mode == "full_matrix":
+        return build_full_matrix_next_round_pair_plan(package, task_names=task_names)
+    if mode == "challenger_eval":
+        return build_challenger_next_round_pair_plan(package)
+    raise ValueError(f"unknown next pair plan mode: {mode}")
 
 
 def render_outer_loop_pair_meta_block(pair_plan: dict[str, Any], schema: dict[str, Any]) -> str:
@@ -173,6 +266,7 @@ def render_outer_loop_pair_meta_block(pair_plan: dict[str, Any], schema: dict[st
         f"Candidate id: {pair_plan.get('outer_loop_candidate_id') or 'incumbent'}",
         f"Candidate mode: {pair_plan.get('candidate_mode') or schema.get('outer_loop_candidate_mode') or 'incumbent'}",
         f"Pair reason: {pair_plan['pair_reason']}",
+        f"Next pair plan mode: {pair_plan.get('next_pair_plan_mode') or 'unknown'}",
         "Use this as a candidate schema rerun, not as an accepted final schema.",
     ]
     return "\n".join(lines) + "\n"
@@ -192,6 +286,8 @@ def materialize_next_round_pairs(
     agent: str,
     model: str,
     schema_update_package_path: Path | None,
+    next_pair_plan_mode: str = DEFAULT_NEXT_PAIR_PLAN_MODE,
+    task_names: list[str] | None = None,
 ) -> dict[str, Any]:
     output_dir = output_dir.resolve()
     ensure_dir(output_dir)
@@ -202,13 +298,28 @@ def materialize_next_round_pairs(
         model_name="Claude Code (Sonnet 4.5)",
     )
     schema_bank = category_by_id(package["candidate_prompt_bank"])
-    pair_plan = build_next_round_pair_plan(package)
+    pair_plan = build_next_round_pair_plan(
+        package,
+        mode=next_pair_plan_mode,
+        task_names=task_names,
+    )
+    log_progress(
+        "materializing next-round pair specs: "
+        f"mode={next_pair_plan_mode} "
+        f"tasks={len({row['task_name'] for row in pair_plan})} "
+        f"schemas={len({row['schema_id'] for row in pair_plan})} "
+        f"pairs={len(pair_plan)} output={output_dir}"
+    )
     pairs_dir = ensure_dir(output_dir / "pairs")
     pair_specs: list[dict[str, Any]] = []
 
-    for row in pair_plan:
+    for pair_index, row in enumerate(pair_plan, start=1):
         task_name = row["task_name"]
         schema_id = row["schema_id"]
+        log_progress(
+            f"materialize pair {pair_index}/{len(pair_plan)}: "
+            f"task={task_name} schema={schema_id}"
+        )
         if schema_id not in schema_bank:
             raise KeyError(f"schema {schema_id} missing from candidate prompt bank")
         inventory_row = inventory.get(task_name)
@@ -237,6 +348,7 @@ def materialize_next_round_pairs(
             "candidate_mode": row.get("candidate_mode"),
             "outer_loop_candidate_id": row.get("outer_loop_candidate_id"),
             "pair_reason": row["pair_reason"],
+            "next_pair_plan_mode": row.get("next_pair_plan_mode"),
             "source_round_id": package["config"]["round_id"],
             "schema_update_package_path": (
                 None if schema_update_package_path is None else display_path(schema_update_package_path.resolve())
@@ -285,6 +397,7 @@ def materialize_next_round_pairs(
         "task_count": len(task_names),
         "schema_count": len(schema_ids),
         "pair_count": len(pair_specs),
+        "next_pair_plan_mode": next_pair_plan_mode,
         "round_budget": round_budget,
         "agent": agent,
         "model": model,
@@ -310,6 +423,7 @@ def materialize_next_round_pairs(
             "candidate_mode",
             "outer_loop_candidate_id",
             "pair_reason",
+            "next_pair_plan_mode",
             "source_round_id",
             "next_round_id",
         ],
@@ -364,8 +478,33 @@ def run_outer_loop_optimization(
     max_update_schemas: int,
     max_eval_tasks_per_schema: int,
     min_support_size: int,
+    next_pair_plan_mode: str,
     allow_partial_assignment: bool,
 ) -> dict[str, Any]:
+    global_status = read_json(global_pair_status_path)
+    global_pairs = global_status.get("pairs") or []
+    task_names = sorted(
+        {
+            str(row.get("task_name"))
+            for row in global_pairs
+            if isinstance(row, dict) and isinstance(row.get("task_name"), str)
+        }
+    )
+    schema_ids = list(global_status.get("schema_ids") or [])
+    log_progress(
+        "start: "
+        f"round_id={round_id} next_round_id={next_round_id} "
+        f"rewrite_mode={rewrite_mode} llm_model={llm_model if rewrite_mode == 'llm' else 'n/a'}"
+    )
+    log_progress(
+        "input global status: "
+        f"tasks={len(task_names)} schemas={len(schema_ids)} pairs={len(global_pairs)} "
+        f"path={global_pair_status_path}"
+    )
+    if task_names:
+        log_progress("input tasks: " + ", ".join(task_names))
+
+    log_progress("phase 1/4: building task-to-schema score matrix and assignment control plane")
     control_payload = control_plane.build_outer_loop_artifacts(
         round0_root=round0_root,
         global_pair_status_path=global_pair_status_path,
@@ -391,7 +530,25 @@ def run_outer_loop_optimization(
         output_dir=control_plane_output_dir,
     )
     control_bundle_path = control_plane_output_dir / "control_plane_bundle.json"
+    assignments = control_payload.get("assignments") or []
+    assigned_count = sum(
+        1 for row in assignments
+        if isinstance(row, dict) and row.get("assignment_status") == "assigned"
+    )
+    occupied_schemas = sorted(
+        {
+            str(row.get("assigned_category"))
+            for row in assignments
+            if isinstance(row, dict) and row.get("assignment_status") == "assigned"
+        }
+    )
+    log_progress(
+        "control plane complete: "
+        f"assigned_tasks={assigned_count}/{len(assignments)} "
+        f"occupied_schemas={len(occupied_schemas)} outputs={control_plane_output_dir}"
+    )
 
+    log_progress("phase 2/4: building schema evidence bundles and rewriting candidate schemas")
     package = schema_updates.build_schema_update_package(
         control_plane_bundle_path=control_bundle_path,
         prompt_bank_path=prompt_bank_path,
@@ -408,10 +565,22 @@ def run_outer_loop_optimization(
         max_update_schemas=max_update_schemas,
         max_eval_tasks_per_schema=max_eval_tasks_per_schema,
     )
+    rewrite_verification = package.get("rewrite_verification") or {}
+    log_progress(
+        "schema rewrite package complete: "
+        f"verification={rewrite_verification.get('status')} "
+        f"completed_rewrites={rewrite_verification.get('completed_rewrite_schema_count')}/"
+        f"{rewrite_verification.get('expected_rewrite_schema_count')}"
+    )
+
+    log_progress("phase 3/4: writing outer-loop schema update artifacts")
     schema_update_outputs = schema_updates.write_schema_update_package(
         package=package,
         output_dir=schema_update_output_dir,
     )
+    log_progress(f"schema update artifacts written: {schema_update_output_dir}")
+
+    log_progress("phase 4/4: materializing next-round schema-task candidate pairs")
     materialized = materialize_next_round_pairs(
         package=package,
         output_dir=next_materialized_root,
@@ -425,6 +594,8 @@ def run_outer_loop_optimization(
         agent=agent,
         model=model,
         schema_update_package_path=schema_update_output_dir / "schema_update_package.json",
+        next_pair_plan_mode=next_pair_plan_mode,
+        task_names=task_names,
     )
     summary = {
         "artifact_type": "skillx_outer_loop_optimization_run",
@@ -436,8 +607,16 @@ def run_outer_loop_optimization(
         "next_round_pair_count": len(materialized["pair_specs"]),
         "next_round_schema_count": materialized["manifest"]["schema_count"],
         "next_round_task_count": materialized["manifest"]["task_count"],
+        "next_pair_plan_mode": next_pair_plan_mode,
     }
     write_json(schema_update_output_dir / "outer_loop_optimization_summary.json", summary)
+    log_progress(
+        "outer-loop optimization complete: "
+        f"next_tasks={summary['next_round_task_count']} "
+        f"next_schemas={summary['next_round_schema_count']} "
+        f"next_pairs={summary['next_round_pair_count']} "
+        f"next_root={next_materialized_root}"
+    )
     return {
         "summary": summary,
         "control_plane": control_payload,
@@ -481,6 +660,16 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--max-eval-tasks-per-schema", type=int, default=6)
     parser.add_argument(
+        "--next-pair-plan-mode",
+        choices=["full_matrix", "challenger_eval"],
+        default=DEFAULT_NEXT_PAIR_PLAN_MODE,
+        help=(
+            "How to materialize next-round pairs. "
+            "full_matrix runs every selected task against every candidate schema; "
+            "challenger_eval keeps the smaller schema-specific challenger subset."
+        ),
+    )
+    parser.add_argument(
         "--min-support-size",
         type=int,
         default=schema_updates.DEFAULT_MIN_SUPPORT_SIZE,
@@ -517,6 +706,7 @@ def main(argv: list[str] | None = None) -> int:
         max_update_schemas=int(args.max_update_schemas),
         max_eval_tasks_per_schema=int(args.max_eval_tasks_per_schema),
         min_support_size=int(args.min_support_size),
+        next_pair_plan_mode=str(args.next_pair_plan_mode),
         allow_partial_assignment=bool(args.allow_partial_assignment),
     )
     print(json.dumps(result["summary"], indent=2, sort_keys=True))

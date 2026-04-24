@@ -12,6 +12,8 @@ Starts the round1 inner-loop smoke run in tmux using the candidate pairs produce
 
 Environment overrides:
   SKILLX_SMOKE_ROOT    Default: experiments/.../full-loop-smoke-3task-v0.1
+  SKILLX_PYTHON        Python runtime used by uv. Default: inherited by run_skillx_inner_loop_tmux.sh
+  SKILLX_MAX_CONCURRENT_PAIRS  Max task-schema pairs run at once. Default: inherited by run_skillx_inner_loop_tmux.sh
   SKILLX_ROUND_BUDGET  Default: 3
   SKILLX_AGENT         Default: claude-code
   SKILLX_MODEL         Default: anthropic/claude-sonnet-4-5

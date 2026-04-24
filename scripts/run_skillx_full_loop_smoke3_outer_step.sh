@@ -20,6 +20,8 @@ Environment overrides:
   SKILLX_SMOKE_ROOT                 Default: experiments/.../full-loop-smoke-3task-v0.1
   SKILLX_REWRITE_MODE               llm or deterministic. Default: llm
   SKILLX_LLM_MODEL                  Default: anthropic/claude-sonnet-4-5
+  SKILLX_PYTHON                     Python runtime used by uv. Default: 3.11
+  SKILLX_NEXT_PAIR_PLAN_MODE        full_matrix or challenger_eval. Default: full_matrix
   SKILLX_MAX_EVAL_TASKS_PER_SCHEMA  Default: 3
   SKILLX_ROUND_BUDGET               Default: 3
   SKILLX_AGENT                      Default: claude-code
@@ -58,10 +60,20 @@ SCHEMA_IDS=(
 SMOKE_ROOT="${SKILLX_SMOKE_ROOT:-experiments/skillx-skillsbench-001/results/full-loop-smoke-3task-v0.1}"
 REWRITE_MODE="${SKILLX_REWRITE_MODE:-llm}"
 LLM_MODEL="${SKILLX_LLM_MODEL:-anthropic/claude-sonnet-4-5}"
+PYTHON_RUNTIME="${SKILLX_PYTHON:-3.11}"
+NEXT_PAIR_PLAN_MODE="${SKILLX_NEXT_PAIR_PLAN_MODE:-full_matrix}"
 MAX_EVAL_TASKS_PER_SCHEMA="${SKILLX_MAX_EVAL_TASKS_PER_SCHEMA:-3}"
 ROUND_BUDGET="${SKILLX_ROUND_BUDGET:-3}"
 AGENT="${SKILLX_AGENT:-claude-code}"
 MODEL="${SKILLX_MODEL:-anthropic/claude-sonnet-4-5}"
+
+log_progress() {
+  printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"
+}
+
+uv_python() {
+  uv run --python "$PYTHON_RUNTIME" python "$@"
+}
 
 task_args=()
 for task in "${TASKS[@]}"; do
@@ -79,6 +91,7 @@ fi
 
 case "$STEP" in
   round0)
+    TOTAL_PHASES=3
     ROUND_ROOT="experiments/skillx-skillsbench-001/results/outer-loop-round0"
     OUTER_LABEL="outer-loop-round1-smoke"
     ROUND_ID="outer-loop-round0-smoke"
@@ -87,6 +100,7 @@ case "$STEP" in
     GLOBAL_STATUS_DIR="$SMOKE_ROOT/reports/round0-global-status"
     ;;
   round1)
+    TOTAL_PHASES=4
     if [[ -z "$INNER_RUN_LABEL" ]]; then
       echo "round1 requires the completed round1 inner-loop run label." >&2
       exit 1
@@ -97,7 +111,8 @@ case "$STEP" in
       echo "Missing round1 materialized root: $PREVIOUS_MATERIALIZED_ROOT" >&2
       exit 1
     fi
-    uv run python scripts/export_round0_run_report.py \
+    log_progress "phase 1/$TOTAL_PHASES: exporting completed inner-loop report for run '$INNER_RUN_LABEL'"
+    uv_python scripts/export_round0_run_report.py \
       --materialized-root "$PREVIOUS_MATERIALIZED_ROOT" \
       --run-label "$INNER_RUN_LABEL"
     OUTER_LABEL="outer-loop-round2-smoke"
@@ -118,14 +133,27 @@ if [[ -d "$NEXT_ROOT" ]] && find "$NEXT_ROOT" -mindepth 1 -print -quit | grep -q
   exit 1
 fi
 
-uv run python scripts/build_round0_global_status.py \
+if [[ "$STEP" == "round0" ]]; then
+  GLOBAL_PHASE=1
+  OUTER_PHASE=2
+else
+  GLOBAL_PHASE=2
+  OUTER_PHASE=3
+fi
+
+log_progress "full-loop smoke outer step: step=$STEP rewrite_mode=$REWRITE_MODE llm_model=$LLM_MODEL python=$PYTHON_RUNTIME next_pair_plan_mode=$NEXT_PAIR_PLAN_MODE"
+log_progress "tasks (${#TASKS[@]}): ${TASKS[*]}"
+log_progress "schemas (${#SCHEMA_IDS[@]}): ${SCHEMA_IDS[*]}"
+log_progress "phase $GLOBAL_PHASE/$TOTAL_PHASES: building filtered global pair status from '$ROUND_ROOT'"
+uv_python scripts/build_round0_global_status.py \
   --round0-root "$ROUND_ROOT" \
   --output-dir "$GLOBAL_STATUS_DIR" \
   ${skillsbench_args[@]+"${skillsbench_args[@]}"} \
   "${task_args[@]}" \
   "${schema_args[@]}"
 
-uv run python scripts/run_outer_loop_optimization.py \
+log_progress "phase $OUTER_PHASE/$TOTAL_PHASES: running outer-loop optimization and schema rewrite"
+uv_python scripts/run_outer_loop_optimization.py \
   --round0-root "$ROUND_ROOT" \
   --global-pair-status-path "$GLOBAL_STATUS_DIR/global_pair_status.json" \
   --control-plane-output-dir "$SMOKE_ROOT/reports/$OUTER_LABEL/control-plane" \
@@ -139,11 +167,12 @@ uv run python scripts/run_outer_loop_optimization.py \
   --model "$MODEL" \
   --rewrite-mode "$REWRITE_MODE" \
   --llm-model "$LLM_MODEL" \
+  --next-pair-plan-mode "$NEXT_PAIR_PLAN_MODE" \
   --max-eval-tasks-per-schema "$MAX_EVAL_TASKS_PER_SCHEMA" \
   --allow-partial-assignment \
   ${skillsbench_args[@]+"${skillsbench_args[@]}"}
 
-echo "Completed full-loop smoke outer step"
+log_progress "phase $TOTAL_PHASES/$TOTAL_PHASES: completed full-loop smoke outer step"
 echo "  step: $STEP"
 echo "  tasks: ${TASKS[*]}"
 echo "  schema-ids: ${SCHEMA_IDS[*]}"

@@ -711,17 +711,28 @@ def _collect_pair_rows(
     return rows
 
 
-def _active_pair_from_events(events: list[dict[str, Any]]) -> dict[str, Any] | None:
-    active_pair: dict[str, Any] | None = None
+def _active_pairs_from_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    active_by_index: dict[Any, dict[str, Any]] = {}
     for event in events:
         event_type = event.get("event")
+        index = event.get("index")
         if event_type == "pair_started":
-            active_pair = event
+            active_by_index[index] = event
             continue
-        if event_type in {"pair_succeeded", "pair_failed"} and active_pair is not None:
-            if active_pair.get("index") == event.get("index"):
-                active_pair = None
-    return active_pair
+        if event_type in {"pair_succeeded", "pair_failed"}:
+            active_by_index.pop(index, None)
+    return sorted(
+        active_by_index.values(),
+        key=lambda item: (
+            int(item.get("index")) if isinstance(item.get("index"), int) else 10**9,
+            str(item.get("pair_id") or ""),
+        ),
+    )
+
+
+def _active_pair_from_events(events: list[dict[str, Any]]) -> dict[str, Any] | None:
+    active_pairs = _active_pairs_from_events(events)
+    return active_pairs[0] if active_pairs else None
 
 
 def collect_launcher_status(
@@ -742,7 +753,8 @@ def collect_launcher_status(
     fallback_total_pairs, fallback_task_names, fallback_pair_ids = _load_selection_from_launcher_processes(
         launcher_log_dir
     )
-    active_pair = _active_pair_from_events(events)
+    active_pairs = _active_pairs_from_events(events)
+    active_pair = active_pairs[0] if active_pairs else None
     process_commands = _scan_active_process_commands(
         active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
         launcher_log_dir.name,
@@ -779,6 +791,7 @@ def collect_launcher_status(
         selected_task_names = (
             summary.get("selected_task_names") or parsed_task_names or fallback_task_names
         )
+        max_concurrent_pairs = summary.get("max_concurrent_pairs")
         total_pairs = max(
             summary_total_pairs,
             parsed_total_pairs or 0,
@@ -791,6 +804,7 @@ def collect_launcher_status(
         completed_pairs = succeeded_pairs + failed_pairs
         total_pairs = parsed_total_pairs or fallback_total_pairs or completed_pairs
         selected_task_names = parsed_task_names or fallback_task_names
+        max_concurrent_pairs = None
     pair_rows = _collect_pair_rows(
         launcher_log_dir=launcher_log_dir,
         selected_task_names=selected_task_names,
@@ -855,6 +869,9 @@ def collect_launcher_status(
         "preflight_risk_audit": preflight_risk_audit,
         "current_pair_id": active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
         "current_pair_index": active_pair.get("index") if isinstance(active_pair, dict) else None,
+        "active_pair_count": len(active_pairs),
+        "active_pairs": active_pairs,
+        "max_concurrent_pairs": max_concurrent_pairs,
         "active_run_dir": str(active_run_dir) if isinstance(active_run_dir, Path) else None,
         "active_run_status": active_run_status,
         "active_processes": process_commands,
@@ -958,6 +975,7 @@ def _reward_to_percent(value: float | None) -> float | None:
 def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> str:
     health = str(status.get("health") or "unknown")
     current_pair = status.get("current_pair_id") or "none"
+    active_pairs = status.get("active_pairs") or []
     latest_event = status.get("latest_event") or {}
     last_failure = status.get("last_failure") or {}
     recent_events = status.get("recent_events") or []
@@ -971,6 +989,11 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     latest_event_at = status.get("latest_event_at") or "none"
     latest_activity_at = status.get("latest_activity_at") or "none"
     health_color = _health_color(health)
+    active_pair_list = ", ".join(
+        str(pair.get("pair_id"))
+        for pair in active_pairs
+        if isinstance(pair, dict) and pair.get("pair_id")
+    ) or "none"
 
     recent_events_rows = "\n".join(
         (
@@ -1551,6 +1574,9 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         <dl>
           <dt>Current pair</dt><dd>{html.escape(str(current_pair))}</dd>
           <dt>Current index</dt><dd>{html.escape(str(status.get("current_pair_index") or "none"))}</dd>
+          <dt>Max concurrency</dt><dd>{html.escape(str(status.get("max_concurrent_pairs") or "unknown"))}</dd>
+          <dt>Active pairs</dt><dd>{html.escape(str(status.get("active_pair_count") or 0))}</dd>
+          <dt>Active pair list</dt><dd>{html.escape(active_pair_list)}</dd>
           <dt>Latest event</dt><dd>{html.escape(str(latest_event_type))}</dd>
           <dt>Latest event at</dt><dd>{html.escape(str(latest_event_at))}</dd>
           <dt>Latest activity at</dt><dd>{html.escape(str(latest_activity_at))}</dd>

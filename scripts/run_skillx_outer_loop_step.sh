@@ -29,6 +29,9 @@ Environment overrides:
   SKILLX_NEXT_RUN_ID        Run id embedded into next-round pair specs.
   SKILLX_REWRITE_MODE       llm or deterministic. Default: llm
   SKILLX_LLM_MODEL          Outer-loop rewriter model. Default: anthropic/claude-sonnet-4-5
+  SKILLX_PYTHON             Python runtime used by uv. Default: 3.11
+  SKILLX_NEXT_PAIR_PLAN_MODE
+                            full_matrix or challenger_eval. Default: full_matrix
   SKILLX_MIN_SUPPORT_SIZE   Rewrite support floor. Default comes from Python wrapper, currently 0.
   SKILLX_MAX_UPDATE_SCHEMAS Max rewritten schemas. Default comes from Python wrapper, currently 0.
   SKILLX_MAX_EVAL_TASKS_PER_SCHEMA
@@ -86,6 +89,8 @@ GLOBAL_STATUS_PATH="$ROUND_ROOT/reports/global-round0-status/global_pair_status.
 NEXT_RUN_ID="${SKILLX_NEXT_RUN_ID:-$NEXT_ROUND_ID-candidates-$OUTER_LABEL}"
 REWRITE_MODE="${SKILLX_REWRITE_MODE:-llm}"
 LLM_MODEL="${SKILLX_LLM_MODEL:-anthropic/claude-sonnet-4-5}"
+PYTHON_RUNTIME="${SKILLX_PYTHON:-3.11}"
+NEXT_PAIR_PLAN_MODE="${SKILLX_NEXT_PAIR_PLAN_MODE:-full_matrix}"
 MAX_EVAL_TASKS_PER_SCHEMA="${SKILLX_MAX_EVAL_TASKS_PER_SCHEMA:-6}"
 ROUND_BUDGET="${SKILLX_ROUND_BUDGET:-3}"
 AGENT="${SKILLX_AGENT:-claude-code}"
@@ -113,7 +118,7 @@ fi
 cd "$EXP_WORKTREE"
 
 if [[ "$EXPORT_REPORT" == "1" ]]; then
-  uv run python scripts/export_round0_run_report.py \
+  uv run --python "$PYTHON_RUNTIME" python scripts/export_round0_run_report.py \
     --materialized-root "$PREVIOUS_MATERIALIZED_ROOT" \
     --run-label "$INNER_RUN_LABEL"
 fi
@@ -122,6 +127,8 @@ if [[ "$BUILD_GLOBAL_STATUS" == "1" ]]; then
   global_status_cmd=(
     uv
     run
+    --python
+    "$PYTHON_RUNTIME"
     python
     scripts/build_round0_global_status.py
     --round0-root
@@ -136,6 +143,8 @@ fi
 outer_cmd=(
   uv
   run
+  --python
+  "$PYTHON_RUNTIME"
   python
   scripts/run_outer_loop_optimization.py
   --round0-root
@@ -164,6 +173,8 @@ outer_cmd=(
   "$REWRITE_MODE"
   --llm-model
   "$LLM_MODEL"
+  --next-pair-plan-mode
+  "$NEXT_PAIR_PLAN_MODE"
   --max-eval-tasks-per-schema
   "$MAX_EVAL_TASKS_PER_SCHEMA"
 )
@@ -187,6 +198,8 @@ echo "  previous-materialized-root: $PREVIOUS_MATERIALIZED_ROOT"
 echo "  inner-run-label: ${INNER_RUN_LABEL:-skipped}"
 echo "  round-root: $ROUND_ROOT"
 echo "  outer-label: $OUTER_LABEL"
+echo "  python: $PYTHON_RUNTIME"
+echo "  next-pair-plan-mode: $NEXT_PAIR_PLAN_MODE"
 echo "  control-plane: $CONTROL_PLANE_OUTPUT_DIR"
 echo "  schema-updates: $SCHEMA_UPDATE_OUTPUT_DIR"
 echo "  rewrite-verification: $SCHEMA_UPDATE_OUTPUT_DIR/rewrite_verification.json"

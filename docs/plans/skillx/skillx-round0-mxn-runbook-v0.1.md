@@ -74,6 +74,7 @@ scripts/run_round0_experiment_tmux.sh 3 run-3x7-2026-04-10 skillx-3x7
 - 用 `caffeinate` 包住 launcher，避免机器休眠
 - 在 `tmux` 里启动
 - 将标准输出写到 `launcher.stdout.log`
+- 默认最多并行跑 `3` 个 task-schema pair；需要串行时设置 `SKILLX_MAX_CONCURRENT_PAIRS=1`
 
 参数含义：
 

@@ -55,10 +55,19 @@ SLOT_FIELDS = (
     "expected_bad_fit",
     "hypothesized_primary_failure_modes",
 )
+sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "src"))
+from runtime_guard import assert_supported_python_runtime  # noqa: E402
+
+assert_supported_python_runtime()
+
 from skillx.model_routing import resolve_cli_model_name, resolve_playbook_cli_name  # noqa: E402
 
 LLMJsonRunner = Callable[[str, dict[str, Any], str, Path, float], dict[str, Any]]
+
+
+def log_progress(message: str) -> None:
+    print(f"[schema-update] {message}", file=sys.stderr, flush=True)
 
 
 def timestamp() -> str:
@@ -1463,11 +1472,23 @@ def build_schema_update_package(
     ]
     score_rows = score_rows_from_bundle(bundle)
     score_by_pair, scores_by_task = index_score_rows(score_rows)
+    task_names = sorted(
+        {str(row.get("task_name")) for row in assignments if isinstance(row.get("task_name"), str)}
+    )
+    log_progress(
+        "start package build: "
+        f"round_id={round_id} next_round_id={next_round_id} "
+        f"rewrite_mode={rewrite_mode} schemas={len(schema_ids)} tasks={len(task_names)} "
+        f"assignments={len(assignments)} score_rows={len(score_rows)}"
+    )
+    if task_names:
+        log_progress("evidence tasks: " + ", ".join(task_names))
 
     evidence_by_schema: dict[str, dict[str, Any]] = {}
     proposals: list[dict[str, Any]] = []
     schema_by_id = {str(schema["category_id"]): schema for schema in prompt_bank["categories"]}
-    for schema_id in schema_ids:
+    for schema_index, schema_id in enumerate(schema_ids, start=1):
+        log_progress(f"schema {schema_index}/{len(schema_ids)}: building evidence for {schema_id}")
         evidence = build_schema_evidence(
             schema_id=schema_id,
             assignments=assignments,
@@ -1478,22 +1499,44 @@ def build_schema_update_package(
             boundary_margin_pp=boundary_margin_pp,
         )
         evidence_by_schema[schema_id] = evidence
-        proposals.append(
-            build_schema_update_proposal(
-                schema=schema_by_id[schema_id],
-                evidence=evidence,
-                min_support_size=min_support_size,
-                rewrite_mode=rewrite_mode,
-                llm_model=llm_model,
-                llm_timeout_sec=llm_timeout_sec,
-                llm_work_dir=llm_work_dir,
-                llm_json_runner=llm_json_runner,
-            )
+        assigned_count = len(evidence.get("assigned_task_summaries", []) or [])
+        boundary_count = len(evidence.get("ambiguous_borderline_cases", []) or [])
+        loss_count = len(evidence.get("cross_schema_losses", []) or [])
+        log_progress(
+            f"schema {schema_index}/{len(schema_ids)}: update proposal for {schema_id} "
+            f"(assigned={assigned_count}, boundary={boundary_count}, cross_losses={loss_count})"
+        )
+        proposal = build_schema_update_proposal(
+            schema=schema_by_id[schema_id],
+            evidence=evidence,
+            min_support_size=min_support_size,
+            rewrite_mode=rewrite_mode,
+            llm_model=llm_model,
+            llm_timeout_sec=llm_timeout_sec,
+            llm_work_dir=llm_work_dir,
+            llm_json_runner=llm_json_runner,
+        )
+        proposals.append(proposal)
+        log_progress(
+            f"schema {schema_index}/{len(schema_ids)}: proposal complete for {schema_id} "
+            f"status={proposal.get('proposal_status')} "
+            f"source={proposal.get('rewrite_source')} "
+            f"support={proposal.get('support_size')}"
         )
 
     round_update_plan = select_round_updates(
         proposals,
         max_update_schemas=max_update_schemas,
+    )
+    update_schema_ids = [
+        str(row.get("category_id"))
+        for row in round_update_plan
+        if isinstance(row, dict) and row.get("action") == "update"
+    ]
+    log_progress(
+        "round update plan selected: "
+        f"updates={len(update_schema_ids)}/{len(schema_ids)} "
+        f"schemas={', '.join(update_schema_ids) if update_schema_ids else 'none'}"
     )
     proposals_by_schema = {proposal["category_id"]: proposal for proposal in proposals}
     candidate_prompt_bank = build_candidate_prompt_bank(
@@ -1512,10 +1555,21 @@ def build_schema_update_package(
         max_update_schemas=max_update_schemas,
     )
     assert_rewrite_verification_passed(rewrite_verification)
+    log_progress(
+        "rewrite verification: "
+        f"status={rewrite_verification.get('status')} "
+        f"completed={rewrite_verification.get('completed_rewrite_schema_count')}/"
+        f"{rewrite_verification.get('expected_rewrite_schema_count')}"
+    )
     challenger_eval_plan = build_challenger_eval_plan(
         evidence_by_schema=evidence_by_schema,
         round_update_plan=round_update_plan,
         max_tasks_per_schema=max_eval_tasks_per_schema,
+    )
+    next_pair_count = sum(int(row.get("task_count") or 0) for row in challenger_eval_plan)
+    log_progress(
+        "challenger eval plan: "
+        f"schemas={len(challenger_eval_plan)} planned_pairs={next_pair_count}"
     )
 
     return {

@@ -226,6 +226,7 @@ class RunOuterLoopOptimizationTests(unittest.TestCase):
 
             materialized = root / "materialized"
             self.assertEqual(result["manifest"]["pair_count"], 1)
+            self.assertEqual(result["manifest"]["next_pair_plan_mode"], "full_matrix")
             self.assertTrue((materialized / "manifest.json").exists())
             self.assertTrue((materialized / "pair_specs.jsonl").exists())
             self.assertTrue((materialized / "pairs" / "task-a__schema-alpha" / "pair_spec.json").exists())
@@ -235,6 +236,81 @@ class RunOuterLoopOptimizationTests(unittest.TestCase):
             self.assertIn("[Outer-loop candidate block]", rendered)
             pair_spec = json.loads((materialized / "pair_specs.jsonl").read_text().splitlines()[0])
             self.assertEqual(pair_spec["pair_reason"], "assigned_support;boundary_case")
+            self.assertEqual(pair_spec["next_pair_plan_mode"], "full_matrix")
+
+    def test_materialize_next_round_pairs_can_keep_challenger_subset(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            skillsbench_root = root / "skillsbench"
+            for task_name in ("task-a", "task-b"):
+                self._write_task(skillsbench_root, task_name)
+            inventory_path = root / "inventory.jsonl"
+            official_path = root / "official.jsonl"
+            render_template_path = root / "render.md"
+            self._write_inventory(inventory_path, ["task-a", "task-b"])
+            self._write_official_results(official_path, ["task-a", "task-b"])
+            render_template_path.write_text("render")
+            package = {
+                "config": {"round_id": "round0", "next_round_id": "round1"},
+                "schema_ids": ["schema-alpha", "schema-beta"],
+                "candidate_prompt_bank": {
+                    "categories": [
+                        {
+                            "category_id": "schema-alpha",
+                            "semantic_intent": "Alpha schema.",
+                            "emphasize": ["alpha"],
+                            "avoid": ["overreach"],
+                            "expected_good_fit": ["task-a"],
+                            "expected_bad_fit": [],
+                            "meta_prompt": "Use alpha.",
+                            "outer_loop_candidate_id": "schema-alpha::round1::conservative",
+                            "outer_loop_candidate_mode": "conservative",
+                        },
+                        {
+                            "category_id": "schema-beta",
+                            "semantic_intent": "Beta schema.",
+                            "emphasize": ["beta"],
+                            "avoid": ["overreach"],
+                            "expected_good_fit": ["task-b"],
+                            "expected_bad_fit": [],
+                            "meta_prompt": "Use beta.",
+                            "outer_loop_candidate_id": "schema-beta::round1::conservative",
+                            "outer_loop_candidate_mode": "conservative",
+                        },
+                    ]
+                },
+                "schema_evidence_bundles": {
+                    "schema-alpha": {"assigned_task_summaries": [{"task_name": "task-a"}]},
+                    "schema-beta": {"assigned_task_summaries": [{"task_name": "task-b"}]},
+                },
+                "challenger_eval_plan": [
+                    {
+                        "schema_id": "schema-alpha",
+                        "candidate_mode": "conservative",
+                        "task_names": ["task-a"],
+                    }
+                ],
+            }
+
+            result = self.module.materialize_next_round_pairs(
+                package=package,
+                output_dir=root / "materialized",
+                skillsbench_root=skillsbench_root,
+                inventory_path=inventory_path,
+                official_results_path=official_path,
+                render_template_path=render_template_path,
+                run_id="round1-run",
+                round_budget=3,
+                oauth_file=root / "oauth-token",
+                agent="claude-code",
+                model="anthropic/claude-sonnet-4-5",
+                schema_update_package_path=root / "schema_update_package.json",
+                next_pair_plan_mode="challenger_eval",
+            )
+
+            self.assertEqual(result["manifest"]["next_pair_plan_mode"], "challenger_eval")
+            self.assertEqual(result["manifest"]["pair_count"], 1)
+            self.assertEqual(result["pair_plan"][0]["pair_id"], "task-a__schema-alpha")
 
     def test_run_outer_loop_optimization_builds_control_update_and_next_pairs(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -279,14 +355,19 @@ class RunOuterLoopOptimizationTests(unittest.TestCase):
                 max_update_schemas=0,
                 max_eval_tasks_per_schema=4,
                 min_support_size=1,
+                next_pair_plan_mode="full_matrix",
                 allow_partial_assignment=False,
             )
 
-            self.assertGreater(result["summary"]["next_round_pair_count"], 0)
+            self.assertEqual(result["summary"]["next_pair_plan_mode"], "full_matrix")
+            self.assertEqual(result["summary"]["next_round_pair_count"], 4)
             self.assertTrue((root / "control" / "control_plane_bundle.json").exists())
             self.assertTrue((root / "schema-updates" / "schema_update_package.json").exists())
             self.assertTrue((root / "round1-materialized" / "manifest.json").exists())
             self.assertTrue((root / "round1-materialized" / "pair_specs.jsonl").exists())
+            materialized_manifest = json.loads((root / "round1-materialized" / "manifest.json").read_text())
+            self.assertEqual(materialized_manifest["task_count"], 2)
+            self.assertEqual(materialized_manifest["schema_count"], 2)
 
 
 if __name__ == "__main__":
