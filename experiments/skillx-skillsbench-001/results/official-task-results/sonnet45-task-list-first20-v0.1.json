@@ -1,0 +1,28 @@
+{
+  "artifact_type": "skillx_task_slice",
+  "version": "v0.1",
+  "source": "docs/plans/skillx/skillsbench-task-list-sonnet45-v0.1.csv",
+  "selection": "first_20_tasks",
+  "tasks": [
+    {"task_name": "3d-scan-calc", "skillx_task_id": "001", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "adaptive-cruise-control", "skillx_task_id": "002", "seed_schema_id": "environment-control"},
+    {"task_name": "azure-bgp-oscillation-route-leak", "skillx_task_id": "003", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "citation-check", "skillx_task_id": "004", "seed_schema_id": "methodology-guardrail"},
+    {"task_name": "civ6-adjacency-optimizer", "skillx_task_id": "005", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "court-form-filling", "skillx_task_id": "006", "seed_schema_id": "artifact-generation"},
+    {"task_name": "dapt-intrusion-detection", "skillx_task_id": "007", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "data-to-d3", "skillx_task_id": "008", "seed_schema_id": "artifact-generation"},
+    {"task_name": "earthquake-phase-association", "skillx_task_id": "009", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "earthquake-plate-calculation", "skillx_task_id": "010", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "econ-detrending-correlation", "skillx_task_id": "011", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "energy-ac-optimal-power-flow", "skillx_task_id": "012", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "energy-market-pricing", "skillx_task_id": "013", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "exceltable-in-ppt", "skillx_task_id": "014", "seed_schema_id": "artifact-generation"},
+    {"task_name": "exoplanet-detection-period", "skillx_task_id": "015", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "financial-modeling-qa", "skillx_task_id": "016", "seed_schema_id": "analytic-pipeline"},
+    {"task_name": "find-topk-similiar-chemicals", "skillx_task_id": "017", "seed_schema_id": "engineering-composition"},
+    {"task_name": "fix-build-agentops", "skillx_task_id": "018", "seed_schema_id": "engineering-composition"},
+    {"task_name": "fix-build-google-auto", "skillx_task_id": "019", "seed_schema_id": "engineering-composition"},
+    {"task_name": "fix-druid-loophole-cve", "skillx_task_id": "020", "seed_schema_id": "engineering-composition"}
+  ]
+}
