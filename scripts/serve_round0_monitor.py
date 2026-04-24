@@ -518,6 +518,47 @@ def _collect_pair_detail(active_run_dir: Path) -> dict[str, Any] | None:
     }
 
 
+def _collect_active_pair_details(
+    launcher_log_dir: Path,
+    active_pairs: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    details: list[dict[str, Any]] = []
+    for active_pair in active_pairs:
+        pair_id = active_pair.get("pair_id")
+        if not isinstance(pair_id, str) or not pair_id:
+            continue
+        process_commands = _scan_active_process_commands(pair_id, launcher_log_dir.name)
+        active_run_dir = _resolve_active_run_dir(launcher_log_dir, pair_id)
+        if active_run_dir is None:
+            active_run_dir = _resolve_active_run_dir_from_processes(process_commands)
+        active_run_status = (
+            _parse_run_status(active_run_dir / "RUN_STATUS.md")
+            if isinstance(active_run_dir, Path)
+            else {}
+        )
+        pair_detail = _collect_pair_detail(active_run_dir) if isinstance(active_run_dir, Path) else None
+        active_run_mtime = _latest_mtime(active_run_dir) if isinstance(active_run_dir, Path) else None
+        latest_activity_at = (
+            _isoformat(datetime.fromtimestamp(active_run_mtime, tz=timezone.utc))
+            if active_run_mtime is not None
+            else None
+        )
+        details.append(
+            {
+                "pair_id": pair_id,
+                "index": active_pair.get("index"),
+                "task_name": active_pair.get("task_name") or active_run_status.get("task"),
+                "schema_id": active_pair.get("schema_id"),
+                "active_run_dir": str(active_run_dir) if isinstance(active_run_dir, Path) else None,
+                "active_run_status": active_run_status,
+                "active_processes": process_commands,
+                "pair_detail": pair_detail,
+                "latest_activity_at": latest_activity_at,
+            }
+        )
+    return details
+
+
 def _synthesize_active_run_event(
     *,
     active_pair: dict[str, Any] | None,
@@ -790,28 +831,33 @@ def collect_launcher_status(
     )
     active_pairs = _active_pairs_from_events(events)
     active_pair = active_pairs[0] if active_pairs else None
-    process_commands = _scan_active_process_commands(
-        active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
-        launcher_log_dir.name,
+    active_pair_details = _collect_active_pair_details(launcher_log_dir, active_pairs)
+    primary_active_detail = active_pair_details[0] if active_pair_details else {}
+    process_commands = (
+        primary_active_detail.get("active_processes")
+        if isinstance(primary_active_detail.get("active_processes"), list)
+        else []
     )
-    active_run_dir = _resolve_active_run_dir(
-        launcher_log_dir,
-        active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
-    )
-    if active_run_dir is None:
-        active_run_dir = _resolve_active_run_dir_from_processes(process_commands)
+    active_run_dir_raw = primary_active_detail.get("active_run_dir")
+    active_run_dir = Path(active_run_dir_raw).resolve() if isinstance(active_run_dir_raw, str) else None
     active_run_status = (
-        _parse_run_status(active_run_dir / "RUN_STATUS.md")
-        if isinstance(active_run_dir, Path)
+        primary_active_detail.get("active_run_status")
+        if isinstance(primary_active_detail.get("active_run_status"), dict)
         else {}
     )
-    pair_detail = _collect_pair_detail(active_run_dir) if isinstance(active_run_dir, Path) else None
-    active_run_mtime = _latest_mtime(active_run_dir) if isinstance(active_run_dir, Path) else None
-    active_run_activity_dt = (
-        datetime.fromtimestamp(active_run_mtime, tz=timezone.utc)
-        if active_run_mtime is not None
+    pair_detail = (
+        primary_active_detail.get("pair_detail")
+        if isinstance(primary_active_detail.get("pair_detail"), dict)
         else None
     )
+    active_run_activity_dt: datetime | None = None
+    for detail in active_pair_details:
+        latest_activity_raw = detail.get("latest_activity_at")
+        if not isinstance(latest_activity_raw, str):
+            continue
+        latest_activity_for_pair = _coerce_datetime(latest_activity_raw)
+        if active_run_activity_dt is None or latest_activity_for_pair > active_run_activity_dt:
+            active_run_activity_dt = latest_activity_for_pair
     latest_event = events[-1] if events else None
     latest_event_at_raw = latest_event.get("observed_at") if isinstance(latest_event, dict) else None
     latest_event_at_dt = None
@@ -911,6 +957,7 @@ def collect_launcher_status(
         "current_pair_index": active_pair.get("index") if isinstance(active_pair, dict) else None,
         "active_pair_count": len(active_pairs),
         "active_pairs": active_pairs,
+        "active_pair_details": active_pair_details,
         "max_concurrent_pairs": max_concurrent_pairs,
         "active_run_dir": str(active_run_dir) if isinstance(active_run_dir, Path) else None,
         "active_run_status": active_run_status,
@@ -1020,8 +1067,8 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     last_failure = status.get("last_failure") or {}
     recent_events = status.get("recent_events") or []
     selected_task_names = status.get("selected_task_names") or []
+    active_pair_details = status.get("active_pair_details") or []
     pair_detail = status.get("pair_detail") or {}
-    round_rows = pair_detail.get("round_rows") or []
     pair_rows = status.get("pair_rows") or []
     preflight_risk_audit = status.get("preflight_risk_audit") or {}
     observed_at = str(status.get("observed_at") or "")
@@ -1100,14 +1147,16 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             )
 
     pair_detail_block = ""
-    if pair_detail:
-        def _stage_cell(state: Any) -> str:
-            text = str(state or "")
-            pill_class = _status_pill_class(text)
-            if pill_class:
-                return f'<td><span class="{pill_class}">{html.escape(text)}</span></td>'
-            return f"<td>{html.escape(text)}</td>"
+    def _stage_cell(state: Any) -> str:
+        text = str(state or "")
+        pill_class = _status_pill_class(text)
+        if pill_class:
+            return f'<td><span class="{pill_class}">{html.escape(text)}</span></td>'
+        return f"<td>{html.escape(text)}</td>"
 
+    def _render_pair_detail_card(active_detail: dict[str, Any], fallback_index: int) -> str:
+        detail = active_detail.get("pair_detail") if isinstance(active_detail.get("pair_detail"), dict) else {}
+        round_rows = detail.get("round_rows") or []
         round_rows_html = "\n".join(
             (
                 "<tr>"
@@ -1121,18 +1170,58 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             )
             for row in round_rows
         ) or '<tr><td colspan="6">No round data yet.</td></tr>'
-        pair_detail_block = (
-            '<section class="panel">'
-            "<h2>Current Pair Detail</h2>"
+
+        pair_id = active_detail.get("pair_id") or "unknown"
+        index = active_detail.get("index")
+        index_text = str(index) if index not in (None, "") else str(fallback_index)
+        run_status = active_detail.get("active_run_status")
+        run_status_value = (
+            run_status.get("status")
+            if isinstance(run_status, dict)
+            else None
+        ) or "running"
+        status_pill_class = _status_pill_class(run_status_value)
+        status_pill = (
+            f'<span class="{status_pill_class}">{html.escape(str(run_status_value))}</span>'
+            if status_pill_class
+            else html.escape(str(run_status_value))
+        )
+        return (
+            '<div class="pair-detail-card">'
+            f"<h3>#{html.escape(index_text)} {html.escape(str(pair_id))} {status_pill}</h3>"
             "<dl>"
-            f"<dt>Current round</dt><dd>{html.escape(str(pair_detail.get('current_round_index')))}</dd>"
-            f"<dt>Current stage</dt><dd>{html.escape(str(pair_detail.get('current_stage') or 'none'))}</dd>"
-            f"<dt>Last completed stage</dt><dd>{html.escape(str(pair_detail.get('last_completed_stage') or 'none'))}</dd>"
+            f"<dt>Task</dt><dd>{html.escape(str(active_detail.get('task_name') or 'unknown'))}</dd>"
+            f"<dt>Schema</dt><dd>{html.escape(str(active_detail.get('schema_id') or 'unknown'))}</dd>"
+            f"<dt>Current round</dt><dd>{html.escape(str(detail.get('current_round_index')))}</dd>"
+            f"<dt>Current stage</dt><dd>{html.escape(str(detail.get('current_stage') or 'none'))}</dd>"
+            f"<dt>Last completed stage</dt><dd>{html.escape(str(detail.get('last_completed_stage') or 'none'))}</dd>"
+            f"<dt>Latest activity</dt><dd>{html.escape(str(active_detail.get('latest_activity_at') or 'none'))}</dd>"
+            f"<dt>Run dir</dt><dd>{html.escape(str(active_detail.get('active_run_dir') or 'none'))}</dd>"
             "</dl>"
             '<div class="table-wrap"><table>'
             '<thead><tr><th class="num">Round</th><th>Executor</th><th>Role A</th><th>Role B</th><th>Latest Event</th><th class="num">Event Time</th></tr></thead>'
             f"<tbody>{round_rows_html}</tbody>"
             "</table></div>"
+            "</div>"
+        )
+
+    if active_pair_details:
+        pair_detail_cards = "\n".join(
+            _render_pair_detail_card(active_detail, fallback_index=index)
+            for index, active_detail in enumerate(active_pair_details, start=1)
+            if isinstance(active_detail, dict)
+        )
+        pair_detail_block = (
+            '<section class="panel">'
+            "<h2>Current Pair Details</h2>"
+            f"{pair_detail_cards}"
+            "</section>"
+        )
+    elif pair_detail:
+        pair_detail_block = (
+            '<section class="panel">'
+            "<h2>Current Pair Details</h2>"
+            f"{_render_pair_detail_card({'pair_id': status.get('current_pair_id'), 'index': status.get('current_pair_index'), 'active_run_dir': status.get('active_run_dir'), 'active_run_status': status.get('active_run_status'), 'pair_detail': pair_detail}, 1)}"
             "</section>"
         )
 
@@ -1361,6 +1450,25 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     }}
     .panel > .subhead {{
       margin: -6px 0 12px;
+    }}
+    .pair-detail-card {{
+      margin: 12px 0 18px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-alt);
+    }}
+    .pair-detail-card + .pair-detail-card {{
+      margin-top: 16px;
+    }}
+    .pair-detail-card h3 {{
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: var(--ink);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
     }}
 
     dl {{

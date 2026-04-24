@@ -521,12 +521,106 @@ class ServeRound0MonitorTests(unittest.TestCase):
 
             self.assertEqual(status["active_pair_count"], 1)
             self.assertEqual(status["max_concurrent_pairs"], 3)
+            self.assertEqual(len(status["active_pair_details"]), 1)
+            self.assertEqual(status["active_pair_details"][0]["pair_id"], "task-alpha__schema-a")
             pair_statuses = {
                 row["pair_id"]: row["pair_status"]
                 for row in status["pair_rows"]
             }
             self.assertEqual(pair_statuses["task-alpha__schema-a"], "running")
             self.assertEqual(pair_statuses["task-alpha__schema-b"], "pending")
+
+    def test_render_dashboard_shows_multiple_active_pair_details(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["schema-a", "schema-b"]}) + "\n"
+            )
+            pair_specs = [
+                {
+                    "pair_id": "task-alpha__schema-a",
+                    "task_name": "task-alpha",
+                    "schema_id": "schema-a",
+                    "pair_dir": "pairs/task-alpha__schema-a",
+                },
+                {
+                    "pair_id": "task-beta__schema-b",
+                    "task_name": "task-beta",
+                    "schema_id": "schema-b",
+                    "pair_dir": "pairs/task-beta__schema-b",
+                },
+            ]
+            (materialized_root / "pair_specs.jsonl").write_text(
+                "\n".join(json.dumps(item) for item in pair_specs) + "\n"
+            )
+            for pair in pair_specs:
+                pair_id = pair["pair_id"]
+                task_name = pair["task_name"]
+                run_dir = materialized_root / "pairs" / pair_id / "refine_run_run-demo"
+                round0 = run_dir / "refine" / task_name / "rounds" / "round-0"
+                round0.mkdir(parents=True)
+                (run_dir / "RUN_STATUS.md").write_text(
+                    f"- status: `running`\n- task: `{task_name}`\n"
+                )
+                (round0 / "orchestrator_log.ndjson").write_text(
+                    json.dumps(
+                        {
+                            "round_index": 0,
+                            "event_type": "executor_completed",
+                            "status": "ok",
+                            "timestamp": "2026-04-10T08:10:02+00:00",
+                        }
+                    )
+                    + "\n"
+                )
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 2 task(s) -> 2 pair(s)\n"
+                "Tasks: task-alpha, task-beta\n"
+                "Running pairs with max_concurrent_pairs=3\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text(
+                json.dumps(
+                    {
+                        "event": "pair_started",
+                        "index": 1,
+                        "pair_id": "task-alpha__schema-a",
+                        "task_name": "task-alpha",
+                        "schema_id": "schema-a",
+                        "observed_at": "2026-04-10T08:10:00+00:00",
+                    }
+                )
+                + "\n"
+                + json.dumps(
+                    {
+                        "event": "pair_started",
+                        "index": 2,
+                        "pair_id": "task-beta__schema-b",
+                        "task_name": "task-beta",
+                        "schema_id": "schema-b",
+                        "observed_at": "2026-04-10T08:10:01+00:00",
+                    }
+                )
+                + "\n"
+            )
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:10:05+00:00",
+            )
+            html = self.module.render_dashboard_html(status, refresh_seconds=9)
+
+            self.assertEqual(status["active_pair_count"], 2)
+            self.assertEqual(len(status["active_pair_details"]), 2)
+            self.assertEqual(
+                [detail["pair_id"] for detail in status["active_pair_details"]],
+                ["task-alpha__schema-a", "task-beta__schema-b"],
+            )
+            self.assertIn("Current Pair Details", html)
+            self.assertEqual(html.count('<div class="pair-detail-card">'), 2)
+            self.assertIn("task-alpha__schema-a", html)
+            self.assertIn("task-beta__schema-b", html)
 
     def test_collect_launcher_status_marks_completed_stop_pairs_explicitly(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1002,7 +1096,7 @@ class ServeRound0MonitorTests(unittest.TestCase):
 
             self.assertIn('<meta http-equiv="refresh" content="9">', html)
             self.assertIn("civ6-adjacency-optimizer__artifact-generation", html)
-            self.assertIn("Current Pair Detail", html)
+            self.assertIn("Current Pair Details", html)
             self.assertIn("Current round", html)
             self.assertIn("executor", html)
             self.assertIn("Task / Pair Results", html)
