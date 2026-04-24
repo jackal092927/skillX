@@ -1,0 +1,90 @@
+skillx_task_id,task_id,initial_schema_seed,official_result_status,official_missing_reason,source_url,sonnet45_no_skills_score,sonnet45_with_skills_score,sonnet45_self_generated_score
+001,3d-scan-calc,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/3d-scan-calc,80,80,33.3
+002,adaptive-cruise-control,environment-control,available,,https://www.skillsbench.ai/tasks/adaptive-cruise-control,0,0,0
+003,azure-bgp-oscillation-route-leak,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/azure-bgp-oscillation-route-leak,0,0,0
+004,citation-check,methodology-guardrail,available,,https://www.skillsbench.ai/tasks/citation-check,100,100,66.7
+005,civ6-adjacency-optimizer,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/civ6-adjacency-optimizer,0,14.7,0
+006,court-form-filling,artifact-generation,available,,https://www.skillsbench.ai/tasks/court-form-filling,20,20,33.3
+007,dapt-intrusion-detection,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/dapt-intrusion-detection,0,80,0
+008,data-to-d3,artifact-generation,available,,https://www.skillsbench.ai/tasks/data-to-d3,60,80,0
+009,earthquake-phase-association,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/earthquake-phase-association,20,20,33.3
+010,earthquake-plate-calculation,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/earthquake-plate-calculation,0,60,0
+011,econ-detrending-correlation,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/econ-detrending-correlation,40,60,0
+012,energy-ac-optimal-power-flow,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/energy-ac-optimal-power-flow,20,20,0
+013,energy-market-pricing,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/energy-market-pricing,0,0,0
+014,exceltable-in-ppt,artifact-generation,available,,https://www.skillsbench.ai/tasks/exceltable-in-ppt,60,80,0
+015,exoplanet-detection-period,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/exoplanet-detection-period,0,0,33.3
+016,financial-modeling-qa,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/financial-modeling-qa,0,0,0
+017,find-topk-similiar-chemicals,engineering-composition,available,,https://www.skillsbench.ai/tasks/find-topk-similiar-chemicals,20,10,0
+018,fix-build-agentops,engineering-composition,available,,https://www.skillsbench.ai/tasks/fix-build-agentops,0,0,0
+019,fix-build-google-auto,engineering-composition,available,,https://www.skillsbench.ai/tasks/fix-build-google-auto,0,0,0
+020,fix-druid-loophole-cve,engineering-composition,available,,https://www.skillsbench.ai/tasks/fix-druid-loophole-cve,20,80,33.3
+021,fix-erlang-ssh-cve,engineering-composition,available,,https://www.skillsbench.ai/tasks/fix-erlang-ssh-cve,40,40,100
+022,flink-query,engineering-composition,available,,https://www.skillsbench.ai/tasks/flink-query,0,0,0
+023,flood-risk-analysis,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/flood-risk-analysis,0,0,0
+024,gh-repo-analytics,retrieval-heavy-synthesis,available,,https://www.skillsbench.ai/tasks/gh-repo-analytics,0,0,0
+025,glm-lake-mendota,environment-control,available,,https://www.skillsbench.ai/tasks/glm-lake-mendota,0,80,0
+026,gravitational-wave-detection,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/gravitational-wave-detection,0,0,0
+027,grid-dispatch-operator,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/grid-dispatch-operator,0,0,0
+028,invoice-fraud-detection,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/invoice-fraud-detection,20,20,0
+029,jpg-ocr-stat,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/jpg-ocr-stat,0,0,0
+030,lab-unit-harmonization,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/lab-unit-harmonization,39.6,60.4,36.1
+031,lake-warming-attribution,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/lake-warming-attribution,0,40,0
+032,latex-formula-extraction,artifact-generation,available,,https://www.skillsbench.ai/tasks/latex-formula-extraction,0,0,0
+033,mario-coin-counting,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/mario-coin-counting,0,80,0
+034,mars-clouds-clustering,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/mars-clouds-clustering,40,100,66.7
+035,multilingual-video-dubbing,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/multilingual-video-dubbing,40,100,66.7
+036,offer-letter-generator,artifact-generation,available,,https://www.skillsbench.ai/tasks/offer-letter-generator,0,100,0
+037,organize-messy-files,retrieval-heavy-synthesis,available,,https://www.skillsbench.ai/tasks/organize-messy-files,20,20,0
+038,paper-anonymizer,artifact-generation,available,,https://www.skillsbench.ai/tasks/paper-anonymizer,0,0,0
+039,parallel-tfidf-search,engineering-composition,available,,https://www.skillsbench.ai/tasks/parallel-tfidf-search,60,0,33.3
+040,pddl-tpp-planning,environment-control,available,,https://www.skillsbench.ai/tasks/pddl-tpp-planning,0,0,0
+041,pdf-excel-diff,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/pdf-excel-diff,80,40,33.3
+042,pedestrian-traffic-counting,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/pedestrian-traffic-counting,0,0,0
+043,pg-essay-to-audiobook,orchestration-delegation,available,,https://www.skillsbench.ai/tasks/pg-essay-to-audiobook,0,0,0
+044,powerlifting-coef-calc,artifact-generation,available,,https://www.skillsbench.ai/tasks/powerlifting-coef-calc,100,100,100
+045,pptx-reference-formatting,artifact-generation,available,,https://www.skillsbench.ai/tasks/pptx-reference-formatting,0,80,0
+046,protein-expression-analysis,artifact-generation,available,,https://www.skillsbench.ai/tasks/protein-expression-analysis,0,100,0
+047,python-scala-translation,artifact-generation,available,,https://www.skillsbench.ai/tasks/python-scala-translation,0,0,0
+048,react-performance-debugging,engineering-composition,available,,https://www.skillsbench.ai/tasks/react-performance-debugging,0,0,0
+049,reserves-at-risk-calc,retrieval-heavy-synthesis,available,,https://www.skillsbench.ai/tasks/reserves-at-risk-calc,0,0,0
+050,sales-pivot-analysis,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/sales-pivot-analysis,0,80,0
+051,sec-financial-report,retrieval-heavy-synthesis,available,,https://www.skillsbench.ai/tasks/sec-financial-report,0,100,0
+052,seismic-phase-picking,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/seismic-phase-picking,0,0,0
+053,setup-fuzzing-py,engineering-composition,available,,https://www.skillsbench.ai/tasks/setup-fuzzing-py,0,9.8,44
+054,shock-analysis-demand,retrieval-heavy-synthesis,available,,https://www.skillsbench.ai/tasks/shock-analysis-demand,0,0,0
+055,shock-analysis-supply,retrieval-heavy-synthesis,available,,https://www.skillsbench.ai/tasks/shock-analysis-supply,0,0,0
+056,simpo-code-reproduction,engineering-composition,available,,https://www.skillsbench.ai/tasks/simpo-code-reproduction,0,40,0
+057,software-dependency-audit,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/software-dependency-audit,0,0,0
+058,speaker-diarization-subtitles,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/speaker-diarization-subtitles,0,0,0
+059,spring-boot-jakarta-migration,engineering-composition,available,,https://www.skillsbench.ai/tasks/spring-boot-jakarta-migration,100,100,100
+060,suricata-custom-exfil,artifact-generation,available,,https://www.skillsbench.ai/tasks/suricata-custom-exfil,0,0,0
+061,syzkaller-ppdev-syzlang,artifact-generation,available,,https://www.skillsbench.ai/tasks/syzkaller-ppdev-syzlang,0,20,66.7
+062,taxonomy-tree-merge,methodology-guardrail,available,,https://www.skillsbench.ai/tasks/taxonomy-tree-merge,40.8,0,40.5
+063,threejs-structure-parser,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/threejs-structure-parser,0,0,0
+064,threejs-to-obj,artifact-generation,available,,https://www.skillsbench.ai/tasks/threejs-to-obj,20,60,0
+065,travel-planning,retrieval-heavy-synthesis,available,,https://www.skillsbench.ai/tasks/travel-planning,40,20,0
+066,trend-anomaly-causal-inference,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/trend-anomaly-causal-inference,84.3,90.6,86.3
+067,video-filler-word-remover,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/video-filler-word-remover,0,0,0
+068,video-tutorial-indexer,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/video-tutorial-indexer,0,0,0
+069,virtualhome-agent-planning,environment-control,available,,https://www.skillsbench.ai/tasks/virtualhome-agent-planning,0,0,0
+070,weighted-gdp-calc,artifact-generation,available,,https://www.skillsbench.ai/tasks/weighted-gdp-calc,0,100,0
+071,xlsx-recover-data,analytic-pipeline,available,,https://www.skillsbench.ai/tasks/xlsx-recover-data,0,0,0
+072,PDF-Crosspage-Table-Normalization-to-Excel,analytic-pipeline,missing_official_results,HTTP Error 404: Not Found,https://www.skillsbench.ai/tasks/PDF-Crosspage-Table-Normalization-to-Excel,,,
+073,crystallographic-wyckoff-position-analysis,engineering-composition,missing_official_results,missing_results,https://www.skillsbench.ai/tasks/crystallographic-wyckoff-position-analysis,,,
+074,dialogue-parser,artifact-generation,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/dialogue-parser,,,
+075,dynamic-object-aware-egomotion,analytic-pipeline,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/dynamic-object-aware-egomotion,,,
+076,edit-pdf,artifact-generation,missing_official_results,missing_results,https://www.skillsbench.ai/tasks/edit-pdf,,,
+077,enterprise-information-search,retrieval-heavy-synthesis,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/enterprise-information-search,,,
+078,fix-visual-stability,engineering-composition,missing_official_results,missing_results,https://www.skillsbench.ai/tasks/fix-visual-stability,,,
+079,hvac-control,environment-control,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/hvac-control,,,
+080,jax-computing-basics,engineering-composition,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/jax-computing-basics,,,
+081,lean4-proof,artifact-generation,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/lean4-proof,,,
+082,manufacturing-codebook-normalization,retrieval-heavy-synthesis,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/manufacturing-codebook-normalization,,,
+083,manufacturing-equipment-maintenance,retrieval-heavy-synthesis,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/manufacturing-equipment-maintenance,,,
+084,manufacturing-fjsp-optimization,analytic-pipeline,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/manufacturing-fjsp-optimization,,,
+085,mhc-layer-impl,engineering-composition,missing_official_results,missing_results,https://www.skillsbench.ai/tasks/mhc-layer-impl,,,
+086,quantum-numerical-simulation,analytic-pipeline,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/quantum-numerical-simulation,,,
+087,r2r-mpc-control,environment-control,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/r2r-mpc-control,,,
+088,scheduling-email-assistant,orchestration-delegation,missing_official_results,HTTP Error 500: Internal Server Error,https://www.skillsbench.ai/tasks/scheduling-email-assistant,,,
+089,video-silence-remover,analytic-pipeline,missing_official_results,missing_results,https://www.skillsbench.ai/tasks/video-silence-remover,,,
