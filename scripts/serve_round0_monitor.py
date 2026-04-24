@@ -16,6 +16,7 @@ from typing import Any
 
 
 SELECTED_LINE_PATTERN = re.compile(r"Selected\s+(\d+)\s+task\(s\)\s+->\s+(\d+)\s+pair\(s\)")
+MAX_CONCURRENT_PATTERN = re.compile(r"Running pairs with max_concurrent_pairs=(\d+)")
 RUN_STATUS_PATTERN = re.compile(r"^- ([a-z_]+): `?(.*?)`?$")
 OUTPUT_DIR_PATTERN = re.compile(r"--output-dir\s+(\S+)")
 ROUND_NAME_PATTERN = re.compile(r"^round-(\d+)$")
@@ -76,11 +77,12 @@ def _round_index_from_name(name: str) -> int | None:
     return int(match.group(1))
 
 
-def _parse_stdout_metadata(stdout_log_path: Path) -> tuple[int | None, list[str]]:
+def _parse_stdout_metadata(stdout_log_path: Path) -> tuple[int | None, list[str], int | None]:
     if not stdout_log_path.exists():
-        return None, []
+        return None, [], None
 
     total_pairs: int | None = None
+    max_concurrent_pairs: int | None = None
     selected_task_names: list[str] = []
     for raw_line in stdout_log_path.read_text().splitlines():
         line = raw_line.strip()
@@ -90,13 +92,17 @@ def _parse_stdout_metadata(stdout_log_path: Path) -> tuple[int | None, list[str]
         if match:
             total_pairs = int(match.group(2))
             continue
+        max_concurrent_match = MAX_CONCURRENT_PATTERN.search(line)
+        if max_concurrent_match:
+            max_concurrent_pairs = int(max_concurrent_match.group(1))
+            continue
         if line.startswith("Tasks:"):
             selected_task_names = [
                 part.strip()
                 for part in line.removeprefix("Tasks:").split(",")
                 if part.strip()
             ]
-    return total_pairs, selected_task_names
+    return total_pairs, selected_task_names, max_concurrent_pairs
 
 
 def _latest_mtime(path: Path) -> float | None:
@@ -409,8 +415,23 @@ def _read_preflight_risk_audit(launcher_log_dir: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
-def _resolve_pair_run_dir_for_label(pair_spec: dict[str, Any], run_label: str) -> Path:
-    pair_dir = Path(str(pair_spec.get("pair_dir") or "")).resolve()
+def _resolve_materialized_path(raw_path: str, *, materialized_root: Path) -> Path:
+    path = Path(raw_path).expanduser()
+    if path.is_absolute():
+        return path.resolve()
+    return (materialized_root / path).resolve()
+
+
+def _resolve_pair_run_dir_for_label(
+    pair_spec: dict[str, Any],
+    *,
+    materialized_root: Path,
+    run_label: str,
+) -> Path:
+    pair_dir = _resolve_materialized_path(
+        str(pair_spec.get("pair_dir") or ""),
+        materialized_root=materialized_root,
+    )
     return pair_dir / f"refine_run_{run_label}"
 
 
@@ -564,6 +585,7 @@ def _pair_status_from_sources(
     launcher_result: dict[str, Any] | None,
     run_status: dict[str, str],
     run_dir: Path,
+    pair_is_active: bool = False,
 ) -> str:
     status_value = _status_value_from_sources(
         launcher_result=launcher_result,
@@ -583,7 +605,7 @@ def _pair_status_from_sources(
         if normalized in {"running", "in_progress", "started", "active"}:
             return "running"
         return status_value
-    if run_dir.exists():
+    if pair_is_active:
         return "running"
     return "pending"
 
@@ -595,6 +617,7 @@ def _collect_pair_rows(
     selected_pair_ids: list[str] | None,
     summary: dict[str, Any] | None,
     current_pair_id: str | None,
+    active_pair_ids: set[str] | None,
     active_run_dir: Path | None,
 ) -> list[dict[str, Any]]:
     materialized_root = launcher_log_dir.parent.parent
@@ -630,6 +653,7 @@ def _collect_pair_rows(
         elif selected_task_names and task_name not in task_order:
             continue
 
+        pair_is_active = active_pair_ids is not None and pair_id in active_pair_ids
         launcher_result = summary_by_pair_id.get(pair_id)
         launcher_output_dir = (
             Path(str(launcher_result.get("output_dir"))).resolve()
@@ -641,7 +665,11 @@ def _collect_pair_rows(
         elif isinstance(launcher_output_dir, Path):
             run_dir = launcher_output_dir
         else:
-            run_dir = _resolve_pair_run_dir_for_label(pair_spec, launcher_log_dir.name)
+            run_dir = _resolve_pair_run_dir_for_label(
+                pair_spec,
+                materialized_root=materialized_root,
+                run_label=launcher_log_dir.name,
+            )
         run_status = _parse_run_status(run_dir / "RUN_STATUS.md")
         round_scores_raw = _read_round_score_map(run_dir)
         round_scores = {
@@ -659,6 +687,7 @@ def _collect_pair_rows(
         official_c1 = official_scores.get("with_skills") if isinstance(official_scores, dict) else None
         official_c0 = float(official_c0) if isinstance(official_c0, (int, float)) else None
         official_c1 = float(official_c1) if isinstance(official_c1, (int, float)) else None
+        r0_score = round_scores.get("R0")
 
         rows.append(
             {
@@ -687,10 +716,16 @@ def _collect_pair_rows(
                     if selected_score is not None and official_c1 is not None
                     else None
                 ),
+                "delta_vs_r0": (
+                    selected_score - r0_score
+                    if selected_score is not None and isinstance(r0_score, (int, float))
+                    else None
+                ),
                 "pair_status": _pair_status_from_sources(
                     launcher_result=launcher_result,
                     run_status=run_status,
                     run_dir=run_dir,
+                    pair_is_active=pair_is_active,
                 ),
                 "pair_has_issues": _pair_has_issues_from_sources(
                     launcher_result=launcher_result,
@@ -749,7 +784,7 @@ def collect_launcher_status(
 
     summary = _safe_read_json(summary_path)
     events = _read_ndjson(events_path)
-    parsed_total_pairs, parsed_task_names = _parse_stdout_metadata(stdout_log_path)
+    parsed_total_pairs, parsed_task_names, parsed_max_concurrent_pairs = _parse_stdout_metadata(stdout_log_path)
     fallback_total_pairs, fallback_task_names, fallback_pair_ids = _load_selection_from_launcher_processes(
         launcher_log_dir
     )
@@ -791,7 +826,7 @@ def collect_launcher_status(
         selected_task_names = (
             summary.get("selected_task_names") or parsed_task_names or fallback_task_names
         )
-        max_concurrent_pairs = summary.get("max_concurrent_pairs")
+        max_concurrent_pairs = summary.get("max_concurrent_pairs") or parsed_max_concurrent_pairs
         total_pairs = max(
             summary_total_pairs,
             parsed_total_pairs or 0,
@@ -804,13 +839,18 @@ def collect_launcher_status(
         completed_pairs = succeeded_pairs + failed_pairs
         total_pairs = parsed_total_pairs or fallback_total_pairs or completed_pairs
         selected_task_names = parsed_task_names or fallback_task_names
-        max_concurrent_pairs = None
+        max_concurrent_pairs = parsed_max_concurrent_pairs
     pair_rows = _collect_pair_rows(
         launcher_log_dir=launcher_log_dir,
         selected_task_names=selected_task_names,
         selected_pair_ids=fallback_pair_ids,
         summary=summary if isinstance(summary, dict) else None,
         current_pair_id=active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
+        active_pair_ids={
+            str(item.get("pair_id"))
+            for item in active_pairs
+            if isinstance(item.get("pair_id"), str)
+        },
         active_run_dir=active_run_dir if isinstance(active_run_dir, Path) else None,
     )
     preflight_risk_audit = _read_preflight_risk_audit(launcher_log_dir)
@@ -1112,6 +1152,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         r3 = round_scores.get("R3")
         d0 = row.get("delta_vs_c0")
         d1 = row.get("delta_vs_c1")
+        dr0 = row.get("delta_vs_r0")
         status_value = row.get("pair_status") or ""
         status_pill_class = _status_pill_class(status_value)
         status_cell = (
@@ -1131,6 +1172,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             f'<td class="{_heat_class(r3)}">{html.escape(_format_metric(r3))}</td>'
             f'<td class="num">{html.escape(str(row.get("selected_round") or ""))}</td>'
             f'<td class="num num-strong">{html.escape(_format_metric(row.get("selected_score")))}</td>'
+            f'<td class="{_delta_class(dr0)}">{html.escape(_format_metric(dr0))}</td>'
             f'<td class="{_delta_class(d0)}">{html.escape(_format_metric(d0))}</td>'
             f'<td class="{_delta_class(d1)}">{html.escape(_format_metric(d1))}</td>'
             f'<td class="col-status">{status_cell}</td>'
@@ -1138,7 +1180,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         )
     pair_rows_html = (
         "\n".join(pair_row_items)
-        or '<tr><td colspan="13">No pair rows available.</td></tr>'
+        or '<tr><td colspan="14">No pair rows available.</td></tr>'
     )
 
     return f"""<!DOCTYPE html>
@@ -1615,6 +1657,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
               <th class="num">R3</th>
               <th class="num">Best Round</th>
               <th class="num">Best Score</th>
+              <th class="num">Δ vs R0</th>
               <th class="num">Δ vs C0</th>
               <th class="num">Δ vs C1</th>
               <th>Status</th>

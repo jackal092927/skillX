@@ -460,12 +460,73 @@ class ServeRound0MonitorTests(unittest.TestCase):
             self.assertEqual(completed["selected_score_raw"], 0.26)
             self.assertEqual(completed["delta_vs_c0"], 16.0)
             self.assertEqual(completed["delta_vs_c1"], 6.0)
+            self.assertEqual(completed["delta_vs_r0"], 5.0)
             self.assertEqual(completed["pair_status"], "completed")
             self.assertEqual(running["schema_id"], "analytic-pipeline")
             self.assertEqual(running["round_scores"]["R0"], 22.5)
             self.assertEqual(running["round_rewards_raw"]["R0"], 0.225)
             self.assertIsNone(running["selected_round"])
             self.assertEqual(running["pair_status"], "running")
+
+    def test_collect_launcher_status_handles_relative_pair_dirs_and_active_events(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["schema-a", "schema-b"]}) + "\n"
+            )
+            pair_specs = [
+                {
+                    "pair_id": "task-alpha__schema-a",
+                    "task_name": "task-alpha",
+                    "schema_id": "schema-a",
+                    "pair_dir": "pairs/task-alpha__schema-a",
+                },
+                {
+                    "pair_id": "task-alpha__schema-b",
+                    "task_name": "task-alpha",
+                    "schema_id": "schema-b",
+                    "pair_dir": "pairs/task-alpha__schema-b",
+                },
+            ]
+            (materialized_root / "pair_specs.jsonl").write_text(
+                "\n".join(json.dumps(item) for item in pair_specs) + "\n"
+            )
+            for pair_id in ("task-alpha__schema-a", "task-alpha__schema-b"):
+                run_dir = materialized_root / "pairs" / pair_id / "refine_run_run-demo"
+                run_dir.mkdir(parents=True)
+                (run_dir / "docker_preflight_risk.json").write_text("{}\n")
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 2 pair(s)\n"
+                "Tasks: task-alpha\n"
+                "Running pairs with max_concurrent_pairs=3\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text(
+                json.dumps(
+                    {
+                        "event": "pair_started",
+                        "index": 1,
+                        "pair_id": "task-alpha__schema-a",
+                        "observed_at": "2026-04-10T08:10:00+00:00",
+                    }
+                )
+                + "\n"
+            )
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:10:05+00:00",
+            )
+
+            self.assertEqual(status["active_pair_count"], 1)
+            self.assertEqual(status["max_concurrent_pairs"], 3)
+            pair_statuses = {
+                row["pair_id"]: row["pair_status"]
+                for row in status["pair_rows"]
+            }
+            self.assertEqual(pair_statuses["task-alpha__schema-a"], "running")
+            self.assertEqual(pair_statuses["task-alpha__schema-b"], "pending")
 
     def test_collect_launcher_status_marks_completed_stop_pairs_explicitly(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
