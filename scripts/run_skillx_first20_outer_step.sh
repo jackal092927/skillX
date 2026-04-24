@@ -55,6 +55,23 @@ fi
 
 cd "$EXP_WORKTREE"
 
+SUMMARY_PATH="$EXP_WORKTREE/$PREVIOUS_MATERIALIZED_ROOT/launcher_logs/$1/summary.json"
+if [[ "$PREVIOUS_MATERIALIZED_ROOT" = /* ]]; then
+  SUMMARY_PATH="$PREVIOUS_MATERIALIZED_ROOT/launcher_logs/$1/summary.json"
+fi
+if [[ ! -f "$SUMMARY_PATH" ]]; then
+  echo "Missing completed first20 inner-loop summary: $SUMMARY_PATH" >&2
+  echo "Run the inner loop first, then rerun this outer step." >&2
+  echo >&2
+  echo "Expected first command:" >&2
+  echo "  cd $EXP_WORKTREE" >&2
+  echo "  scripts/run_skillx_first20_round0_tmux.sh \\" >&2
+  echo "    $1 \\" >&2
+  echo "    skillx-round0-first20x7 \\" >&2
+  echo "    8767" >&2
+  exit 1
+fi
+
 SKILLX_EXP_WORKTREE="$EXP_WORKTREE" \
 SKILLX_PREVIOUS_MATERIALIZED_ROOT="$PREVIOUS_MATERIALIZED_ROOT" \
 SKILLX_NEXT_PAIR_PLAN_MODE="${SKILLX_NEXT_PAIR_PLAN_MODE:-full_matrix}" \

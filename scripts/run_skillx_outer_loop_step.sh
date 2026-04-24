@@ -109,6 +109,20 @@ if [[ "$EXPORT_REPORT" == "1" && -z "$INNER_RUN_LABEL" ]]; then
   echo "inner-run-label is required when SKILLX_EXPORT_REPORT=1" >&2
   exit 1
 fi
+if [[ "$EXPORT_REPORT" == "1" ]]; then
+  SUMMARY_PATH="$PREVIOUS_MATERIALIZED_ROOT/launcher_logs/$INNER_RUN_LABEL/summary.json"
+  if [[ ! -f "$SUMMARY_PATH" ]]; then
+    echo "Missing completed inner-loop launcher summary: $SUMMARY_PATH" >&2
+    echo "The outer-loop step must run after the inner-loop launcher has completed." >&2
+    echo "Available launcher log directories:" >&2
+    if [[ -d "$PREVIOUS_MATERIALIZED_ROOT/launcher_logs" ]]; then
+      find "$PREVIOUS_MATERIALIZED_ROOT/launcher_logs" -mindepth 1 -maxdepth 1 -type d -print >&2
+    else
+      echo "  none: $PREVIOUS_MATERIALIZED_ROOT/launcher_logs does not exist" >&2
+    fi
+    exit 1
+  fi
+fi
 if [[ -d "$NEXT_MATERIALIZED_ROOT" ]] && find "$NEXT_MATERIALIZED_ROOT" -mindepth 1 -print -quit | grep -q .; then
   echo "Next materialized root already exists and is non-empty: $NEXT_MATERIALIZED_ROOT" >&2
   echo "Choose a new outer label or remove the existing root first." >&2
