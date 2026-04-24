@@ -1,6 +1,8 @@
 {
   "config": {
+    "assignment_random_seed": "skillx-round0-assignment-v1",
     "assignment_score_mode": "trajectory",
+    "balance_tie_max_loss_pp": 1.0,
     "dominant_share_threshold": 0.6,
     "epsilon_pp": 5.0,
     "flat_column_range_pp": 10.0,
@@ -20,11 +22,12 @@
       "2": 0.3,
       "3": 0.35
     },
+    "task_cluster_inputs_path": "docs/plans/skillx/skillsbench-task-cluster-inputs-v0.1.jsonl",
     "terminal_score_weight": 0.5,
     "top3_tie_threshold_pp": 10.0,
     "update_floor_fraction": 0.1
   },
-  "generated_at": "2026-04-23T23:57:20.147518+00:00",
+  "generated_at": "2026-04-24T00:06:14.209953+00:00",
   "long_rows": [
     {
       "assignment_eligible": false,

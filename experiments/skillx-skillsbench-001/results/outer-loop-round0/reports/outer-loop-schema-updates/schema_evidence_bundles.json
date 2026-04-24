@@ -1,0 +1,1141 @@
+{
+  "analytic-pipeline": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "environment-control",
+        "competing_schema_score": 55.95,
+        "current_schema_score": 50.8,
+        "margin_pp": 5.15,
+        "task_name": "civ6-adjacency-optimizer"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "methodology-guardrail",
+        "competing_schema_score": 85.0,
+        "current_schema_score": 85.0,
+        "margin_pp": 0.0,
+        "task_name": "court-form-filling"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "powerlifting-coef-calc"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "syzkaller-ppdev-syzlang"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": -20.0,
+        "main_failure_notes": [
+          "RuntimeError=['c4-earthquake-phase-association-__SdZ49mx']"
+        ],
+        "margin_pp": 0.0,
+        "outcome": "failure",
+        "reported_score": 0.0,
+        "round_r0_to_best_delta_pp": 0.0,
+        "score": 10.0,
+        "task_name": "earthquake-phase-association",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load waveforms, run DL phase picking via SeisBench, associate picks into events, and pass F1 \u2265 0.6 gate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "medium",
+        "delta_vs_c1_pp": 60.0,
+        "main_failure_notes": [],
+        "margin_pp": 5.5,
+        "outcome": "success",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "score": 95.5,
+        "task_name": "pdf-excel-diff",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "extract legacy table, compare against current workbook, and emit a structured diff report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        }
+      }
+    ],
+    "category_id": "analytic-pipeline",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 50.8,
+        "gap_pp": 5.15,
+        "task_name": "civ6-adjacency-optimizer",
+        "winning_score": 55.95,
+        "won_by": "environment-control"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 4,
+        "value": "artifact-generation"
+      },
+      {
+        "count": 1,
+        "value": "environment-control"
+      },
+      {
+        "count": 1,
+        "value": "methodology-guardrail"
+      }
+    ],
+    "main_failure_patterns": [
+      {
+        "count": 1,
+        "value": "TuneExceptionStats"
+      },
+      {
+        "count": 1,
+        "value": "negative_or_low_score"
+      },
+      {
+        "count": 1,
+        "value": "intermediate_exception"
+      },
+      {
+        "count": 1,
+        "value": "stalled_or_regressed_round_curve"
+      }
+    ],
+    "mean_assigned_score": 52.75,
+    "mean_delta_vs_c1_pp": 20.0,
+    "mean_r0_to_best_delta_pp": 50.0,
+    "observed_task_count": 9,
+    "outcome_counts": {
+      "failure": 1,
+      "success": 1
+    },
+    "reliable_support_size": 2,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 2,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 2,
+          "value": "pipeline"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 2,
+          "value": "analytic-pipeline"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 1,
+          "value": "tool-heavy-script-recommended"
+        },
+        {
+          "count": 1,
+          "value": "tool-medium"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 1,
+          "value": "benchmark-threshold"
+        },
+        {
+          "count": 1,
+          "value": "deterministic-artifact-plus-stage-check"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 2,
+          "value": "staged-multi-step"
+        }
+      ]
+    }
+  },
+  "artifact-generation": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "environment-control",
+        "competing_schema_score": 55.95,
+        "current_schema_score": 55.4,
+        "margin_pp": 0.55,
+        "task_name": "civ6-adjacency-optimizer"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 85.0,
+        "current_schema_score": 76.0,
+        "margin_pp": 9.0,
+        "task_name": "court-form-filling"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 95.5,
+        "current_schema_score": 86.5,
+        "margin_pp": 9.0,
+        "task_name": "pdf-excel-diff"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "powerlifting-coef-calc"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "engineering-composition",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "spring-boot-jakarta-migration"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "syzkaller-ppdev-syzlang"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 0.0,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 0.0,
+        "score": 90.0,
+        "task_name": "powerlifting-coef-calc",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "existing workbook must be extended in-place with selected columns and Excel formulas for TotalKg and Dots coefficients",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "generator",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        }
+      }
+    ],
+    "category_id": "artifact-generation",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 55.4,
+        "gap_pp": 0.55,
+        "task_name": "civ6-adjacency-optimizer",
+        "winning_score": 55.95,
+        "won_by": "environment-control"
+      },
+      {
+        "current_schema_score": 76.0,
+        "gap_pp": 9.0,
+        "task_name": "court-form-filling",
+        "winning_score": 85.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 10.0,
+        "gap_pp": 0.0,
+        "task_name": "earthquake-phase-association",
+        "winning_score": 10.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 86.5,
+        "gap_pp": 9.0,
+        "task_name": "pdf-excel-diff",
+        "winning_score": 95.5,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "powerlifting-coef-calc",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 10.0,
+        "gap_pp": 0.0,
+        "task_name": "syzkaller-ppdev-syzlang",
+        "winning_score": 10.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 6,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "environment-control"
+      },
+      {
+        "count": 1,
+        "value": "engineering-composition"
+      }
+    ],
+    "main_failure_patterns": [
+      {
+        "count": 1,
+        "value": "stalled_or_regressed_round_curve"
+      }
+    ],
+    "mean_assigned_score": 90.0,
+    "mean_delta_vs_c1_pp": 0.0,
+    "mean_r0_to_best_delta_pp": 0.0,
+    "observed_task_count": 9,
+    "outcome_counts": {
+      "success": 1
+    },
+    "reliable_support_size": 1,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases",
+      "assigned round curves are flat or regressive on average"
+    ],
+    "support_size": 1,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 1,
+          "value": "pipeline"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 1,
+          "value": "artifact-generation"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 1,
+          "value": "tool-medium"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 1,
+          "value": "deterministic-artifact-plus-stage-check"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 1,
+          "value": "staged-multi-step"
+        }
+      ]
+    }
+  },
+  "engineering-composition": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "environment-control",
+        "competing_schema_score": 55.95,
+        "current_schema_score": 52.0,
+        "margin_pp": 3.95,
+        "task_name": "civ6-adjacency-optimizer"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 85.0,
+        "current_schema_score": 79.0,
+        "margin_pp": 6.0,
+        "task_name": "court-form-filling"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 95.5,
+        "current_schema_score": 89.5,
+        "margin_pp": 6.0,
+        "task_name": "pdf-excel-diff"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "powerlifting-coef-calc"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "spring-boot-jakarta-migration"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "syzkaller-ppdev-syzlang"
+      }
+    ],
+    "assigned_task_summaries": [],
+    "category_id": "engineering-composition",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 52.0,
+        "gap_pp": 3.95,
+        "task_name": "civ6-adjacency-optimizer",
+        "winning_score": 55.95,
+        "won_by": "environment-control"
+      },
+      {
+        "current_schema_score": 79.0,
+        "gap_pp": 6.0,
+        "task_name": "court-form-filling",
+        "winning_score": 85.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 10.0,
+        "gap_pp": 0.0,
+        "task_name": "earthquake-phase-association",
+        "winning_score": 10.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 89.5,
+        "gap_pp": 6.0,
+        "task_name": "pdf-excel-diff",
+        "winning_score": 95.5,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "powerlifting-coef-calc",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "spring-boot-jakarta-migration",
+        "winning_score": 90.0,
+        "won_by": "artifact-generation"
+      },
+      {
+        "current_schema_score": 10.0,
+        "gap_pp": 0.0,
+        "task_name": "syzkaller-ppdev-syzlang",
+        "winning_score": 10.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 6,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "environment-control"
+      },
+      {
+        "count": 1,
+        "value": "artifact-generation"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": null,
+    "mean_delta_vs_c1_pp": null,
+    "mean_r0_to_best_delta_pp": null,
+    "observed_task_count": 9,
+    "outcome_counts": {},
+    "reliable_support_size": 0,
+    "stability_notes": [
+      "no assigned tasks; freeze or inspect schema separately"
+    ],
+    "support_size": 0,
+    "task_profile_signals": {
+      "primary_pattern": [],
+      "task_object_seed": [],
+      "tool_surface_regime": [],
+      "verifier_mode": [],
+      "workflow_topology": []
+    }
+  },
+  "environment-control": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 55.4,
+        "current_schema_score": 55.95,
+        "margin_pp": 0.55,
+        "task_name": "civ6-adjacency-optimizer"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "powerlifting-coef-calc"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 45.3,
+        "main_failure_notes": [],
+        "margin_pp": 0.55,
+        "outcome": "success",
+        "reported_score": 60.0,
+        "round_r0_to_best_delta_pp": 10.0,
+        "score": 55.95,
+        "task_name": "civ6-adjacency-optimizer",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "parse .Civ6Map, compute adjacency bonuses for district placements, and maximize total score against an optimal benchmark",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      }
+    ],
+    "category_id": "environment-control",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 10.0,
+        "gap_pp": 0.0,
+        "task_name": "earthquake-phase-association",
+        "winning_score": 10.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "powerlifting-coef-calc",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 3,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "artifact-generation"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": 55.95,
+    "mean_delta_vs_c1_pp": 45.3,
+    "mean_r0_to_best_delta_pp": 10.0,
+    "observed_task_count": 7,
+    "outcome_counts": {
+      "success": 1
+    },
+    "reliable_support_size": 1,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 1,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 1,
+          "value": "pipeline"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 1,
+          "value": "analytic-pipeline"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 1,
+          "value": "tool-heavy-script-optional"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 1,
+          "value": "benchmark-threshold"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 1,
+          "value": "staged-multi-step"
+        }
+      ]
+    }
+  },
+  "methodology-guardrail": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 85.0,
+        "current_schema_score": 85.0,
+        "margin_pp": 0.0,
+        "task_name": "court-form-filling"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "retrieval-heavy-synthesis",
+        "competing_schema_score": 89.5,
+        "current_schema_score": 86.5,
+        "margin_pp": 3.0,
+        "task_name": "energy-ac-optimal-power-flow"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 95.5,
+        "current_schema_score": 90.0,
+        "margin_pp": 5.5,
+        "task_name": "pdf-excel-diff"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "powerlifting-coef-calc"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 0.0,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 0.0,
+        "score": 90.0,
+        "task_name": "citation-check",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "evidence-based fake-citation screening with cleaned sorted JSON titles is dominated by validation and false-positive control",
+          "primary_pattern": "reviewer",
+          "secondary_patterns": [
+            "inversion"
+          ],
+          "task_object_seed": "methodology-guardrail",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 80.0,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "score": 85.0,
+        "task_name": "court-form-filling",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "field-constrained PDF artifact; required vs omitted form sections and no-extra-fill discipline dominate",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        }
+      }
+    ],
+    "category_id": "methodology-guardrail",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 85.0,
+        "gap_pp": 0.0,
+        "task_name": "court-form-filling",
+        "winning_score": 85.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 10.0,
+        "gap_pp": 0.0,
+        "task_name": "earthquake-phase-association",
+        "winning_score": 10.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 86.5,
+        "gap_pp": 3.0,
+        "task_name": "energy-ac-optimal-power-flow",
+        "winning_score": 89.5,
+        "won_by": "retrieval-heavy-synthesis"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 5.5,
+        "task_name": "pdf-excel-diff",
+        "winning_score": 95.5,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "powerlifting-coef-calc",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 5,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "retrieval-heavy-synthesis"
+      }
+    ],
+    "main_failure_patterns": [
+      {
+        "count": 1,
+        "value": "stalled_or_regressed_round_curve"
+      }
+    ],
+    "mean_assigned_score": 87.5,
+    "mean_delta_vs_c1_pp": 40.0,
+    "mean_r0_to_best_delta_pp": 50.0,
+    "observed_task_count": 7,
+    "outcome_counts": {
+      "success": 2
+    },
+    "reliable_support_size": 2,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 2,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 1,
+          "value": "reviewer"
+        },
+        {
+          "count": 1,
+          "value": "generator"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 1,
+          "value": "methodology-guardrail"
+        },
+        {
+          "count": 1,
+          "value": "artifact-generation"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 2,
+          "value": "tool-medium"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 2,
+          "value": "deterministic-output-contract"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 2,
+          "value": "single-step-with-review"
+        }
+      ]
+    }
+  },
+  "orchestration-delegation": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 85.0,
+        "current_schema_score": 80.5,
+        "margin_pp": 4.5,
+        "task_name": "court-form-filling"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "powerlifting-coef-calc"
+      }
+    ],
+    "assigned_task_summaries": [],
+    "category_id": "orchestration-delegation",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 80.5,
+        "gap_pp": 4.5,
+        "task_name": "court-form-filling",
+        "winning_score": 85.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 10.0,
+        "gap_pp": 0.0,
+        "task_name": "earthquake-phase-association",
+        "winning_score": 10.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "powerlifting-coef-calc",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 4,
+        "value": "analytic-pipeline"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": null,
+    "mean_delta_vs_c1_pp": null,
+    "mean_r0_to_best_delta_pp": null,
+    "observed_task_count": 7,
+    "outcome_counts": {},
+    "reliable_support_size": 0,
+    "stability_notes": [
+      "no assigned tasks; freeze or inspect schema separately"
+    ],
+    "support_size": 0,
+    "task_profile_signals": {
+      "primary_pattern": [],
+      "task_object_seed": [],
+      "tool_surface_regime": [],
+      "verifier_mode": [],
+      "workflow_topology": []
+    }
+  },
+  "retrieval-heavy-synthesis": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "environment-control",
+        "competing_schema_score": 55.95,
+        "current_schema_score": 48.475,
+        "margin_pp": 7.475,
+        "task_name": "civ6-adjacency-optimizer"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 10.0,
+        "current_schema_score": 10.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "methodology-guardrail",
+        "competing_schema_score": 86.5,
+        "current_schema_score": 89.5,
+        "margin_pp": 3.0,
+        "task_name": "energy-ac-optimal-power-flow"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 95.5,
+        "current_schema_score": 90.0,
+        "margin_pp": 5.5,
+        "task_name": "pdf-excel-diff"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 90.0,
+        "current_schema_score": 90.0,
+        "margin_pp": 0.0,
+        "task_name": "powerlifting-coef-calc"
+      }
+    ],
+    "assigned_task_summaries": [],
+    "category_id": "retrieval-heavy-synthesis",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 48.475,
+        "gap_pp": 7.475,
+        "task_name": "civ6-adjacency-optimizer",
+        "winning_score": 55.95,
+        "won_by": "environment-control"
+      },
+      {
+        "current_schema_score": 10.0,
+        "gap_pp": 0.0,
+        "task_name": "earthquake-phase-association",
+        "winning_score": 10.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 5.5,
+        "task_name": "pdf-excel-diff",
+        "winning_score": 95.5,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 90.0,
+        "gap_pp": 0.0,
+        "task_name": "powerlifting-coef-calc",
+        "winning_score": 90.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 4,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "environment-control"
+      },
+      {
+        "count": 1,
+        "value": "methodology-guardrail"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": null,
+    "mean_delta_vs_c1_pp": null,
+    "mean_r0_to_best_delta_pp": null,
+    "observed_task_count": 8,
+    "outcome_counts": {},
+    "reliable_support_size": 0,
+    "stability_notes": [
+      "no assigned tasks; freeze or inspect schema separately"
+    ],
+    "support_size": 0,
+    "task_profile_signals": {
+      "primary_pattern": [],
+      "task_object_seed": [],
+      "tool_surface_regime": [],
+      "verifier_mode": [],
+      "workflow_topology": []
+    }
+  }
+}

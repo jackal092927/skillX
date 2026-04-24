@@ -409,6 +409,7 @@ class BuildRound0OuterLoopArtifactsTests(unittest.TestCase):
                 near_empty_threshold=3,
                 update_floor_fraction=0.10,
                 flat_column_range_pp=10.0,
+                balance_tie_max_loss_pp=5.0,
             )
 
             pair_rows_by_pair = {row["pair_id"]: row for row in payload["pair_rows"]}
@@ -549,6 +550,113 @@ class BuildRound0OuterLoopArtifactsTests(unittest.TestCase):
             assignments_by_task = {row["task_name"]: row for row in payload["assignments"]}
             self.assertEqual(assignments_by_task["task-curve"]["assigned_category"], "engineering-composition")
             self.assertEqual(assignments_by_task["task-curve"]["assigned_reported_score"], 80.0)
+
+    def test_semantic_prior_and_stable_random_resolve_exact_ties_without_lexicographic_fallback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            round0_root = root / "outer-loop-round0"
+            reports_root = round0_root / "slice-a"
+            global_status_dir = round0_root / "reports" / "global-round0-status"
+            global_status_dir.mkdir(parents=True)
+
+            schema_ids = [
+                "artifact-generation",
+                "analytic-pipeline",
+                "engineering-composition",
+            ]
+            prompt_bank_path = root / "skillx-prompt-bank.json"
+            prompt_bank_path.write_text(
+                json.dumps({"categories": [{"category_id": schema_id} for schema_id in schema_ids]})
+            )
+            task_profile_path = root / "task-profiles.jsonl"
+            task_profile_path.write_text(
+                json.dumps(
+                    {
+                        "task_name": "task-semantic",
+                        "cluster_inputs": {
+                            "semantic_contract": {
+                                "task_object_seed": "engineering-composition",
+                                "verifier_mode": "benchmark-threshold",
+                            },
+                            "tool_topology": {
+                                "workflow_topology": "staged-multi-step",
+                                "tool_surface_regime": "tool-heavy-script-recommended",
+                            },
+                        },
+                        "tags": {
+                            "primary_pattern": "pipeline",
+                            "secondary_patterns": ["tool-wrapper"],
+                        },
+                    }
+                )
+                + "\n"
+            )
+
+            pair_results = []
+            global_pairs = []
+            for task_name in ["task-semantic", "task-random"]:
+                for schema_id in schema_ids:
+                    pair_results.append(
+                        {
+                            "pair_id": f"{task_name}__{schema_id}",
+                            "task_name": task_name,
+                            "schema_id": schema_id,
+                            "selected": {"score_pct": 50.0},
+                            "best_observed": {"score_pct": 50.0},
+                            "official_scores": {"c0_pct": 0.0, "c1_pct": 0.0},
+                            "timeout_detected": False,
+                            "has_intermediate_exceptions": False,
+                            "failure": None,
+                        }
+                    )
+                    global_pairs.append(
+                        {
+                            "pair_id": f"{task_name}__{schema_id}",
+                            "task_name": task_name,
+                            "schema_id": schema_id,
+                            "latest_status": "completed",
+                            "latest_status_code": "C",
+                            "attempt_count": 1,
+                            "latest_run_label": "run-ties",
+                            "latest_selected_score_pct": 50.0,
+                            "latest_best_observed_score_pct": 50.0,
+                            "latest_timeout_detected": False,
+                            "latest_has_intermediate_exceptions": False,
+                            "latest_failure_summary": "",
+                        }
+                    )
+            self._write_run_report(reports_root, run_label="run-ties", pair_results=pair_results)
+
+            global_status_path = global_status_dir / "global_pair_status.json"
+            global_status_path.write_text(json.dumps({"schema_ids": schema_ids, "pairs": global_pairs}))
+
+            payload = self.module.build_outer_loop_artifacts(
+                round0_root=round0_root,
+                global_pair_status_path=global_status_path,
+                prompt_bank_path=prompt_bank_path,
+                round_id="round0-tie-test",
+                assignment_score_mode="trajectory",
+                terminal_score_weight=0.50,
+                round_mean_score_weight=0.30,
+                growth_score_weight=0.20,
+                epsilon_pp=5.0,
+                high_confidence_margin_pp=10.0,
+                medium_confidence_margin_pp=5.0,
+                require_full_coverage=True,
+                dominant_share_threshold=0.60,
+                top3_tie_threshold_pp=10.0,
+                near_empty_threshold=3,
+                update_floor_fraction=0.10,
+                flat_column_range_pp=10.0,
+                task_cluster_inputs_path=task_profile_path,
+                assignment_random_seed="unit-test-seed",
+            )
+
+            assignments_by_task = {row["task_name"]: row for row in payload["assignments"]}
+            self.assertEqual(assignments_by_task["task-semantic"]["assigned_category"], "engineering-composition")
+            self.assertEqual(assignments_by_task["task-semantic"]["tie_break_reason"], "semantic_prior")
+            self.assertEqual(assignments_by_task["task-random"]["tie_break_reason"], "stable_random")
+            self.assertNotEqual(assignments_by_task["task-random"]["tie_break_reason"], "deterministic_fallback")
 
 
 if __name__ == "__main__":

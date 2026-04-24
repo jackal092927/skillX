@@ -1,0 +1,1397 @@
+[
+  {
+    "acceptance_notes": [
+      "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
+      "reject if prompt text becomes more generic or less distinct from neighboring schemas",
+      "below support floor; do not accept schema edits this round",
+      "evaluate on borderline tasks, not only primary assigned tasks"
+    ],
+    "category_id": "artifact-generation",
+    "challenger_schemas": [
+      {
+        "candidate_id": "artifact-generation::round1::conservative",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "test a low-risk local slot edit before broader schema search"
+        ],
+        "mode": "conservative",
+        "schema": {
+          "avoid": [
+            "unnecessary multi-stage scaffolding",
+            "speculative filling of unknown fields",
+            "tool usage that is not required by the artifact contract"
+          ],
+          "category_id": "artifact-generation",
+          "emphasize": [
+            "exact output schema / format / placement requirements",
+            "preservation constraints and no-invention discipline",
+            "missing-input detection before finalization",
+            "short final reviewer pass against explicit contract items",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "benchmark-gated code repair",
+            "control/simulation loops",
+            "deep retrieval-heavy synthesis",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "form filling",
+            "formatting / conversion with strict output expectations",
+            "single-artifact generation or transformation",
+            "tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a artifact-generation task.\nSchema intent: Produce a constrained artifact that must exactly satisfy an output contract.\n\nOuter-loop update mode: conservative. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. exact output schema / format / placement requirements\n2. preservation constraints and no-invention discipline\n3. missing-input detection before finalization\n4. short final reviewer pass against explicit contract items\n5. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n6. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. unnecessary multi-stage scaffolding\n2. speculative filling of unknown fields\n3. tool usage that is not required by the artifact contract\n\nGood fit when:\n- form filling\n- formatting / conversion with strict output expectations\n- single-artifact generation or transformation\n- tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task\n\nBad fit when:\n- benchmark-gated code repair\n- control/simulation loops\n- deep retrieval-heavy synthesis\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Produce a constrained artifact that must exactly satisfy an output contract."
+        },
+        "slot_edit_count": 8
+      },
+      {
+        "candidate_id": "artifact-generation::round1::exploratory",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "expand the active meta-item pool for weak or negative-support schemas"
+        ],
+        "mode": "exploratory",
+        "schema": {
+          "avoid": [
+            "unnecessary multi-stage scaffolding",
+            "speculative filling of unknown fields",
+            "tool usage that is not required by the artifact contract"
+          ],
+          "category_id": "artifact-generation",
+          "emphasize": [
+            "exact output schema / format / placement requirements",
+            "preservation constraints and no-invention discipline",
+            "missing-input detection before finalization",
+            "short final reviewer pass against explicit contract items",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+            "state why this schema should win over analytic-pipeline on borderline tasks",
+            "preserve R0 strengths and require regression checks after each refinement round"
+          ],
+          "expected_bad_fit": [
+            "benchmark-gated code repair",
+            "control/simulation loops",
+            "deep retrieval-heavy synthesis",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "form filling",
+            "formatting / conversion with strict output expectations",
+            "single-artifact generation or transformation",
+            "tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task",
+            "tasks whose dominant operational pattern is pipeline"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline",
+            "round-level refinement regression after initially useful behavior"
+          ],
+          "meta_prompt": "You are revising a skill for a artifact-generation task.\nSchema intent: Produce a constrained artifact that must exactly satisfy an output contract.\n\nOuter-loop update mode: exploratory. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. exact output schema / format / placement requirements\n2. preservation constraints and no-invention discipline\n3. missing-input detection before finalization\n4. short final reviewer pass against explicit contract items\n5. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n6. state why this schema should win over analytic-pipeline on borderline tasks\n7. preserve R0 strengths and require regression checks after each refinement round\n\nAvoid:\n1. unnecessary multi-stage scaffolding\n2. speculative filling of unknown fields\n3. tool usage that is not required by the artifact contract\n\nGood fit when:\n- form filling\n- formatting / conversion with strict output expectations\n- single-artifact generation or transformation\n- tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task\n- tasks whose dominant operational pattern is pipeline\n\nBad fit when:\n- benchmark-gated code repair\n- control/simulation loops\n- deep retrieval-heavy synthesis\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n- round-level refinement regression after initially useful behavior\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Produce a constrained artifact that must exactly satisfy an output contract."
+        },
+        "slot_edit_count": 8
+      },
+      {
+        "candidate_id": "artifact-generation::round1::differentiating",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "increase behavioral separation from analytic-pipeline"
+        ],
+        "mode": "differentiating",
+        "schema": {
+          "avoid": [
+            "unnecessary multi-stage scaffolding",
+            "speculative filling of unknown fields",
+            "tool usage that is not required by the artifact contract"
+          ],
+          "category_id": "artifact-generation",
+          "emphasize": [
+            "exact output schema / format / placement requirements",
+            "preservation constraints and no-invention discipline",
+            "missing-input detection before finalization",
+            "short final reviewer pass against explicit contract items",
+            "state why this schema should win over analytic-pipeline on borderline tasks",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance"
+          ],
+          "expected_bad_fit": [
+            "benchmark-gated code repair",
+            "control/simulation loops",
+            "deep retrieval-heavy synthesis",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "form filling",
+            "formatting / conversion with strict output expectations",
+            "single-artifact generation or transformation",
+            "tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline",
+            "round-level refinement regression after initially useful behavior"
+          ],
+          "meta_prompt": "You are revising a skill for a artifact-generation task.\nSchema intent: Produce a constrained artifact that must exactly satisfy an output contract.\n\nOuter-loop update mode: differentiating. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. exact output schema / format / placement requirements\n2. preservation constraints and no-invention discipline\n3. missing-input detection before finalization\n4. short final reviewer pass against explicit contract items\n5. state why this schema should win over analytic-pipeline on borderline tasks\n6. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n\nAvoid:\n1. unnecessary multi-stage scaffolding\n2. speculative filling of unknown fields\n3. tool usage that is not required by the artifact contract\n\nGood fit when:\n- form filling\n- formatting / conversion with strict output expectations\n- single-artifact generation or transformation\n- tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task\n\nBad fit when:\n- benchmark-gated code repair\n- control/simulation loops\n- deep retrieval-heavy synthesis\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n- round-level refinement regression after initially useful behavior\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Produce a constrained artifact that must exactly satisfy an output contract."
+        },
+        "slot_edit_count": 8
+      }
+    ],
+    "mean_assigned_score": 90.0,
+    "mean_delta_vs_c1_pp": 0.0,
+    "operator_summary": {
+      "add": [
+        "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+        "state why this schema should win over analytic-pipeline on borderline tasks",
+        "preserve R0 strengths and require regression checks after each refinement round",
+        "tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task",
+        "tasks whose dominant operational pattern is pipeline",
+        "low-margin schema-boundary ambiguity against analytic-pipeline",
+        "round-level refinement regression after initially useful behavior"
+      ],
+      "exclude": [
+        "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+      ],
+      "keep": [
+        "exact output schema / format / placement requirements",
+        "preservation constraints and no-invention discipline"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "priority_score": 5.0,
+    "proposal_status": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 1,
+    "slot_edits": {
+      "avoid": {
+        "add": [],
+        "remove": [],
+        "sharpen": []
+      },
+      "emphasize": {
+        "add": [
+          "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+          "state why this schema should win over analytic-pipeline on borderline tasks",
+          "preserve R0 strengths and require regression checks after each refinement round"
+        ],
+        "remove": [],
+        "sharpen": []
+      },
+      "expected_bad_fit": {
+        "add": [
+          "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+        ],
+        "remove": []
+      },
+      "expected_good_fit": {
+        "add": [
+          "tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task",
+          "tasks whose dominant operational pattern is pipeline"
+        ],
+        "remove": []
+      },
+      "hypothesized_primary_failure_modes": {
+        "add": [
+          "low-margin schema-boundary ambiguity against analytic-pipeline",
+          "round-level refinement regression after initially useful behavior"
+        ],
+        "remove": [],
+        "sharpen": []
+      }
+    },
+    "support_size": 1
+  },
+  {
+    "acceptance_notes": [
+      "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
+      "reject if prompt text becomes more generic or less distinct from neighboring schemas",
+      "evaluate on borderline tasks, not only primary assigned tasks"
+    ],
+    "category_id": "analytic-pipeline",
+    "challenger_schemas": [
+      {
+        "candidate_id": "analytic-pipeline::round1::conservative",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "test a low-risk local slot edit before broader schema search"
+        ],
+        "mode": "conservative",
+        "schema": {
+          "avoid": [
+            "collapsing multiple sensitive transforms into one vague step",
+            "skipping intermediate validation",
+            "overly generic prose-only guidance",
+            "generic schema broadening that hides negative lift against C1"
+          ],
+          "category_id": "analytic-pipeline",
+          "emphasize": [
+            "stage decomposition and stage ordering",
+            "explicit intermediate artifacts / checkpoints",
+            "handoff integrity between stages",
+            "final output tied back to pipeline evidence",
+            "extract the task-specific failure mode before adding broader procedural scaffolding",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance"
+          ],
+          "expected_bad_fit": [
+            "simple one-shot artifact tasks",
+            "pure code patch / compile-test loops",
+            "borderline tasks where artifact-generation wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "scientific / signal / video / security analysis workflows",
+            "ordered transformation + measurement tasks",
+            "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against artifact-generation"
+          ],
+          "meta_prompt": "You are revising a skill for a analytic-pipeline task.\nSchema intent: Run an ordered analysis pipeline where intermediate processing quality strongly affects final correctness.\n\nOuter-loop update mode: conservative. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. stage decomposition and stage ordering\n2. explicit intermediate artifacts / checkpoints\n3. handoff integrity between stages\n4. final output tied back to pipeline evidence\n5. extract the task-specific failure mode before adding broader procedural scaffolding\n6. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n\nAvoid:\n1. collapsing multiple sensitive transforms into one vague step\n2. skipping intermediate validation\n3. overly generic prose-only guidance\n4. generic schema broadening that hides negative lift against C1\n\nGood fit when:\n- scientific / signal / video / security analysis workflows\n- ordered transformation + measurement tasks\n- tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task\n\nBad fit when:\n- simple one-shot artifact tasks\n- pure code patch / compile-test loops\n- borderline tasks where artifact-generation wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against artifact-generation\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Run an ordered analysis pipeline where intermediate processing quality strongly affects final correctness."
+        },
+        "slot_edit_count": 12
+      },
+      {
+        "candidate_id": "analytic-pipeline::round1::exploratory",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "expand the active meta-item pool for weak or negative-support schemas"
+        ],
+        "mode": "exploratory",
+        "schema": {
+          "avoid": [
+            "collapsing multiple sensitive transforms into one vague step",
+            "skipping intermediate validation",
+            "overly generic prose-only guidance",
+            "generic schema broadening that hides negative lift against C1"
+          ],
+          "category_id": "analytic-pipeline",
+          "emphasize": [
+            "stage decomposition and stage ordering",
+            "explicit intermediate artifacts / checkpoints",
+            "handoff integrity between stages",
+            "final output tied back to pipeline evidence",
+            "extract the task-specific failure mode before adding broader procedural scaffolding",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+            "name the required execution and verification handoffs instead of leaving tool use implicit",
+            "state why this schema should win over artifact-generation on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "simple one-shot artifact tasks",
+            "pure code patch / compile-test loops",
+            "borderline tasks where artifact-generation wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "scientific / signal / video / security analysis workflows",
+            "ordered transformation + measurement tasks",
+            "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task",
+            "tasks whose dominant operational pattern is pipeline"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against artifact-generation",
+            "schema-task mismatch despite completed inner-loop execution",
+            "round-level refinement regression after initially useful behavior"
+          ],
+          "meta_prompt": "You are revising a skill for a analytic-pipeline task.\nSchema intent: Run an ordered analysis pipeline where intermediate processing quality strongly affects final correctness.\n\nOuter-loop update mode: exploratory. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. stage decomposition and stage ordering\n2. explicit intermediate artifacts / checkpoints\n3. handoff integrity between stages\n4. final output tied back to pipeline evidence\n5. extract the task-specific failure mode before adding broader procedural scaffolding\n6. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n7. name the required execution and verification handoffs instead of leaving tool use implicit\n8. state why this schema should win over artifact-generation on borderline tasks\n\nAvoid:\n1. collapsing multiple sensitive transforms into one vague step\n2. skipping intermediate validation\n3. overly generic prose-only guidance\n4. generic schema broadening that hides negative lift against C1\n\nGood fit when:\n- scientific / signal / video / security analysis workflows\n- ordered transformation + measurement tasks\n- tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task\n- tasks whose dominant operational pattern is pipeline\n\nBad fit when:\n- simple one-shot artifact tasks\n- pure code patch / compile-test loops\n- borderline tasks where artifact-generation wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against artifact-generation\n- schema-task mismatch despite completed inner-loop execution\n- round-level refinement regression after initially useful behavior\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Run an ordered analysis pipeline where intermediate processing quality strongly affects final correctness."
+        },
+        "slot_edit_count": 12
+      },
+      {
+        "candidate_id": "analytic-pipeline::round1::differentiating",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "increase behavioral separation from artifact-generation"
+        ],
+        "mode": "differentiating",
+        "schema": {
+          "avoid": [
+            "collapsing multiple sensitive transforms into one vague step",
+            "skipping intermediate validation",
+            "overly generic prose-only guidance",
+            "generic schema broadening that hides negative lift against C1"
+          ],
+          "category_id": "analytic-pipeline",
+          "emphasize": [
+            "stage decomposition and stage ordering",
+            "explicit intermediate artifacts / checkpoints",
+            "handoff integrity between stages",
+            "final output tied back to pipeline evidence",
+            "state why this schema should win over artifact-generation on borderline tasks",
+            "extract the task-specific failure mode before adding broader procedural scaffolding",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance"
+          ],
+          "expected_bad_fit": [
+            "simple one-shot artifact tasks",
+            "pure code patch / compile-test loops",
+            "borderline tasks where artifact-generation wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "scientific / signal / video / security analysis workflows",
+            "ordered transformation + measurement tasks",
+            "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against artifact-generation",
+            "schema-task mismatch despite completed inner-loop execution"
+          ],
+          "meta_prompt": "You are revising a skill for a analytic-pipeline task.\nSchema intent: Run an ordered analysis pipeline where intermediate processing quality strongly affects final correctness.\n\nOuter-loop update mode: differentiating. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. stage decomposition and stage ordering\n2. explicit intermediate artifacts / checkpoints\n3. handoff integrity between stages\n4. final output tied back to pipeline evidence\n5. state why this schema should win over artifact-generation on borderline tasks\n6. extract the task-specific failure mode before adding broader procedural scaffolding\n7. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n\nAvoid:\n1. collapsing multiple sensitive transforms into one vague step\n2. skipping intermediate validation\n3. overly generic prose-only guidance\n4. generic schema broadening that hides negative lift against C1\n\nGood fit when:\n- scientific / signal / video / security analysis workflows\n- ordered transformation + measurement tasks\n- tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task\n\nBad fit when:\n- simple one-shot artifact tasks\n- pure code patch / compile-test loops\n- borderline tasks where artifact-generation wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against artifact-generation\n- schema-task mismatch despite completed inner-loop execution\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Run an ordered analysis pipeline where intermediate processing quality strongly affects final correctness."
+        },
+        "slot_edit_count": 12
+      }
+    ],
+    "mean_assigned_score": 52.75,
+    "mean_delta_vs_c1_pp": 20.0,
+    "operator_summary": {
+      "add": [
+        "extract the task-specific failure mode before adding broader procedural scaffolding",
+        "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+        "name the required execution and verification handoffs instead of leaving tool use implicit",
+        "state why this schema should win over artifact-generation on borderline tasks",
+        "preserve R0 strengths and require regression checks after each refinement round",
+        "generic schema broadening that hides negative lift against C1",
+        "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task",
+        "tasks whose dominant operational pattern is pipeline"
+      ],
+      "exclude": [
+        "borderline tasks where artifact-generation wins because its workflow bias is more central"
+      ],
+      "keep": [
+        "stage decomposition and stage ordering",
+        "explicit intermediate artifacts / checkpoints"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "priority_score": 5.75,
+    "proposal_status": "candidate_update",
+    "recommended_challenger_mode": "differentiating",
+    "reliable_support_size": 2,
+    "slot_edits": {
+      "avoid": {
+        "add": [
+          "generic schema broadening that hides negative lift against C1"
+        ],
+        "remove": [],
+        "sharpen": []
+      },
+      "emphasize": {
+        "add": [
+          "extract the task-specific failure mode before adding broader procedural scaffolding",
+          "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+          "name the required execution and verification handoffs instead of leaving tool use implicit",
+          "state why this schema should win over artifact-generation on borderline tasks",
+          "preserve R0 strengths and require regression checks after each refinement round"
+        ],
+        "remove": [],
+        "sharpen": []
+      },
+      "expected_bad_fit": {
+        "add": [
+          "borderline tasks where artifact-generation wins because its workflow bias is more central"
+        ],
+        "remove": []
+      },
+      "expected_good_fit": {
+        "add": [
+          "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task",
+          "tasks whose dominant operational pattern is pipeline"
+        ],
+        "remove": []
+      },
+      "hypothesized_primary_failure_modes": {
+        "add": [
+          "low-margin schema-boundary ambiguity against artifact-generation",
+          "schema-task mismatch despite completed inner-loop execution",
+          "round-level refinement regression after initially useful behavior"
+        ],
+        "remove": [],
+        "sharpen": []
+      }
+    },
+    "support_size": 2
+  },
+  {
+    "acceptance_notes": [
+      "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
+      "reject if prompt text becomes more generic or less distinct from neighboring schemas",
+      "below support floor; do not accept schema edits this round",
+      "evaluate on borderline tasks, not only primary assigned tasks"
+    ],
+    "category_id": "engineering-composition",
+    "challenger_schemas": [
+      {
+        "candidate_id": "engineering-composition::round1::conservative",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "test a low-risk local slot edit before broader schema search"
+        ],
+        "mode": "conservative",
+        "schema": {
+          "avoid": [
+            "vague reviewer-only advice without execution discipline",
+            "unordered bundles of suggestions",
+            "generic prose that does not tell the agent how to validate changes"
+          ],
+          "category_id": "engineering-composition",
+          "emphasize": [
+            "diagnose -> patch/edit -> verify sequencing",
+            "tool wrappers / execution interfaces / reproducible commands",
+            "explicit precedence and dependency handling",
+            "benchmark / build / test gate awareness",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "pure retrieval/synthesis",
+            "simple output formatting tasks",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "build fixes",
+            "migrations",
+            "code implementation tasks with compile/test/benchmark constraints"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a engineering-composition task.\nSchema intent: Compose diagnosis, editing, execution, and verification into a disciplined engineering workflow.\n\nOuter-loop update mode: conservative. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. diagnose -> patch/edit -> verify sequencing\n2. tool wrappers / execution interfaces / reproducible commands\n3. explicit precedence and dependency handling\n4. benchmark / build / test gate awareness\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. vague reviewer-only advice without execution discipline\n2. unordered bundles of suggestions\n3. generic prose that does not tell the agent how to validate changes\n\nGood fit when:\n- build fixes\n- migrations\n- code implementation tasks with compile/test/benchmark constraints\n\nBad fit when:\n- pure retrieval/synthesis\n- simple output formatting tasks\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Compose diagnosis, editing, execution, and verification into a disciplined engineering workflow."
+        },
+        "slot_edit_count": 4
+      },
+      {
+        "candidate_id": "engineering-composition::round1::exploratory",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "expand the active meta-item pool for weak or negative-support schemas"
+        ],
+        "mode": "exploratory",
+        "schema": {
+          "avoid": [
+            "vague reviewer-only advice without execution discipline",
+            "unordered bundles of suggestions",
+            "generic prose that does not tell the agent how to validate changes"
+          ],
+          "category_id": "engineering-composition",
+          "emphasize": [
+            "diagnose -> patch/edit -> verify sequencing",
+            "tool wrappers / execution interfaces / reproducible commands",
+            "explicit precedence and dependency handling",
+            "benchmark / build / test gate awareness",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "pure retrieval/synthesis",
+            "simple output formatting tasks",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+            "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+          ],
+          "expected_good_fit": [
+            "build fixes",
+            "migrations",
+            "code implementation tasks with compile/test/benchmark constraints"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a engineering-composition task.\nSchema intent: Compose diagnosis, editing, execution, and verification into a disciplined engineering workflow.\n\nOuter-loop update mode: exploratory. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. diagnose -> patch/edit -> verify sequencing\n2. tool wrappers / execution interfaces / reproducible commands\n3. explicit precedence and dependency handling\n4. benchmark / build / test gate awareness\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. vague reviewer-only advice without execution discipline\n2. unordered bundles of suggestions\n3. generic prose that does not tell the agent how to validate changes\n\nGood fit when:\n- build fixes\n- migrations\n- code implementation tasks with compile/test/benchmark constraints\n\nBad fit when:\n- pure retrieval/synthesis\n- simple output formatting tasks\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n- do not infer schema updates from unassigned or infrastructure-corrupted rows\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Compose diagnosis, editing, execution, and verification into a disciplined engineering workflow."
+        },
+        "slot_edit_count": 4
+      },
+      {
+        "candidate_id": "engineering-composition::round1::differentiating",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "increase behavioral separation from analytic-pipeline"
+        ],
+        "mode": "differentiating",
+        "schema": {
+          "avoid": [
+            "vague reviewer-only advice without execution discipline",
+            "unordered bundles of suggestions",
+            "generic prose that does not tell the agent how to validate changes"
+          ],
+          "category_id": "engineering-composition",
+          "emphasize": [
+            "diagnose -> patch/edit -> verify sequencing",
+            "tool wrappers / execution interfaces / reproducible commands",
+            "explicit precedence and dependency handling",
+            "benchmark / build / test gate awareness",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "pure retrieval/synthesis",
+            "simple output formatting tasks",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+            "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+          ],
+          "expected_good_fit": [
+            "build fixes",
+            "migrations",
+            "code implementation tasks with compile/test/benchmark constraints"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a engineering-composition task.\nSchema intent: Compose diagnosis, editing, execution, and verification into a disciplined engineering workflow.\n\nOuter-loop update mode: differentiating. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. diagnose -> patch/edit -> verify sequencing\n2. tool wrappers / execution interfaces / reproducible commands\n3. explicit precedence and dependency handling\n4. benchmark / build / test gate awareness\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. vague reviewer-only advice without execution discipline\n2. unordered bundles of suggestions\n3. generic prose that does not tell the agent how to validate changes\n\nGood fit when:\n- build fixes\n- migrations\n- code implementation tasks with compile/test/benchmark constraints\n\nBad fit when:\n- pure retrieval/synthesis\n- simple output formatting tasks\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n- do not infer schema updates from unassigned or infrastructure-corrupted rows\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Compose diagnosis, editing, execution, and verification into a disciplined engineering workflow."
+        },
+        "slot_edit_count": 4
+      }
+    ],
+    "mean_assigned_score": null,
+    "mean_delta_vs_c1_pp": null,
+    "operator_summary": {
+      "add": [
+        "state why this schema should win over analytic-pipeline on borderline tasks",
+        "low-margin schema-boundary ambiguity against analytic-pipeline"
+      ],
+      "exclude": [
+        "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+        "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+      ],
+      "keep": [
+        "diagnose -> patch/edit -> verify sequencing",
+        "tool wrappers / execution interfaces / reproducible commands"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "priority_score": 4.0,
+    "proposal_status": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 0,
+    "slot_edits": {
+      "avoid": {
+        "add": [],
+        "remove": [],
+        "sharpen": []
+      },
+      "emphasize": {
+        "add": [
+          "state why this schema should win over analytic-pipeline on borderline tasks"
+        ],
+        "remove": [],
+        "sharpen": []
+      },
+      "expected_bad_fit": {
+        "add": [
+          "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+          "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+        ],
+        "remove": []
+      },
+      "expected_good_fit": {
+        "add": [],
+        "remove": []
+      },
+      "hypothesized_primary_failure_modes": {
+        "add": [
+          "low-margin schema-boundary ambiguity against analytic-pipeline"
+        ],
+        "remove": [],
+        "sharpen": []
+      }
+    },
+    "support_size": 0
+  },
+  {
+    "acceptance_notes": [
+      "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
+      "reject if prompt text becomes more generic or less distinct from neighboring schemas",
+      "below support floor; do not accept schema edits this round",
+      "evaluate on borderline tasks, not only primary assigned tasks"
+    ],
+    "category_id": "retrieval-heavy-synthesis",
+    "challenger_schemas": [
+      {
+        "candidate_id": "retrieval-heavy-synthesis::round1::conservative",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "test a low-risk local slot edit before broader schema search"
+        ],
+        "mode": "conservative",
+        "schema": {
+          "avoid": [
+            "unsupported synthesis",
+            "hallucinated joins across sources",
+            "excessive workflow scaffolding that obscures evidence use"
+          ],
+          "category_id": "retrieval-heavy-synthesis",
+          "emphasize": [
+            "retrieval plan and source grounding",
+            "evidence tracking / provenance discipline",
+            "compression without support loss",
+            "abstain / unknown behavior when evidence is insufficient",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "simulator/control tasks",
+            "code patch workflows",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "information search",
+            "handbook / database grounded QA",
+            "report or answer generation from external sources"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a retrieval-heavy-synthesis task.\nSchema intent: Gather evidence from sources, compress it correctly, and synthesize an output without dropping support.\n\nOuter-loop update mode: conservative. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. retrieval plan and source grounding\n2. evidence tracking / provenance discipline\n3. compression without support loss\n4. abstain / unknown behavior when evidence is insufficient\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. unsupported synthesis\n2. hallucinated joins across sources\n3. excessive workflow scaffolding that obscures evidence use\n\nGood fit when:\n- information search\n- handbook / database grounded QA\n- report or answer generation from external sources\n\nBad fit when:\n- simulator/control tasks\n- code patch workflows\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Gather evidence from sources, compress it correctly, and synthesize an output without dropping support."
+        },
+        "slot_edit_count": 4
+      },
+      {
+        "candidate_id": "retrieval-heavy-synthesis::round1::exploratory",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "expand the active meta-item pool for weak or negative-support schemas"
+        ],
+        "mode": "exploratory",
+        "schema": {
+          "avoid": [
+            "unsupported synthesis",
+            "hallucinated joins across sources",
+            "excessive workflow scaffolding that obscures evidence use"
+          ],
+          "category_id": "retrieval-heavy-synthesis",
+          "emphasize": [
+            "retrieval plan and source grounding",
+            "evidence tracking / provenance discipline",
+            "compression without support loss",
+            "abstain / unknown behavior when evidence is insufficient",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "simulator/control tasks",
+            "code patch workflows",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+            "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+          ],
+          "expected_good_fit": [
+            "information search",
+            "handbook / database grounded QA",
+            "report or answer generation from external sources"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a retrieval-heavy-synthesis task.\nSchema intent: Gather evidence from sources, compress it correctly, and synthesize an output without dropping support.\n\nOuter-loop update mode: exploratory. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. retrieval plan and source grounding\n2. evidence tracking / provenance discipline\n3. compression without support loss\n4. abstain / unknown behavior when evidence is insufficient\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. unsupported synthesis\n2. hallucinated joins across sources\n3. excessive workflow scaffolding that obscures evidence use\n\nGood fit when:\n- information search\n- handbook / database grounded QA\n- report or answer generation from external sources\n\nBad fit when:\n- simulator/control tasks\n- code patch workflows\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n- do not infer schema updates from unassigned or infrastructure-corrupted rows\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Gather evidence from sources, compress it correctly, and synthesize an output without dropping support."
+        },
+        "slot_edit_count": 4
+      },
+      {
+        "candidate_id": "retrieval-heavy-synthesis::round1::differentiating",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "increase behavioral separation from analytic-pipeline"
+        ],
+        "mode": "differentiating",
+        "schema": {
+          "avoid": [
+            "unsupported synthesis",
+            "hallucinated joins across sources",
+            "excessive workflow scaffolding that obscures evidence use"
+          ],
+          "category_id": "retrieval-heavy-synthesis",
+          "emphasize": [
+            "retrieval plan and source grounding",
+            "evidence tracking / provenance discipline",
+            "compression without support loss",
+            "abstain / unknown behavior when evidence is insufficient",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "simulator/control tasks",
+            "code patch workflows",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+            "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+          ],
+          "expected_good_fit": [
+            "information search",
+            "handbook / database grounded QA",
+            "report or answer generation from external sources"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a retrieval-heavy-synthesis task.\nSchema intent: Gather evidence from sources, compress it correctly, and synthesize an output without dropping support.\n\nOuter-loop update mode: differentiating. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. retrieval plan and source grounding\n2. evidence tracking / provenance discipline\n3. compression without support loss\n4. abstain / unknown behavior when evidence is insufficient\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. unsupported synthesis\n2. hallucinated joins across sources\n3. excessive workflow scaffolding that obscures evidence use\n\nGood fit when:\n- information search\n- handbook / database grounded QA\n- report or answer generation from external sources\n\nBad fit when:\n- simulator/control tasks\n- code patch workflows\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n- do not infer schema updates from unassigned or infrastructure-corrupted rows\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Gather evidence from sources, compress it correctly, and synthesize an output without dropping support."
+        },
+        "slot_edit_count": 4
+      }
+    ],
+    "mean_assigned_score": null,
+    "mean_delta_vs_c1_pp": null,
+    "operator_summary": {
+      "add": [
+        "state why this schema should win over analytic-pipeline on borderline tasks",
+        "low-margin schema-boundary ambiguity against analytic-pipeline"
+      ],
+      "exclude": [
+        "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+        "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+      ],
+      "keep": [
+        "retrieval plan and source grounding",
+        "evidence tracking / provenance discipline"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "priority_score": 3.0,
+    "proposal_status": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 0,
+    "slot_edits": {
+      "avoid": {
+        "add": [],
+        "remove": [],
+        "sharpen": []
+      },
+      "emphasize": {
+        "add": [
+          "state why this schema should win over analytic-pipeline on borderline tasks"
+        ],
+        "remove": [],
+        "sharpen": []
+      },
+      "expected_bad_fit": {
+        "add": [
+          "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+          "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+        ],
+        "remove": []
+      },
+      "expected_good_fit": {
+        "add": [],
+        "remove": []
+      },
+      "hypothesized_primary_failure_modes": {
+        "add": [
+          "low-margin schema-boundary ambiguity against analytic-pipeline"
+        ],
+        "remove": [],
+        "sharpen": []
+      }
+    },
+    "support_size": 0
+  },
+  {
+    "acceptance_notes": [
+      "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
+      "reject if prompt text becomes more generic or less distinct from neighboring schemas",
+      "below support floor; do not accept schema edits this round",
+      "evaluate on borderline tasks, not only primary assigned tasks"
+    ],
+    "category_id": "environment-control",
+    "challenger_schemas": [
+      {
+        "candidate_id": "environment-control::round1::conservative",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "test a low-risk local slot edit before broader schema search"
+        ],
+        "mode": "conservative",
+        "schema": {
+          "avoid": [
+            "overly textual synthesis behavior",
+            "weak feedback loops between action and evaluation",
+            "artifact-first thinking when the task is really environment-facing"
+          ],
+          "category_id": "environment-control",
+          "emphasize": [
+            "world / simulator / environment state understanding",
+            "explicit control or planning loop structure",
+            "parameter, policy, or plan validation",
+            "metric-facing evaluation after execution",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+            "name the required execution and verification handoffs instead of leaving tool use implicit"
+          ],
+          "expected_bad_fit": [
+            "document formatting / artifact generation",
+            "pure evidence synthesis tasks",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "control design",
+            "planning with validity constraints",
+            "simulator-driven evaluation tasks",
+            "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a environment-control task.\nSchema intent: Interact with a simulator, planner, or dynamic environment under explicit metric or validity constraints.\n\nOuter-loop update mode: conservative. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. world / simulator / environment state understanding\n2. explicit control or planning loop structure\n3. parameter, policy, or plan validation\n4. metric-facing evaluation after execution\n5. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n6. name the required execution and verification handoffs instead of leaving tool use implicit\n\nAvoid:\n1. overly textual synthesis behavior\n2. weak feedback loops between action and evaluation\n3. artifact-first thinking when the task is really environment-facing\n\nGood fit when:\n- control design\n- planning with validity constraints\n- simulator-driven evaluation tasks\n- tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task\n\nBad fit when:\n- document formatting / artifact generation\n- pure evidence synthesis tasks\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Interact with a simulator, planner, or dynamic environment under explicit metric or validity constraints."
+        },
+        "slot_edit_count": 7
+      },
+      {
+        "candidate_id": "environment-control::round1::exploratory",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "expand the active meta-item pool for weak or negative-support schemas"
+        ],
+        "mode": "exploratory",
+        "schema": {
+          "avoid": [
+            "overly textual synthesis behavior",
+            "weak feedback loops between action and evaluation",
+            "artifact-first thinking when the task is really environment-facing"
+          ],
+          "category_id": "environment-control",
+          "emphasize": [
+            "world / simulator / environment state understanding",
+            "explicit control or planning loop structure",
+            "parameter, policy, or plan validation",
+            "metric-facing evaluation after execution",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+            "name the required execution and verification handoffs instead of leaving tool use implicit",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "document formatting / artifact generation",
+            "pure evidence synthesis tasks",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "control design",
+            "planning with validity constraints",
+            "simulator-driven evaluation tasks",
+            "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task",
+            "tasks whose dominant operational pattern is pipeline"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a environment-control task.\nSchema intent: Interact with a simulator, planner, or dynamic environment under explicit metric or validity constraints.\n\nOuter-loop update mode: exploratory. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. world / simulator / environment state understanding\n2. explicit control or planning loop structure\n3. parameter, policy, or plan validation\n4. metric-facing evaluation after execution\n5. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n6. name the required execution and verification handoffs instead of leaving tool use implicit\n7. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. overly textual synthesis behavior\n2. weak feedback loops between action and evaluation\n3. artifact-first thinking when the task is really environment-facing\n\nGood fit when:\n- control design\n- planning with validity constraints\n- simulator-driven evaluation tasks\n- tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task\n- tasks whose dominant operational pattern is pipeline\n\nBad fit when:\n- document formatting / artifact generation\n- pure evidence synthesis tasks\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Interact with a simulator, planner, or dynamic environment under explicit metric or validity constraints."
+        },
+        "slot_edit_count": 7
+      },
+      {
+        "candidate_id": "environment-control::round1::differentiating",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "increase behavioral separation from analytic-pipeline"
+        ],
+        "mode": "differentiating",
+        "schema": {
+          "avoid": [
+            "overly textual synthesis behavior",
+            "weak feedback loops between action and evaluation",
+            "artifact-first thinking when the task is really environment-facing"
+          ],
+          "category_id": "environment-control",
+          "emphasize": [
+            "world / simulator / environment state understanding",
+            "explicit control or planning loop structure",
+            "parameter, policy, or plan validation",
+            "metric-facing evaluation after execution",
+            "state why this schema should win over analytic-pipeline on borderline tasks",
+            "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+            "name the required execution and verification handoffs instead of leaving tool use implicit"
+          ],
+          "expected_bad_fit": [
+            "document formatting / artifact generation",
+            "pure evidence synthesis tasks",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "control design",
+            "planning with validity constraints",
+            "simulator-driven evaluation tasks",
+            "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a environment-control task.\nSchema intent: Interact with a simulator, planner, or dynamic environment under explicit metric or validity constraints.\n\nOuter-loop update mode: differentiating. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. world / simulator / environment state understanding\n2. explicit control or planning loop structure\n3. parameter, policy, or plan validation\n4. metric-facing evaluation after execution\n5. state why this schema should win over analytic-pipeline on borderline tasks\n6. make the staged-multi-step workflow assumption explicit before rendering task-specific guidance\n7. name the required execution and verification handoffs instead of leaving tool use implicit\n\nAvoid:\n1. overly textual synthesis behavior\n2. weak feedback loops between action and evaluation\n3. artifact-first thinking when the task is really environment-facing\n\nGood fit when:\n- control design\n- planning with validity constraints\n- simulator-driven evaluation tasks\n- tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task\n\nBad fit when:\n- document formatting / artifact generation\n- pure evidence synthesis tasks\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Interact with a simulator, planner, or dynamic environment under explicit metric or validity constraints."
+        },
+        "slot_edit_count": 7
+      }
+    ],
+    "mean_assigned_score": 55.95,
+    "mean_delta_vs_c1_pp": 45.3,
+    "operator_summary": {
+      "add": [
+        "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+        "name the required execution and verification handoffs instead of leaving tool use implicit",
+        "state why this schema should win over analytic-pipeline on borderline tasks",
+        "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task",
+        "tasks whose dominant operational pattern is pipeline",
+        "low-margin schema-boundary ambiguity against analytic-pipeline"
+      ],
+      "exclude": [
+        "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+      ],
+      "keep": [
+        "world / simulator / environment state understanding",
+        "explicit control or planning loop structure"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "priority_score": 3.0,
+    "proposal_status": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 1,
+    "slot_edits": {
+      "avoid": {
+        "add": [],
+        "remove": [],
+        "sharpen": []
+      },
+      "emphasize": {
+        "add": [
+          "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+          "name the required execution and verification handoffs instead of leaving tool use implicit",
+          "state why this schema should win over analytic-pipeline on borderline tasks"
+        ],
+        "remove": [],
+        "sharpen": []
+      },
+      "expected_bad_fit": {
+        "add": [
+          "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+        ],
+        "remove": []
+      },
+      "expected_good_fit": {
+        "add": [
+          "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task",
+          "tasks whose dominant operational pattern is pipeline"
+        ],
+        "remove": []
+      },
+      "hypothesized_primary_failure_modes": {
+        "add": [
+          "low-margin schema-boundary ambiguity against analytic-pipeline"
+        ],
+        "remove": [],
+        "sharpen": []
+      }
+    },
+    "support_size": 1
+  },
+  {
+    "acceptance_notes": [
+      "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
+      "reject if prompt text becomes more generic or less distinct from neighboring schemas",
+      "evaluate on borderline tasks, not only primary assigned tasks"
+    ],
+    "category_id": "methodology-guardrail",
+    "challenger_schemas": [
+      {
+        "candidate_id": "methodology-guardrail::round1::conservative",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "test a low-risk local slot edit before broader schema search"
+        ],
+        "mode": "conservative",
+        "schema": {
+          "avoid": [
+            "premature completion",
+            "overconfident synthesis when the task is underdetermined",
+            "unnecessary multi-stage pipeline expansion"
+          ],
+          "category_id": "methodology-guardrail",
+          "emphasize": [
+            "fit-check before commitment",
+            "abstention / unknown / needs-clarification behavior",
+            "rule hierarchy and anti-hallucination discipline",
+            "reviewer-style judgment over direct eager generation",
+            "extract the task-specific failure mode before adding broader procedural scaffolding",
+            "make the single-step-with-review workflow assumption explicit before rendering task-specific guidance"
+          ],
+          "expected_bad_fit": [
+            "straightforward artifact generation",
+            "benchmark-driven engineering loops",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "taxonomy merge / fit-check tasks",
+            "citation / rule / policy screening tasks",
+            "abstention-sensitive validation tasks",
+            "tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a methodology-guardrail task.\nSchema intent: Prevent premature or unsafe completion by enforcing fit-checks, abstention, and rule-aware judgment.\n\nOuter-loop update mode: conservative. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. fit-check before commitment\n2. abstention / unknown / needs-clarification behavior\n3. rule hierarchy and anti-hallucination discipline\n4. reviewer-style judgment over direct eager generation\n5. extract the task-specific failure mode before adding broader procedural scaffolding\n6. make the single-step-with-review workflow assumption explicit before rendering task-specific guidance\n\nAvoid:\n1. premature completion\n2. overconfident synthesis when the task is underdetermined\n3. unnecessary multi-stage pipeline expansion\n\nGood fit when:\n- taxonomy merge / fit-check tasks\n- citation / rule / policy screening tasks\n- abstention-sensitive validation tasks\n- tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task\n\nBad fit when:\n- straightforward artifact generation\n- benchmark-driven engineering loops\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Prevent premature or unsafe completion by enforcing fit-checks, abstention, and rule-aware judgment."
+        },
+        "slot_edit_count": 9
+      },
+      {
+        "candidate_id": "methodology-guardrail::round1::exploratory",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "expand the active meta-item pool for weak or negative-support schemas"
+        ],
+        "mode": "exploratory",
+        "schema": {
+          "avoid": [
+            "premature completion",
+            "overconfident synthesis when the task is underdetermined",
+            "unnecessary multi-stage pipeline expansion"
+          ],
+          "category_id": "methodology-guardrail",
+          "emphasize": [
+            "fit-check before commitment",
+            "abstention / unknown / needs-clarification behavior",
+            "rule hierarchy and anti-hallucination discipline",
+            "reviewer-style judgment over direct eager generation",
+            "extract the task-specific failure mode before adding broader procedural scaffolding",
+            "make the single-step-with-review workflow assumption explicit before rendering task-specific guidance",
+            "state why this schema should win over analytic-pipeline on borderline tasks",
+            "preserve R0 strengths and require regression checks after each refinement round"
+          ],
+          "expected_bad_fit": [
+            "straightforward artifact generation",
+            "benchmark-driven engineering loops",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "taxonomy merge / fit-check tasks",
+            "citation / rule / policy screening tasks",
+            "abstention-sensitive validation tasks",
+            "tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task",
+            "tasks whose dominant operational pattern is reviewer"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline",
+            "round-level refinement regression after initially useful behavior"
+          ],
+          "meta_prompt": "You are revising a skill for a methodology-guardrail task.\nSchema intent: Prevent premature or unsafe completion by enforcing fit-checks, abstention, and rule-aware judgment.\n\nOuter-loop update mode: exploratory. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. fit-check before commitment\n2. abstention / unknown / needs-clarification behavior\n3. rule hierarchy and anti-hallucination discipline\n4. reviewer-style judgment over direct eager generation\n5. extract the task-specific failure mode before adding broader procedural scaffolding\n6. make the single-step-with-review workflow assumption explicit before rendering task-specific guidance\n7. state why this schema should win over analytic-pipeline on borderline tasks\n8. preserve R0 strengths and require regression checks after each refinement round\n\nAvoid:\n1. premature completion\n2. overconfident synthesis when the task is underdetermined\n3. unnecessary multi-stage pipeline expansion\n\nGood fit when:\n- taxonomy merge / fit-check tasks\n- citation / rule / policy screening tasks\n- abstention-sensitive validation tasks\n- tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task\n- tasks whose dominant operational pattern is reviewer\n\nBad fit when:\n- straightforward artifact generation\n- benchmark-driven engineering loops\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n- round-level refinement regression after initially useful behavior\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Prevent premature or unsafe completion by enforcing fit-checks, abstention, and rule-aware judgment."
+        },
+        "slot_edit_count": 9
+      },
+      {
+        "candidate_id": "methodology-guardrail::round1::differentiating",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "increase behavioral separation from analytic-pipeline"
+        ],
+        "mode": "differentiating",
+        "schema": {
+          "avoid": [
+            "premature completion",
+            "overconfident synthesis when the task is underdetermined",
+            "unnecessary multi-stage pipeline expansion"
+          ],
+          "category_id": "methodology-guardrail",
+          "emphasize": [
+            "fit-check before commitment",
+            "abstention / unknown / needs-clarification behavior",
+            "rule hierarchy and anti-hallucination discipline",
+            "reviewer-style judgment over direct eager generation",
+            "state why this schema should win over analytic-pipeline on borderline tasks",
+            "extract the task-specific failure mode before adding broader procedural scaffolding",
+            "make the single-step-with-review workflow assumption explicit before rendering task-specific guidance"
+          ],
+          "expected_bad_fit": [
+            "straightforward artifact generation",
+            "benchmark-driven engineering loops",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "taxonomy merge / fit-check tasks",
+            "citation / rule / policy screening tasks",
+            "abstention-sensitive validation tasks",
+            "tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline",
+            "round-level refinement regression after initially useful behavior"
+          ],
+          "meta_prompt": "You are revising a skill for a methodology-guardrail task.\nSchema intent: Prevent premature or unsafe completion by enforcing fit-checks, abstention, and rule-aware judgment.\n\nOuter-loop update mode: differentiating. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. fit-check before commitment\n2. abstention / unknown / needs-clarification behavior\n3. rule hierarchy and anti-hallucination discipline\n4. reviewer-style judgment over direct eager generation\n5. state why this schema should win over analytic-pipeline on borderline tasks\n6. extract the task-specific failure mode before adding broader procedural scaffolding\n7. make the single-step-with-review workflow assumption explicit before rendering task-specific guidance\n\nAvoid:\n1. premature completion\n2. overconfident synthesis when the task is underdetermined\n3. unnecessary multi-stage pipeline expansion\n\nGood fit when:\n- taxonomy merge / fit-check tasks\n- citation / rule / policy screening tasks\n- abstention-sensitive validation tasks\n- tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task\n\nBad fit when:\n- straightforward artifact generation\n- benchmark-driven engineering loops\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n- round-level refinement regression after initially useful behavior\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Prevent premature or unsafe completion by enforcing fit-checks, abstention, and rule-aware judgment."
+        },
+        "slot_edit_count": 9
+      }
+    ],
+    "mean_assigned_score": 87.5,
+    "mean_delta_vs_c1_pp": 40.0,
+    "operator_summary": {
+      "add": [
+        "extract the task-specific failure mode before adding broader procedural scaffolding",
+        "make the single-step-with-review workflow assumption explicit before rendering task-specific guidance",
+        "state why this schema should win over analytic-pipeline on borderline tasks",
+        "preserve R0 strengths and require regression checks after each refinement round",
+        "tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task",
+        "tasks whose dominant operational pattern is reviewer",
+        "low-margin schema-boundary ambiguity against analytic-pipeline",
+        "round-level refinement regression after initially useful behavior"
+      ],
+      "exclude": [
+        "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+      ],
+      "keep": [
+        "fit-check before commitment",
+        "abstention / unknown / needs-clarification behavior"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "priority_score": 5.0,
+    "proposal_status": "candidate_update",
+    "recommended_challenger_mode": "differentiating",
+    "reliable_support_size": 2,
+    "slot_edits": {
+      "avoid": {
+        "add": [],
+        "remove": [],
+        "sharpen": []
+      },
+      "emphasize": {
+        "add": [
+          "extract the task-specific failure mode before adding broader procedural scaffolding",
+          "make the single-step-with-review workflow assumption explicit before rendering task-specific guidance",
+          "state why this schema should win over analytic-pipeline on borderline tasks",
+          "preserve R0 strengths and require regression checks after each refinement round"
+        ],
+        "remove": [],
+        "sharpen": []
+      },
+      "expected_bad_fit": {
+        "add": [
+          "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+        ],
+        "remove": []
+      },
+      "expected_good_fit": {
+        "add": [
+          "tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task",
+          "tasks whose dominant operational pattern is reviewer"
+        ],
+        "remove": []
+      },
+      "hypothesized_primary_failure_modes": {
+        "add": [
+          "low-margin schema-boundary ambiguity against analytic-pipeline",
+          "round-level refinement regression after initially useful behavior"
+        ],
+        "remove": [],
+        "sharpen": []
+      }
+    },
+    "support_size": 2
+  },
+  {
+    "acceptance_notes": [
+      "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
+      "reject if prompt text becomes more generic or less distinct from neighboring schemas",
+      "below support floor; do not accept schema edits this round",
+      "evaluate on borderline tasks, not only primary assigned tasks"
+    ],
+    "category_id": "orchestration-delegation",
+    "challenger_schemas": [
+      {
+        "candidate_id": "orchestration-delegation::round1::conservative",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "test a low-risk local slot edit before broader schema search"
+        ],
+        "mode": "conservative",
+        "schema": {
+          "avoid": [
+            "eager direct completion without dependency checks",
+            "reviewer-only prompts that lack execution choreography",
+            "over-abstract synthesis that ignores operational order"
+          ],
+          "category_id": "orchestration-delegation",
+          "emphasize": [
+            "constraint extraction before action",
+            "ordering across dependent steps / systems",
+            "state handoff between stages or tools",
+            "fail-safe finalization and side-effect awareness",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "static artifact-only tasks",
+            "deep scientific analysis pipelines",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+          ],
+          "expected_good_fit": [
+            "scheduling / delegation workflows",
+            "multi-system action coordination",
+            "tasks where one substep creates constraints for the next"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a orchestration-delegation task.\nSchema intent: Coordinate ordered external actions or substeps where sequence and dependency management matter.\n\nOuter-loop update mode: conservative. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. constraint extraction before action\n2. ordering across dependent steps / systems\n3. state handoff between stages or tools\n4. fail-safe finalization and side-effect awareness\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. eager direct completion without dependency checks\n2. reviewer-only prompts that lack execution choreography\n3. over-abstract synthesis that ignores operational order\n\nGood fit when:\n- scheduling / delegation workflows\n- multi-system action coordination\n- tasks where one substep creates constraints for the next\n\nBad fit when:\n- static artifact-only tasks\n- deep scientific analysis pipelines\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Coordinate ordered external actions or substeps where sequence and dependency management matter."
+        },
+        "slot_edit_count": 4
+      },
+      {
+        "candidate_id": "orchestration-delegation::round1::exploratory",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "expand the active meta-item pool for weak or negative-support schemas"
+        ],
+        "mode": "exploratory",
+        "schema": {
+          "avoid": [
+            "eager direct completion without dependency checks",
+            "reviewer-only prompts that lack execution choreography",
+            "over-abstract synthesis that ignores operational order"
+          ],
+          "category_id": "orchestration-delegation",
+          "emphasize": [
+            "constraint extraction before action",
+            "ordering across dependent steps / systems",
+            "state handoff between stages or tools",
+            "fail-safe finalization and side-effect awareness",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "static artifact-only tasks",
+            "deep scientific analysis pipelines",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+            "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+          ],
+          "expected_good_fit": [
+            "scheduling / delegation workflows",
+            "multi-system action coordination",
+            "tasks where one substep creates constraints for the next"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a orchestration-delegation task.\nSchema intent: Coordinate ordered external actions or substeps where sequence and dependency management matter.\n\nOuter-loop update mode: exploratory. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. constraint extraction before action\n2. ordering across dependent steps / systems\n3. state handoff between stages or tools\n4. fail-safe finalization and side-effect awareness\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. eager direct completion without dependency checks\n2. reviewer-only prompts that lack execution choreography\n3. over-abstract synthesis that ignores operational order\n\nGood fit when:\n- scheduling / delegation workflows\n- multi-system action coordination\n- tasks where one substep creates constraints for the next\n\nBad fit when:\n- static artifact-only tasks\n- deep scientific analysis pipelines\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n- do not infer schema updates from unassigned or infrastructure-corrupted rows\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Coordinate ordered external actions or substeps where sequence and dependency management matter."
+        },
+        "slot_edit_count": 4
+      },
+      {
+        "candidate_id": "orchestration-delegation::round1::differentiating",
+        "expected_effect": [
+          "preserve the frozen Render path while changing only schema-level guidance",
+          "make the next rerun auditable against round-0 assigned tasks",
+          "increase behavioral separation from analytic-pipeline"
+        ],
+        "mode": "differentiating",
+        "schema": {
+          "avoid": [
+            "eager direct completion without dependency checks",
+            "reviewer-only prompts that lack execution choreography",
+            "over-abstract synthesis that ignores operational order"
+          ],
+          "category_id": "orchestration-delegation",
+          "emphasize": [
+            "constraint extraction before action",
+            "ordering across dependent steps / systems",
+            "state handoff between stages or tools",
+            "fail-safe finalization and side-effect awareness",
+            "state why this schema should win over analytic-pipeline on borderline tasks"
+          ],
+          "expected_bad_fit": [
+            "static artifact-only tasks",
+            "deep scientific analysis pipelines",
+            "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+            "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+          ],
+          "expected_good_fit": [
+            "scheduling / delegation workflows",
+            "multi-system action coordination",
+            "tasks where one substep creates constraints for the next"
+          ],
+          "hypothesized_primary_failure_modes": [
+            "low-margin schema-boundary ambiguity against analytic-pipeline"
+          ],
+          "meta_prompt": "You are revising a skill for a orchestration-delegation task.\nSchema intent: Coordinate ordered external actions or substeps where sequence and dependency management matter.\n\nOuter-loop update mode: differentiating. Keep the Render layer fixed and change only schema-level guidance.\n\nPrioritize:\n1. constraint extraction before action\n2. ordering across dependent steps / systems\n3. state handoff between stages or tools\n4. fail-safe finalization and side-effect awareness\n5. state why this schema should win over analytic-pipeline on borderline tasks\n\nAvoid:\n1. eager direct completion without dependency checks\n2. reviewer-only prompts that lack execution choreography\n3. over-abstract synthesis that ignores operational order\n\nGood fit when:\n- scheduling / delegation workflows\n- multi-system action coordination\n- tasks where one substep creates constraints for the next\n\nBad fit when:\n- static artifact-only tasks\n- deep scientific analysis pipelines\n- borderline tasks where analytic-pipeline wins because its workflow bias is more central\n- do not infer schema updates from unassigned or infrastructure-corrupted rows\n\nPrimary failure modes to guard against:\n- low-margin schema-boundary ambiguity against analytic-pipeline\n\nRegenerate task-specific skill guidance from these slots; do not invent a new policy outside them.",
+          "semantic_intent": "Coordinate ordered external actions or substeps where sequence and dependency management matter."
+        },
+        "slot_edit_count": 4
+      }
+    ],
+    "mean_assigned_score": null,
+    "mean_delta_vs_c1_pp": null,
+    "operator_summary": {
+      "add": [
+        "state why this schema should win over analytic-pipeline on borderline tasks",
+        "low-margin schema-boundary ambiguity against analytic-pipeline"
+      ],
+      "exclude": [
+        "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+        "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+      ],
+      "keep": [
+        "constraint extraction before action",
+        "ordering across dependent steps / systems"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "priority_score": 2.0,
+    "proposal_status": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 0,
+    "slot_edits": {
+      "avoid": {
+        "add": [],
+        "remove": [],
+        "sharpen": []
+      },
+      "emphasize": {
+        "add": [
+          "state why this schema should win over analytic-pipeline on borderline tasks"
+        ],
+        "remove": [],
+        "sharpen": []
+      },
+      "expected_bad_fit": {
+        "add": [
+          "borderline tasks where analytic-pipeline wins because its workflow bias is more central",
+          "do not infer schema updates from unassigned or infrastructure-corrupted rows"
+        ],
+        "remove": []
+      },
+      "expected_good_fit": {
+        "add": [],
+        "remove": []
+      },
+      "hypothesized_primary_failure_modes": {
+        "add": [
+          "low-margin schema-boundary ambiguity against analytic-pipeline"
+        ],
+        "remove": [],
+        "sharpen": []
+      }
+    },
+    "support_size": 0
+  }
+]

@@ -1,40 +1,60 @@
 # SkillX Round0 Outer-Loop Control Plane: `outer-loop-round0`
 
-- generated_at: `2026-04-23T23:57:20.147518+00:00`
+- generated_at: `2026-04-24T00:06:14.209953+00:00`
 - output_dir: `experiments/skillx-skillsbench-001/results/outer-loop-round0/reports/outer-loop-control-plane`
 - schemas: `artifact-generation, analytic-pipeline, engineering-composition, retrieval-heavy-synthesis, environment-control, methodology-guardrail, orchestration-delegation`
 - assignment_score_mode: `trajectory`
 - assignment_score_formula: `0.5*reported_score + 0.3*weighted_mean(R0..R3) + 0.2*clamp(50 + best(R0..R3) - R0, 0, 100)`
+- tie_break_policy: `semantic_prior -> balance_when_score_range_leq_threshold -> stable_random`
 - tasks_total: `87`
 - tasks_with_scores: `9`
 - full_coverage_tasks: `6`
 - assigned_tasks: `6`
-- occupied_cluster_count: `3`
+- occupied_cluster_count: `4`
 - mean_assignment_margin_pp: `1.01`
 - low_margin_task_fraction: `0.8333`
 
 ## Cluster Occupancy
 
-| schema_id | assigned_count | mean_assigned_score | observed_task_count | update_floor_k | below_floor |
-| --- | ---: | ---: | ---: | ---: | --- |
-| artifact-generation | 1 | 55.95 | 8 | 2 | yes |
-| analytic-pipeline | 4 | 71.38 | 9 | 2 | no |
-| engineering-composition | 0 | - | 9 | 2 | yes |
-| retrieval-heavy-synthesis | 0 | - | 8 | 2 | yes |
-| environment-control | 0 | - | 7 | 2 | yes |
-| methodology-guardrail | 1 | 85.00 | 7 | 2 | yes |
-| orchestration-delegation | 0 | - | 7 | 2 | yes |
+| schema_id | primary_assigned | training_evidence | mean_assigned_score | observed_task_count | floor_k | below_training_floor |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| artifact-generation | 1 | 2 | 90.00 | 8 | 2 | no |
+| analytic-pipeline | 2 | 2 | 52.75 | 9 | 2 | no |
+| engineering-composition | 0 | 2 | - | 9 | 2 | no |
+| retrieval-heavy-synthesis | 0 | 2 | - | 8 | 2 | no |
+| environment-control | 1 | 2 | 55.95 | 7 | 2 | no |
+| methodology-guardrail | 2 | 2 | 87.50 | 7 | 2 | no |
+| orchestration-delegation | 0 | 2 | - | 7 | 2 | no |
+
+## Schema Training Assignments
+
+| schema_id | task | role | score | rank | primary_assigned |
+| --- | --- | --- | ---: | ---: | --- |
+| artifact-generation | powerlifting-coef-calc | primary_assignment | 90.00 | 1 | artifact-generation |
+| artifact-generation | citation-check | floor_top_score | 90.00 | 1 | methodology-guardrail |
+| analytic-pipeline | earthquake-phase-association | primary_assignment | 10.00 | 1 | analytic-pipeline |
+| analytic-pipeline | pdf-excel-diff | primary_assignment | 95.50 | 1 | analytic-pipeline |
+| engineering-composition | citation-check | floor_top_score | 90.00 | 1 | methodology-guardrail |
+| engineering-composition | powerlifting-coef-calc | floor_top_score | 90.00 | 1 | artifact-generation |
+| retrieval-heavy-synthesis | citation-check | floor_top_score | 90.00 | 1 | methodology-guardrail |
+| retrieval-heavy-synthesis | pdf-excel-diff | floor_top_score | 90.00 | 2 | analytic-pipeline |
+| environment-control | civ6-adjacency-optimizer | primary_assignment | 55.95 | 1 | environment-control |
+| environment-control | citation-check | floor_top_score | 90.00 | 1 | methodology-guardrail |
+| methodology-guardrail | citation-check | primary_assignment | 90.00 | 1 | methodology-guardrail |
+| methodology-guardrail | court-form-filling | primary_assignment | 85.00 | 1 | methodology-guardrail |
+| orchestration-delegation | citation-check | floor_top_score | 90.00 | 1 | methodology-guardrail |
+| orchestration-delegation | powerlifting-coef-calc | floor_top_score | 90.00 | 1 | artifact-generation |
 
 ## Assigned Tasks
 
 | task | assigned | best | second | margin_pp | confidence | tie_break |
 | --- | --- | ---: | ---: | ---: | --- | --- |
-| citation-check | analytic-pipeline | 90.00 | 90.00 | 0.00 | low | deterministic_fallback |
-| civ6-adjacency-optimizer | artifact-generation | 55.95 | 55.40 | 0.55 | low | deterministic_fallback |
-| court-form-filling | methodology-guardrail | 85.00 | 85.00 | 0.00 | low | deterministic_fallback |
-| earthquake-phase-association | analytic-pipeline | 10.00 | 10.00 | 0.00 | low | deterministic_fallback |
+| citation-check | methodology-guardrail | 90.00 | 90.00 | 0.00 | low | semantic_prior |
+| civ6-adjacency-optimizer | environment-control | 55.95 | 55.40 | 0.55 | low | score_preferred |
+| court-form-filling | methodology-guardrail | 85.00 | 85.00 | 0.00 | low | semantic_prior |
+| earthquake-phase-association | analytic-pipeline | 10.00 | 10.00 | 0.00 | low | semantic_prior |
 | pdf-excel-diff | analytic-pipeline | 95.50 | 90.00 | 5.50 | medium | no |
-| powerlifting-coef-calc | analytic-pipeline | 90.00 | 90.00 | 0.00 | low | deterministic_fallback |
+| powerlifting-coef-calc | artifact-generation | 90.00 | 90.00 | 0.00 | low | semantic_prior |
 
 ## Unassigned Tasks
 
@@ -122,16 +142,15 @@
 
 ## Collapse Warnings
 
-- `dominant_schema`: Largest cluster share is 0.67.
 - `high_low_margin_fraction`: Low-margin fraction is 0.83.
 
 ## Low-Margin Tasks
 
-- `citation-check`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
-- `civ6-adjacency-optimizer`: assigned=`artifact-generation`, margin_pp=`0.55`, tie_break=`deterministic_fallback`
-- `court-form-filling`: assigned=`methodology-guardrail`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
-- `earthquake-phase-association`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
-- `powerlifting-coef-calc`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`deterministic_fallback`
+- `citation-check`: assigned=`methodology-guardrail`, margin_pp=`0.0`, tie_break=`semantic_prior`
+- `civ6-adjacency-optimizer`: assigned=`environment-control`, margin_pp=`0.55`, tie_break=`score_preferred`
+- `court-form-filling`: assigned=`methodology-guardrail`, margin_pp=`0.0`, tie_break=`semantic_prior`
+- `earthquake-phase-association`: assigned=`analytic-pipeline`, margin_pp=`0.0`, tie_break=`semantic_prior`
+- `powerlifting-coef-calc`: assigned=`artifact-generation`, margin_pp=`0.0`, tie_break=`semantic_prior`
 
 ## Top-3 Near Ties
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 from collections import Counter, defaultdict
@@ -26,6 +27,9 @@ DEFAULT_GLOBAL_PAIR_STATUS_PATH = (
     DEFAULT_ROUND0_ROOT / "reports" / "global-round0-status" / "global_pair_status.json"
 )
 DEFAULT_PROMPT_BANK_PATH = ROOT / "docs" / "plans" / "skillx" / "skillx-prompt-bank-v0.1.json"
+DEFAULT_TASK_CLUSTER_INPUTS_PATH = (
+    ROOT / "docs" / "plans" / "skillx" / "skillsbench-task-cluster-inputs-v0.1.jsonl"
+)
 DEFAULT_OUTPUT_DIR = DEFAULT_ROUND0_ROOT / "reports" / "outer-loop-control-plane"
 DEFAULT_SCHEMA_IDS = [
     "artifact-generation",
@@ -47,6 +51,8 @@ DEFAULT_ASSIGNMENT_SCORE_MODE = "trajectory"
 DEFAULT_TERMINAL_SCORE_WEIGHT = 0.50
 DEFAULT_ROUND_MEAN_SCORE_WEIGHT = 0.30
 DEFAULT_GROWTH_SCORE_WEIGHT = 0.20
+DEFAULT_BALANCE_TIE_MAX_LOSS_PP = 1.0
+DEFAULT_ASSIGNMENT_RANDOM_SEED = "skillx-round0-assignment-v1"
 DEFAULT_ROUND_SCORE_WEIGHTS = {
     0: 0.15,
     1: 0.20,
@@ -109,6 +115,36 @@ def load_schema_ids(prompt_bank_path: Path) -> list[str]:
     if schema_ids:
         return schema_ids
     return list(DEFAULT_SCHEMA_IDS)
+
+
+def load_task_profile_index(task_cluster_inputs_path: Path | None) -> dict[str, dict[str, Any]]:
+    if task_cluster_inputs_path is None or not task_cluster_inputs_path.exists():
+        return {}
+
+    profiles: dict[str, dict[str, Any]] = {}
+    for line in task_cluster_inputs_path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        payload = json.loads(stripped)
+        task_name = payload.get("task_name")
+        if not isinstance(task_name, str) or not task_name:
+            continue
+        cluster_inputs = payload.get("cluster_inputs") or {}
+        semantic_contract = cluster_inputs.get("semantic_contract") or {}
+        tool_topology = cluster_inputs.get("tool_topology") or {}
+        tags = payload.get("tags") or {}
+        profiles[task_name] = {
+            "task_object_seed": semantic_contract.get("task_object_seed"),
+            "verifier_mode": semantic_contract.get("verifier_mode"),
+            "workflow_topology": tool_topology.get("workflow_topology"),
+            "tool_surface_regime": tool_topology.get("tool_surface_regime"),
+            "primary_pattern": tags.get("primary_pattern"),
+            "secondary_patterns": tags.get("secondary_patterns") or [],
+            "confidence": tags.get("confidence"),
+            "evidence_note": tags.get("evidence_note"),
+        }
+    return profiles
 
 
 def load_run_report_index(round0_root: Path) -> dict[tuple[str, str], dict[str, Any]]:
@@ -242,6 +278,72 @@ def compute_assignment_score(
         return round(reported_score_pct, 4)
     score = sum(float(value) * weight for value, weight in components if value is not None and weight > 0)
     return round(score / total_weight, 4)
+
+
+def semantic_prior_score(schema_id: str, task_profile: dict[str, Any] | None) -> float:
+    if not task_profile:
+        return 0.0
+
+    task_object_seed = str(task_profile.get("task_object_seed") or "")
+    verifier_mode = str(task_profile.get("verifier_mode") or "")
+    workflow_topology = str(task_profile.get("workflow_topology") or "")
+    tool_surface_regime = str(task_profile.get("tool_surface_regime") or "")
+    primary_pattern = str(task_profile.get("primary_pattern") or "")
+    secondary_patterns = {
+        str(pattern)
+        for pattern in task_profile.get("secondary_patterns", [])
+        if isinstance(pattern, str)
+    }
+
+    score = 0.0
+    if schema_id == task_object_seed:
+        score += 4.0
+
+    if primary_pattern == "generator" and schema_id == "artifact-generation":
+        score += 2.0
+    elif primary_pattern in {"reviewer", "inversion"} and schema_id == "methodology-guardrail":
+        score += 2.0
+    elif primary_pattern == "pipeline" and schema_id == "analytic-pipeline":
+        score += 1.0
+
+    if "generator" in secondary_patterns and schema_id == "artifact-generation":
+        score += 1.0
+    if "reviewer" in secondary_patterns and schema_id == "methodology-guardrail":
+        score += 1.0
+    if "tool-wrapper" in secondary_patterns and schema_id == "engineering-composition":
+        score += 1.0
+
+    if verifier_mode in {"deterministic-output-contract", "deterministic-artifact-plus-stage-check"}:
+        if schema_id == "artifact-generation":
+            score += 1.0
+        if schema_id == "methodology-guardrail":
+            score += 0.5
+    if verifier_mode == "benchmark-threshold":
+        if schema_id == "environment-control":
+            score += 1.0
+        if schema_id == "engineering-composition":
+            score += 0.5
+
+    if workflow_topology == "single-step-with-review":
+        if schema_id == "methodology-guardrail":
+            score += 1.0
+        if schema_id == "artifact-generation":
+            score += 0.5
+    elif workflow_topology == "staged-multi-step" and schema_id == "analytic-pipeline":
+        score += 0.5
+
+    if tool_surface_regime.startswith("tool-heavy"):
+        if schema_id in {"engineering-composition", "environment-control"}:
+            score += 0.5
+    elif tool_surface_regime == "tool-light" and schema_id == "artifact-generation":
+        score += 0.5
+
+    return score
+
+
+def stable_random_sort_key(*, seed: str, task_name: str, schema_id: str) -> str:
+    payload = f"{seed}\0{task_name}\0{schema_id}".encode()
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _looks_infra_blocked(text: str) -> bool:
@@ -476,7 +578,11 @@ def build_pair_rows(
     return [str(item) for item in schema_ids], sorted(pair_rows, key=lambda row: (row["task_name"], row["schema_id"]))
 
 
-def group_pair_rows_by_task(pair_rows: list[dict[str, Any]], schema_ids: list[str]) -> list[dict[str, Any]]:
+def group_pair_rows_by_task(
+    pair_rows: list[dict[str, Any]],
+    schema_ids: list[str],
+    task_profiles: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
     grouped: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     for row in pair_rows:
         grouped[row["task_name"]][row["schema_id"]] = row
@@ -541,6 +647,7 @@ def group_pair_rows_by_task(pair_rows: list[dict[str, Any]], schema_ids: list[st
         task_rows.append(
             {
                 "task_name": task_name,
+                "task_profile": task_profiles.get(task_name, {}),
                 "scores": scores,
                 "reported_scores": reported_scores,
                 "evidence_classes": evidence_classes,
@@ -588,6 +695,8 @@ def assign_tasks(
     high_confidence_margin_pp: float,
     medium_confidence_margin_pp: float,
     require_full_coverage: bool,
+    balance_tie_max_loss_pp: float,
+    assignment_random_seed: str,
 ) -> list[dict[str, Any]]:
     cluster_sizes: Counter[str] = Counter()
     assignments: list[dict[str, Any]] = []
@@ -614,6 +723,7 @@ def assign_tasks(
         tie_break_used = False
         tie_break_reason = ""
         candidate_schema_ids: list[str] = []
+        candidate_semantic_scores: dict[str, float] = {}
 
         if not observed_scores:
             assignment_status = "unassigned_no_scores"
@@ -632,8 +742,35 @@ def assign_tasks(
                 tie_break_used = True
                 candidate_score_values = [float(item["score_pct"]) for item in candidates]
                 candidate_score_range = max(candidate_score_values) - min(candidate_score_values)
-                use_balance = 0.0 < candidate_score_range <= epsilon_pp and len(candidates) <= 3
-                if use_balance:
+                candidate_semantic_scores = {
+                    str(item["schema_id"]): semantic_prior_score(
+                        str(item["schema_id"]),
+                        task_row.get("task_profile"),
+                    )
+                    for item in candidates
+                }
+                semantic_ranked = sorted(
+                    candidates,
+                    key=lambda item: (
+                        -candidate_semantic_scores[str(item["schema_id"])],
+                        -float(item["score_pct"]),
+                        stable_random_sort_key(
+                            seed=assignment_random_seed,
+                            task_name=str(task_row["task_name"]),
+                            schema_id=str(item["schema_id"]),
+                        ),
+                    ),
+                )
+                best_semantic = candidate_semantic_scores[str(semantic_ranked[0]["schema_id"])]
+                second_semantic = (
+                    candidate_semantic_scores[str(semantic_ranked[1]["schema_id"])]
+                    if len(semantic_ranked) > 1
+                    else 0.0
+                )
+                if best_semantic >= 2.0 and best_semantic - second_semantic >= 1.0:
+                    chosen = semantic_ranked[0]
+                    tie_break_reason = "semantic_prior"
+                elif candidate_score_range <= balance_tie_max_loss_pp:
                     smallest_cluster_size = min(cluster_sizes[str(item["schema_id"])] for item in candidates)
                     balance_candidates = [
                         item
@@ -644,13 +781,32 @@ def assign_tasks(
                         chosen = balance_candidates[0]
                         tie_break_reason = "balance"
                     else:
-                        balance_candidates.sort(key=lambda item: str(item["schema_id"]))
+                        balance_candidates.sort(
+                            key=lambda item: stable_random_sort_key(
+                                seed=assignment_random_seed,
+                                task_name=str(task_row["task_name"]),
+                                schema_id=str(item["schema_id"]),
+                            )
+                        )
                         chosen = balance_candidates[0]
-                        tie_break_reason = "deterministic_fallback"
+                        tie_break_reason = "stable_random"
                 else:
-                    candidates.sort(key=lambda item: str(item["schema_id"]))
-                    chosen = candidates[0]
-                    tie_break_reason = "deterministic_fallback"
+                    top_score_candidates = [
+                        item for item in candidates if abs(top_score - float(item["score_pct"])) <= 1e-9
+                    ]
+                    if len(top_score_candidates) > 1:
+                        top_score_candidates.sort(
+                            key=lambda item: stable_random_sort_key(
+                                seed=assignment_random_seed,
+                                task_name=str(task_row["task_name"]),
+                                schema_id=str(item["schema_id"]),
+                            )
+                        )
+                        chosen = top_score_candidates[0]
+                        tie_break_reason = "stable_random_top_score"
+                    else:
+                        chosen = candidates[0]
+                        tie_break_reason = "score_preferred"
             assigned_category = str(chosen["schema_id"])
             cluster_sizes[assigned_category] += 1
 
@@ -695,6 +851,11 @@ def assign_tasks(
             "tie_break_reason": tie_break_reason,
             "tie_candidate_schema_ids": ";".join(candidate_schema_ids),
             "tie_candidate_count": len(candidate_schema_ids),
+            "tie_candidate_semantic_scores": ";".join(
+                f"{schema_id}:{candidate_semantic_scores[schema_id]:.1f}"
+                for schema_id in candidate_schema_ids
+                if schema_id in candidate_semantic_scores
+            ),
             "tie_candidate_score_range_pp": (
                 round(max(candidate_scores) - min(candidate_scores), 2)
                 if candidate_scores
@@ -835,7 +996,9 @@ def build_diagnostics(
     )
 
     schema_diagnostics: list[dict[str, Any]] = []
+    schema_training_assignments: list[dict[str, Any]] = []
     flat_schema_columns: list[dict[str, Any]] = []
+    assignments_by_task = {str(row["task_name"]): row for row in assigned_rows}
     for schema_id in schema_ids:
         observed_scores = [
             float(row["scores"][schema_id])
@@ -855,6 +1018,18 @@ def build_diagnostics(
                 {
                     "task_name": row["task_name"],
                     "score_pct": row["scores"][schema_id],
+                    "reported_score_pct": row["reported_scores"].get(schema_id),
+                    "best_observed_schema": row["best_observed_schema"],
+                    "best_observed_score": row["best_observed_score"],
+                    "schema_rank": (
+                        1
+                        + sum(
+                            1
+                            for other_schema_id in schema_ids
+                            if row["scores"].get(other_schema_id) is not None
+                            and float(row["scores"][other_schema_id]) > float(row["scores"][schema_id])
+                        )
+                    ),
                 }
                 for row in task_rows
                 if row["scores"].get(schema_id) is not None
@@ -871,6 +1046,34 @@ def build_diagnostics(
                 break
             update_evidence_task_names.append(task_name)
             top_k_tasks_added.append(task_name)
+
+        top_task_by_name = {str(item["task_name"]): item for item in top_tasks}
+        for task_name in update_evidence_task_names:
+            item = top_task_by_name.get(task_name)
+            if item is None:
+                continue
+            primary_assignment = assignments_by_task.get(task_name)
+            schema_training_assignments.append(
+                {
+                    "schema_id": schema_id,
+                    "task_name": task_name,
+                    "evidence_role": (
+                        "primary_assignment"
+                        if task_name not in top_k_tasks_added
+                        and primary_assignment is not None
+                        and primary_assignment.get("assigned_category") == schema_id
+                        else "floor_top_score"
+                    ),
+                    "schema_score": item["score_pct"],
+                    "schema_reported_score": item["reported_score_pct"],
+                    "schema_rank_for_task": item["schema_rank"],
+                    "primary_assigned_category": (
+                        None if primary_assignment is None else primary_assignment.get("assigned_category")
+                    ),
+                    "task_best_schema": item["best_observed_schema"],
+                    "task_best_score": item["best_observed_score"],
+                }
+            )
 
         score_range_pp = (
             round(max(observed_scores) - min(observed_scores), 2) if len(observed_scores) >= 2 else None
@@ -893,6 +1096,8 @@ def build_diagnostics(
             "empty": cluster_size_map[schema_id] == 0,
             "near_empty": 0 < cluster_size_map[schema_id] < near_empty_threshold,
             "below_update_floor": cluster_size_map[schema_id] < update_floor_k,
+            "training_evidence_count": len(update_evidence_task_names),
+            "below_training_floor": len(update_evidence_task_names) < update_floor_k,
             "update_floor_k": update_floor_k,
             "update_evidence_task_names": update_evidence_task_names,
             "top_k_tasks_added": top_k_tasks_added,
@@ -967,6 +1172,7 @@ def build_diagnostics(
         "top3_tied_tasks": top3_tied_tasks,
         "incomplete_tasks": incomplete_tasks,
         "schema_diagnostics": schema_diagnostics,
+        "schema_training_assignments": schema_training_assignments,
         "flat_schema_columns": flat_schema_columns,
         "schema_pair_correlations": schema_pair_correlations,
         "collapse_warnings": collapse_warnings,
@@ -1064,6 +1270,7 @@ def render_summary_markdown(
         f"- schemas: `{', '.join(schema_ids)}`",
         f"- assignment_score_mode: `{summary.get('assignment_score_mode')}`",
         f"- assignment_score_formula: `{summary.get('assignment_score_formula')}`",
+        f"- tie_break_policy: `{summary.get('tie_break_policy')}`",
         f"- tasks_total: `{summary['task_count_total']}`",
         f"- tasks_with_scores: `{summary['task_count_with_scores']}`",
         f"- full_coverage_tasks: `{summary['task_count_full_coverage']}`",
@@ -1074,8 +1281,8 @@ def render_summary_markdown(
         "",
         "## Cluster Occupancy",
         "",
-        "| schema_id | assigned_count | mean_assigned_score | observed_task_count | update_floor_k | below_floor |",
-        "| --- | ---: | ---: | ---: | ---: | --- |",
+        "| schema_id | primary_assigned | training_evidence | mean_assigned_score | observed_task_count | floor_k | below_training_floor |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in diagnostics["schema_diagnostics"]:
         lines.append(
@@ -1084,14 +1291,41 @@ def render_summary_markdown(
                 [
                     str(row["schema_id"]),
                     str(row["primary_assigned_count"]),
+                    str(row["training_evidence_count"]),
                     "-" if row["mean_assigned_score"] is None else f"{row['mean_assigned_score']:.2f}",
                     str(row["observed_task_count"]),
                     str(row["update_floor_k"]),
-                    "yes" if row["below_update_floor"] else "no",
+                    "yes" if row["below_training_floor"] else "no",
                 ]
             )
             + " |"
         )
+
+    if diagnostics.get("schema_training_assignments"):
+        lines.extend(
+            [
+                "",
+                "## Schema Training Assignments",
+                "",
+                "| schema_id | task | role | score | rank | primary_assigned |",
+                "| --- | --- | --- | ---: | ---: | --- |",
+            ]
+        )
+        for row in diagnostics["schema_training_assignments"]:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        str(row["schema_id"]),
+                        str(row["task_name"]),
+                        str(row["evidence_role"]),
+                        "-" if row["schema_score"] is None else f"{float(row['schema_score']):.2f}",
+                        "-" if row["schema_rank_for_task"] is None else str(row["schema_rank_for_task"]),
+                        str(row["primary_assigned_category"]),
+                    ]
+                )
+                + " |"
+            )
 
     lines.extend(["", "## Assigned Tasks", "", "| task | assigned | best | second | margin_pp | confidence | tie_break |", "| --- | --- | ---: | ---: | ---: | --- | --- |"])
     for row in assignments:
@@ -1162,8 +1396,12 @@ def build_outer_loop_artifacts(
     near_empty_threshold: int,
     update_floor_fraction: float,
     flat_column_range_pp: float,
+    task_cluster_inputs_path: Path | None = DEFAULT_TASK_CLUSTER_INPUTS_PATH,
+    balance_tie_max_loss_pp: float = DEFAULT_BALANCE_TIE_MAX_LOSS_PP,
+    assignment_random_seed: str = DEFAULT_ASSIGNMENT_RANDOM_SEED,
 ) -> dict[str, Any]:
     prompt_bank_schema_ids = load_schema_ids(prompt_bank_path)
+    task_profiles = load_task_profile_index(task_cluster_inputs_path)
     discovered_schema_ids, pair_rows = build_pair_rows(
         global_pair_status_path=global_pair_status_path,
         round0_root=round0_root,
@@ -1177,7 +1415,7 @@ def build_outer_loop_artifacts(
     ] + [
         schema_id for schema_id in discovered_schema_ids if schema_id not in prompt_bank_schema_ids
     ]
-    task_rows = group_pair_rows_by_task(pair_rows, schema_ids)
+    task_rows = group_pair_rows_by_task(pair_rows, schema_ids, task_profiles)
     assignments = assign_tasks(
         task_rows=task_rows,
         schema_ids=schema_ids,
@@ -1185,6 +1423,8 @@ def build_outer_loop_artifacts(
         high_confidence_margin_pp=high_confidence_margin_pp,
         medium_confidence_margin_pp=medium_confidence_margin_pp,
         require_full_coverage=require_full_coverage,
+        balance_tie_max_loss_pp=balance_tie_max_loss_pp,
+        assignment_random_seed=assignment_random_seed,
     )
     diagnostics = build_diagnostics(
         task_rows=task_rows,
@@ -1206,6 +1446,9 @@ def build_outer_loop_artifacts(
             f"{growth_score_weight:g}*clamp(50 + best(R0..R3) - R0, 0, 100)"
         )
     )
+    diagnostics["summary"]["tie_break_policy"] = (
+        "semantic_prior -> balance_when_score_range_leq_threshold -> stable_random"
+    )
     score_matrix = build_score_matrix_artifacts(
         pair_rows=pair_rows,
         task_rows=task_rows,
@@ -1219,11 +1462,16 @@ def build_outer_loop_artifacts(
             "round0_root": display_path(round0_root.resolve()),
             "global_pair_status_path": display_path(global_pair_status_path.resolve()),
             "prompt_bank_path": display_path(prompt_bank_path.resolve()),
+            "task_cluster_inputs_path": (
+                None if task_cluster_inputs_path is None else display_path(task_cluster_inputs_path.resolve())
+            ),
             "assignment_score_mode": assignment_score_mode,
             "terminal_score_weight": terminal_score_weight,
             "round_mean_score_weight": round_mean_score_weight,
             "growth_score_weight": growth_score_weight,
             "round_score_weights": DEFAULT_ROUND_SCORE_WEIGHTS,
+            "balance_tie_max_loss_pp": balance_tie_max_loss_pp,
+            "assignment_random_seed": assignment_random_seed,
             "epsilon_pp": epsilon_pp,
             "high_confidence_margin_pp": high_confidence_margin_pp,
             "medium_confidence_margin_pp": medium_confidence_margin_pp,
@@ -1253,6 +1501,8 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
     score_matrix_json_path = output_dir / "score_matrix.json"
     assignments_csv_path = output_dir / "assignments.csv"
     assignments_json_path = output_dir / "assignments.json"
+    schema_training_assignments_csv_path = output_dir / "schema_training_assignments.csv"
+    schema_training_assignments_json_path = output_dir / "schema_training_assignments.json"
     diagnostics_json_path = output_dir / "diagnostics.json"
     bundle_json_path = output_dir / "control_plane_bundle.json"
     summary_md_path = output_dir / "summary.md"
@@ -1342,6 +1592,7 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
             "tie_break_reason",
             "tie_candidate_schema_ids",
             "tie_candidate_count",
+            "tie_candidate_semantic_scores",
             "tie_candidate_score_range_pp",
             "observed_schema_count",
             "full_coverage",
@@ -1360,6 +1611,30 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
             "generated_at": payload["generated_at"],
             "config": payload["config"],
             "assignments": assignments,
+        },
+    )
+    schema_training_assignments = diagnostics.get("schema_training_assignments", [])
+    write_csv(
+        schema_training_assignments_csv_path,
+        schema_training_assignments,
+        fieldnames=list(schema_training_assignments[0].keys()) if schema_training_assignments else [
+            "schema_id",
+            "task_name",
+            "evidence_role",
+            "schema_score",
+            "schema_reported_score",
+            "schema_rank_for_task",
+            "primary_assigned_category",
+            "task_best_schema",
+            "task_best_score",
+        ],
+    )
+    write_json(
+        schema_training_assignments_json_path,
+        {
+            "generated_at": payload["generated_at"],
+            "config": payload["config"],
+            "schema_training_assignments": schema_training_assignments,
         },
     )
     write_json(
@@ -1387,6 +1662,8 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
         "score_matrix_json": display_path(score_matrix_json_path),
         "assignments_csv": display_path(assignments_csv_path),
         "assignments_json": display_path(assignments_json_path),
+        "schema_training_assignments_csv": display_path(schema_training_assignments_csv_path),
+        "schema_training_assignments_json": display_path(schema_training_assignments_json_path),
         "diagnostics_json": display_path(diagnostics_json_path),
         "bundle_json": display_path(bundle_json_path),
         "summary_md": display_path(summary_md_path),
@@ -1398,6 +1675,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--round0-root", type=Path, default=DEFAULT_ROUND0_ROOT)
     parser.add_argument("--global-pair-status-path", type=Path, default=DEFAULT_GLOBAL_PAIR_STATUS_PATH)
     parser.add_argument("--prompt-bank-path", type=Path, default=DEFAULT_PROMPT_BANK_PATH)
+    parser.add_argument("--task-cluster-inputs-path", type=Path, default=DEFAULT_TASK_CLUSTER_INPUTS_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--round-id", default="outer-loop-round0")
     parser.add_argument(
@@ -1420,6 +1698,17 @@ def parse_args() -> argparse.Namespace:
         "--growth-score-weight",
         type=float,
         default=DEFAULT_GROWTH_SCORE_WEIGHT,
+    )
+    parser.add_argument(
+        "--balance-tie-max-loss-pp",
+        type=float,
+        default=DEFAULT_BALANCE_TIE_MAX_LOSS_PP,
+        help="Only let cluster balance override the top score inside this near-tie score range.",
+    )
+    parser.add_argument(
+        "--assignment-random-seed",
+        default=DEFAULT_ASSIGNMENT_RANDOM_SEED,
+        help="Seed string for reproducible random tie-breaking.",
     )
     parser.add_argument("--epsilon-pp", type=float, default=DEFAULT_MEDIUM_CONFIDENCE_MARGIN_PP)
     parser.add_argument(
@@ -1481,6 +1770,9 @@ def main() -> int:
         near_empty_threshold=int(args.near_empty_threshold),
         update_floor_fraction=float(args.update_floor_fraction),
         flat_column_range_pp=float(args.flat_column_range_pp),
+        task_cluster_inputs_path=args.task_cluster_inputs_path,
+        balance_tie_max_loss_pp=float(args.balance_tie_max_loss_pp),
+        assignment_random_seed=str(args.assignment_random_seed),
     )
     outputs = write_outer_loop_artifacts(payload=payload, output_dir=args.output_dir)
     print(json.dumps(outputs, indent=2, sort_keys=True))

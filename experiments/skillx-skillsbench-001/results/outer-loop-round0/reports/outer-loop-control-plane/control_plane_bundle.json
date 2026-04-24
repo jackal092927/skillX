@@ -25,6 +25,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -52,6 +53,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -79,11 +81,12 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
       "ambiguous_schema_ids": "",
-      "assigned_category": "analytic-pipeline",
+      "assigned_category": "methodology-guardrail",
       "assigned_reported_score": 100.0,
       "assigned_score": 90.0,
       "assignment_confidence": "low",
@@ -101,18 +104,19 @@
       "second_best_score": 90.0,
       "second_reported_score": 100.0,
       "task_name": "citation-check",
-      "tie_break_reason": "deterministic_fallback",
+      "tie_break_reason": "semantic_prior",
       "tie_break_used": true,
       "tie_candidate_count": 7,
       "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
       "tie_candidate_score_range_pp": 0.0,
+      "tie_candidate_semantic_scores": "analytic-pipeline:0.0;artifact-generation:1.5;engineering-composition:0.0;environment-control:0.0;methodology-guardrail:7.5;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
       "top3_spread_pp": 0.0
     },
     {
       "ambiguous_schema_ids": "",
-      "assigned_category": "artifact-generation",
+      "assigned_category": "environment-control",
       "assigned_reported_score": 60.0,
-      "assigned_score": 55.4,
+      "assigned_score": 55.95,
       "assignment_confidence": "low",
       "assignment_status": "assigned",
       "best_observed_category": "environment-control",
@@ -128,11 +132,12 @@
       "second_best_score": 55.4,
       "second_reported_score": 60.0,
       "task_name": "civ6-adjacency-optimizer",
-      "tie_break_reason": "deterministic_fallback",
+      "tie_break_reason": "score_preferred",
       "tie_break_used": true,
       "tie_candidate_count": 3,
       "tie_candidate_schema_ids": "environment-control;artifact-generation;engineering-composition",
       "tie_candidate_score_range_pp": 3.95,
+      "tie_candidate_semantic_scores": "environment-control:1.5;artifact-generation:0.0;engineering-composition:2.0",
       "top3_spread_pp": 3.95
     },
     {
@@ -155,11 +160,12 @@
       "second_best_score": 85.0,
       "second_reported_score": 100.0,
       "task_name": "court-form-filling",
-      "tie_break_reason": "deterministic_fallback",
+      "tie_break_reason": "semantic_prior",
       "tie_break_used": true,
       "tie_candidate_count": 3,
       "tie_candidate_schema_ids": "analytic-pipeline;methodology-guardrail;orchestration-delegation",
       "tie_candidate_score_range_pp": 4.5,
+      "tie_candidate_semantic_scores": "analytic-pipeline:0.0;methodology-guardrail:2.5;orchestration-delegation:0.0",
       "top3_spread_pp": 4.5
     },
     {
@@ -187,6 +193,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -214,6 +221,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -241,6 +249,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -268,6 +277,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -295,6 +305,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -317,11 +328,12 @@
       "second_best_score": 10.0,
       "second_reported_score": 0.0,
       "task_name": "earthquake-phase-association",
-      "tie_break_reason": "deterministic_fallback",
+      "tie_break_reason": "semantic_prior",
       "tie_break_used": true,
       "tie_candidate_count": 7,
       "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
       "tie_candidate_score_range_pp": 0.0,
+      "tie_candidate_semantic_scores": "analytic-pipeline:5.5;artifact-generation:0.0;engineering-composition:2.0;environment-control:1.5;methodology-guardrail:1.0;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
       "top3_spread_pp": 0.0
     },
     {
@@ -349,6 +361,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -376,6 +389,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -403,6 +417,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": 10.5
     },
     {
@@ -430,6 +445,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -457,6 +473,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -484,6 +501,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -511,6 +529,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -538,6 +557,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -565,6 +585,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -592,6 +613,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -619,6 +641,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -646,6 +669,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -673,6 +697,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -700,6 +725,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -727,6 +753,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -754,6 +781,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -781,6 +809,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -808,6 +837,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -835,6 +865,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -862,6 +893,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -889,6 +921,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -916,6 +949,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -943,6 +977,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -970,6 +1005,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -997,6 +1033,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1024,6 +1061,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1051,6 +1089,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1078,6 +1117,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1105,6 +1145,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1132,6 +1173,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1159,6 +1201,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1186,6 +1229,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1213,6 +1257,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1240,6 +1285,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1267,6 +1313,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1294,6 +1341,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1321,6 +1369,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1348,6 +1397,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1375,6 +1425,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1402,6 +1453,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1429,6 +1481,7 @@
       "tie_candidate_count": 1,
       "tie_candidate_schema_ids": "analytic-pipeline",
       "tie_candidate_score_range_pp": 0.0,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": 5.5
     },
     {
@@ -1456,6 +1509,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1483,11 +1537,12 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
       "ambiguous_schema_ids": "",
-      "assigned_category": "analytic-pipeline",
+      "assigned_category": "artifact-generation",
       "assigned_reported_score": 100.0,
       "assigned_score": 90.0,
       "assignment_confidence": "low",
@@ -1505,11 +1560,12 @@
       "second_best_score": 90.0,
       "second_reported_score": 100.0,
       "task_name": "powerlifting-coef-calc",
-      "tie_break_reason": "deterministic_fallback",
+      "tie_break_reason": "semantic_prior",
       "tie_break_used": true,
       "tie_candidate_count": 7,
       "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
       "tie_candidate_score_range_pp": 0.0,
+      "tie_candidate_semantic_scores": "analytic-pipeline:1.5;artifact-generation:6.0;engineering-composition:0.0;environment-control:0.0;methodology-guardrail:1.5;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
       "top3_spread_pp": 0.0
     },
     {
@@ -1537,6 +1593,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1564,6 +1621,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1591,6 +1649,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1618,6 +1677,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1645,6 +1705,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1672,6 +1733,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1699,6 +1761,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1726,6 +1789,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1753,6 +1817,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1780,6 +1845,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1807,6 +1873,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1834,6 +1901,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1861,6 +1929,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1888,6 +1957,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1915,6 +1985,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1942,6 +2013,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1969,6 +2041,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -1996,6 +2069,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": 10.5
     },
     {
@@ -2023,6 +2097,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2050,6 +2125,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": 0.0
     },
     {
@@ -2077,6 +2153,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2104,6 +2181,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2131,6 +2209,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2158,6 +2237,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2185,6 +2265,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2212,6 +2293,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2239,6 +2321,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2266,6 +2349,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2293,6 +2377,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2320,6 +2405,7 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     },
     {
@@ -2347,11 +2433,14 @@
       "tie_candidate_count": 0,
       "tie_candidate_schema_ids": "",
       "tie_candidate_score_range_pp": null,
+      "tie_candidate_semantic_scores": "",
       "top3_spread_pp": null
     }
   ],
   "config": {
+    "assignment_random_seed": "skillx-round0-assignment-v1",
     "assignment_score_mode": "trajectory",
+    "balance_tie_max_loss_pp": 1.0,
     "dominant_share_threshold": 0.6,
     "epsilon_pp": 5.0,
     "flat_column_range_pp": 10.0,
@@ -2371,16 +2460,13 @@
       "2": 0.3,
       "3": 0.35
     },
+    "task_cluster_inputs_path": "docs/plans/skillx/skillsbench-task-cluster-inputs-v0.1.jsonl",
     "terminal_score_weight": 0.5,
     "top3_tie_threshold_pp": 10.0,
     "update_floor_fraction": 0.1
   },
   "diagnostics": {
     "collapse_warnings": [
-      {
-        "kind": "dominant_schema",
-        "message": "Largest cluster share is 0.67."
-      },
       {
         "kind": "high_low_margin_fraction",
         "message": "Low-margin fraction is 0.83."
@@ -3938,7 +4024,7 @@
     "low_margin_tasks": [
       {
         "ambiguous_schema_ids": "",
-        "assigned_category": "analytic-pipeline",
+        "assigned_category": "methodology-guardrail",
         "assigned_reported_score": 100.0,
         "assigned_score": 90.0,
         "assignment_confidence": "low",
@@ -3956,18 +4042,19 @@
         "second_best_score": 90.0,
         "second_reported_score": 100.0,
         "task_name": "citation-check",
-        "tie_break_reason": "deterministic_fallback",
+        "tie_break_reason": "semantic_prior",
         "tie_break_used": true,
         "tie_candidate_count": 7,
         "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
         "tie_candidate_score_range_pp": 0.0,
+        "tie_candidate_semantic_scores": "analytic-pipeline:0.0;artifact-generation:1.5;engineering-composition:0.0;environment-control:0.0;methodology-guardrail:7.5;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
         "top3_spread_pp": 0.0
       },
       {
         "ambiguous_schema_ids": "",
-        "assigned_category": "artifact-generation",
+        "assigned_category": "environment-control",
         "assigned_reported_score": 60.0,
-        "assigned_score": 55.4,
+        "assigned_score": 55.95,
         "assignment_confidence": "low",
         "assignment_status": "assigned",
         "best_observed_category": "environment-control",
@@ -3983,11 +4070,12 @@
         "second_best_score": 55.4,
         "second_reported_score": 60.0,
         "task_name": "civ6-adjacency-optimizer",
-        "tie_break_reason": "deterministic_fallback",
+        "tie_break_reason": "score_preferred",
         "tie_break_used": true,
         "tie_candidate_count": 3,
         "tie_candidate_schema_ids": "environment-control;artifact-generation;engineering-composition",
         "tie_candidate_score_range_pp": 3.95,
+        "tie_candidate_semantic_scores": "environment-control:1.5;artifact-generation:0.0;engineering-composition:2.0",
         "top3_spread_pp": 3.95
       },
       {
@@ -4010,11 +4098,12 @@
         "second_best_score": 85.0,
         "second_reported_score": 100.0,
         "task_name": "court-form-filling",
-        "tie_break_reason": "deterministic_fallback",
+        "tie_break_reason": "semantic_prior",
         "tie_break_used": true,
         "tie_candidate_count": 3,
         "tie_candidate_schema_ids": "analytic-pipeline;methodology-guardrail;orchestration-delegation",
         "tie_candidate_score_range_pp": 4.5,
+        "tie_candidate_semantic_scores": "analytic-pipeline:0.0;methodology-guardrail:2.5;orchestration-delegation:0.0",
         "top3_spread_pp": 4.5
       },
       {
@@ -4037,16 +4126,17 @@
         "second_best_score": 10.0,
         "second_reported_score": 0.0,
         "task_name": "earthquake-phase-association",
-        "tie_break_reason": "deterministic_fallback",
+        "tie_break_reason": "semantic_prior",
         "tie_break_used": true,
         "tie_candidate_count": 7,
         "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
         "tie_candidate_score_range_pp": 0.0,
+        "tie_candidate_semantic_scores": "analytic-pipeline:5.5;artifact-generation:0.0;engineering-composition:2.0;environment-control:1.5;methodology-guardrail:1.0;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
         "top3_spread_pp": 0.0
       },
       {
         "ambiguous_schema_ids": "",
-        "assigned_category": "analytic-pipeline",
+        "assigned_category": "artifact-generation",
         "assigned_reported_score": 100.0,
         "assigned_score": 90.0,
         "assignment_confidence": "low",
@@ -4064,19 +4154,21 @@
         "second_best_score": 90.0,
         "second_reported_score": 100.0,
         "task_name": "powerlifting-coef-calc",
-        "tie_break_reason": "deterministic_fallback",
+        "tie_break_reason": "semantic_prior",
         "tie_break_used": true,
         "tie_candidate_count": 7,
         "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
         "tie_candidate_score_range_pp": 0.0,
+        "tie_candidate_semantic_scores": "analytic-pipeline:1.5;artifact-generation:6.0;engineering-composition:0.0;environment-control:0.0;methodology-guardrail:1.5;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
         "top3_spread_pp": 0.0
       }
     ],
     "schema_diagnostics": [
       {
+        "below_training_floor": false,
         "below_update_floor": true,
         "empty": false,
-        "mean_assigned_score": 55.95,
+        "mean_assigned_score": 90.0,
         "mean_observed_score": 63.49,
         "near_empty": true,
         "observed_task_count": 8,
@@ -4088,34 +4180,36 @@
         "top_k_tasks_added": [
           "citation-check"
         ],
+        "training_evidence_count": 2,
         "update_evidence_task_names": [
-          "civ6-adjacency-optimizer",
+          "powerlifting-coef-calc",
           "citation-check"
         ],
         "update_floor_k": 2
       },
       {
+        "below_training_floor": false,
         "below_update_floor": false,
         "empty": false,
-        "mean_assigned_score": 71.38,
+        "mean_assigned_score": 52.75,
         "mean_observed_score": 63.92,
-        "near_empty": false,
+        "near_empty": true,
         "observed_task_count": 9,
-        "occupancy_share": 0.6667,
-        "primary_assigned_count": 4,
+        "occupancy_share": 0.3333,
+        "primary_assigned_count": 2,
         "schema_id": "analytic-pipeline",
         "score_range_pp": 85.5,
         "score_stddev_pp": 31.68,
         "top_k_tasks_added": [],
+        "training_evidence_count": 2,
         "update_evidence_task_names": [
-          "citation-check",
           "earthquake-phase-association",
-          "pdf-excel-diff",
-          "powerlifting-coef-calc"
+          "pdf-excel-diff"
         ],
         "update_floor_k": 2
       },
       {
+        "below_training_floor": false,
         "below_update_floor": true,
         "empty": true,
         "mean_assigned_score": null,
@@ -4131,6 +4225,7 @@
           "citation-check",
           "powerlifting-coef-calc"
         ],
+        "training_evidence_count": 2,
         "update_evidence_task_names": [
           "citation-check",
           "powerlifting-coef-calc"
@@ -4138,6 +4233,7 @@
         "update_floor_k": 2
       },
       {
+        "below_training_floor": false,
         "below_update_floor": true,
         "empty": true,
         "mean_assigned_score": null,
@@ -4153,6 +4249,7 @@
           "citation-check",
           "pdf-excel-diff"
         ],
+        "training_evidence_count": 2,
         "update_evidence_task_names": [
           "citation-check",
           "pdf-excel-diff"
@@ -4160,49 +4257,51 @@
         "update_floor_k": 2
       },
       {
-        "below_update_floor": true,
-        "empty": true,
-        "mean_assigned_score": null,
-        "mean_observed_score": 48.85,
-        "near_empty": false,
-        "observed_task_count": 7,
-        "occupancy_share": 0.0,
-        "primary_assigned_count": 0,
-        "schema_id": "environment-control",
-        "score_range_pp": 80.0,
-        "score_stddev_pp": 35.26,
-        "top_k_tasks_added": [
-          "citation-check",
-          "powerlifting-coef-calc"
-        ],
-        "update_evidence_task_names": [
-          "citation-check",
-          "powerlifting-coef-calc"
-        ],
-        "update_floor_k": 2
-      },
-      {
+        "below_training_floor": false,
         "below_update_floor": true,
         "empty": false,
-        "mean_assigned_score": 85.0,
-        "mean_observed_score": 65.93,
+        "mean_assigned_score": 55.95,
+        "mean_observed_score": 48.85,
         "near_empty": true,
         "observed_task_count": 7,
         "occupancy_share": 0.1667,
         "primary_assigned_count": 1,
-        "schema_id": "methodology-guardrail",
+        "schema_id": "environment-control",
         "score_range_pp": 80.0,
-        "score_stddev_pp": 35.42,
+        "score_stddev_pp": 35.26,
         "top_k_tasks_added": [
           "citation-check"
         ],
+        "training_evidence_count": 2,
         "update_evidence_task_names": [
-          "court-form-filling",
+          "civ6-adjacency-optimizer",
           "citation-check"
         ],
         "update_floor_k": 2
       },
       {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 87.5,
+        "mean_observed_score": 65.93,
+        "near_empty": true,
+        "observed_task_count": 7,
+        "occupancy_share": 0.3333,
+        "primary_assigned_count": 2,
+        "schema_id": "methodology-guardrail",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 35.42,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 2,
+        "update_evidence_task_names": [
+          "citation-check",
+          "court-form-filling"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
         "below_update_floor": true,
         "empty": true,
         "mean_assigned_score": null,
@@ -4218,6 +4317,7 @@
           "citation-check",
           "powerlifting-coef-calc"
         ],
+        "training_evidence_count": 2,
         "update_evidence_task_names": [
           "citation-check",
           "powerlifting-coef-calc"
@@ -4353,30 +4453,187 @@
         "right_schema_id": "orchestration-delegation"
       }
     ],
+    "schema_training_assignments": [
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "artifact-generation",
+        "schema_id": "artifact-generation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "powerlifting-coef-calc"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "artifact-generation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_id": "analytic-pipeline",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 0.0,
+        "schema_score": 10.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 10.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_id": "analytic-pipeline",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 95.5,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 95.5,
+        "task_name": "pdf-excel-diff"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "engineering-composition",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "artifact-generation",
+        "schema_id": "engineering-composition",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "powerlifting-coef-calc"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "retrieval-heavy-synthesis",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_id": "retrieval-heavy-synthesis",
+        "schema_rank_for_task": 2,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 95.5,
+        "task_name": "pdf-excel-diff"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "environment-control",
+        "schema_id": "environment-control",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 60.0,
+        "schema_score": 55.95,
+        "task_best_schema": "environment-control",
+        "task_best_score": 55.95,
+        "task_name": "civ6-adjacency-optimizer"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "environment-control",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "methodology-guardrail",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "methodology-guardrail",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 85.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 85.0,
+        "task_name": "court-form-filling"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "orchestration-delegation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "artifact-generation",
+        "schema_id": "orchestration-delegation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "powerlifting-coef-calc"
+      }
+    ],
     "summary": {
       "assigned_task_count": 6,
       "assignment_score_formula": "0.5*reported_score + 0.3*weighted_mean(R0..R3) + 0.2*clamp(50 + best(R0..R3) - R0, 0, 100)",
       "assignment_score_mode": "trajectory",
-      "cluster_size_entropy": 0.8676,
+      "cluster_size_entropy": 1.3297,
       "cluster_sizes": {
-        "analytic-pipeline": 4,
+        "analytic-pipeline": 2,
         "artifact-generation": 1,
         "engineering-composition": 0,
-        "environment-control": 0,
-        "methodology-guardrail": 1,
+        "environment-control": 1,
+        "methodology-guardrail": 2,
         "orchestration-delegation": 0,
         "retrieval-heavy-synthesis": 0
       },
-      "largest_cluster_share": 0.6667,
+      "largest_cluster_share": 0.3333,
       "low_margin_task_fraction": 0.8333,
       "mean_abs_schema_pair_correlation": 0.6946,
       "mean_assignment_margin_pp": 1.01,
-      "occupied_cluster_count": 3,
+      "occupied_cluster_count": 4,
       "task_count_full_coverage": 6,
       "task_count_no_scores": 78,
       "task_count_partial_coverage": 3,
       "task_count_total": 87,
       "task_count_with_scores": 9,
+      "tie_break_policy": "semantic_prior -> balance_when_score_range_leq_threshold -> stable_random",
       "unassigned_task_count": 81,
       "update_floor_k": 2
     },
@@ -4439,7 +4696,7 @@
       }
     ]
   },
-  "generated_at": "2026-04-23T23:57:20.147518+00:00",
+  "generated_at": "2026-04-24T00:06:14.209953+00:00",
   "pair_rows": [
     {
       "assignment_eligible": false,
@@ -47158,6 +47415,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "3d-scan-calc",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "binary STL parsing, connected-component filtering, material lookup, and mass computation form an ordered geometry-analysis workflow into JSON",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47224,6 +47494,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "adaptive-cruise-control",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "controller design, simulation, tuning, and metric targets form an ordered control-system workflow",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "environment-control",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47282,6 +47565,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "azure-bgp-oscillation-route-leak",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load topology files, detect oscillation/leak violations, evaluate solution candidates, and emit structured JSON report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47332,6 +47628,18 @@
           "retrieval-heavy-synthesis": "completed"
         },
         "task_name": "citation-check",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "evidence-based fake-citation screening with cleaned sorted JSON titles is dominated by validation and false-positive control",
+          "primary_pattern": "reviewer",
+          "secondary_patterns": [
+            "inversion"
+          ],
+          "task_object_seed": "methodology-guardrail",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": 0.0
       },
       {
@@ -47382,6 +47690,19 @@
           "retrieval-heavy-synthesis": "completed"
         },
         "task_name": "civ6-adjacency-optimizer",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "parse .Civ6Map, compute adjacency bonuses for district placements, and maximize total score against an optimal benchmark",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": 3.95
       },
       {
@@ -47432,6 +47753,18 @@
           "retrieval-heavy-synthesis": "completed"
         },
         "task_name": "court-form-filling",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "field-constrained PDF artifact; required vs omitted form sections and no-extra-fill discipline dominate",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": 4.5
       },
       {
@@ -47490,6 +47823,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "crystallographic-wyckoff-position-analysis",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "build a reusable Python function that parses CIF files, computes Wyckoff multiplicities, and returns coordinate dicts; no hardcoding allowed",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47548,6 +47894,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "dapt-intrusion-detection",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "pcap analysis requires computing ~30 network metrics plus boolean analysis flags and filling a structured CSV template",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47614,6 +47973,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "data-to-d3",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "task requires a coupled multi-file web artifact with precise D3 chart behavior, layout constraints, and linked interactions",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "generator",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47672,6 +48044,18 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "dialogue-parser",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "validated JSON graph plus DOT output create a sharp structured artifact contract",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-light",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47730,6 +48114,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "dynamic-object-aware-egomotion",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction explicitly requires sampled-frame camera-motion labeling plus sparse dynamic-object masks, so this is a constrained video-analysis pipeline rather than a loose multimodal task",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47788,6 +48185,19 @@
           "retrieval-heavy-synthesis": "completed"
         },
         "task_name": "earthquake-phase-association",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load waveforms, run DL phase picking via SeisBench, associate picks into events, and pass F1 \u2265 0.6 gate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": 0.0
       },
       {
@@ -47846,6 +48256,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "earthquake-plate-calculation",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "geospatial analysis using GeoPandas: filter earthquakes inside Pacific plate, compute max boundary distance, emit JSON",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47904,6 +48327,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "econ-detrending-correlation",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "extract nominal series, deflate with CPI, HP-filter log-real series, compute Pearson correlation, output single number",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -47958,6 +48394,19 @@
           "retrieval-heavy-synthesis": "completed"
         },
         "task_name": "energy-ac-optimal-power-flow",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "solve AC-OPF from math model, produce structured JSON report with generators, buses, branches, and feasibility checks",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": 10.5
       },
       {
@@ -48016,6 +48465,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "energy-market-pricing",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "run DC-OPF with reserve co-optimization for base and counterfactual scenarios; produce comparative JSON report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48074,6 +48536,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "enterprise-information-search",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction explicitly frames multi-question retrieval over enterprise data into a fixed answer.json schema with per-question token accounting",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48140,6 +48615,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "exceltable-in-ppt",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "embedded Excel extraction, targeted update, and PPTX preservation require ordered artifact manipulation",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48198,6 +48686,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "exoplanet-detection-period",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "filter TESS lightcurve, remove stellar-activity variability, and output one rounded orbital period value; strong ordered analysis but single-value contract",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48256,6 +48757,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "financial-modeling-qa",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction is a concrete workbook-plus-background analysis task that reduces to one numeric answer.txt output rather than an open-ended finance QA surface",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48322,6 +48836,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "find-topk-similiar-chemicals",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "build a reusable Python function using PubChem/RDKit for Morgan fingerprint Tanimoto similarity; no hardcoded SMILES",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48388,6 +48915,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "fix-build-agentops",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "diagnose build break, stage patch diffs, apply fixes, and satisfy build success gate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48446,6 +48986,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "fix-build-google-auto",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "diagnose build break, stage patch diffs, apply fixes, and satisfy build success gate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48512,6 +49065,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "fix-druid-loophole-cve",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "identify CVE root cause, write patches, rebuild with Maven, and pass exploit-blocked + legitimate-request tests",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48578,6 +49144,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "fix-erlang-ssh-cve",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "investigate SSH protocol message vulnerability, patch Erlang source to block unauthorized execution while preserving normal SSH",
+          "primary_pattern": "reviewer",
+          "secondary_patterns": [
+            "pipeline",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48636,6 +49215,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "fix-visual-stability",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction explicitly targets root-cause diagnosis and repair of visual instability in a Next.js app under no-regression selector constraints",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48694,6 +49286,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "flink-query",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "implement Flink job skeleton with custom data types, session-window logic, compile and run on Flink; output compared line-by-line",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48752,6 +49357,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "flood-risk-analysis",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction is a clean hydrology analysis task: identify stations with flood days in a fixed date window and emit a two-column CSV",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48818,6 +49436,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "gh-repo-analytics",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "monthly GitHub PR/issue metrics require API-style retrieval, aggregation, and structured JSON reporting",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48884,6 +49515,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "glm-lake-mendota",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "configure and run GLM lake model, tune parameters until RMSE < 2\u00b0C against field observations",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "environment-control",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -48942,6 +49586,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "gravitational-wave-detection",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "condition detector data, perform matched filtering over mass grid across three approximants, report peak SNR per approximant in CSV",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49000,6 +49657,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "grid-dispatch-operator",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "solve economic dispatch with reserve coupling from MATPOWER snapshot, produce structured JSON report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49058,6 +49728,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "hvac-control",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "calibration, parameter estimation, gain tuning, and closed-loop control are tied to explicit control metrics",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "environment-control",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49116,6 +49799,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "invoice-fraud-detection",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "invoice extraction is coupled with ordered fraud-screening criteria, fuzzy vendor matching, and first-match reason selection into JSON",
+          "primary_pattern": "reviewer",
+          "secondary_patterns": [
+            "pipeline",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49174,6 +49870,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "jax-computing-basics",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "local instruction confirms a batch programming task driven by problem.json specs: load inputs, implement JAX computations, and save per-task outputs",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49232,6 +49941,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "jpg-ocr-stat",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "batch OCR plus field extraction with explicit fallback rules into a strict Excel schema",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49298,6 +50020,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "lab-unit-harmonization",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "cleaning malformed numeric formats, dropping incomplete rows, detecting mixed units, and converting into harmonized physiological ranges is a stage-sensitive tabular pipeline",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49356,6 +50091,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "lake-warming-attribution",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "trend analysis on water temp plus driver attribution (Heat/Flow/Wind/Human) into two constrained CSVs",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49422,6 +50170,18 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "latex-formula-extraction",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "extract display formulas into exact markdown/latex lines with a light syntax-fix review pass",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49480,6 +50240,18 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "lean4-proof",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "complete a Lean4 proof from a fixed template; must type-check with no warnings; pure formal-math generation task",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-light",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49538,6 +50310,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "manufacturing-codebook-normalization",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction explicitly requires mapping noisy multilingual defect text to product-specific codebooks with calibrated confidence, rationales, and UNKNOWN abstention",
+          "primary_pattern": "reviewer",
+          "secondary_patterns": [
+            "pipeline",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49596,6 +50381,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "manufacturing-equipment-maintenance",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "handbook-grounded maintenance QA over MES logs, thermocouples, and defect data makes this a grounded retrieval-plus-calculation synthesis workflow",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49654,6 +50452,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "manufacturing-fjsp-optimization",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction explicitly asks for a feasible flexible job-shop schedule that improves makespan without worsening policy budgets, with synchronized JSON/CSV outputs",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49712,6 +50523,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "mario-coin-counting",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "extract keyframes, convert to grayscale, template-match coins/enemies/turtles, and produce a strict CSV with counts per frame",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49778,6 +50602,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "mars-clouds-clustering",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "grid-search DBSCAN hyperparameters with custom distance metric, compute F1/delta per image, identify Pareto frontier, output CSV",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49836,6 +50673,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "mhc-layer-impl",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "implement mHC layer from paper, train baseline and mHC nanoGPT models on A100, compare loss/gradient stats in JSON",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49902,6 +50752,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "multilingual-video-dubbing",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "translation-aligned TTS, segment timing control, loudness constraints, and muxed dubbed-video output form a tightly staged AV pipeline",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -49968,6 +50831,18 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "offer-letter-generator",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "clear structured artifact contract; missing-input and no-invention discipline dominate",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-light",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50034,6 +50909,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "organize-messy-files",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "local instruction confirms a content-based document classification task with exclusive assignment into five folders and no leftover files",
+          "primary_pattern": "reviewer",
+          "secondary_patterns": [
+            "pipeline",
+            "inversion"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50092,6 +50980,18 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "paper-anonymizer",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "redaction task is dominated by leak detection/removal while preserving a usable anonymized PDF artifact",
+          "primary_pattern": "reviewer",
+          "secondary_patterns": [
+            "generator"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50158,6 +51058,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "parallel-tfidf-search",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "coordination across bundle logic, ordered execution, and benchmark-style performance gate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "multi-skill-composition"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50224,6 +51137,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "pddl-tpp-planning",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "formal planning task is dominated by loading domain/problem files and producing valid executable plan artifacts",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "environment-control",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50274,6 +51200,19 @@
           "retrieval-heavy-synthesis": "completed"
         },
         "task_name": "pdf-excel-diff",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "extract legacy table, compare against current workbook, and emit a structured diff report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": 5.5
       },
       {
@@ -50332,6 +51271,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "pedestrian-traffic-counting",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "each video requires object counting with cross-frame deduplication and strict Excel reporting per filename",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50398,6 +51350,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "pg-essay-to-audiobook",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction is a clean two-system workflow: retrieve specified Paul Graham essays online and turn them into one audiobook via remote or local TTS",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "orchestration-delegation",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50448,6 +51413,19 @@
           "retrieval-heavy-synthesis": "completed"
         },
         "task_name": "powerlifting-coef-calc",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "existing workbook must be extended in-place with selected columns and Excel formulas for TotalKg and Dots coefficients",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "generator",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": 0.0
       },
       {
@@ -50506,6 +51484,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "pptx-reference-formatting",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "slide-wide title detection, formatting normalization, and reference-slide synthesis produce a tightly constrained PPTX artifact",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "generator"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50572,6 +51563,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "protein-expression-analysis",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "populate workbook cells via lookup formulas, compute group statistics and fold changes; no macros, formulas only",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "generator",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50630,6 +51634,18 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "python-scala-translation",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "primary job is source-to-source code translation under explicit symbol-preservation and Scala-idiom constraints",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-light",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50688,6 +51704,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "quantum-numerical-simulation",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "local instruction specifies a four-case steady-state simulation workflow with cavity-state tracing and 1000x1000 Wigner grids saved as CSVs",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50746,6 +51775,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "r2r-mpc-control",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "state-space derivation, MPC design, simulator execution, and control metrics define an ordered control loop",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "environment-control",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50804,6 +51846,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "react-performance-debugging",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "root-cause performance debugging plus functional guardrails requires ordered engineering changes and verification",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50870,6 +51925,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "reserves-at-risk-calc",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "download IMF gold price data, populate workbook, compute volatility/exposure/RaR across steps; Excel formulas only",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50928,6 +51996,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "sales-pivot-analysis",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "multi-source tabular merge plus specific pivot-table/report sheet contract dominates",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -50986,6 +52067,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "scheduling-email-assistant",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "extract constraints, consult calendar, send reply email, and log message IDs as part of one workflow",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "orchestration-delegation",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51052,6 +52146,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "sec-financial-report",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "multi-question SEC filing analysis requires repeated search, accession resolution, holdings comparison, and JSON answer synthesis",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51110,6 +52217,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "seismic-phase-picking",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load 100 npz traces, pick P/S wave indices, output CSV; graded on F1 \u2265 0.7 (P) and \u2265 0.6 (S)",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51176,6 +52296,19 @@
           "retrieval-heavy-synthesis": "failed_other"
         },
         "task_name": "setup-fuzzing-py",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "discover libraries, analyze functions, write fuzz drivers, set up venvs, run 10s fuzzing validation; 5-step ordered workflow",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51242,6 +52375,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "shock-analysis-demand",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "collect IMF WEO + geostat data, populate workbook, model demand-side shock across 3 scenarios; Excel formulas only",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51308,6 +52454,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "shock-analysis-supply",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "collect PWT/WEO/ECB data, HP-filter in Excel via Solver, build Cobb-Douglas production function across projection; Excel only",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51374,6 +52533,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "simpo-code-reproduction",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "implement SimPO loss from paper PDF, set up environment, run unit test, save loss matrix to npz",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51432,6 +52604,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "software-dependency-audit",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "dependency audit is dominated by vulnerability-screening criteria and a strict CSV evidence schema",
+          "primary_pattern": "reviewer",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "pipeline"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51490,6 +52675,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "speaker-diarization-subtitles",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "audio extraction, diarization, subtitle generation, and process reporting are explicit ordered stages with multiple artifact contracts",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51550,6 +52748,19 @@
           "retrieval-heavy-synthesis": "completed"
         },
         "task_name": "spring-boot-jakarta-migration",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "framework migration with dependency, namespace, and test/compile gates is an ordered engineering bundle",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": 10.5
       },
       {
@@ -51608,6 +52819,18 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "suricata-custom-exfil",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "write a single Suricata signature matching 5 conjunctive conditions; verifier checks alert on exfil pcaps and no false positives",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51670,6 +52893,18 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "syzkaller-ppdev-syzlang",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "create syzlang description files for ppdev ioctls; verified by make descriptions + make all compilation",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        },
         "top3_spread_pp": 0.0
       },
       {
@@ -51736,6 +52971,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "taxonomy-tree-merge",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "fit checks, assumption control, and premature-commitment avoidance dominate",
+          "primary_pattern": "inversion",
+          "secondary_patterns": [
+            "reviewer",
+            "pipeline"
+          ],
+          "task_object_seed": "methodology-guardrail",
+          "tool_surface_regime": "tool-light",
+          "verifier_mode": "abstention-and-fit-check",
+          "workflow_topology": "branching-abstention-aware"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51794,6 +53042,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "threejs-structure-parser",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "parse createScene(), recover part/group structure, and export grouped mesh/link OBJ artifacts in a specified directory layout",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51860,6 +53121,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "threejs-to-obj",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "task is centered on writing/export tooling that converts a Three.js-defined object into a Blender-ready OBJ with coordinate-frame adjustment",
+          "primary_pattern": "tool-wrapper",
+          "secondary_patterns": [
+            "pipeline",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51926,6 +53200,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "travel-planning",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "grounded multi-constraint itinerary synthesis with mandatory search-skill usage and strict 7-day JSON output",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "retrieval-heavy-synthesis",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -51992,6 +53279,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "trend-anomaly-causal-inference",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "ordered analytic stages, intermediate artifacts, and handoff contracts dominate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -52050,6 +53350,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "video-filler-word-remover",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "transcribe video, detect filler words with timestamps, save JSON annotations, stitch filler clips into output video",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -52108,6 +53421,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "video-silence-remover",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "detect silent/non-teaching segments, remove them, produce compressed video and JSON compression report with consistent math",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -52166,6 +53492,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "video-tutorial-indexer",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "long-video topic segmentation into exact ordered chapter titles and monotonic timestamps is an ordered multimodal indexing workflow",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -52232,6 +53571,19 @@
           "retrieval-heavy-synthesis": "docker_incident"
         },
         "task_name": "virtualhome-agent-planning",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "local instruction confirms a formal planning workflow over domain/problem pairs in problem.json with validity and syntax constraints on each generated plan",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "environment-control",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -52290,6 +53642,19 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "weighted-gdp-calc",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "workbook task requires staged lookup formulas, derived statistics, and weighted-mean calculation while preserving sheet formatting",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "generator",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       },
       {
@@ -52348,6 +53713,18 @@
           "retrieval-heavy-synthesis": "unrun"
         },
         "task_name": "xlsx-recover-data",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "recover missing spreadsheet values through cross-sheet relational analysis into an updated workbook",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        },
         "top3_spread_pp": null
       }
     ],
