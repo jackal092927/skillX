@@ -40,10 +40,10 @@ DEFAULT_TASK_CLUSTER_INPUTS_PATH = (
 DEFAULT_OUTPUT_DIR = DEFAULT_ROUND0_ROOT / "reports" / "outer-loop-schema-updates"
 DEFAULT_ROUND_ID = "outer-loop-round0"
 DEFAULT_NEXT_ROUND_ID = "outer-loop-round1"
-DEFAULT_MIN_SUPPORT_SIZE = 2
+DEFAULT_MIN_SUPPORT_SIZE = 0
 DEFAULT_LOW_MARGIN_PP = 5.0
 DEFAULT_BOUNDARY_MARGIN_PP = 10.0
-DEFAULT_MAX_UPDATE_SCHEMAS = 3
+DEFAULT_MAX_UPDATE_SCHEMAS = 0
 DEFAULT_REWRITE_MODE = "llm"
 DEFAULT_LLM_MODEL = "anthropic/claude-sonnet-4-5"
 DEFAULT_LLM_TIMEOUT_SEC = 900.0
@@ -1067,9 +1067,9 @@ def build_schema_update_proposal(
     schema_id = str(schema["category_id"])
     deterministic_edits = propose_slot_edits(schema, evidence)
     reliable_support_size = int(evidence["reliable_support_size"])
-    if reliable_support_size < min_support_size:
+    if min_support_size > 0 and reliable_support_size < min_support_size:
         proposal_status = "freeze_low_support"
-    elif not evidence.get("assigned_task_summaries"):
+    elif min_support_size > 0 and not evidence.get("assigned_task_summaries"):
         proposal_status = "freeze_unassigned"
     else:
         proposal_status = "candidate_update"
@@ -1181,7 +1181,7 @@ def acceptance_notes(evidence: dict[str, Any], min_support_size: int) -> list[st
         "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
         "reject if prompt text becomes more generic or less distinct from neighboring schemas",
     ]
-    if int(evidence["reliable_support_size"]) < min_support_size:
+    if min_support_size > 0 and int(evidence["reliable_support_size"]) < min_support_size:
         notes.append("below support floor; do not accept schema edits this round")
     if evidence.get("ambiguous_borderline_cases"):
         notes.append("evaluate on borderline tasks, not only primary assigned tasks")
@@ -1279,6 +1279,126 @@ def build_candidate_prompt_bank(
         updated_categories.append(replacement)
     candidate_bank["categories"] = updated_categories
     return candidate_bank
+
+
+def schema_projection(schema: dict[str, Any]) -> dict[str, Any]:
+    return {
+        field_name: schema.get(field_name)
+        for field_name in (*SLOT_FIELDS, "meta_prompt")
+        if field_name in schema
+    }
+
+
+def schemas_are_rewritten(original_schema: dict[str, Any], candidate_schema: dict[str, Any]) -> bool:
+    return schema_projection(original_schema) != schema_projection(candidate_schema)
+
+
+def build_rewrite_verification(
+    *,
+    prompt_bank: dict[str, Any],
+    candidate_prompt_bank: dict[str, Any],
+    proposals_by_schema: dict[str, dict[str, Any]],
+    round_update_plan: list[dict[str, Any]],
+    rewrite_mode: str,
+    min_support_size: int,
+    max_update_schemas: int,
+) -> dict[str, Any]:
+    original_by_schema = {
+        str(schema.get("category_id")): schema
+        for schema in prompt_bank.get("categories", [])
+        if isinstance(schema, dict) and schema.get("category_id")
+    }
+    candidate_by_schema = {
+        str(schema.get("category_id")): schema
+        for schema in candidate_prompt_bank.get("categories", [])
+        if isinstance(schema, dict) and schema.get("category_id")
+    }
+    schema_ids = [str(schema_id) for schema_id in original_by_schema]
+    expected_schema_ids = [
+        str(row["category_id"])
+        for row in round_update_plan
+        if row.get("action") == "update"
+    ]
+    failures: list[dict[str, Any]] = []
+    completed_schema_ids: list[str] = []
+
+    unrestricted_update = min_support_size <= 0 and max_update_schemas <= 0
+    if unrestricted_update and set(expected_schema_ids) != set(schema_ids):
+        failures.append(
+            {
+                "schema_id": None,
+                "reason": "unrestricted_policy_did_not_select_all_schemas",
+                "expected_schema_ids": schema_ids,
+                "actual_schema_ids": expected_schema_ids,
+            }
+        )
+
+    for schema_id in expected_schema_ids:
+        schema_failures: list[str] = []
+        original_schema = original_by_schema.get(schema_id)
+        candidate_schema = candidate_by_schema.get(schema_id)
+        proposal = proposals_by_schema.get(schema_id)
+        if original_schema is None:
+            schema_failures.append("missing_original_schema")
+        if candidate_schema is None:
+            schema_failures.append("missing_candidate_schema")
+        if proposal is None:
+            schema_failures.append("missing_update_proposal")
+        elif proposal.get("proposal_status") != "candidate_update":
+            schema_failures.append(f"proposal_status_is_{proposal.get('proposal_status')}")
+        if rewrite_mode == "llm" and proposal is not None and proposal.get("rewrite_source") != "llm":
+            schema_failures.append(f"rewrite_source_is_{proposal.get('rewrite_source')}")
+        if candidate_schema is not None:
+            if candidate_schema.get("outer_loop_candidate_status") != "proposed_for_rerun":
+                schema_failures.append("missing_outer_loop_candidate_status")
+            if not candidate_schema.get("outer_loop_candidate_id"):
+                schema_failures.append("missing_outer_loop_candidate_id")
+            if not candidate_schema.get("outer_loop_candidate_mode"):
+                schema_failures.append("missing_outer_loop_candidate_mode")
+        if original_schema is not None and candidate_schema is not None and not schemas_are_rewritten(
+            original_schema,
+            candidate_schema,
+        ):
+            schema_failures.append("candidate_schema_matches_original_schema")
+        if schema_failures:
+            failures.append({"schema_id": schema_id, "reason": ";".join(schema_failures)})
+        else:
+            completed_schema_ids.append(schema_id)
+
+    if len(completed_schema_ids) != len(expected_schema_ids):
+        failures.append(
+            {
+                "schema_id": None,
+                "reason": "completed_rewrite_count_mismatch",
+                "expected": len(expected_schema_ids),
+                "actual": len(completed_schema_ids),
+            }
+        )
+
+    return {
+        "artifact_type": "skillx_outer_loop_rewrite_verification",
+        "status": "failed" if failures else "passed",
+        "rewrite_mode": rewrite_mode,
+        "min_support_size": min_support_size,
+        "max_update_schemas": max_update_schemas,
+        "unrestricted_update": unrestricted_update,
+        "schema_count": len(schema_ids),
+        "expected_rewrite_schema_count": len(expected_schema_ids),
+        "completed_rewrite_schema_count": len(completed_schema_ids),
+        "expected_rewrite_schema_ids": expected_schema_ids,
+        "completed_rewrite_schema_ids": completed_schema_ids,
+        "failures": failures,
+    }
+
+
+def assert_rewrite_verification_passed(verification: dict[str, Any]) -> None:
+    if verification.get("status") == "passed":
+        return
+    failures = verification.get("failures") or []
+    raise AssertionError(
+        "outer-loop schema rewrite verification failed: "
+        + json.dumps(failures[:5], sort_keys=True)
+    )
 
 
 def build_challenger_eval_plan(
@@ -1382,6 +1502,16 @@ def build_schema_update_package(
         round_update_plan=round_update_plan,
         next_round_id=next_round_id,
     )
+    rewrite_verification = build_rewrite_verification(
+        prompt_bank=prompt_bank,
+        candidate_prompt_bank=candidate_prompt_bank,
+        proposals_by_schema=proposals_by_schema,
+        round_update_plan=round_update_plan,
+        rewrite_mode=rewrite_mode,
+        min_support_size=min_support_size,
+        max_update_schemas=max_update_schemas,
+    )
+    assert_rewrite_verification_passed(rewrite_verification)
     challenger_eval_plan = build_challenger_eval_plan(
         evidence_by_schema=evidence_by_schema,
         round_update_plan=round_update_plan,
@@ -1416,6 +1546,7 @@ def build_schema_update_package(
         "schema_evidence_bundles": evidence_by_schema,
         "schema_update_proposals": proposals,
         "round_update_plan": round_update_plan,
+        "rewrite_verification": rewrite_verification,
         "challenger_eval_plan": challenger_eval_plan,
         "candidate_prompt_bank": candidate_prompt_bank,
     }
@@ -1432,6 +1563,9 @@ def render_summary_markdown(package: dict[str, Any], output_dir: Path) -> str:
         f"- llm_model: `{package['config']['llm_model']}`",
         f"- min_support_size: `{package['config']['min_support_size']}`",
         f"- max_update_schemas: `{package['config']['max_update_schemas']}`",
+        f"- rewrite_verification: `{package['rewrite_verification']['status']}` "
+        f"({package['rewrite_verification']['completed_rewrite_schema_count']}/"
+        f"{package['rewrite_verification']['expected_rewrite_schema_count']})",
         "",
         "## Round Update Plan",
         "",
@@ -1484,6 +1618,7 @@ def write_schema_update_package(*, package: dict[str, Any], output_dir: Path) ->
     evidence_json_path = output_dir / "schema_evidence_bundles.json"
     proposals_json_path = output_dir / "schema_update_proposals.json"
     update_plan_json_path = output_dir / "round_update_plan.json"
+    rewrite_verification_json_path = output_dir / "rewrite_verification.json"
     eval_plan_json_path = output_dir / "challenger_eval_plan.json"
     candidate_prompt_bank_path = output_dir / "round1_candidate_prompt_bank.json"
     summary_md_path = output_dir / "summary.md"
@@ -1493,6 +1628,7 @@ def write_schema_update_package(*, package: dict[str, Any], output_dir: Path) ->
     write_json(evidence_json_path, package["schema_evidence_bundles"])
     write_json(proposals_json_path, package["schema_update_proposals"])
     write_json(update_plan_json_path, package["round_update_plan"])
+    write_json(rewrite_verification_json_path, package["rewrite_verification"])
     write_json(eval_plan_json_path, package["challenger_eval_plan"])
     write_json(candidate_prompt_bank_path, package["candidate_prompt_bank"])
     write_csv(
@@ -1515,6 +1651,7 @@ def write_schema_update_package(*, package: dict[str, Any], output_dir: Path) ->
         "schema_update_proposals_json": display_path(proposals_json_path),
         "round_update_plan_json": display_path(update_plan_json_path),
         "round_update_plan_csv": display_path(update_plan_csv_path),
+        "rewrite_verification_json": display_path(rewrite_verification_json_path),
         "challenger_eval_plan_json": display_path(eval_plan_json_path),
         "candidate_prompt_bank_json": display_path(candidate_prompt_bank_path),
         "summary_md": display_path(summary_md_path),
@@ -1541,10 +1678,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--llm-timeout-sec", type=float, default=DEFAULT_LLM_TIMEOUT_SEC)
     parser.add_argument("--round-id", default=DEFAULT_ROUND_ID)
     parser.add_argument("--next-round-id", default=DEFAULT_NEXT_ROUND_ID)
-    parser.add_argument("--min-support-size", type=int, default=DEFAULT_MIN_SUPPORT_SIZE)
+    parser.add_argument(
+        "--min-support-size",
+        type=int,
+        default=DEFAULT_MIN_SUPPORT_SIZE,
+        help="Minimum reliable assigned-task support required before updating a schema; 0 updates all schemas.",
+    )
     parser.add_argument("--low-margin-pp", type=float, default=DEFAULT_LOW_MARGIN_PP)
     parser.add_argument("--boundary-margin-pp", type=float, default=DEFAULT_BOUNDARY_MARGIN_PP)
-    parser.add_argument("--max-update-schemas", type=int, default=DEFAULT_MAX_UPDATE_SCHEMAS)
+    parser.add_argument(
+        "--max-update-schemas",
+        type=int,
+        default=DEFAULT_MAX_UPDATE_SCHEMAS,
+        help="Maximum schemas to update by priority; 0 updates every eligible schema.",
+    )
     parser.add_argument("--max-eval-tasks-per-schema", type=int, default=6)
     return parser.parse_args()
 

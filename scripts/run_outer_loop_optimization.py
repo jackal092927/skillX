@@ -473,9 +473,19 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--llm-model", default=schema_updates.DEFAULT_LLM_MODEL)
     parser.add_argument("--llm-timeout-sec", type=float, default=schema_updates.DEFAULT_LLM_TIMEOUT_SEC)
-    parser.add_argument("--max-update-schemas", type=int, default=schema_updates.DEFAULT_MAX_UPDATE_SCHEMAS)
+    parser.add_argument(
+        "--max-update-schemas",
+        type=int,
+        default=schema_updates.DEFAULT_MAX_UPDATE_SCHEMAS,
+        help="Maximum schemas to rewrite by priority; 0 rewrites all eligible schemas.",
+    )
     parser.add_argument("--max-eval-tasks-per-schema", type=int, default=6)
-    parser.add_argument("--min-support-size", type=int, default=schema_updates.DEFAULT_MIN_SUPPORT_SIZE)
+    parser.add_argument(
+        "--min-support-size",
+        type=int,
+        default=schema_updates.DEFAULT_MIN_SUPPORT_SIZE,
+        help="Reliable assigned-task support floor before rewriting; 0 rewrites all schemas.",
+    )
     parser.add_argument("--allow-partial-assignment", action="store_true")
     return parser
 

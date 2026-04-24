@@ -198,6 +198,8 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
             self.assertEqual(plan_by_schema["schema-alpha"]["action"], "update")
             self.assertEqual(plan_by_schema["schema-beta"]["action"], "update")
             self.assertEqual(plan_by_schema["schema-alpha"]["recommended_challenger_mode"], "differentiating")
+            self.assertEqual(package["rewrite_verification"]["status"], "passed")
+            self.assertEqual(package["rewrite_verification"]["completed_rewrite_schema_count"], 2)
 
             candidate_bank = package["candidate_prompt_bank"]
             candidate_schema = {
@@ -213,6 +215,7 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
                     output_dir=Path(outdir),
                 )
                 self.assertTrue((Path(outdir) / "schema_update_package.json").exists())
+                self.assertTrue((Path(outdir) / "rewrite_verification.json").exists())
                 self.assertTrue((Path(outdir) / "round1_candidate_prompt_bank.json").exists())
                 self.assertIn("summary_md", outputs)
 
@@ -250,6 +253,43 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
             }["schema-beta"]
             self.assertNotIn("outer_loop_candidate_status", candidate_schema)
             self.assertEqual(candidate_schema["meta_prompt"], "beta prompt")
+
+    def test_zero_support_floor_rewrites_all_schemas(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            prompt_bank_path = self._write_prompt_bank(root)
+            task_profiles_path = self._write_task_profiles(root)
+            bundle_path = self._write_control_bundle(root)
+
+            package = self.module.build_schema_update_package(
+                control_plane_bundle_path=bundle_path,
+                prompt_bank_path=prompt_bank_path,
+                task_cluster_inputs_path=task_profiles_path,
+                rewrite_mode="deterministic",
+                llm_model="anthropic/claude-sonnet-4-5",
+                llm_timeout_sec=1.0,
+                llm_work_dir=None,
+                round_id="round0-test",
+                next_round_id="round1-test",
+                min_support_size=0,
+                low_margin_pp=5.0,
+                boundary_margin_pp=10.0,
+                max_update_schemas=0,
+                max_eval_tasks_per_schema=5,
+            )
+
+            plan_by_schema = {row["category_id"]: row for row in package["round_update_plan"]}
+            self.assertEqual(plan_by_schema["schema-alpha"]["action"], "update")
+            self.assertEqual(plan_by_schema["schema-beta"]["action"], "update")
+            self.assertEqual(package["rewrite_verification"]["status"], "passed")
+            self.assertEqual(package["rewrite_verification"]["expected_rewrite_schema_count"], 2)
+            self.assertEqual(package["rewrite_verification"]["completed_rewrite_schema_count"], 2)
+
+            candidate_schemas = {
+                row["category_id"]: row for row in package["candidate_prompt_bank"]["categories"]
+            }
+            self.assertEqual(candidate_schemas["schema-alpha"]["outer_loop_candidate_status"], "proposed_for_rerun")
+            self.assertEqual(candidate_schemas["schema-beta"]["outer_loop_candidate_status"], "proposed_for_rerun")
 
     def test_llm_rewrite_mode_accepts_remove_and_sharpen_operations(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
