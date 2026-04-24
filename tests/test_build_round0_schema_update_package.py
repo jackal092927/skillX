@@ -176,6 +176,10 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
                 control_plane_bundle_path=bundle_path,
                 prompt_bank_path=prompt_bank_path,
                 task_cluster_inputs_path=task_profiles_path,
+                rewrite_mode="deterministic",
+                llm_model="anthropic/claude-sonnet-4-5",
+                llm_timeout_sec=1.0,
+                llm_work_dir=None,
                 round_id="round0-test",
                 next_round_id="round1-test",
                 min_support_size=1,
@@ -223,6 +227,10 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
                 control_plane_bundle_path=bundle_path,
                 prompt_bank_path=prompt_bank_path,
                 task_cluster_inputs_path=task_profiles_path,
+                rewrite_mode="deterministic",
+                llm_model="anthropic/claude-sonnet-4-5",
+                llm_timeout_sec=1.0,
+                llm_work_dir=None,
                 round_id="round0-test",
                 next_round_id="round1-test",
                 min_support_size=2,
@@ -242,6 +250,90 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
             }["schema-beta"]
             self.assertNotIn("outer_loop_candidate_status", candidate_schema)
             self.assertEqual(candidate_schema["meta_prompt"], "beta prompt")
+
+    def test_llm_rewrite_mode_accepts_remove_and_sharpen_operations(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            prompt_bank_path = self._write_prompt_bank(root)
+            task_profiles_path = self._write_task_profiles(root)
+            bundle_path = self._write_control_bundle(root)
+
+            def fake_llm_runner(prompt, response_schema, model_name, output_dir, timeout_sec):
+                self.assertIn("CURRENT_SCHEMA", prompt)
+                self.assertIn("EVIDENCE_BUNDLE", prompt)
+                self.assertEqual(model_name, "anthropic/claude-sonnet-4-5")
+                output_dir.mkdir(parents=True, exist_ok=True)
+                return {
+                    "operator_summary": {
+                        "keep": ["alpha first principle"],
+                        "add": ["add evidence-specific boundary handling"],
+                        "remove": ["alpha avoid"],
+                        "sharpen": ["alpha first principle -> alpha sharpened principle"],
+                        "exclude": ["exclude mismatched beta-like tasks"],
+                    },
+                    "slot_edits": {
+                        "emphasize": {
+                            "add": ["add evidence-specific boundary handling"],
+                            "remove": [],
+                            "sharpen": [
+                                {
+                                    "old": "alpha first principle",
+                                    "new": "alpha sharpened principle",
+                                }
+                            ],
+                        },
+                        "avoid": {
+                            "add": ["avoid generic low-evidence broadening"],
+                            "remove": ["alpha avoid"],
+                            "sharpen": [],
+                        },
+                        "expected_good_fit": {"add": ["alpha-like verified workflows"], "remove": []},
+                        "expected_bad_fit": {"add": ["beta-like reviewer tasks"], "remove": []},
+                        "hypothesized_primary_failure_modes": {
+                            "add": ["schema-boundary confusion"],
+                            "remove": [],
+                            "sharpen": [],
+                        },
+                    },
+                    "challenger_guidance": {
+                        "conservative": "apply only sharpened alpha principle",
+                        "exploratory": "activate broader evidence handling",
+                        "differentiating": "separate from schema-beta",
+                    },
+                    "expected_effect": ["better boundary behavior"],
+                    "acceptance_notes": ["rerun before accepting"],
+                }
+
+            package = self.module.build_schema_update_package(
+                control_plane_bundle_path=bundle_path,
+                prompt_bank_path=prompt_bank_path,
+                task_cluster_inputs_path=task_profiles_path,
+                rewrite_mode="llm",
+                llm_model="anthropic/claude-sonnet-4-5",
+                llm_timeout_sec=1.0,
+                llm_work_dir=root / "llm-runs",
+                llm_json_runner=fake_llm_runner,
+                round_id="round0-test",
+                next_round_id="round1-test",
+                min_support_size=2,
+                low_margin_pp=5.0,
+                boundary_margin_pp=10.0,
+                max_update_schemas=0,
+                max_eval_tasks_per_schema=5,
+            )
+
+            proposal = {
+                row["category_id"]: row for row in package["schema_update_proposals"]
+            }["schema-alpha"]
+            self.assertEqual(proposal["rewrite_source"], "llm")
+            self.assertEqual(proposal["slot_edits"]["avoid"]["remove"], ["alpha avoid"])
+
+            candidate_schema = {
+                row["category_id"]: row for row in package["candidate_prompt_bank"]["categories"]
+            }["schema-alpha"]
+            self.assertIn("alpha sharpened principle", candidate_schema["emphasize"])
+            self.assertNotIn("alpha avoid", candidate_schema["avoid"])
+            self.assertIn("avoid generic low-evidence broadening", candidate_schema["avoid"])
 
 
 if __name__ == "__main__":

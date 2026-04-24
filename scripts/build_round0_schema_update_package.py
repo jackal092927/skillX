@@ -12,12 +12,14 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import subprocess
+import sys
 from collections import Counter, defaultdict
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean
-from typing import Any
+from typing import Any, Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,6 +44,9 @@ DEFAULT_MIN_SUPPORT_SIZE = 2
 DEFAULT_LOW_MARGIN_PP = 5.0
 DEFAULT_BOUNDARY_MARGIN_PP = 10.0
 DEFAULT_MAX_UPDATE_SCHEMAS = 3
+DEFAULT_REWRITE_MODE = "llm"
+DEFAULT_LLM_MODEL = "anthropic/claude-sonnet-4-5"
+DEFAULT_LLM_TIMEOUT_SEC = 900.0
 
 SLOT_FIELDS = (
     "emphasize",
@@ -50,6 +55,10 @@ SLOT_FIELDS = (
     "expected_bad_fit",
     "hypothesized_primary_failure_modes",
 )
+sys.path.insert(0, str(ROOT / "src"))
+from skillx.model_routing import resolve_cli_model_name, resolve_playbook_cli_name  # noqa: E402
+
+LLMJsonRunner = Callable[[str, dict[str, Any], str, Path, float], dict[str, Any]]
 
 
 def timestamp() -> str:
@@ -477,6 +486,52 @@ def empty_slot_edits() -> dict[str, Any]:
     }
 
 
+def normalize_slot_edits(value: Any) -> dict[str, Any]:
+    normalized = empty_slot_edits()
+    if not isinstance(value, dict):
+        return normalized
+    for slot_name in SLOT_FIELDS:
+        slot_payload = value.get(slot_name)
+        if not isinstance(slot_payload, dict):
+            continue
+        normalized[slot_name]["add"] = normalize_string_list(slot_payload.get("add"))
+        normalized[slot_name]["remove"] = normalize_string_list(slot_payload.get("remove"))
+        sharpen_payload = slot_payload.get("sharpen")
+        sharpen_rows: list[dict[str, str]] = []
+        if isinstance(sharpen_payload, list):
+            for item in sharpen_payload:
+                if not isinstance(item, dict):
+                    continue
+                old = str(item.get("old") or "").strip()
+                new = str(item.get("new") or "").strip()
+                if old and new:
+                    sharpen_rows.append({"old": old, "new": new})
+        if slot_name in {"expected_good_fit", "expected_bad_fit"}:
+            normalized[slot_name].pop("sharpen", None)
+        else:
+            normalized[slot_name]["sharpen"] = sharpen_rows
+    return normalized
+
+
+def normalize_operator_summary(value: Any, schema: dict[str, Any]) -> dict[str, list[str]]:
+    fallback = {
+        "keep": [str(item) for item in schema.get("emphasize", [])[:2]],
+        "add": [],
+        "remove": [],
+        "sharpen": [],
+        "exclude": [],
+    }
+    if not isinstance(value, dict):
+        return fallback
+    return {
+        "keep": normalize_string_list(value.get("keep")) or fallback["keep"],
+        "add": normalize_string_list(value.get("add")),
+        "remove": normalize_string_list(value.get("remove")),
+        "sharpen": normalize_string_list(value.get("sharpen")),
+        "exclude": normalize_string_list(value.get("exclude")),
+    }
+
+
 def propose_slot_edits(schema: dict[str, Any], evidence: dict[str, Any]) -> dict[str, Any]:
     edits = empty_slot_edits()
     existing = existing_text_set(schema)
@@ -588,9 +643,236 @@ def propose_slot_edits(schema: dict[str, Any], evidence: dict[str, Any]) -> dict
     return edits
 
 
+def llm_update_json_schema() -> dict[str, Any]:
+    slot_with_sharpen = {
+        "type": "object",
+        "properties": {
+            "add": {"type": "array", "items": {"type": "string"}},
+            "remove": {"type": "array", "items": {"type": "string"}},
+            "sharpen": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "old": {"type": "string"},
+                        "new": {"type": "string"},
+                    },
+                    "required": ["old", "new"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        "required": ["add", "remove", "sharpen"],
+        "additionalProperties": False,
+    }
+    slot_without_sharpen = {
+        "type": "object",
+        "properties": {
+            "add": {"type": "array", "items": {"type": "string"}},
+            "remove": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["add", "remove"],
+        "additionalProperties": False,
+    }
+    string_array = {"type": "array", "items": {"type": "string"}}
+    return {
+        "type": "object",
+        "properties": {
+            "operator_summary": {
+                "type": "object",
+                "properties": {
+                    "keep": string_array,
+                    "add": string_array,
+                    "remove": string_array,
+                    "sharpen": string_array,
+                    "exclude": string_array,
+                },
+                "required": ["keep", "add", "remove", "sharpen", "exclude"],
+                "additionalProperties": False,
+            },
+            "slot_edits": {
+                "type": "object",
+                "properties": {
+                    "emphasize": slot_with_sharpen,
+                    "avoid": slot_with_sharpen,
+                    "expected_good_fit": slot_without_sharpen,
+                    "expected_bad_fit": slot_without_sharpen,
+                    "hypothesized_primary_failure_modes": slot_with_sharpen,
+                },
+                "required": list(SLOT_FIELDS),
+                "additionalProperties": False,
+            },
+            "challenger_guidance": {
+                "type": "object",
+                "properties": {
+                    "conservative": {"type": "string"},
+                    "exploratory": {"type": "string"},
+                    "differentiating": {"type": "string"},
+                },
+                "required": ["conservative", "exploratory", "differentiating"],
+                "additionalProperties": False,
+            },
+            "expected_effect": string_array,
+            "acceptance_notes": string_array,
+        },
+        "required": [
+            "operator_summary",
+            "slot_edits",
+            "challenger_guidance",
+            "expected_effect",
+            "acceptance_notes",
+        ],
+        "additionalProperties": False,
+    }
+
+
+def build_llm_update_prompt(
+    *,
+    schema: dict[str, Any],
+    evidence: dict[str, Any],
+    deterministic_edits: dict[str, Any],
+) -> str:
+    compact_evidence = {
+        "category_id": evidence["category_id"],
+        "support_size": evidence["support_size"],
+        "reliable_support_size": evidence["reliable_support_size"],
+        "mean_assigned_score": evidence["mean_assigned_score"],
+        "mean_delta_vs_c1_pp": evidence["mean_delta_vs_c1_pp"],
+        "mean_r0_to_best_delta_pp": evidence["mean_r0_to_best_delta_pp"],
+        "outcome_counts": evidence["outcome_counts"],
+        "main_failure_patterns": evidence["main_failure_patterns"],
+        "main_borderline_competitors": evidence["main_borderline_competitors"],
+        "task_profile_signals": evidence["task_profile_signals"],
+        "stability_notes": evidence["stability_notes"],
+        "assigned_task_summaries": evidence["assigned_task_summaries"][:8],
+        "ambiguous_borderline_cases": evidence["ambiguous_borderline_cases"][:12],
+        "cross_schema_losses": evidence["cross_schema_losses"][:12],
+    }
+    return (
+        "You are the SkillX outer-loop schema update operator.\n"
+        "Update the schema as structured operations, not as a final accepted prompt bank.\n\n"
+        "Rules:\n"
+        "- Use evidence-grounded operations only.\n"
+        "- Prefer slot-level operations over free-form prompt rewriting.\n"
+        "- You may add, remove, and sharpen items when evidence supports it.\n"
+        "- Do not remove a useful incumbent item unless it is redundant, harmful, or contradicted by evidence.\n"
+        "- Keep Render frozen; optimize only the schema-level guidance.\n"
+        "- Preserve schema distinctness and explicitly handle low-margin competitors.\n"
+        "- Output strictly valid JSON matching the provided schema.\n\n"
+        f"CURRENT_SCHEMA:\n{json.dumps(schema, indent=2, sort_keys=True)}\n\n"
+        f"EVIDENCE_BUNDLE:\n{json.dumps(compact_evidence, indent=2, sort_keys=True)}\n\n"
+        "DETERMINISTIC_SEED_EDITS_FOR_REFERENCE_ONLY:\n"
+        f"{json.dumps(deterministic_edits, indent=2, sort_keys=True)}\n"
+    )
+
+
+def run_llm_json_prompt(
+    prompt: str,
+    response_schema: dict[str, Any],
+    model_name: str,
+    output_dir: Path,
+    timeout_sec: float,
+) -> dict[str, Any]:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    schema_path = output_dir / "response_schema.json"
+    prompt_path = output_dir / "prompt.txt"
+    stdout_path = output_dir / "stdout.json"
+    stderr_path = output_dir / "stderr.txt"
+    last_message_path = output_dir / "last_message.json"
+    command_path = output_dir / "command.txt"
+    schema_path.write_text(json.dumps(response_schema, indent=2, sort_keys=True) + "\n")
+    prompt_path.write_text(prompt + "\n")
+
+    cli_name = resolve_playbook_cli_name(model_name)
+    cli_model_name = resolve_cli_model_name(model_name)
+    if cli_name == "claude":
+        command = [
+            "claude",
+            "--print",
+            "--dangerously-skip-permissions",
+            "--output-format",
+            "json",
+            "--model",
+            cli_model_name,
+            "--json-schema",
+            json.dumps(response_schema, separators=(",", ":")),
+        ]
+    else:
+        command = [
+            "codex",
+            "exec",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "--skip-git-repo-check",
+            "--json",
+            "--model",
+            cli_model_name,
+            "--output-schema",
+            str(schema_path),
+            "--output-last-message",
+            str(last_message_path),
+            "--",
+        ]
+    command_path.write_text(" ".join(command) + "\n")
+    proc = subprocess.run(
+        command,
+        cwd=str(ROOT),
+        input=prompt,
+        text=True,
+        capture_output=True,
+        timeout=timeout_sec,
+    )
+    stdout_path.write_text(proc.stdout or "")
+    stderr_path.write_text(proc.stderr or "")
+    if proc.returncode != 0:
+        raise RuntimeError(f"LLM rewrite failed with exit code {proc.returncode}; see {stderr_path}")
+    if cli_name == "claude":
+        payload = json.loads(proc.stdout)
+        structured_output = payload.get("structured_output")
+        if not isinstance(structured_output, dict):
+            raise ValueError(f"Claude output missing structured_output: {stdout_path}")
+        write_json(last_message_path, structured_output)
+        return structured_output
+    if not last_message_path.exists():
+        raise ValueError(f"Codex output missing last message: {last_message_path}")
+    return read_json(last_message_path)
+
+
+def propose_llm_slot_edits(
+    *,
+    schema: dict[str, Any],
+    evidence: dict[str, Any],
+    deterministic_edits: dict[str, Any],
+    llm_model: str,
+    llm_timeout_sec: float,
+    llm_work_dir: Path,
+    llm_json_runner: LLMJsonRunner | None,
+) -> dict[str, Any]:
+    response_schema = llm_update_json_schema()
+    prompt = build_llm_update_prompt(
+        schema=schema,
+        evidence=evidence,
+        deterministic_edits=deterministic_edits,
+    )
+    runner = llm_json_runner or run_llm_json_prompt
+    payload = runner(prompt, response_schema, llm_model, llm_work_dir, llm_timeout_sec)
+    return {
+        "operator_summary": normalize_operator_summary(payload.get("operator_summary"), schema),
+        "slot_edits": normalize_slot_edits(payload.get("slot_edits")),
+        "challenger_guidance": {
+            "conservative": str((payload.get("challenger_guidance") or {}).get("conservative") or ""),
+            "exploratory": str((payload.get("challenger_guidance") or {}).get("exploratory") or ""),
+            "differentiating": str((payload.get("challenger_guidance") or {}).get("differentiating") or ""),
+        },
+        "expected_effect": normalize_string_list(payload.get("expected_effect")),
+        "acceptance_notes": normalize_string_list(payload.get("acceptance_notes")),
+    }
+
+
 def summarize_edits(edits: dict[str, Any], schema: dict[str, Any]) -> dict[str, list[str]]:
     keep = [str(item) for item in schema.get("emphasize", [])[:2]]
     added: list[str] = []
+    removed: list[str] = []
+    sharpened: list[str] = []
     excluded: list[str] = []
     for slot_name, slot_payload in edits.items():
         for item in slot_payload.get("add", []):
@@ -598,11 +880,16 @@ def summarize_edits(edits: dict[str, Any], schema: dict[str, Any]) -> dict[str, 
                 excluded.append(str(item))
             else:
                 added.append(str(item))
+        for item in slot_payload.get("remove", []):
+            removed.append(str(item))
+        for item in slot_payload.get("sharpen", []):
+            if isinstance(item, dict):
+                sharpened.append(f"{item.get('old')} -> {item.get('new')}")
     return {
         "keep": keep,
         "add": added[:8],
-        "remove": [],
-        "sharpen": [],
+        "remove": removed[:8],
+        "sharpen": sharpened[:8],
         "exclude": excluded[:5],
     }
 
@@ -628,15 +915,74 @@ def limited_adds(edits: dict[str, Any], mode: str, slot_name: str) -> list[str]:
     return add_items[:4]
 
 
+def limited_removes(edits: dict[str, Any], mode: str, slot_name: str) -> list[str]:
+    remove_items = list(edits.get(slot_name, {}).get("remove", []))
+    if mode == "conservative":
+        return remove_items[:1]
+    if mode == "differentiating":
+        return remove_items[:2]
+    return remove_items[:3]
+
+
+def limited_sharpens(edits: dict[str, Any], mode: str, slot_name: str) -> list[dict[str, str]]:
+    sharpen_items = [
+        item
+        for item in edits.get(slot_name, {}).get("sharpen", [])
+        if isinstance(item, dict) and item.get("old") and item.get("new")
+    ]
+    if mode == "conservative":
+        return sharpen_items[:1]
+    if mode == "differentiating":
+        return sharpen_items[:3]
+    return sharpen_items[:4]
+
+
+def apply_slot_operations(
+    current_items: list[str],
+    *,
+    remove_items: list[str],
+    sharpen_items: list[dict[str, str]],
+    add_items: list[str],
+    allow_add_when_sharpen_old_missing: bool,
+) -> list[str]:
+    current = [str(item) for item in current_items if str(item).strip()]
+    remove_lookup = {item.strip().lower() for item in remove_items if item.strip()}
+    if remove_lookup:
+        current = [item for item in current if item.strip().lower() not in remove_lookup]
+
+    for sharpen in sharpen_items:
+        old = str(sharpen.get("old") or "").strip()
+        new = str(sharpen.get("new") or "").strip()
+        if not old or not new:
+            continue
+        replaced = False
+        for idx, item in enumerate(current):
+            if item.strip().lower() == old.lower():
+                current[idx] = new
+                replaced = True
+                break
+        if not replaced and allow_add_when_sharpen_old_missing:
+            current.append(new)
+
+    seen = {item.lower() for item in current}
+    for item in add_items:
+        text = str(item).strip()
+        if text and text.lower() not in seen:
+            current.append(text)
+            seen.add(text.lower())
+    return current
+
+
 def apply_slot_edits(schema: dict[str, Any], edits: dict[str, Any], *, mode: str) -> dict[str, Any]:
     candidate = deepcopy(schema)
     for slot_name in SLOT_FIELDS:
-        current = [str(item) for item in candidate.get(slot_name, []) if str(item).strip()]
-        seen = {item.lower() for item in current}
-        for item in limited_adds(edits, mode, slot_name):
-            if item.lower() not in seen:
-                current.append(item)
-                seen.add(item.lower())
+        current = apply_slot_operations(
+            [str(item) for item in candidate.get(slot_name, []) if str(item).strip()],
+            remove_items=limited_removes(edits, mode, slot_name),
+            sharpen_items=limited_sharpens(edits, mode, slot_name),
+            add_items=limited_adds(edits, mode, slot_name),
+            allow_add_when_sharpen_old_missing=mode != "conservative",
+        )
         if current:
             candidate[slot_name] = current
     candidate["meta_prompt"] = render_meta_prompt(candidate, mode=mode)
@@ -712,9 +1058,14 @@ def build_schema_update_proposal(
     schema: dict[str, Any],
     evidence: dict[str, Any],
     min_support_size: int,
+    rewrite_mode: str,
+    llm_model: str,
+    llm_timeout_sec: float,
+    llm_work_dir: Path | None,
+    llm_json_runner: LLMJsonRunner | None,
 ) -> dict[str, Any]:
     schema_id = str(schema["category_id"])
-    edits = propose_slot_edits(schema, evidence)
+    deterministic_edits = propose_slot_edits(schema, evidence)
     reliable_support_size = int(evidence["reliable_support_size"])
     if reliable_support_size < min_support_size:
         proposal_status = "freeze_low_support"
@@ -722,6 +1073,34 @@ def build_schema_update_proposal(
         proposal_status = "freeze_unassigned"
     else:
         proposal_status = "candidate_update"
+
+    llm_payload: dict[str, Any] | None = None
+    rewrite_source = "deterministic"
+    rewrite_error = ""
+    if rewrite_mode == "llm" and proposal_status == "candidate_update":
+        try:
+            llm_payload = propose_llm_slot_edits(
+                schema=schema,
+                evidence=evidence,
+                deterministic_edits=deterministic_edits,
+                llm_model=llm_model,
+                llm_timeout_sec=llm_timeout_sec,
+                llm_work_dir=(llm_work_dir or Path(".") / "llm_runs") / schema_id,
+                llm_json_runner=llm_json_runner,
+            )
+            edits = normalize_slot_edits(llm_payload.get("slot_edits"))
+            rewrite_source = "llm"
+        except Exception as exc:  # pragma: no cover - covered by integration runs.
+            edits = deterministic_edits
+            rewrite_source = "deterministic_fallback"
+            rewrite_error = f"{type(exc).__name__}: {exc}"
+    elif rewrite_mode == "llm":
+        edits = deterministic_edits
+        rewrite_source = "deterministic_low_support"
+    elif rewrite_mode == "deterministic":
+        edits = deterministic_edits
+    else:
+        raise ValueError(f"unsupported rewrite mode: {rewrite_mode}")
 
     challengers: list[dict[str, Any]] = []
     for mode in ("conservative", "exploratory", "differentiating"):
@@ -733,6 +1112,8 @@ def build_schema_update_proposal(
                 "schema": candidate_schema,
                 "slot_edit_count": sum(
                     len(slot_payload.get("add", []))
+                    + len(slot_payload.get("remove", []))
+                    + len(slot_payload.get("sharpen", []))
                     for slot_payload in edits.values()
                 ),
                 "expected_effect": expected_effects(mode, evidence),
@@ -749,10 +1130,31 @@ def build_schema_update_proposal(
         "mean_delta_vs_c1_pp": evidence["mean_delta_vs_c1_pp"],
         "priority_score": schema_update_priority(evidence),
         "recommended_challenger_mode": selected_mode,
-        "operator_summary": summarize_edits(edits, schema),
+        "rewrite_mode": rewrite_mode,
+        "rewrite_source": rewrite_source,
+        "rewrite_model": llm_model if rewrite_source == "llm" else None,
+        "rewrite_error": rewrite_error,
+        "operator_summary": (
+            llm_payload["operator_summary"]
+            if llm_payload is not None and rewrite_source == "llm"
+            else summarize_edits(edits, schema)
+        ),
+        "deterministic_seed_slot_edits": deterministic_edits,
         "slot_edits": edits,
         "challenger_schemas": challengers,
-        "acceptance_notes": acceptance_notes(evidence, min_support_size),
+        "llm_challenger_guidance": (
+            llm_payload.get("challenger_guidance") if llm_payload is not None else None
+        ),
+        "expected_effect": (
+            llm_payload.get("expected_effect")
+            if llm_payload is not None and rewrite_source == "llm"
+            else expected_effects(selected_mode, evidence)
+        ),
+        "acceptance_notes": (
+            llm_payload.get("acceptance_notes")
+            if llm_payload is not None and rewrite_source == "llm"
+            else acceptance_notes(evidence, min_support_size)
+        ),
     }
 
 
@@ -919,6 +1321,11 @@ def build_schema_update_package(
     control_plane_bundle_path: Path,
     prompt_bank_path: Path,
     task_cluster_inputs_path: Path | None,
+    rewrite_mode: str,
+    llm_model: str,
+    llm_timeout_sec: float,
+    llm_work_dir: Path | None,
+    llm_json_runner: LLMJsonRunner | None = None,
     round_id: str,
     next_round_id: str,
     min_support_size: int,
@@ -956,6 +1363,11 @@ def build_schema_update_package(
                 schema=schema_by_id[schema_id],
                 evidence=evidence,
                 min_support_size=min_support_size,
+                rewrite_mode=rewrite_mode,
+                llm_model=llm_model,
+                llm_timeout_sec=llm_timeout_sec,
+                llm_work_dir=llm_work_dir,
+                llm_json_runner=llm_json_runner,
             )
         )
 
@@ -990,6 +1402,10 @@ def build_schema_update_package(
                 if task_cluster_inputs_path is None
                 else display_path(task_cluster_inputs_path.resolve())
             ),
+            "rewrite_mode": rewrite_mode,
+            "llm_model": llm_model if rewrite_mode == "llm" else None,
+            "llm_timeout_sec": llm_timeout_sec if rewrite_mode == "llm" else None,
+            "llm_work_dir": None if llm_work_dir is None else display_path(llm_work_dir.resolve()),
             "min_support_size": min_support_size,
             "low_margin_pp": low_margin_pp,
             "boundary_margin_pp": boundary_margin_pp,
@@ -1012,6 +1428,8 @@ def render_summary_markdown(package: dict[str, Any], output_dir: Path) -> str:
         f"- generated_at: `{package['generated_at']}`",
         f"- output_dir: `{display_path(output_dir)}`",
         f"- next_round_id: `{package['config']['next_round_id']}`",
+        f"- rewrite_mode: `{package['config']['rewrite_mode']}`",
+        f"- llm_model: `{package['config']['llm_model']}`",
         f"- min_support_size: `{package['config']['min_support_size']}`",
         f"- max_update_schemas: `{package['config']['max_update_schemas']}`",
         "",
@@ -1109,6 +1527,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prompt-bank-path", type=Path, default=DEFAULT_PROMPT_BANK_PATH)
     parser.add_argument("--task-cluster-inputs-path", type=Path, default=DEFAULT_TASK_CLUSTER_INPUTS_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument(
+        "--rewrite-mode",
+        choices=["llm", "deterministic"],
+        default=DEFAULT_REWRITE_MODE,
+        help="Use the current authenticated CLI model to author update operations, or use deterministic seed rules.",
+    )
+    parser.add_argument(
+        "--llm-model",
+        default=DEFAULT_LLM_MODEL,
+        help="Model used for --rewrite-mode llm. Routed to claude or codex CLI from the model name.",
+    )
+    parser.add_argument("--llm-timeout-sec", type=float, default=DEFAULT_LLM_TIMEOUT_SEC)
     parser.add_argument("--round-id", default=DEFAULT_ROUND_ID)
     parser.add_argument("--next-round-id", default=DEFAULT_NEXT_ROUND_ID)
     parser.add_argument("--min-support-size", type=int, default=DEFAULT_MIN_SUPPORT_SIZE)
@@ -1125,6 +1555,10 @@ def main() -> int:
         control_plane_bundle_path=args.control_plane_bundle_path,
         prompt_bank_path=args.prompt_bank_path,
         task_cluster_inputs_path=args.task_cluster_inputs_path,
+        rewrite_mode=str(args.rewrite_mode),
+        llm_model=str(args.llm_model),
+        llm_timeout_sec=float(args.llm_timeout_sec),
+        llm_work_dir=args.output_dir / "llm_runs",
         round_id=str(args.round_id),
         next_round_id=str(args.next_round_id),
         min_support_size=int(args.min_support_size),
