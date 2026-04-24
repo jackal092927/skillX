@@ -21,6 +21,7 @@ RUN_STATUS_PATTERN = re.compile(r"^- ([a-z_]+): `?(.*?)`?$")
 OUTPUT_DIR_PATTERN = re.compile(r"--output-dir\s+(\S+)")
 ROUND_NAME_PATTERN = re.compile(r"^round-(\d+)$")
 ROUND_STAGE_ORDER = ("executor", "role_a", "role_b")
+EARLY_TERMINAL_DECISIONS = {"stop", "keep_current", "select_final"}
 COMPLETED_ISSUE_STATUS_LABELS = {
     "completed_with_runtime_failures": "runtime exceptions",
     "completed_with_contract_failures": "contract issues",
@@ -148,7 +149,10 @@ def _status_value_from_sources(
     return None
 
 
-def _find_stop_round_index(run_dir: Path, round_budget: int | None) -> int | None:
+def _find_early_terminal_decision(
+    run_dir: Path,
+    round_budget: int | None,
+) -> tuple[str, int] | None:
     if round_budget is None:
         return None
     task_root = _find_refine_task_root(run_dir)
@@ -161,12 +165,12 @@ def _find_stop_round_index(run_dir: Path, round_budget: int | None) -> int | Non
         if round_index is None:
             continue
         events = _read_ndjson(round_dir / "orchestrator_log.ndjson")
-        if any(
-            str(event.get("event_type") or "") == "round_decision_loaded"
-            and str(event.get("status") or "") == "stop"
-            for event in events
-        ):
-            return round_index
+        for event in events:
+            if str(event.get("event_type") or "") != "round_decision_loaded":
+                continue
+            decision = str(event.get("status") or "")
+            if decision in EARLY_TERMINAL_DECISIONS and round_index < round_budget:
+                return decision, round_index
     return None
 
 
@@ -187,9 +191,10 @@ def _completed_status_label(
     if issue_label:
         detail_parts.append(issue_label)
 
-    stop_round_index = _find_stop_round_index(run_dir, round_budget)
-    if stop_round_index is not None and round_budget is not None and stop_round_index < round_budget:
-        detail_parts.append(f"stop@R{stop_round_index}")
+    terminal_decision = _find_early_terminal_decision(run_dir, round_budget)
+    if terminal_decision is not None:
+        decision, round_index = terminal_decision
+        detail_parts.append(f"{decision}@R{round_index}")
 
     if detail_parts:
         return f"completed ({', '.join(detail_parts)})"
