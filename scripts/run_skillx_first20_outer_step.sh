@@ -39,7 +39,7 @@ EXP_WORKTREE="${SKILLX_EXP_WORKTREE:-$WORKTREE_ROOT}"
 DEFAULT_PREVIOUS_ROOT="experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1"
 PREVIOUS_MATERIALIZED_ROOT="${SKILLX_PREVIOUS_MATERIALIZED_ROOT:-$DEFAULT_PREVIOUS_ROOT}"
 OUTER_LABEL="${2:-${SKILLX_OUTER_LABEL:-outer-loop-round1-first20-$(date +%Y-%m-%d-%H%M)}}"
-DEFAULT_NEXT_ROOT="experiments/skillx-skillsbench-001/results/outer-loop-round0/outer-loop-round1-first20-$OUTER_LABEL"
+DEFAULT_NEXT_ROOT="experiments/skillx-skillsbench-001/results/outer-loop-round0/$OUTER_LABEL-candidates"
 NEXT_MATERIALIZED_ROOT="${3:-${SKILLX_NEXT_MATERIALIZED_ROOT:-$DEFAULT_NEXT_ROOT}}"
 
 if [[ $# -lt 1 ]]; then
