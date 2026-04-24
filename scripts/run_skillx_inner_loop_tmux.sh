@@ -36,6 +36,7 @@ Environment overrides:
   SKILLX_OVERRIDE_MEMORY_MB   Synthetic task memory override. Default: 8192
   SKILLX_OVERRIDE_STORAGE_MB  Synthetic task storage override. Default: 20480
   SKILLX_DOCKER_AUTO_RECOVER  1 enables --docker-auto-recover. Default: 1
+  SKILLX_LAUNCHER_DRY_RUN     1 passes --dry-run to launch_skillx_round0.py. Default: 0
 
 Behavior:
   - creates a tmux session with two windows: inner-loop, dashboard
@@ -73,7 +74,10 @@ fi
 if [[ $# -gt 0 && "${1:-}" == "--" ]]; then
   shift
 fi
-LAUNCHER_SELECTION_ARGS=("$@")
+LAUNCHER_SELECTION_ARGS=()
+if [[ $# -gt 0 ]]; then
+  LAUNCHER_SELECTION_ARGS=("$@")
+fi
 
 resolve_path() {
   local raw_path="$1"
@@ -101,9 +105,12 @@ MODEL="${SKILLX_MODEL:-anthropic/claude-sonnet-4-5}"
 OVERRIDE_MEMORY_MB="${SKILLX_OVERRIDE_MEMORY_MB:-8192}"
 OVERRIDE_STORAGE_MB="${SKILLX_OVERRIDE_STORAGE_MB:-20480}"
 DOCKER_AUTO_RECOVER="${SKILLX_DOCKER_AUTO_RECOVER:-1}"
+LAUNCHER_DRY_RUN="${SKILLX_LAUNCHER_DRY_RUN:-0}"
 
 LAUNCHER_LOG_DIR="$MATERIALIZED_ROOT/launcher_logs/$RUN_LABEL"
 STDOUT_LOG_PATH="$LAUNCHER_LOG_DIR/launcher.stdout.log"
+INNER_LOOP_SCRIPT="$LAUNCHER_LOG_DIR/run_inner_loop.sh"
+DASHBOARD_SCRIPT="$LAUNCHER_LOG_DIR/run_dashboard.sh"
 
 if [[ ! -d "$EXP_WORKTREE" ]]; then
   echo "Missing experiment worktree: $EXP_WORKTREE" >&2
@@ -162,7 +169,11 @@ launcher_cmd=(
   python
   -u
   scripts/launch_skillx_round0.py
-  "${LAUNCHER_SELECTION_ARGS[@]}"
+)
+if [[ ${#LAUNCHER_SELECTION_ARGS[@]} -gt 0 ]]; then
+  launcher_cmd+=("${LAUNCHER_SELECTION_ARGS[@]}")
+fi
+launcher_cmd+=(
   --materialized-root
   "$MATERIALIZED_ROOT"
   --output-suffix
@@ -190,26 +201,37 @@ if [[ "$DOCKER_AUTO_RECOVER" == "1" || "$DOCKER_AUTO_RECOVER" == "true" ]]; then
 else
   launcher_cmd+=(--no-docker-auto-recover)
 fi
-
-printf -v launcher_cmd_quoted '%q ' "${launcher_cmd[@]}"
-if [[ -n "$REMATERIALIZE_CMD" ]]; then
-  printf -v run_command 'cd %q && %s && caffeinate -dimsu %s2>&1 | tee %q' \
-    "$EXP_WORKTREE" \
-    "$REMATERIALIZE_CMD" \
-    "$launcher_cmd_quoted" \
-    "$STDOUT_LOG_PATH"
-else
-  printf -v run_command 'cd %q && caffeinate -dimsu %s2>&1 | tee %q' \
-    "$EXP_WORKTREE" \
-    "$launcher_cmd_quoted" \
-    "$STDOUT_LOG_PATH"
+if [[ "$LAUNCHER_DRY_RUN" == "1" || "$LAUNCHER_DRY_RUN" == "true" ]]; then
+  launcher_cmd+=(--dry-run)
 fi
-printf -v dashboard_command 'cd %q && uv run --python %q python scripts/serve_round0_monitor.py --launcher-log-dir %q --host %q --port %q' \
-  "$EXP_WORKTREE" \
-  "$PYTHON_RUNTIME" \
-  "$LAUNCHER_LOG_DIR" \
-  "$HOST" \
-  "$MONITOR_PORT"
+
+{
+  printf '#!/usr/bin/env bash\n'
+  printf 'set -euo pipefail\n'
+  printf 'cd %q\n' "$EXP_WORKTREE"
+  if [[ -n "$REMATERIALIZE_CMD" ]]; then
+    printf '%s\n' "$REMATERIALIZE_CMD"
+  fi
+  printf 'caffeinate -dimsu '
+  printf '%q ' "${launcher_cmd[@]}"
+  printf '2>&1 | tee %q\n' "$STDOUT_LOG_PATH"
+} > "$INNER_LOOP_SCRIPT"
+chmod +x "$INNER_LOOP_SCRIPT"
+
+{
+  printf '#!/usr/bin/env bash\n'
+  printf 'set -euo pipefail\n'
+  printf 'cd %q\n' "$EXP_WORKTREE"
+  printf 'uv run --python %q python scripts/serve_round0_monitor.py --launcher-log-dir %q --host %q --port %q\n' \
+    "$PYTHON_RUNTIME" \
+    "$LAUNCHER_LOG_DIR" \
+    "$HOST" \
+    "$MONITOR_PORT"
+} > "$DASHBOARD_SCRIPT"
+chmod +x "$DASHBOARD_SCRIPT"
+
+printf -v run_command 'bash %q' "$INNER_LOOP_SCRIPT"
+printf -v dashboard_command 'bash %q' "$DASHBOARD_SCRIPT"
 
 tmux new-session -d -s "$SESSION_NAME" -n inner-loop
 tmux send-keys -t "$SESSION_NAME":inner-loop "$run_command" C-m
@@ -227,6 +249,8 @@ echo "  max-concurrent-pairs: $MAX_CONCURRENT_PAIRS"
 echo "  round-budget: $ROUND_BUDGET"
 echo "  agent/model: $AGENT / $MODEL"
 echo "  stdout-log: $STDOUT_LOG_PATH"
+echo "  inner-loop-script: $INNER_LOOP_SCRIPT"
+echo "  dashboard-script: $DASHBOARD_SCRIPT"
 echo "  dashboard: http://$HOST:$MONITOR_PORT/"
 echo
 echo "Attach:"
