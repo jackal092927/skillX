@@ -25,7 +25,7 @@ if str(SCRIPTS) not in sys.path:
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from runtime_guard import assert_supported_python_runtime
+from runtime_guard import assert_healthy_python_executable, assert_supported_python_runtime
 from skillx.docker_health import attempt_docker_recovery, probe_docker_health
 from skillx.model_routing import resolve_benchmark_agent_name
 from skillx.run_failure_utils import build_run_failure_payload
@@ -810,6 +810,7 @@ def build_refine_command(
     bundle_contract_path: Path,
     output_suffix: str | None,
     python_runtime: str = DEFAULT_PYTHON_RUNTIME,
+    python_executable: str | Path | None = None,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
 ) -> list[str]:
@@ -825,12 +826,9 @@ def build_refine_command(
         output_suffix=output_suffix,
     )
     resolved_agent = resolve_benchmark_agent_name(agent, model)
+    resolved_python_executable = assert_healthy_python_executable(python_executable or sys.executable)
     command = [
-        "uv",
-        "run",
-        "--python",
-        python_runtime,
-        "python",
+        str(resolved_python_executable),
         str(ROOT / "scripts" / "run_skillx_refine_benchmark.py"),
         "--skillsbench-root",
         str(skillsbench_root),
@@ -978,6 +976,7 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("--max-concurrent-pairs must be positive")
     if not str(args.python_runtime).strip():
         raise ValueError("--python-runtime must be non-empty")
+    refine_python_executable = assert_healthy_python_executable(sys.executable)
 
     task_names = load_task_names(args.task_slice)
     if args.list_tasks:
@@ -1024,6 +1023,7 @@ def main(argv: list[str] | None = None) -> int:
                 bundle_contract_path=args.bundle_contract_path,
                 output_suffix=args.output_suffix,
                 python_runtime=args.python_runtime,
+                python_executable=refine_python_executable,
                 override_memory_mb=args.override_memory_mb,
                 override_storage_mb=args.override_storage_mb,
             )
@@ -1188,6 +1188,7 @@ def main(argv: list[str] | None = None) -> int:
                 bundle_contract_path=args.bundle_contract_path,
                 output_suffix=args.output_suffix,
                 python_runtime=args.python_runtime,
+                python_executable=refine_python_executable,
                 override_memory_mb=args.override_memory_mb,
                 override_storage_mb=args.override_storage_mb,
             )

@@ -158,7 +158,27 @@ resolve_monitor_port() {
   exit 1
 }
 
+assert_python_entrypoint_not_recursive_wrapper() {
+  local candidate="$EXP_WORKTREE/.venv/bin/python"
+  if [[ ! -e "$candidate" ]]; then
+    return 0
+  fi
+  if head -c 512 "$candidate" 2>/dev/null | grep -q '\.venv/bin/python'; then
+    cat >&2 <<EOF
+Detected a recursive Python wrapper at: $candidate
+
+This can make uv interpreter probing hang before a pair creates RUN_STATUS.md.
+Repair the uv-managed runtime first:
+  uv --no-config --directory /tmp python install $PYTHON_RUNTIME --reinstall --force
+
+Then recreate the project virtualenv if the entrypoint is still a wrapper.
+EOF
+    exit 1
+  fi
+}
+
 MONITOR_PORT="$(resolve_monitor_port "$REQUESTED_MONITOR_PORT" "$MONITOR_PORT_BASE")"
+assert_python_entrypoint_not_recursive_wrapper
 mkdir -p "$LAUNCHER_LOG_DIR"
 
 launcher_cmd=(

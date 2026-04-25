@@ -265,7 +265,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                 ],
             )
 
-    def test_build_refine_command_uses_uv_and_explicit_protocol_paths(self) -> None:
+    def test_build_refine_command_uses_current_python_and_explicit_protocol_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))
             _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
@@ -284,7 +284,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             )
 
             command_text = " ".join(command)
-            self.assertEqual(command[:5], ["uv", "run", "--python", "3.11", "python"])
+            self.assertEqual(Path(command[0]).resolve(), Path(self.module.sys.executable).resolve())
+            self.assertEqual(command[1], str(self.module.ROOT / "scripts" / "run_skillx_refine_benchmark.py"))
             self.assertIn("--task task-beta", command_text)
             self.assertIn("--starting-label C1", command_text)
             self.assertIn("--refine-protocol-path", command_text)
@@ -293,6 +294,31 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertIn(str(fixture["bundle_path"]), command_text)
             self.assertIn("refine_run_smoke3", command_text)
             self.assertIn("task-beta__artifact-generation__smoke3", command_text)
+
+    def test_build_refine_command_rejects_recursive_python_wrapper(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            pair = next(spec for spec in pair_specs if spec["pair_id"] == "task-beta__artifact-generation")
+            fake_python = Path(tmpdir) / "python"
+            fake_python.write_text('#!/bin/sh\nexec "$(pwd)/.venv/bin/python" "$@"\n')
+            fake_python.chmod(0o755)
+
+            with self.assertRaises(SystemExit) as context:
+                self.module.build_refine_command(
+                    pair,
+                    materialized_root=fixture["materialized_root"],
+                    oauth_file=fixture["oauth_file"],
+                    round_budget=3,
+                    agent="claude-code",
+                    model="anthropic/claude-sonnet-4-5",
+                    refine_protocol_path=fixture["protocol_path"],
+                    bundle_contract_path=fixture["bundle_path"],
+                    output_suffix="bad-python",
+                    python_executable=fake_python,
+                )
+
+            self.assertIn("recursive .venv wrapper", str(context.exception))
 
     def test_build_refine_command_infers_codex_agent_from_model_and_omits_oauth(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
