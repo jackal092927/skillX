@@ -130,7 +130,10 @@ fi
 cd "$EXP_WORKTREE"
 
 if [[ ! -f "$MATERIALIZED_ROOT/manifest.json" || ! -f "$MATERIALIZED_ROOT/pair_specs.jsonl" ]]; then
-  if [[ -d "$MATERIALIZED_ROOT" ]] && find "$MATERIALIZED_ROOT" -mindepth 1 -print -quit | grep -q .; then
+  if [[ -d "$MATERIALIZED_ROOT" ]] && find "$MATERIALIZED_ROOT" -mindepth 1 -maxdepth 1 \
+      ! -name .gitignore \
+      ! -name reports \
+      -print -quit | grep -q .; then
     echo "Materialized root exists but is incomplete/non-empty: $MATERIALIZED_ROOT" >&2
     exit 1
   fi
