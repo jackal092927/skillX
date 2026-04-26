@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
 import re
@@ -28,6 +29,7 @@ if str(SRC) not in sys.path:
 from runtime_guard import assert_healthy_python_executable, assert_supported_python_runtime
 from skillx.docker_health import attempt_docker_recovery, probe_docker_health
 from skillx.model_routing import resolve_benchmark_agent_name
+from skillx.quota_signals import summarize_run_dir
 from skillx.run_failure_utils import build_run_failure_payload
 
 assert_supported_python_runtime()
@@ -49,12 +51,14 @@ DEFAULT_MATERIALIZED_ROOT = (
     / "sonnet45-slice20-v0.2"
 )
 DEFAULT_OAUTH_FILE = Path.home() / ".claude" / "claude-code-oauth-token"
+DEFAULT_FALLBACK_OAUTH_FILE = Path.home() / ".claude-skillx-fallback" / "claude-code-oauth-token"
 DEFAULT_REFINE_PROTOCOL_PATH = ROOT / "docs" / "protocols" / "skillx-refine-protocol-v0.1.md"
 DEFAULT_BUNDLE_CONTRACT_PATH = ROOT / "docs" / "protocols" / "skillx-refine-bundle-contract-v0.1.md"
 DEFAULT_AGENT = "claude-code"
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
+DEFAULT_FALLBACK_CODEX_MODEL = "gpt-5.4"
 DEFAULT_PYTHON_RUNTIME = "3.11"
-DEFAULT_MAX_CONCURRENT_PAIRS = 3
+DEFAULT_MAX_CONCURRENT_PAIRS = 1
 MIN_DOCKER_MEMORY_BYTES = 16_000_000_000
 HIGH_TASK_MEMORY_MB = 8192
 MEDIUM_TASK_MEMORY_MB = 4096
@@ -63,6 +67,15 @@ SEISMIC_NATIVE_TOKENS = ("seisbench", "obspy")
 FROM_LINE_PATTERN = re.compile(r"^FROM\s+(.+)$", re.MULTILINE)
 MEMORY_STRING_PATTERN = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*([KMGTP])B?\s*$", re.IGNORECASE)
 NDJSON_WRITE_LOCK = threading.Lock()
+
+
+@dataclass(frozen=True)
+class RuntimeProfile:
+    index: int
+    label: str
+    agent: str
+    model: str
+    oauth_file: Path | None = None
 
 
 def read_json(path: Path) -> Any:
@@ -351,6 +364,8 @@ def build_launcher_summary(
     selected_pair_count: int,
     max_concurrent_pairs: int,
     results: list[dict[str, Any]],
+    runtime_profiles: list[dict[str, Any]] | None = None,
+    active_profile_index: int | None = None,
     aborted: bool = False,
     abort_reason: str | None = None,
 ) -> dict[str, Any]:
@@ -366,6 +381,8 @@ def build_launcher_summary(
         "succeeded_pairs": succeeded_pairs,
         "failed_pairs": failed_pairs,
         "max_concurrent_pairs": max_concurrent_pairs,
+        "runtime_profiles": runtime_profiles or [],
+        "active_profile_index": active_profile_index,
         "aborted": aborted,
         "abort_reason": abort_reason,
         "results": results,
@@ -809,6 +826,7 @@ def build_refine_command(
     refine_protocol_path: Path,
     bundle_contract_path: Path,
     output_suffix: str | None,
+    clear_rate_limit_artifacts: bool = False,
     python_runtime: str = DEFAULT_PYTHON_RUNTIME,
     python_executable: str | Path | None = None,
     override_memory_mb: int | None = None,
@@ -861,6 +879,8 @@ def build_refine_command(
         command.extend(["--override-memory-mb", str(override_memory_mb)])
     if override_storage_mb is not None:
         command.extend(["--override-storage-mb", str(override_storage_mb)])
+    if clear_rate_limit_artifacts:
+        command.append("--clear-rate-limit-artifacts")
     if resolved_agent == "claude-code":
         if oauth_file is None:
             raise ValueError("oauth_file is required for claude-code launches")
@@ -869,6 +889,73 @@ def build_refine_command(
             str(oauth_file.resolve()),
         ]
     return command
+
+
+def dedupe_paths(paths: list[Path]) -> list[Path]:
+    seen: set[str] = set()
+    deduped: list[Path] = []
+    for path in paths:
+        key = str(path.expanduser().resolve()) if path.exists() else str(path.expanduser())
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(path.expanduser())
+    return deduped
+
+
+def build_runtime_profiles(args: argparse.Namespace) -> list[RuntimeProfile]:
+    primary_agent = resolve_benchmark_agent_name(args.agent, args.model)
+    profiles: list[RuntimeProfile] = [
+        RuntimeProfile(
+            index=0,
+            label=f"primary:{primary_agent}",
+            agent=primary_agent,
+            model=args.model,
+            oauth_file=args.oauth_file if primary_agent == "claude-code" else None,
+        )
+    ]
+    if args.disable_rate_limit_fallback:
+        return profiles
+
+    fallback_oauth_files = [path for path in (args.fallback_oauth_file or [])]
+    if DEFAULT_FALLBACK_OAUTH_FILE.exists():
+        fallback_oauth_files.append(DEFAULT_FALLBACK_OAUTH_FILE)
+    primary_oauth = args.oauth_file.expanduser().resolve() if args.oauth_file and args.oauth_file.exists() else args.oauth_file
+    for oauth_file in dedupe_paths(fallback_oauth_files):
+        comparable = oauth_file.resolve() if oauth_file.exists() else oauth_file
+        if primary_oauth is not None and comparable == primary_oauth:
+            continue
+        profiles.append(
+            RuntimeProfile(
+                index=len(profiles),
+                label=f"fallback-claude-{len(profiles)}",
+                agent="claude-code",
+                model=args.model,
+                oauth_file=oauth_file,
+            )
+        )
+
+    if not args.no_codex_fallback:
+        profiles.append(
+            RuntimeProfile(
+                index=len(profiles),
+                label="fallback-codex",
+                agent="codex",
+                model=args.fallback_codex_model,
+                oauth_file=None,
+            )
+        )
+    return profiles
+
+
+def profile_summary(profile: RuntimeProfile) -> dict[str, str | int | None]:
+    return {
+        "index": profile.index,
+        "label": profile.label,
+        "agent": profile.agent,
+        "model": profile.model,
+        "oauth_file": str(profile.oauth_file) if profile.oauth_file is not None else None,
+    }
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -903,6 +990,30 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--round-budget", type=int, default=3)
     parser.add_argument("--agent")
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument(
+        "--fallback-oauth-file",
+        type=Path,
+        action="append",
+        help=(
+            "Fallback Claude Code OAuth token file. Repeatable. "
+            f"If present, {DEFAULT_FALLBACK_OAUTH_FILE} is also auto-detected."
+        ),
+    )
+    parser.add_argument(
+        "--fallback-codex-model",
+        default=DEFAULT_FALLBACK_CODEX_MODEL,
+        help=f"Codex model used after Claude fallback accounts are exhausted. Default: {DEFAULT_FALLBACK_CODEX_MODEL}.",
+    )
+    parser.add_argument(
+        "--no-codex-fallback",
+        action="store_true",
+        help="Disable Codex fallback after Claude accounts hit rate/quota limits.",
+    )
+    parser.add_argument(
+        "--disable-rate-limit-fallback",
+        action="store_true",
+        help="Disable rate/quota fallback and keep the historical single-profile behavior.",
+    )
     parser.add_argument(
         "--python-runtime",
         default=DEFAULT_PYTHON_RUNTIME,
@@ -1005,20 +1116,29 @@ def main(argv: list[str] | None = None) -> int:
         selected_pairs,
         materialized_root=args.materialized_root,
     )
+    runtime_profiles = build_runtime_profiles(args)
 
     print(f"Selected {len(selected_task_names)} task(s) -> {len(selected_pairs)} pair(s)")
     print("Tasks: " + ", ".join(selected_task_names))
+    print(
+        "Runtime profiles: "
+        + " -> ".join(
+            f"{profile.index}:{profile.label}({profile.agent}/{profile.model})"
+            for profile in runtime_profiles
+        )
+    )
 
     if args.dry_run:
         for pair_spec in selected_pairs:
             pair_id = str(pair_spec["pair_id"])
+            profile = runtime_profiles[0]
             command = build_refine_command(
                 pair_spec,
                 materialized_root=args.materialized_root,
-                oauth_file=args.oauth_file,
+                oauth_file=profile.oauth_file,
                 round_budget=args.round_budget,
-                agent=args.agent,
-                model=args.model,
+                agent=profile.agent,
+                model=profile.model,
                 refine_protocol_path=args.refine_protocol_path,
                 bundle_contract_path=args.bundle_contract_path,
                 output_suffix=args.output_suffix,
@@ -1115,9 +1235,11 @@ def main(argv: list[str] | None = None) -> int:
     abort_state: dict[str, Any] = {"aborted": False, "abort_reason": None}
     abort_event = threading.Event()
     state_lock = threading.Lock()
+    fallback_lock = threading.Lock()
     events_lock = threading.Lock()
     print_lock = threading.Lock()
     docker_lock = threading.Lock()
+    active_profile_state: dict[str, int] = {"index": 0}
     preflight_health_report_state: dict[str, dict[str, Any] | None] = {
         "report": preflight_docker_report,
     }
@@ -1140,6 +1262,8 @@ def main(argv: list[str] | None = None) -> int:
                 selected_pair_count=len(selected_pairs),
                 max_concurrent_pairs=args.max_concurrent_pairs,
                 results=sorted_result_values(results_by_index),
+                runtime_profiles=[profile_summary(profile) for profile in runtime_profiles],
+                active_profile_index=active_profile_state["index"],
                 aborted=bool(abort_state["aborted"]),
                 abort_reason=abort_state["abort_reason"],
             ),
@@ -1149,6 +1273,44 @@ def main(argv: list[str] | None = None) -> int:
         with state_lock:
             results_by_index[index] = result
             write_current_summary_locked()
+
+    def current_profile() -> RuntimeProfile:
+        with fallback_lock:
+            return runtime_profiles[active_profile_state["index"]]
+
+    def advance_profile_after_rate_limit(
+        *,
+        exhausted_profile: RuntimeProfile,
+        pair_id: str,
+        index: int,
+        quota_signal: dict[str, Any],
+    ) -> RuntimeProfile | None:
+        with fallback_lock:
+            if active_profile_state["index"] <= exhausted_profile.index:
+                next_index = exhausted_profile.index + 1
+                if next_index >= len(runtime_profiles):
+                    return None
+                active_profile_state["index"] = next_index
+                next_profile = runtime_profiles[next_index]
+            else:
+                next_profile = runtime_profiles[active_profile_state["index"]]
+        emit_event(
+            {
+                "event": "rate_limit_fallback_selected",
+                "index": index,
+                "pair_id": pair_id,
+                "exhausted_profile": profile_summary(exhausted_profile),
+                "next_profile": profile_summary(next_profile),
+                "quota_signal_level": quota_signal.get("signal_level"),
+                "quota_hard_terms": quota_signal.get("hard_terms") or [],
+                "observed_at": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+        log_line(
+            "  RATE LIMIT fallback:"
+            f" {pair_id} {exhausted_profile.label} -> {next_profile.label}"
+        )
+        return next_profile
 
     def run_pair(index: int, pair_spec: dict[str, Any]) -> dict[str, Any] | None:
         if abort_event.is_set():
@@ -1177,21 +1339,6 @@ def main(argv: list[str] | None = None) -> int:
                 output_suffix=args.output_suffix,
             )
             output_dir = str(resolved_output_dir)
-            command = build_refine_command(
-                pair_spec,
-                materialized_root=args.materialized_root,
-                oauth_file=args.oauth_file,
-                round_budget=args.round_budget,
-                agent=args.agent,
-                model=args.model,
-                refine_protocol_path=args.refine_protocol_path,
-                bundle_contract_path=args.bundle_contract_path,
-                output_suffix=args.output_suffix,
-                python_runtime=args.python_runtime,
-                python_executable=refine_python_executable,
-                override_memory_mb=args.override_memory_mb,
-                override_storage_mb=args.override_storage_mb,
-            )
             Path(output_dir).mkdir(parents=True, exist_ok=True)
         except Exception as exc:
             ensure_launcher_failure_artifacts(
@@ -1285,35 +1432,191 @@ def main(argv: list[str] | None = None) -> int:
             if recovery_report is not None:
                 log_line(f"  Docker recovered after cleanup before {pair_id}")
 
-        try:
-            completed = subprocess.run(command, cwd=str(ROOT), check=False)
-            returncode = int(completed.returncode)
-            if returncode == 0:
-                result = {
-                    "index": index,
-                    "pair_id": pair_id,
-                    "task_name": task_name,
-                    "schema_id": schema_id,
-                    "status": "succeeded",
-                    "stage": "run",
-                    "run_id": run_id,
-                    "output_dir": output_dir,
-                    "returncode": returncode,
-                    "command": command,
-                }
+        attempts: list[dict[str, Any]] = []
+        attempt_number = 0
+        while True:
+            profile = current_profile()
+            attempt_number += 1
+            command: list[str] | None = None
+            try:
+                command = build_refine_command(
+                    pair_spec,
+                    materialized_root=args.materialized_root,
+                    oauth_file=profile.oauth_file,
+                    round_budget=args.round_budget,
+                    agent=profile.agent,
+                    model=profile.model,
+                    refine_protocol_path=args.refine_protocol_path,
+                    bundle_contract_path=args.bundle_contract_path,
+                    output_suffix=args.output_suffix,
+                    clear_rate_limit_artifacts=attempt_number > 1,
+                    python_runtime=args.python_runtime,
+                    python_executable=refine_python_executable,
+                    override_memory_mb=args.override_memory_mb,
+                    override_storage_mb=args.override_storage_mb,
+                )
                 emit_event(
                     {
-                        "event": "pair_succeeded",
+                        "event": "pair_attempt_started",
                         "index": index,
                         "pair_id": pair_id,
                         "task_name": task_name,
                         "schema_id": schema_id,
-                        "returncode": returncode,
+                        "attempt": attempt_number,
+                        "runtime_profile": profile_summary(profile),
                         "observed_at": datetime.now(timezone.utc).isoformat(),
-                    },
+                    }
                 )
-                log_line(f"  OK {pair_id}")
-            else:
+                completed = subprocess.run(command, cwd=str(ROOT), check=False)
+                returncode = int(completed.returncode)
+                quota_signal = summarize_run_dir(Path(output_dir)) if output_dir else {}
+                attempt_record = {
+                    "attempt": attempt_number,
+                    "runtime_profile": profile_summary(profile),
+                    "returncode": returncode,
+                    "quota_signal_level": quota_signal.get("signal_level"),
+                    "quota_hard_terms": quota_signal.get("hard_terms") or [],
+                }
+                attempts.append(attempt_record)
+
+                if quota_signal.get("has_hard_signal"):
+                    if output_dir:
+                        write_json(Path(output_dir) / "rate_limit_signal.json", quota_signal)
+                    emit_event(
+                        {
+                            "event": "rate_limit_detected",
+                            "index": index,
+                            "pair_id": pair_id,
+                            "task_name": task_name,
+                            "schema_id": schema_id,
+                            "attempt": attempt_number,
+                            "runtime_profile": profile_summary(profile),
+                            "quota_signal_level": quota_signal.get("signal_level"),
+                            "quota_hard_terms": quota_signal.get("hard_terms") or [],
+                            "observed_at": datetime.now(timezone.utc).isoformat(),
+                        }
+                    )
+                    next_profile = advance_profile_after_rate_limit(
+                        exhausted_profile=profile,
+                        pair_id=pair_id,
+                        index=index,
+                        quota_signal=quota_signal,
+                    )
+                    if next_profile is not None:
+                        continue
+
+                    error = "rate/quota limit detected and no fallback runtime profile remains"
+                    ensure_launcher_failure_artifacts(
+                        output_dir=output_dir,
+                        run_id=run_id,
+                        task_name=task_name,
+                        schema_id=schema_id,
+                        pair_id=pair_id,
+                        round_budget=args.round_budget,
+                        stage="rate_limit_exhausted",
+                        error=error,
+                        returncode=returncode,
+                        command=command,
+                        extra={
+                            "attempts": attempts,
+                            "quota_signal": quota_signal,
+                        },
+                    )
+                    with state_lock:
+                        abort_state["abort_reason"] = error
+                        abort_state["aborted"] = True
+                    abort_event.set()
+                    result = {
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "status": "failed",
+                        "stage": "rate_limit_exhausted",
+                        "run_id": run_id,
+                        "output_dir": output_dir,
+                        "returncode": returncode,
+                        "command": command,
+                        "error": error,
+                        "attempts": attempts,
+                    }
+                    log_line(f"  ABORTING: {pair_id} hit rate/quota limit with no fallback left")
+                    return result
+
+                if returncode == 0:
+                    result = {
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "status": "succeeded",
+                        "stage": "run",
+                        "run_id": run_id,
+                        "output_dir": output_dir,
+                        "returncode": returncode,
+                        "command": command,
+                        "runtime_profile": profile_summary(profile),
+                        "attempts": attempts,
+                    }
+                    emit_event(
+                        {
+                            "event": "pair_succeeded",
+                            "index": index,
+                            "pair_id": pair_id,
+                            "task_name": task_name,
+                            "schema_id": schema_id,
+                            "returncode": returncode,
+                            "runtime_profile": profile_summary(profile),
+                            "attempts": attempt_number,
+                            "observed_at": datetime.now(timezone.utc).isoformat(),
+                        },
+                    )
+                    log_line(f"  OK {pair_id} via {profile.label}")
+                else:
+                    ensure_launcher_failure_artifacts(
+                        output_dir=output_dir,
+                        run_id=run_id,
+                        task_name=task_name,
+                        schema_id=schema_id,
+                        pair_id=pair_id,
+                        round_budget=args.round_budget,
+                        stage="run",
+                        error=f"subprocess exited with code {returncode}",
+                        returncode=returncode,
+                        command=command,
+                        extra={"attempts": attempts, "runtime_profile": profile_summary(profile)},
+                    )
+                    result = {
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "status": "failed",
+                        "stage": "run",
+                        "run_id": run_id,
+                        "output_dir": output_dir,
+                        "returncode": returncode,
+                        "command": command,
+                        "error": f"subprocess exited with code {returncode}",
+                        "runtime_profile": profile_summary(profile),
+                        "attempts": attempts,
+                    }
+                    emit_event(
+                        {
+                            "event": "pair_failed",
+                            "index": index,
+                            "pair_id": pair_id,
+                            "task_name": task_name,
+                            "schema_id": schema_id,
+                            "stage": "run",
+                            "returncode": returncode,
+                            "runtime_profile": profile_summary(profile),
+                            "observed_at": datetime.now(timezone.utc).isoformat(),
+                        },
+                    )
+                    log_line(f"  FAILED {pair_id} with exit code {returncode} via {profile.label}")
+                return result
+            except Exception as exc:
                 ensure_launcher_failure_artifacts(
                     output_dir=output_dir,
                     run_id=run_id,
@@ -1321,10 +1624,11 @@ def main(argv: list[str] | None = None) -> int:
                     schema_id=schema_id,
                     pair_id=pair_id,
                     round_budget=args.round_budget,
-                    stage="run",
-                    error=f"subprocess exited with code {returncode}",
-                    returncode=returncode,
+                    stage="run_exception",
+                    error=str(exc),
+                    traceback_text=traceback.format_exc(),
                     command=command,
+                    extra={"attempts": attempts},
                 )
                 result = {
                     "index": index,
@@ -1332,12 +1636,13 @@ def main(argv: list[str] | None = None) -> int:
                     "task_name": task_name,
                     "schema_id": schema_id,
                     "status": "failed",
-                    "stage": "run",
+                    "stage": "run_exception",
                     "run_id": run_id,
                     "output_dir": output_dir,
-                    "returncode": returncode,
                     "command": command,
-                    "error": f"subprocess exited with code {returncode}",
+                    "error": str(exc),
+                    "traceback": traceback.format_exc(),
+                    "attempts": attempts,
                 }
                 emit_event(
                     {
@@ -1346,96 +1651,13 @@ def main(argv: list[str] | None = None) -> int:
                         "pair_id": pair_id,
                         "task_name": task_name,
                         "schema_id": schema_id,
-                        "stage": "run",
-                        "returncode": returncode,
+                        "stage": "run_exception",
+                        "error": str(exc),
                         "observed_at": datetime.now(timezone.utc).isoformat(),
                     },
                 )
-                log_line(f"  FAILED {pair_id} with exit code {returncode}")
-            return result
-        except subprocess.CalledProcessError as exc:
-            ensure_launcher_failure_artifacts(
-                output_dir=output_dir,
-                run_id=run_id,
-                task_name=task_name,
-                schema_id=schema_id,
-                pair_id=pair_id,
-                round_budget=args.round_budget,
-                stage="run",
-                error=str(exc),
-                traceback_text=traceback.format_exc(),
-                returncode=int(exc.returncode),
-                command=command,
-            )
-            result = {
-                "index": index,
-                "pair_id": pair_id,
-                "task_name": task_name,
-                "schema_id": schema_id,
-                "status": "failed",
-                "stage": "run",
-                "run_id": run_id,
-                "output_dir": output_dir,
-                "command": command,
-                "returncode": int(exc.returncode),
-                "error": str(exc),
-                "traceback": traceback.format_exc(),
-            }
-            emit_event(
-                {
-                    "event": "pair_failed",
-                    "index": index,
-                    "pair_id": pair_id,
-                    "task_name": task_name,
-                    "schema_id": schema_id,
-                    "stage": "run",
-                    "returncode": int(exc.returncode),
-                    "error": str(exc),
-                    "observed_at": datetime.now(timezone.utc).isoformat(),
-                },
-            )
-            log_line(f"  FAILED {pair_id} with exit code {exc.returncode}")
-            return result
-        except Exception as exc:
-            ensure_launcher_failure_artifacts(
-                output_dir=output_dir,
-                run_id=run_id,
-                task_name=task_name,
-                schema_id=schema_id,
-                pair_id=pair_id,
-                round_budget=args.round_budget,
-                stage="run_exception",
-                error=str(exc),
-                traceback_text=traceback.format_exc(),
-                command=command,
-            )
-            result = {
-                "index": index,
-                "pair_id": pair_id,
-                "task_name": task_name,
-                "schema_id": schema_id,
-                "status": "failed",
-                "stage": "run_exception",
-                "run_id": run_id,
-                "output_dir": output_dir,
-                "command": command,
-                "error": str(exc),
-                "traceback": traceback.format_exc(),
-            }
-            emit_event(
-                {
-                    "event": "pair_failed",
-                    "index": index,
-                    "pair_id": pair_id,
-                    "task_name": task_name,
-                    "schema_id": schema_id,
-                    "stage": "run_exception",
-                    "error": str(exc),
-                    "observed_at": datetime.now(timezone.utc).isoformat(),
-                },
-            )
-            log_line(f"  FAILED {pair_id} with launcher exception: {exc}")
-            return result
+                log_line(f"  FAILED {pair_id} with launcher exception: {exc}")
+                return result
 
     max_workers = min(args.max_concurrent_pairs, len(selected_pairs)) or 1
     print(f"Running pairs with max_concurrent_pairs={max_workers}")
@@ -1448,50 +1670,67 @@ def main(argv: list[str] | None = None) -> int:
                 break
     else:
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_index = {
-                executor.submit(run_pair, index, pair_spec): index
-                for index, pair_spec in enumerate(selected_pairs, start=1)
-            }
-            for future in concurrent.futures.as_completed(future_to_index):
-                index = future_to_index[future]
-                try:
-                    result = future.result()
-                except Exception as exc:
-                    pair_spec = selected_pairs[index - 1]
-                    pair_id = str(pair_spec.get("pair_id", f"pair-{index}"))
-                    task_name = str(pair_spec.get("task_name", "unknown-task"))
-                    schema_id = str(pair_spec.get("schema_id", "unknown-schema"))
-                    result = {
-                        "index": index,
-                        "pair_id": pair_id,
-                        "task_name": task_name,
-                        "schema_id": schema_id,
-                        "status": "failed",
-                        "stage": "launcher_thread_exception",
-                        "run_id": None,
-                        "output_dir": None,
-                        "error": str(exc),
-                        "traceback": traceback.format_exc(),
-                    }
-                    emit_event(
-                        {
-                            "event": "pair_failed",
+            future_to_index: dict[concurrent.futures.Future[dict[str, Any] | None], int] = {}
+            next_index = 1
+
+            def submit_until_full() -> None:
+                nonlocal next_index
+                while (
+                    len(future_to_index) < max_workers
+                    and next_index <= len(selected_pairs)
+                    and not abort_event.is_set()
+                ):
+                    pair_spec = selected_pairs[next_index - 1]
+                    future_to_index[executor.submit(run_pair, next_index, pair_spec)] = next_index
+                    next_index += 1
+
+            submit_until_full()
+            while future_to_index:
+                done, _ = concurrent.futures.wait(
+                    future_to_index,
+                    return_when=concurrent.futures.FIRST_COMPLETED,
+                )
+                for future in done:
+                    index = future_to_index.pop(future)
+                    try:
+                        result = future.result()
+                    except Exception as exc:
+                        pair_spec = selected_pairs[index - 1]
+                        pair_id = str(pair_spec.get("pair_id", f"pair-{index}"))
+                        task_name = str(pair_spec.get("task_name", "unknown-task"))
+                        schema_id = str(pair_spec.get("schema_id", "unknown-schema"))
+                        result = {
                             "index": index,
                             "pair_id": pair_id,
                             "task_name": task_name,
                             "schema_id": schema_id,
+                            "status": "failed",
                             "stage": "launcher_thread_exception",
+                            "run_id": None,
+                            "output_dir": None,
                             "error": str(exc),
-                            "observed_at": datetime.now(timezone.utc).isoformat(),
-                        },
-                    )
-                    log_line(f"  FAILED {pair_id} with launcher thread exception: {exc}")
-                if result is not None:
-                    record_result(index, result)
+                            "traceback": traceback.format_exc(),
+                        }
+                        emit_event(
+                            {
+                                "event": "pair_failed",
+                                "index": index,
+                                "pair_id": pair_id,
+                                "task_name": task_name,
+                                "schema_id": schema_id,
+                                "stage": "launcher_thread_exception",
+                                "error": str(exc),
+                                "observed_at": datetime.now(timezone.utc).isoformat(),
+                            },
+                        )
+                        log_line(f"  FAILED {pair_id} with launcher thread exception: {exc}")
+                    if result is not None:
+                        record_result(index, result)
                 if abort_event.is_set():
-                    for pending in future_to_index:
-                        if not pending.done():
-                            pending.cancel()
+                    for pending in list(future_to_index):
+                        pending.cancel()
+                    break
+                submit_until_full()
 
     final_results = sorted_result_values(results_by_index)
     failed_pairs = sum(1 for item in final_results if item.get("status") == "failed")

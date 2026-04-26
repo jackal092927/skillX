@@ -29,10 +29,14 @@ Environment overrides:
   SKILLX_MONITOR_PORT       Explicit dashboard port.
   SKILLX_MONITOR_PORT_BASE  Starting port for auto-selection if no port is provided. Default: 8767
   SKILLX_PYTHON             Python runtime used by uv. Default: 3.11
-  SKILLX_MAX_CONCURRENT_PAIRS  Max task-schema pairs run at once. Default: 3
+  SKILLX_MAX_CONCURRENT_PAIRS  Max task-schema pairs run at once. Default: 1
   SKILLX_ROUND_BUDGET       Inner-loop round budget. Default: 3
   SKILLX_AGENT              Executor agent. Default: claude-code
   SKILLX_MODEL              Executor model. Default: anthropic/claude-sonnet-4-5
+  SKILLX_FALLBACK_CLAUDE_OAUTH_FILE  Optional fallback Claude OAuth token file.
+  SKILLX_FALLBACK_CODEX_MODEL        Codex fallback model. Default: gpt-5.4
+  SKILLX_DISABLE_CODEX_FALLBACK      1 disables Codex fallback. Default: 0
+  SKILLX_DISABLE_RATE_LIMIT_FALLBACK 1 disables all rate-limit fallback. Default: 0
   SKILLX_OVERRIDE_MEMORY_MB   Synthetic task memory override. Default: 8192
   SKILLX_OVERRIDE_STORAGE_MB  Synthetic task storage override. Default: 20480
   SKILLX_DOCKER_AUTO_RECOVER  1 enables --docker-auto-recover. Default: 1
@@ -98,10 +102,14 @@ REMATERIALIZE_CMD="${SKILLX_REMATERIALIZE_CMD:-}"
 HOST="${SKILLX_MONITOR_HOST:-127.0.0.1}"
 MONITOR_PORT_BASE="${SKILLX_MONITOR_PORT_BASE:-8767}"
 PYTHON_RUNTIME="${SKILLX_PYTHON:-3.11}"
-MAX_CONCURRENT_PAIRS="${SKILLX_MAX_CONCURRENT_PAIRS:-3}"
+MAX_CONCURRENT_PAIRS="${SKILLX_MAX_CONCURRENT_PAIRS:-1}"
 ROUND_BUDGET="${SKILLX_ROUND_BUDGET:-3}"
 AGENT="${SKILLX_AGENT:-claude-code}"
 MODEL="${SKILLX_MODEL:-anthropic/claude-sonnet-4-5}"
+FALLBACK_CLAUDE_OAUTH_FILE="${SKILLX_FALLBACK_CLAUDE_OAUTH_FILE:-}"
+FALLBACK_CODEX_MODEL="${SKILLX_FALLBACK_CODEX_MODEL:-gpt-5.4}"
+DISABLE_CODEX_FALLBACK="${SKILLX_DISABLE_CODEX_FALLBACK:-0}"
+DISABLE_RATE_LIMIT_FALLBACK="${SKILLX_DISABLE_RATE_LIMIT_FALLBACK:-0}"
 OVERRIDE_MEMORY_MB="${SKILLX_OVERRIDE_MEMORY_MB:-8192}"
 OVERRIDE_STORAGE_MB="${SKILLX_OVERRIDE_STORAGE_MB:-20480}"
 DOCKER_AUTO_RECOVER="${SKILLX_DOCKER_AUTO_RECOVER:-1}"
@@ -208,6 +216,8 @@ launcher_cmd+=(
   "$AGENT"
   --model
   "$MODEL"
+  --fallback-codex-model
+  "$FALLBACK_CODEX_MODEL"
   --override-memory-mb
   "$OVERRIDE_MEMORY_MB"
   --override-storage-mb
@@ -215,6 +225,15 @@ launcher_cmd+=(
 )
 if [[ -n "$TASK_SLICE" ]]; then
   launcher_cmd+=(--task-slice "$TASK_SLICE")
+fi
+if [[ -n "$FALLBACK_CLAUDE_OAUTH_FILE" ]]; then
+  launcher_cmd+=(--fallback-oauth-file "$FALLBACK_CLAUDE_OAUTH_FILE")
+fi
+if [[ "$DISABLE_CODEX_FALLBACK" == "1" || "$DISABLE_CODEX_FALLBACK" == "true" ]]; then
+  launcher_cmd+=(--no-codex-fallback)
+fi
+if [[ "$DISABLE_RATE_LIMIT_FALLBACK" == "1" || "$DISABLE_RATE_LIMIT_FALLBACK" == "true" ]]; then
+  launcher_cmd+=(--disable-rate-limit-fallback)
 fi
 if [[ "$DOCKER_AUTO_RECOVER" == "1" || "$DOCKER_AUTO_RECOVER" == "true" ]]; then
   launcher_cmd+=(--docker-auto-recover)
@@ -268,6 +287,8 @@ echo "  python: $PYTHON_RUNTIME"
 echo "  max-concurrent-pairs: $MAX_CONCURRENT_PAIRS"
 echo "  round-budget: $ROUND_BUDGET"
 echo "  agent/model: $AGENT / $MODEL"
+echo "  fallback-claude-oauth-file: ${FALLBACK_CLAUDE_OAUTH_FILE:-auto-detect-if-present}"
+echo "  fallback-codex-model: $FALLBACK_CODEX_MODEL"
 echo "  stdout-log: $STDOUT_LOG_PATH"
 echo "  inner-loop-script: $INNER_LOOP_SCRIPT"
 echo "  dashboard-script: $DASHBOARD_SCRIPT"

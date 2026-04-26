@@ -1,0 +1,182 @@
+from __future__ import annotations
+
+import json
+import re
+from pathlib import Path
+from typing import Any, Iterable
+
+
+HARD_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    ("api_error_status_429", re.compile(r"api_error_status[^0-9]{0,20}429", re.I)),
+    ("http_429", re.compile(r"\bHTTP\s*429\b", re.I)),
+    ("status_429", re.compile(r"\b(?:status|code|error)[^A-Za-z0-9]{0,20}429\b", re.I)),
+    ("too_many_requests", re.compile(r"too many requests", re.I)),
+    ("rate_limit_error", re.compile(r"\bRateLimitError\b", re.I)),
+    ("rate_limit_reached", re.compile(r"rate[-\s]*limit(?:ed|ing)?(?:[-\s]*(?:reached|exceeded|hit|stop|cutoff|failure|abort|blocked))?", re.I)),
+    ("usage_limit_reached", re.compile(r"(?:usage|quota|provider)[-\s]*(?:limit|quota)[-\s]*(?:reached|exceeded|hit|blocked)", re.I)),
+    ("claude_limit_reached", re.compile(r"(?:Claude|Anthropic)[-\s]*(?:usage|rate)?[-\s]*limit[-\s]*(?:reached|exceeded|hit)", re.I)),
+    ("hit_your_limit", re.compile(r"hit your limit", re.I)),
+    ("provider_quota", re.compile(r"provider[-\s]*(?:side[-\s]*)?(?:quota|limit|rate[-\s]*limit)", re.I)),
+    ("quota_blocked", re.compile(r"quota[-\s]*(?:gated|blocked|abort(?:ed)?|stop(?:ped)?|rejected|failure|fail)", re.I)),
+    ("infra_quota", re.compile(r"infra[_\s-]*(?:blocked[_\s-]*)?quota|infra[_\s-]*quota[_\s-]*abort", re.I)),
+]
+
+SOFT_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    ("quota_aware", re.compile(r"quota[-\s]*(?:aware|safe|headroom|recovery|gate|gating)", re.I)),
+    ("rate_limit_guard", re.compile(r"rate[-\s]*limit(?:[-\s]*(?:guard|handling|routing|fallback))", re.I)),
+]
+
+SCAN_FILE_NAMES = {
+    "RUN_STATUS.md",
+    "result.json",
+    "run_failure.json",
+    "round_decision.json",
+    "session_evidence.json",
+    "verifier_summary.json",
+    "orchestrator_log.ndjson",
+    "claude-code.txt",
+    "codex.jsonl",
+    "stderr.txt",
+    "stdout.txt",
+    "stdout.jsonl",
+    "trial.log",
+}
+MAX_SCAN_BYTES = 2_000_000
+SKIP_DIR_NAMES = {"archives", "__pycache__", ".git"}
+
+
+def iter_strings(value: Any, prefix: str = "$") -> Iterable[tuple[str, str]]:
+    if isinstance(value, str):
+        yield prefix, value
+    elif isinstance(value, dict):
+        for key, child in value.items():
+            yield from iter_strings(child, f"{prefix}.{key}")
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            yield from iter_strings(child, f"{prefix}[{index}]")
+
+
+def compact_excerpt(text: str, match: re.Match[str], width: int = 110) -> str:
+    start = max(0, match.start() - width)
+    end = min(len(text), match.end() + width)
+    excerpt = text[start:end].replace("\n", " ")
+    return re.sub(r"\s+", " ", excerpt).strip()
+
+
+def scan_payload(payload: Any) -> dict[str, Any]:
+    matches: list[dict[str, str]] = []
+    hard_terms: set[str] = set()
+    soft_terms: set[str] = set()
+    for path, text in iter_strings(payload):
+        for name, pattern in HARD_PATTERNS:
+            match = pattern.search(text)
+            if match:
+                hard_terms.add(name)
+                matches.append(
+                    {
+                        "level": "hard",
+                        "term": name,
+                        "field": path,
+                        "excerpt": compact_excerpt(text, match),
+                    }
+                )
+        for name, pattern in SOFT_PATTERNS:
+            match = pattern.search(text)
+            if match:
+                soft_terms.add(name)
+                matches.append(
+                    {
+                        "level": "soft",
+                        "term": name,
+                        "field": path,
+                        "excerpt": compact_excerpt(text, match),
+                    }
+                )
+    level = "hard" if hard_terms else "soft" if soft_terms else "none"
+    return {
+        "signal_level": level,
+        "has_hard_signal": bool(hard_terms),
+        "hard_terms": sorted(hard_terms),
+        "soft_terms": sorted(soft_terms),
+        "matches": matches,
+    }
+
+
+def combine_scans(scans: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    hard_terms: set[str] = set()
+    soft_terms: set[str] = set()
+    matches: list[dict[str, str]] = []
+    for scan in scans:
+        hard_terms.update(str(term) for term in scan.get("hard_terms") or [])
+        soft_terms.update(str(term) for term in scan.get("soft_terms") or [])
+        for match in scan.get("matches") or []:
+            if isinstance(match, dict):
+                matches.append({str(key): str(value) for key, value in match.items()})
+    level = "hard" if hard_terms else "soft" if soft_terms else "none"
+    return {
+        "signal_level": level,
+        "has_hard_signal": bool(hard_terms),
+        "hard_terms": sorted(hard_terms),
+        "soft_terms": sorted(soft_terms),
+        "matches": matches,
+    }
+
+
+def read_scan_payload(path: Path) -> Any:
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    if len(text) > MAX_SCAN_BYTES:
+        text = text[-MAX_SCAN_BYTES:]
+    if path.suffix == ".json":
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            return {"path": str(path), "text": text}
+    return {"path": str(path), "text": text}
+
+
+def summarize_path(path: Path) -> dict[str, Any]:
+    payload = read_scan_payload(path)
+    if payload is None:
+        return {
+            "signal_level": "none",
+            "has_hard_signal": False,
+            "hard_terms": [],
+            "soft_terms": [],
+            "matches": [],
+        }
+    scan = scan_payload(payload)
+    for match in scan["matches"]:
+        match.setdefault("source_path", str(path))
+    return scan
+
+
+def summarize_run_dir(run_dir: Path) -> dict[str, Any]:
+    scans: list[dict[str, Any]] = []
+    scanned_files: list[str] = []
+    if not run_dir.exists():
+        combined = combine_scans([])
+        combined["scanned_files"] = scanned_files
+        return combined
+    for path in sorted(run_dir.rglob("*")):
+        if any(part in SKIP_DIR_NAMES for part in path.parts):
+            continue
+        if not path.is_file() or path.name not in SCAN_FILE_NAMES:
+            continue
+        scanned_files.append(str(path))
+        scan = summarize_path(path)
+        if scan["signal_level"] != "none":
+            scans.append(scan)
+    combined = combine_scans(scans)
+    combined["scanned_files"] = scanned_files
+    return combined
+
+
+__all__ = [
+    "combine_scans",
+    "scan_payload",
+    "summarize_path",
+    "summarize_run_dir",
+]

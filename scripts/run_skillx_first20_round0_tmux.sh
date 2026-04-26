@@ -18,10 +18,14 @@ Environment overrides:
   SKILLX_RUN_LABEL              Default run label.
   SKILLX_TMUX_SESSION           Default tmux session name.
   SKILLX_MONITOR_PORT           Dashboard port. If omitted, run_skillx_inner_loop_tmux.sh auto-selects.
-  SKILLX_MAX_CONCURRENT_PAIRS   Max concurrent task-schema pairs. Default: 3.
+  SKILLX_MAX_CONCURRENT_PAIRS   Max concurrent task-schema pairs. Default: 1.
   SKILLX_ROUND_BUDGET           Inner-loop budget after R0. Default: 3, yielding R0-R3.
   SKILLX_AGENT                  Executor agent. Default: claude-code.
   SKILLX_MODEL                  Executor model. Default: anthropic/claude-sonnet-4-5.
+  SKILLX_FALLBACK_CLAUDE_OAUTH_FILE  Optional fallback Claude OAuth token file.
+  SKILLX_FALLBACK_CODEX_MODEL        Codex fallback model. Default: gpt-5.4.
+  SKILLX_DISABLE_CODEX_FALLBACK      1 disables Codex fallback. Default: 0.
+  SKILLX_DISABLE_RATE_LIMIT_FALLBACK 1 disables all rate-limit fallback. Default: 0.
   SKILLX_LLM_MODEL              Later outer-loop rewriter model. Default documented here only.
   SKILLX_PYTHON                 Python runtime used by uv. Default: 3.11.
   SKILLX_PREPARE_ONLY           1 materializes and validates without starting tmux.
@@ -29,7 +33,7 @@ Environment overrides:
 Behavior:
   - materializes the task-list first 20 tasks against all 7 schemas if needed
   - starts a tmux session with inner-loop and dashboard windows
-  - defaults to 3 concurrent pair jobs
+  - defaults to one pair job per tmux session; use task-batch tmux launchers for parallelism
 EOF
 }
 
@@ -95,7 +99,11 @@ PYTHON_RUNTIME="${SKILLX_PYTHON:-3.11}"
 ROUND_BUDGET="${SKILLX_ROUND_BUDGET:-3}"
 AGENT="${SKILLX_AGENT:-claude-code}"
 MODEL="${SKILLX_MODEL:-anthropic/claude-sonnet-4-5}"
-MAX_CONCURRENT_PAIRS="${SKILLX_MAX_CONCURRENT_PAIRS:-3}"
+FALLBACK_CLAUDE_OAUTH_FILE="${SKILLX_FALLBACK_CLAUDE_OAUTH_FILE:-}"
+FALLBACK_CODEX_MODEL="${SKILLX_FALLBACK_CODEX_MODEL:-gpt-5.4}"
+DISABLE_CODEX_FALLBACK="${SKILLX_DISABLE_CODEX_FALLBACK:-0}"
+DISABLE_RATE_LIMIT_FALLBACK="${SKILLX_DISABLE_RATE_LIMIT_FALLBACK:-0}"
+MAX_CONCURRENT_PAIRS="${SKILLX_MAX_CONCURRENT_PAIRS:-1}"
 OAUTH_FILE="${SKILLX_OAUTH_FILE:-$HOME/.claude/claude-code-oauth-token}"
 PREPARE_ONLY="${SKILLX_PREPARE_ONLY:-0}"
 
@@ -176,5 +184,9 @@ SKILLX_PYTHON="$PYTHON_RUNTIME" \
 SKILLX_ROUND_BUDGET="$ROUND_BUDGET" \
 SKILLX_AGENT="$AGENT" \
 SKILLX_MODEL="$MODEL" \
+SKILLX_FALLBACK_CLAUDE_OAUTH_FILE="$FALLBACK_CLAUDE_OAUTH_FILE" \
+SKILLX_FALLBACK_CODEX_MODEL="$FALLBACK_CODEX_MODEL" \
+SKILLX_DISABLE_CODEX_FALLBACK="$DISABLE_CODEX_FALLBACK" \
+SKILLX_DISABLE_RATE_LIMIT_FALLBACK="$DISABLE_RATE_LIMIT_FALLBACK" \
 SKILLX_MAX_CONCURRENT_PAIRS="$MAX_CONCURRENT_PAIRS" \
 scripts/run_skillx_inner_loop_tmux.sh "${inner_args[@]}"

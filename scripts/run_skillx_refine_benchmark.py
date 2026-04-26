@@ -30,6 +30,7 @@ from skillx.model_routing import (
     AUTH_BACKED_CODEX_IMPORT_PATH,
     resolve_benchmark_agent_name,
 )
+from skillx.quota_signals import summarize_run_dir
 from skillx.run_failure_utils import build_run_failure_payload, write_run_failure
 from skillx.skillpack_utils import copy_named_skill_dirs, discover_skill_names
 from skillx.c4ar.orchestrator import (
@@ -177,6 +178,7 @@ def build_main_run_failure_payload(
     args: argparse.Namespace,
     failure_context: dict[str, Any],
 ) -> dict[str, Any]:
+    quota_signal = summarize_run_dir(args.output_dir) if args.output_dir.exists() else None
     return build_run_failure_payload(
         error=error,
         traceback_text=traceback.format_exc(),
@@ -187,6 +189,7 @@ def build_main_run_failure_payload(
             "run_id": args.run_id,
             "task_id": args.task,
             "orchestration_mode": args.orchestration_mode,
+            "quota_signal": quota_signal,
         },
     )
 
@@ -2576,6 +2579,117 @@ def backup_run_dir_before_resume(
     return archive_path
 
 
+def cleanup_rate_limit_retry_artifacts(
+    *,
+    run_dir: Path,
+    task_id: str,
+    round_budget: int,
+) -> dict[str, Any]:
+    """Archive quota-tainted round artifacts so a fallback profile can rerun them.
+
+    The runner is resumable by round. A quota failure can still leave synthetic
+    C4AR artifacts that look complete, so fallback retries must remove the
+    affected round and everything after it before inferring the resume point.
+    """
+
+    root_dir = run_dir / "refine" / task_id
+    rounds_dir = root_dir / "rounds"
+    run_signal = summarize_run_dir(run_dir)
+
+    first_rate_limit_round: int | None = None
+    round_signals: list[dict[str, Any]] = []
+    if rounds_dir.exists():
+        for round_index in range(0, round_budget + 1):
+            candidate = rounds_dir / f"round-{round_index}"
+            if not candidate.exists():
+                continue
+            scan = summarize_run_dir(candidate)
+            if scan.get("has_hard_signal"):
+                round_signals.append(
+                    {
+                        "round_index": round_index,
+                        "signal_level": scan.get("signal_level"),
+                        "hard_terms": scan.get("hard_terms") or [],
+                        "matches": scan.get("matches") or [],
+                    }
+                )
+                if first_rate_limit_round is None:
+                    first_rate_limit_round = round_index
+    elif not run_signal.get("has_hard_signal"):
+        return {
+            "cleaned": False,
+            "reason": "rounds_dir_missing",
+            "task_id": task_id,
+            "first_rate_limit_round": None,
+            "archived_paths": [],
+        }
+
+    if first_rate_limit_round is None and run_signal.get("has_hard_signal"):
+        first_rate_limit_round = 0
+
+    if first_rate_limit_round is None:
+        return {
+            "cleaned": False,
+            "reason": "no_rate_limit_round_detected",
+            "task_id": task_id,
+            "first_rate_limit_round": None,
+            "round_signals": round_signals,
+            "archived_paths": [],
+        }
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    archive_root = ensure_dir(run_dir / "archives" / f"rate-limit-fallback-{stamp}")
+    archived_paths: list[dict[str, str]] = []
+
+    def archive_path(path: Path, *, relative_to: Path = root_dir) -> None:
+        if not path.exists():
+            return
+        try:
+            relative = path.relative_to(relative_to)
+        except ValueError:
+            relative = Path(path.name)
+        destination = archive_root / relative
+        if destination.exists():
+            suffix = datetime.now(timezone.utc).strftime("%H%M%S%f")
+            destination = destination.with_name(f"{destination.name}.{suffix}")
+        ensure_dir(destination.parent)
+        shutil.move(str(path), str(destination))
+        archived_paths.append({"source": str(path), "archive": str(destination)})
+
+    if rounds_dir.exists():
+        for round_index in range(first_rate_limit_round, round_budget + 1):
+            archive_path(rounds_dir / f"round-{round_index}")
+
+    for stale_path in (
+        root_dir / "C4-final",
+        root_dir / "bundle_manifest.json",
+        root_dir / "refine_summary.json",
+        root_dir / "refine_ledger.md",
+    ):
+        archive_path(stale_path)
+    for stale_path in (
+        run_dir / "RUN_STATUS.md",
+        run_dir / "run_failure.json",
+        run_dir / "rate_limit_signal.json",
+    ):
+        archive_path(stale_path, relative_to=run_dir)
+
+    report = {
+        "cleaned": True,
+        "reason": "rate_limit_fallback_retry",
+        "task_id": task_id,
+        "first_rate_limit_round": first_rate_limit_round,
+        "round_budget": round_budget,
+        "run_signal": run_signal,
+        "round_signals": round_signals,
+        "archive_root": str(archive_root),
+        "archived_paths": archived_paths,
+        "observed_at": _timestamp(),
+    }
+    write_json(run_dir / "rate_limit_fallback_cleanup.json", report)
+    return report
+
+
 def run_c4ar_round_with_harbor(
     *,
     task: TaskInputs,
@@ -3436,6 +3550,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--override-memory-mb", type=int)
     parser.add_argument("--override-storage-mb", type=int)
     parser.add_argument("--orchestration-mode", choices=("legacy", "c4ar"), default=DEFAULT_ORCHESTRATION_MODE)
+    parser.add_argument(
+        "--clear-rate-limit-artifacts",
+        action="store_true",
+        help="Before resuming, archive hard quota/rate-limit-tainted rounds so fallback auth/model can rerun from that round.",
+    )
     return parser
 
 
@@ -3463,6 +3582,13 @@ def main() -> int:
     try:
         update_failure_context(failure_context, failed_stage="discover_task_inputs")
         task = discover_task_inputs(args.skillsbench_root, args.task)
+        if args.clear_rate_limit_artifacts:
+            update_failure_context(failure_context, failed_stage="clear_rate_limit_artifacts")
+            cleanup_rate_limit_retry_artifacts(
+                run_dir=run_dir,
+                task_id=task.task_id,
+                round_budget=args.round_budget,
+            )
         if args.orchestration_mode == "c4ar" and c4ar_resume_requires_backup(
             run_dir=run_dir,
             task_id=task.task_id,
@@ -3564,6 +3690,16 @@ def main() -> int:
         if run_failure_path.exists():
             run_failure_path.unlink()
         completed_status, completed_status_details = derive_completed_run_status(round_rows)
+        quota_signal = summarize_run_dir(run_dir)
+        if quota_signal.get("has_hard_signal"):
+            completed_status = "completed_with_quota_issues"
+            write_json(run_dir / "rate_limit_signal.json", quota_signal)
+            completed_status_details = {
+                **completed_status_details,
+                "quota_signal_level": quota_signal.get("signal_level"),
+                "quota_hard_terms": ", ".join(str(term) for term in (quota_signal.get("hard_terms") or [])),
+                "quota_match_count": len(quota_signal.get("matches") or []),
+            }
         write_run_status(
             run_dir,
             completed_status,
