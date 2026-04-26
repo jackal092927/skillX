@@ -18,28 +18,29 @@ SUSPICIOUS_VENV_REENTRY_MARKERS = (
 def assert_healthy_python_executable(executable: str | os.PathLike[str] | None = None) -> Path:
     """Fail fast when a Python executable path is a known-bad recursive wrapper."""
     executable_path = Path(executable or sys.executable)
+    command_path = executable_path if executable_path.is_absolute() else Path.cwd() / executable_path
     try:
-        resolved_path = executable_path.resolve(strict=True)
+        command_path.resolve(strict=True)
     except FileNotFoundError as exc:
         raise SystemExit(f"Python executable does not exist: {executable_path}") from exc
 
-    if not os.access(resolved_path, os.X_OK):
-        raise SystemExit(f"Python executable is not executable: {resolved_path}")
+    if not os.access(command_path, os.X_OK):
+        raise SystemExit(f"Python executable is not executable: {command_path}")
 
     try:
-        header = resolved_path.read_bytes()[:512]
+        header = command_path.read_bytes()[:512]
     except OSError as exc:
-        raise SystemExit(f"Could not inspect Python executable {resolved_path}: {exc}") from exc
+        raise SystemExit(f"Could not inspect Python executable {command_path}: {exc}") from exc
 
     if header.startswith(b"#!") and any(marker in header for marker in SUSPICIOUS_VENV_REENTRY_MARKERS):
         raise SystemExit(
             "Python executable appears to be a recursive .venv wrapper, which can deadlock uv "
-            f"interpreter probing: {resolved_path}. Reinstall the uv-managed Python runtime "
+            f"interpreter probing: {command_path}. Reinstall the uv-managed Python runtime "
             "with `uv --no-config --directory /tmp python install 3.11.14 --reinstall --force` "
             "and recreate the project virtualenv if needed."
         )
 
-    return resolved_path
+    return command_path
 
 
 def assert_supported_python_runtime() -> None:
