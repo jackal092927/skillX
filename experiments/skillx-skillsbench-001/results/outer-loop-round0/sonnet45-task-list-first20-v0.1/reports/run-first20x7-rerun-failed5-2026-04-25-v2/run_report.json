@@ -1,0 +1,1766 @@
+{
+  "artifacts": {
+    "events_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/launcher_logs/run-first20x7-rerun-failed5-2026-04-25-v2/events.ndjson",
+    "launcher_stdout_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/launcher_logs/run-first20x7-rerun-failed5-2026-04-25-v2/launcher.stdout.log",
+    "pair_specs_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pair_specs.jsonl",
+    "summary_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/launcher_logs/run-first20x7-rerun-failed5-2026-04-25-v2/summary.json"
+  },
+  "duration_sec": 3966.002,
+  "failure_groups": [],
+  "finished_at": "2026-04-26T04:21:25.623273+00:00",
+  "generated_at": "2026-04-26T04:35:55.178491+00:00",
+  "materialized_root": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1",
+  "pair_count_completed": 5,
+  "pair_count_failed": 0,
+  "pair_count_succeeded": 5,
+  "pair_count_total": 5,
+  "pair_results": [
+    {
+      "best_observed": {
+        "reward_raw": 1.0,
+        "round_index": 3,
+        "score_pct": 100.0
+      },
+      "delta_vs_c0_pp": 100.0,
+      "delta_vs_c1_pp": 100.0,
+      "diagnosis_note": "Clean verifier-facing score available for comparison against C0/C1.",
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 100.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "evidence_class": "measured",
+      "failure": null,
+      "has_intermediate_exceptions": false,
+      "launcher": {
+        "duration_sec": 2077.137,
+        "finished_at": "2026-04-26T03:49:56.757492+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-26T03:15:19.620881+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [
+        "[1/5] azure-bgp-oscillation-route-leak__analytic-pipeline"
+      ],
+      "official_scores": {
+        "c0_pct": 0.0,
+        "c1_pct": 0.0
+      },
+      "pair_id": "azure-bgp-oscillation-route-leak__analytic-pipeline",
+      "reported_score": {
+        "basis": "selected",
+        "reward_raw": 1.0,
+        "round_index": 3,
+        "score_pct": 100.0
+      },
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue with the rewritten skillpack because round 0 completed the domain diagnosis but burned time on seven sequential reads and repeated analysis narration before producing the report. The staged rewrite now enforces a bounded first-pass read budget, an early oscillation/leak synthesis gate, and less over-guidance, while preserving the invariant task prompt.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:17:39.053202+00:00",
+            "role_a_completed": "2026-04-26T03:20:28.599223+00:00",
+            "role_b_completed": "2026-04-26T03:25:05.375999+00:00",
+            "round_decision_loaded": "2026-04-26T03:25:05.376292+00:00",
+            "round_started": "2026-04-26T03:17:39.052656+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0/tune_check/azure-bgp-oscillation-route-leak-round-0-c4-tune/c4-azure-bgp-oscillation-route-l__XLAas53/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged skillpack now uses a bounded four-read fast path, compact schema-only output, and direct solution buckets that target the packet's read churn and oversized report behavior while preserving prompt invariance.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:28:34.718051+00:00",
+            "role_a_completed": "2026-04-26T03:33:09.013117+00:00",
+            "role_b_completed": "2026-04-26T03:37:59.914261+00:00",
+            "round_decision_loaded": "2026-04-26T03:37:59.914616+00:00",
+            "round_started": "2026-04-26T03:28:34.717688+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1/tune_check/azure-bgp-oscillation-route-leak-round-1-c4-tune/c4-azure-bgp-oscillation-route-l__yzrUYuG/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged skillpack now makes the required four-file intake explicit single-pass behavior and merges the startup budget wording, so the next round should test whether that removes the false loop signal.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:40:01.082879+00:00",
+            "role_a_completed": "2026-04-26T03:44:00.487178+00:00",
+            "role_b_completed": "2026-04-26T03:47:48.659412+00:00",
+            "round_decision_loaded": "2026-04-26T03:47:48.659784+00:00",
+            "round_started": "2026-04-26T03:40:01.082488+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2/tune_check/azure-bgp-oscillation-route-leak-round-2-c4-tune/c4-azure-bgp-oscillation-route-l__F8eYZBQ/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 1.0,
+            "score_pct": 100.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:49:56.730527+00:00",
+            "round_started": "2026-04-26T03:49:56.730514+00:00",
+            "terminal_round_completed": "2026-04-26T03:49:56.730538+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3/tune_check/result.json",
+          "reward_raw": 1.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 100.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 1.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3/tune_check/azure-bgp-oscillation-route-leak-round-3-c4-tune/c4-azure-bgp-oscillation-route-l__tuUjgKq/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__analytic-pipeline/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-26T03:49:56.734114+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:17:39.053202+00:00",
+              "role_a_completed": "2026-04-26T03:20:28.599223+00:00",
+              "role_b_completed": "2026-04-26T03:25:05.375999+00:00",
+              "round_decision_loaded": "2026-04-26T03:25:05.376292+00:00",
+              "round_started": "2026-04-26T03:17:39.052656+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:28:34.718051+00:00",
+              "role_a_completed": "2026-04-26T03:33:09.013117+00:00",
+              "role_b_completed": "2026-04-26T03:37:59.914261+00:00",
+              "round_decision_loaded": "2026-04-26T03:37:59.914616+00:00",
+              "round_started": "2026-04-26T03:28:34.717688+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:40:01.082879+00:00",
+              "role_a_completed": "2026-04-26T03:44:00.487178+00:00",
+              "role_b_completed": "2026-04-26T03:47:48.659412+00:00",
+              "round_decision_loaded": "2026-04-26T03:47:48.659784+00:00",
+              "round_started": "2026-04-26T03:40:01.082488+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:49:56.730527+00:00",
+              "round_started": "2026-04-26T03:49:56.730514+00:00",
+              "terminal_round_completed": "2026-04-26T03:49:56.730538+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "analytic-pipeline",
+      "selected": {
+        "classification": {
+          "has_exception_stats": false,
+          "kind": "clean_success",
+          "reason": "positive_reward_with_no_exception_stats",
+          "reward_is_missing": false,
+          "reward_is_zero": false
+        },
+        "reward_raw": 1.0,
+        "round_index": 3,
+        "score_pct": 100.0
+      },
+      "task_name": "azure-bgp-oscillation-route-leak",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": 0.0,
+      "delta_vs_c1_pp": 0.0,
+      "diagnosis_note": "Clean verifier-facing score available for comparison against C0/C1.",
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "evidence_class": "measured",
+      "failure": null,
+      "has_intermediate_exceptions": false,
+      "launcher": {
+        "duration_sec": 2146.799,
+        "finished_at": "2026-04-26T03:51:06.420404+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-26T03:15:19.620958+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [
+        "[2/5] azure-bgp-oscillation-route-leak__engineering-composition"
+      ],
+      "official_scores": {
+        "c0_pct": 0.0,
+        "c1_pct": 0.0
+      },
+      "pair_id": "azure-bgp-oscillation-route-leak__engineering-composition",
+      "reported_score": {
+        "basis": "selected",
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged skillpack now replaces generic Azure BGP exposition with a prompt-invariant four-read fast path, a single-write stop rule, and task-exact solution buckets that directly target both the observed churn and the benchmark's classification oracle.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:19:07.682428+00:00",
+            "role_a_completed": "2026-04-26T03:23:05.404855+00:00",
+            "role_b_completed": "2026-04-26T03:28:40.522894+00:00",
+            "round_decision_loaded": "2026-04-26T03:28:40.523240+00:00",
+            "round_started": "2026-04-26T03:19:07.681964+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0/tune_check/azure-bgp-oscillation-route-leak-round-0-c4-tune/c4-azure-bgp-oscillation-route-l__dU2h75g/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue with the rewritten skillpack because the round-1 failure was dominated by recoverable execution-shape issues: a fixed startup read burst and unnecessary post-write narration. The staged rewrite now compresses startup ingest, preserves prompt invariance, and makes the required report write terminal.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:31:44.005934+00:00",
+            "role_a_completed": "2026-04-26T03:34:50.358100+00:00",
+            "role_b_completed": "2026-04-26T03:39:05.577326+00:00",
+            "round_decision_loaded": "2026-04-26T03:39:05.577749+00:00",
+            "round_started": "2026-04-26T03:31:44.005544+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1/tune_check/azure-bgp-oscillation-route-leak-round-1-c4-tune/c4-azure-bgp-oscillation-route-l__XVjpQjT/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged skillpack now converts the pre-write phase into a strict sufficiency gate with at most one justified extra read, so the next round should test whether that removes the remaining confirmation-read churn.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:41:32.867284+00:00",
+            "role_a_completed": "2026-04-26T03:45:13.472979+00:00",
+            "role_b_completed": "2026-04-26T03:49:01.898017+00:00",
+            "round_decision_loaded": "2026-04-26T03:49:01.898323+00:00",
+            "round_started": "2026-04-26T03:41:32.866916+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2/tune_check/azure-bgp-oscillation-route-leak-round-2-c4-tune/c4-azure-bgp-oscillation-route-l__RBREQgt/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:51:06.396604+00:00",
+            "round_started": "2026-04-26T03:51:06.396601+00:00",
+            "terminal_round_completed": "2026-04-26T03:51:06.396611+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3/tune_check/azure-bgp-oscillation-route-leak-round-3-c4-tune/c4-azure-bgp-oscillation-route-l__84vvZ5e/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__engineering-composition/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-26T03:51:06.400295+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:19:07.682428+00:00",
+              "role_a_completed": "2026-04-26T03:23:05.404855+00:00",
+              "role_b_completed": "2026-04-26T03:28:40.522894+00:00",
+              "round_decision_loaded": "2026-04-26T03:28:40.523240+00:00",
+              "round_started": "2026-04-26T03:19:07.681964+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:31:44.005934+00:00",
+              "role_a_completed": "2026-04-26T03:34:50.358100+00:00",
+              "role_b_completed": "2026-04-26T03:39:05.577326+00:00",
+              "round_decision_loaded": "2026-04-26T03:39:05.577749+00:00",
+              "round_started": "2026-04-26T03:31:44.005544+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:41:32.867284+00:00",
+              "role_a_completed": "2026-04-26T03:45:13.472979+00:00",
+              "role_b_completed": "2026-04-26T03:49:01.898017+00:00",
+              "round_decision_loaded": "2026-04-26T03:49:01.898323+00:00",
+              "round_started": "2026-04-26T03:41:32.866916+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:51:06.396604+00:00",
+              "round_started": "2026-04-26T03:51:06.396601+00:00",
+              "terminal_round_completed": "2026-04-26T03:51:06.396611+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "engineering-composition",
+      "selected": {
+        "classification": {
+          "has_exception_stats": false,
+          "kind": "scientific_failure",
+          "reason": "clean_zero_or_negative_reward",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "azure-bgp-oscillation-route-leak",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": 0.0,
+      "delta_vs_c1_pp": 0.0,
+      "diagnosis_note": "Clean verifier-facing score available for comparison against C0/C1.",
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "evidence_class": "measured",
+      "failure": null,
+      "has_intermediate_exceptions": false,
+      "launcher": {
+        "duration_sec": 2073.731,
+        "finished_at": "2026-04-26T03:49:53.352337+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-26T03:15:19.621016+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [
+        "[3/5] azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis",
+        "  OK azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis"
+      ],
+      "official_scores": {
+        "c0_pct": 0.0,
+        "c1_pct": 0.0
+      },
+      "pair_id": "azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis",
+      "reported_score": {
+        "basis": "selected",
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The round failed on behavior, not infrastructure: the executor anchored on early candidate reads and still let a prohibited peering shutdown classify as a full fix. The staged next skillpack now adds an evidence-first diagnosis boundary and a harder invalid-fix rule, so the refined candidate should be evaluated in the next round.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:18:48.252893+00:00",
+            "role_a_completed": "2026-04-26T03:22:45.482794+00:00",
+            "role_b_completed": "2026-04-26T03:27:03.897201+00:00",
+            "round_decision_loaded": "2026-04-26T03:27:03.897503+00:00",
+            "round_started": "2026-04-26T03:18:48.252470+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-0/tune_check/azure-bgp-oscillation-route-leak-round-0-c4-tune/c4-azure-bgp-oscillation-route-l__iNF5Vab/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Round 1 failed by duplicated diagnosis churn rather than a hard task misunderstanding, and the staged Azure BGP skill now adds a fast-path guard, evidence-delta gate, and one-pass execution contract.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:29:50.590996+00:00",
+            "role_a_completed": "2026-04-26T03:32:38.559432+00:00",
+            "role_b_completed": "2026-04-26T03:36:26.722302+00:00",
+            "round_decision_loaded": "2026-04-26T03:36:26.722680+00:00",
+            "round_started": "2026-04-26T03:29:50.590592+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-1/tune_check/azure-bgp-oscillation-route-leak-round-1-c4-tune/c4-azure-bgp-oscillation-route-l__VUTSN9x/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Round 2 still shows a 7x read-only churn pattern after earlier one-pass edits, so the correct move is to continue with the stricter staged skillpack that enforces a bounded core-read phase and immediate synthesis packaging.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:39:50.763070+00:00",
+            "role_a_completed": "2026-04-26T03:42:38.335882+00:00",
+            "role_b_completed": "2026-04-26T03:47:08.556906+00:00",
+            "round_decision_loaded": "2026-04-26T03:47:08.557252+00:00",
+            "round_started": "2026-04-26T03:39:50.762641+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-2/tune_check/azure-bgp-oscillation-route-leak-round-2-c4-tune/c4-azure-bgp-oscillation-route-l__wNbwcMv/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:49:53.267557+00:00",
+            "round_started": "2026-04-26T03:49:53.267552+00:00",
+            "terminal_round_completed": "2026-04-26T03:49:53.267571+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/azure-bgp-oscillation-route-leak/rounds/round-3/tune_check/azure-bgp-oscillation-route-leak-round-3-c4-tune/c4-azure-bgp-oscillation-route-l__MJ79nUE/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-26T03:49:53.292202+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:18:48.252893+00:00",
+              "role_a_completed": "2026-04-26T03:22:45.482794+00:00",
+              "role_b_completed": "2026-04-26T03:27:03.897201+00:00",
+              "round_decision_loaded": "2026-04-26T03:27:03.897503+00:00",
+              "round_started": "2026-04-26T03:18:48.252470+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:29:50.590996+00:00",
+              "role_a_completed": "2026-04-26T03:32:38.559432+00:00",
+              "role_b_completed": "2026-04-26T03:36:26.722302+00:00",
+              "round_decision_loaded": "2026-04-26T03:36:26.722680+00:00",
+              "round_started": "2026-04-26T03:29:50.590592+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:39:50.763070+00:00",
+              "role_a_completed": "2026-04-26T03:42:38.335882+00:00",
+              "role_b_completed": "2026-04-26T03:47:08.556906+00:00",
+              "round_decision_loaded": "2026-04-26T03:47:08.557252+00:00",
+              "round_started": "2026-04-26T03:39:50.762641+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:49:53.267557+00:00",
+              "round_started": "2026-04-26T03:49:53.267552+00:00",
+              "terminal_round_completed": "2026-04-26T03:49:53.267571+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "retrieval-heavy-synthesis",
+      "selected": {
+        "classification": {
+          "has_exception_stats": false,
+          "kind": "scientific_failure",
+          "reason": "clean_zero_or_negative_reward",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "azure-bgp-oscillation-route-leak",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "delta_vs_c0_pp": 40.0,
+      "delta_vs_c1_pp": 20.0,
+      "diagnosis_note": "Clean verifier-facing score available for comparison against C0/C1.",
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 100.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "evidence_class": "measured",
+      "failure": null,
+      "has_intermediate_exceptions": false,
+      "launcher": {
+        "duration_sec": 1892.256,
+        "finished_at": "2026-04-26T04:21:25.623273+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-26T03:49:53.367144+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [
+        "[4/5] data-to-d3__environment-control",
+        "  OK azure-bgp-oscillation-route-leak__analytic-pipeline"
+      ],
+      "official_scores": {
+        "c0_pct": 60.0,
+        "c1_pct": 80.0
+      },
+      "pair_id": "data-to-d3__environment-control",
+      "reported_score": {
+        "basis": "selected",
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The evidence points to correctable skillpack-level execution churn rather than an unrecoverable task mismatch. The staged candidate now adds an early structural checkpoint, portable verification, and a shorter task-centered build flow, so the next round should evaluate the refined skillpack.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:52:52.733511+00:00",
+            "role_a_completed": "2026-04-26T03:57:15.917501+00:00",
+            "role_b_completed": "2026-04-26T04:01:52.627937+00:00",
+            "round_decision_loaded": "2026-04-26T04:01:52.628229+00:00",
+            "round_started": "2026-04-26T03:52:52.733085+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-0/tune_check/data-to-d3-round-0-c4-tune/c4-data-to-d3-round-0__FgMrZdg/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged d3 skillpack now preserves the successful task path while trimming the verification over-guidance that led to extra late-turn checks and false-positive churn labeling.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 1.0,
+            "score_pct": 100.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T04:04:55.514559+00:00",
+            "role_a_completed": "2026-04-26T04:08:28.939286+00:00",
+            "role_b_completed": "2026-04-26T04:12:07.933708+00:00",
+            "round_decision_loaded": "2026-04-26T04:12:07.934025+00:00",
+            "round_started": "2026-04-26T04:04:55.514202+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-1/tune_check/result.json",
+          "reward_raw": 1.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 100.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 1.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-1/tune_check/data-to-d3-round-1-c4-tune/c4-data-to-d3-round-1__xQP9Yfv/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue because the round 2 failure was a sequencing and quota-headroom problem, not a mismatch in the fixed task contract. The staged rewrite stays prompt-invariant and narrows the next run around a start-time quota gate, earlier required artifact landing, and resume-from-checkpoint behavior after a 429.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T04:12:58.136403+00:00",
+            "role_a_completed": "2026-04-26T04:16:20.432888+00:00",
+            "role_b_completed": "2026-04-26T04:20:56.333900+00:00",
+            "round_decision_loaded": "2026-04-26T04:20:56.334238+00:00",
+            "round_started": "2026-04-26T04:12:58.136017+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-2/tune_check/data-to-d3-round-2-c4-tune/c4-data-to-d3-round-2__pqRscgd/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T04:21:25.597217+00:00",
+            "round_started": "2026-04-26T04:21:25.597214+00:00",
+            "terminal_round_completed": "2026-04-26T04:21:25.597223+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-3/tune_check/data-to-d3-round-3-c4-tune/c4-data-to-d3-round-3__fr9vg7s/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__environment-control/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-26T04:21:25.602713+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:52:52.733511+00:00",
+              "role_a_completed": "2026-04-26T03:57:15.917501+00:00",
+              "role_b_completed": "2026-04-26T04:01:52.627937+00:00",
+              "round_decision_loaded": "2026-04-26T04:01:52.628229+00:00",
+              "round_started": "2026-04-26T03:52:52.733085+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T04:04:55.514559+00:00",
+              "role_a_completed": "2026-04-26T04:08:28.939286+00:00",
+              "role_b_completed": "2026-04-26T04:12:07.933708+00:00",
+              "round_decision_loaded": "2026-04-26T04:12:07.934025+00:00",
+              "round_started": "2026-04-26T04:04:55.514202+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T04:12:58.136403+00:00",
+              "role_a_completed": "2026-04-26T04:16:20.432888+00:00",
+              "role_b_completed": "2026-04-26T04:20:56.333900+00:00",
+              "round_decision_loaded": "2026-04-26T04:20:56.334238+00:00",
+              "round_started": "2026-04-26T04:12:58.136017+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T04:21:25.597217+00:00",
+              "round_started": "2026-04-26T04:21:25.597214+00:00",
+              "terminal_round_completed": "2026-04-26T04:21:25.597223+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "environment-control",
+      "selected": {
+        "classification": {
+          "has_exception_stats": false,
+          "kind": "clean_success",
+          "reason": "positive_reward_with_no_exception_stats",
+          "reward_is_missing": false,
+          "reward_is_zero": false
+        },
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "task_name": "data-to-d3",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "delta_vs_c0_pp": 40.0,
+      "delta_vs_c1_pp": 20.0,
+      "diagnosis_note": "Clean verifier-facing score available for comparison against C0/C1.",
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 100.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "evidence_class": "measured",
+      "failure": null,
+      "has_intermediate_exceptions": false,
+      "launcher": {
+        "duration_sec": 1779.205,
+        "finished_at": "2026-04-26T04:19:35.962928+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-04-26T03:49:56.758273+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [
+        "[5/5] data-to-d3__methodology-guardrail",
+        "  OK azure-bgp-oscillation-route-leak__engineering-composition",
+        "  OK data-to-d3__methodology-guardrail",
+        "  OK data-to-d3__environment-control",
+        "Finished round0 launch: succeeded=5 failed=0 summary=<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/launcher_logs/run-first20x7-rerun-failed5-2026-04-25-v2/summary.json"
+      ],
+      "official_scores": {
+        "c0_pct": 60.0,
+        "c1_pct": 80.0
+      },
+      "pair_id": "data-to-d3__methodology-guardrail",
+      "reported_score": {
+        "basis": "selected",
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue because the round produced the required visualization but lost reward to post-solution churn. The staged rewrite is prompt-invariant, local to one skill file, and directly targets the observed README detour and repeated closure summaries.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T03:53:20.335846+00:00",
+            "role_a_completed": "2026-04-26T03:56:18.969604+00:00",
+            "role_b_completed": "2026-04-26T04:00:03.450509+00:00",
+            "round_decision_loaded": "2026-04-26T04:00:03.450838+00:00",
+            "round_started": "2026-04-26T03:53:20.335303+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-0/tune_check/data-to-d3-round-0-c4-tune/c4-data-to-d3-round-0__vfMPxBy/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue because the run already succeeded, but the packet misread normal multi-file progress and recorded a non-portable verification misstep. The staged rewrite is prompt-invariant and narrowly improves methodology guidance for later rounds without changing task semantics.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 1.0,
+            "score_pct": 100.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T04:02:13.721436+00:00",
+            "role_a_completed": "2026-04-26T04:05:15.121131+00:00",
+            "role_b_completed": "2026-04-26T04:09:07.377348+00:00",
+            "round_decision_loaded": "2026-04-26T04:09:07.377730+00:00",
+            "round_started": "2026-04-26T04:02:13.720889+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-1/tune_check/result.json",
+          "reward_raw": 1.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 100.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 1.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-1/tune_check/data-to-d3-round-1-c4-tune/c4-data-to-d3-round-1__rGUbQpZ/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue because round 2 still failed on closure quality rather than missing D3 implementation scope. The staged rewrite stays prompt-invariant, preserves valid multi-file build sequencing, and replaces shallow HTML checks with a single runtime-backed acceptance gate.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T04:11:44.949995+00:00",
+            "role_a_completed": "2026-04-26T04:15:07.179741+00:00",
+            "role_b_completed": "2026-04-26T04:19:05.116799+00:00",
+            "round_decision_loaded": "2026-04-26T04:19:05.117209+00:00",
+            "round_started": "2026-04-26T04:11:44.949605+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-2/tune_check/data-to-d3-round-2-c4-tune/c4-data-to-d3-round-2__2oBYvQD/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-04-26T04:19:35.935565+00:00",
+            "round_started": "2026-04-26T04:19:35.935562+00:00",
+            "terminal_round_completed": "2026-04-26T04:19:35.935571+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2/refine/data-to-d3/rounds/round-3/tune_check/data-to-d3-round-3-c4-tune/c4-data-to-d3-round-3__U2pQDJN/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/pairs/data-to-d3__methodology-guardrail/refine_run_run-first20x7-rerun-failed5-2026-04-25-v2",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-04-26T04:19:35.940725+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T03:53:20.335846+00:00",
+              "role_a_completed": "2026-04-26T03:56:18.969604+00:00",
+              "role_b_completed": "2026-04-26T04:00:03.450509+00:00",
+              "round_decision_loaded": "2026-04-26T04:00:03.450838+00:00",
+              "round_started": "2026-04-26T03:53:20.335303+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T04:02:13.721436+00:00",
+              "role_a_completed": "2026-04-26T04:05:15.121131+00:00",
+              "role_b_completed": "2026-04-26T04:09:07.377348+00:00",
+              "round_decision_loaded": "2026-04-26T04:09:07.377730+00:00",
+              "round_started": "2026-04-26T04:02:13.720889+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T04:11:44.949995+00:00",
+              "role_a_completed": "2026-04-26T04:15:07.179741+00:00",
+              "role_b_completed": "2026-04-26T04:19:05.116799+00:00",
+              "round_decision_loaded": "2026-04-26T04:19:05.117209+00:00",
+              "round_started": "2026-04-26T04:11:44.949605+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-04-26T04:19:35.935565+00:00",
+              "round_started": "2026-04-26T04:19:35.935562+00:00",
+              "terminal_round_completed": "2026-04-26T04:19:35.935571+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "methodology-guardrail",
+      "selected": {
+        "classification": {
+          "has_exception_stats": false,
+          "kind": "clean_success",
+          "reason": "positive_reward_with_no_exception_stats",
+          "reward_is_missing": false,
+          "reward_is_zero": false
+        },
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "task_name": "data-to-d3",
+      "timeout_detected": false
+    }
+  ],
+  "run_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+  "started_at": "2026-04-26T03:15:19.620881+00:00",
+  "tasks": [
+    "azure-bgp-oscillation-route-leak",
+    "data-to-d3"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "all_tasks_have_7_succeeded_pairs": true,
+  "artifact_type": "skillx_first20_round0_checkpoint",
+  "base_failed_pair_ids": [
+    "azure-bgp-oscillation-route-leak__analytic-pipeline",
+    "azure-bgp-oscillation-route-leak__engineering-composition",
+    "azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis",
+    "data-to-d3__environment-control",
+    "data-to-d3__methodology-guardrail"
+  ],
+  "base_failed_pairs": 5,
+  "base_run_label": "run-first20x7-round0-2026-04-24",
+  "base_run_report": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/run-first20x7-round0-2026-04-24/run_report.json",
+  "checkpoint_label": "first20-round0-effective-2026-04-26",
+  "classification_counts": {
+    "clean_success": 20,
+    "scientific_failure": 120
+  },
+  "effective_pair_count": 140,
+  "generated_at": "2026-04-26T04:41:27.108920+00:00",
+  "launcher_failed_pairs": 0,
+  "launcher_status_counts": {
+    "succeeded": 140
+  },
+  "launcher_succeeded_pairs": 140,
+  "rerun_labels": [
+    "run-first20x7-rerun-failed5-2026-04-25-v2"
+  ],
+  "rerun_replaced_pairs": 5,
+  "rerun_replacements": [
+    {
+      "base_status": "failed",
+      "pair_id": "azure-bgp-oscillation-route-leak__analytic-pipeline",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "azure-bgp-oscillation-route-leak__engineering-composition",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "data-to-d3__environment-control",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "data-to-d3__methodology-guardrail",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    }
+  ],
+  "rerun_reports": [
+    "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/run-first20x7-rerun-failed5-2026-04-25-v2/run_report.json"
+  ],
+  "schema_count": 7,
+  "task_count": 20
+}
