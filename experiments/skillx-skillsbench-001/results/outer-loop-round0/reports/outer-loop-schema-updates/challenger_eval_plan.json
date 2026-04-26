@@ -1,0 +1,30 @@
+[
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "analytic-pipeline",
+    "task_count": 6,
+    "task_names": [
+      "earthquake-phase-association",
+      "pdf-excel-diff",
+      "citation-check",
+      "civ6-adjacency-optimizer",
+      "court-form-filling",
+      "powerlifting-coef-calc"
+    ]
+  },
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "methodology-guardrail",
+    "task_count": 6,
+    "task_names": [
+      "citation-check",
+      "court-form-filling",
+      "earthquake-phase-association",
+      "energy-ac-optimal-power-flow",
+      "pdf-excel-diff",
+      "powerlifting-coef-calc"
+    ]
+  }
+]

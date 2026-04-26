@@ -6,6 +6,8 @@ import io
 import json
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -263,7 +265,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                 ],
             )
 
-    def test_build_refine_command_uses_uv_and_explicit_protocol_paths(self) -> None:
+    def test_build_refine_command_uses_current_python_and_explicit_protocol_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))
             _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
@@ -282,7 +284,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             )
 
             command_text = " ".join(command)
-            self.assertTrue(command[:3] == ["uv", "run", "python"])
+            self.assertEqual(Path(command[0]).resolve(), Path(self.module.sys.executable).resolve())
+            self.assertEqual(command[1], str(self.module.ROOT / "scripts" / "run_skillx_refine_benchmark.py"))
             self.assertIn("--task task-beta", command_text)
             self.assertIn("--starting-label C1", command_text)
             self.assertIn("--refine-protocol-path", command_text)
@@ -291,6 +294,31 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertIn(str(fixture["bundle_path"]), command_text)
             self.assertIn("refine_run_smoke3", command_text)
             self.assertIn("task-beta__artifact-generation__smoke3", command_text)
+
+    def test_build_refine_command_rejects_recursive_python_wrapper(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            pair = next(spec for spec in pair_specs if spec["pair_id"] == "task-beta__artifact-generation")
+            fake_python = Path(tmpdir) / "python"
+            fake_python.write_text('#!/bin/sh\nexec "$(pwd)/.venv/bin/python" "$@"\n')
+            fake_python.chmod(0o755)
+
+            with self.assertRaises(SystemExit) as context:
+                self.module.build_refine_command(
+                    pair,
+                    materialized_root=fixture["materialized_root"],
+                    oauth_file=fixture["oauth_file"],
+                    round_budget=3,
+                    agent="claude-code",
+                    model="anthropic/claude-sonnet-4-5",
+                    refine_protocol_path=fixture["protocol_path"],
+                    bundle_contract_path=fixture["bundle_path"],
+                    output_suffix="bad-python",
+                    python_executable=fake_python,
+                )
+
+            self.assertIn("recursive .venv wrapper", str(context.exception))
 
     def test_build_refine_command_infers_codex_agent_from_model_and_omits_oauth(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -394,6 +422,7 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                 materialized_root=root / "round0-root",
                 selected_task_names=["task-alpha", "task-beta"],
                 selected_pair_count=4,
+                max_concurrent_pairs=3,
                 results=[
                     {
                         "pair_id": "task-alpha__artifact-generation",
@@ -520,6 +549,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                             str(fixture["bundle_path"]),
                             "--output-suffix",
                             "preflight-audit",
+                            "--max-concurrent-pairs",
+                            "1",
                         ]
                     )
 
@@ -687,6 +718,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                             str(fixture["bundle_path"]),
                             "--output-suffix",
                             "robust-smoke",
+                            "--max-concurrent-pairs",
+                            "1",
                             "--no-docker-health-check",
                         ]
                     )
@@ -751,6 +784,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                             str(fixture["bundle_path"]),
                             "--output-suffix",
                             "health-stop",
+                            "--max-concurrent-pairs",
+                            "1",
                             "--no-docker-auto-recover",
                         ]
                     )
@@ -830,6 +865,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                                 str(fixture["bundle_path"]),
                                 "--output-suffix",
                                 "health-recover",
+                                "--max-concurrent-pairs",
+                                "1",
                                 "--docker-auto-recover",
                             ]
                         )
@@ -880,6 +917,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                             str(fixture["bundle_path"]),
                             "--output-suffix",
                             "fault-injected-recover",
+                            "--max-concurrent-pairs",
+                            "1",
                             "--docker-auto-recover",
                         ]
                     )
@@ -932,6 +971,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                             str(fixture["bundle_path"]),
                             "--output-suffix",
                             "fault-injected-stop",
+                            "--max-concurrent-pairs",
+                            "1",
                             "--docker-auto-recover",
                         ]
                     )
@@ -989,6 +1030,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                             str(fixture["bundle_path"]),
                             "--output-suffix",
                             "build-fail",
+                            "--max-concurrent-pairs",
+                            "1",
                             "--no-docker-health-check",
                         ]
                     )
@@ -1026,6 +1069,60 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             failure_payload = json.loads(failure_path.read_text())
             self.assertEqual(failure_payload["launcher_stage"], "build_command")
             self.assertIn("broken pair spec", failure_payload["error_message"])
+
+    def test_main_runs_pairs_with_configured_parallelism(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            active = 0
+            max_active = 0
+            lock = threading.Lock()
+
+            def fake_run(command: list[str], cwd: str, check: bool) -> object:
+                nonlocal active, max_active
+                with lock:
+                    active += 1
+                    max_active = max(max_active, active)
+                try:
+                    time.sleep(0.05)
+                    return mock.Mock(returncode=0)
+                finally:
+                    with lock:
+                        active -= 1
+
+            with mock.patch.object(self.module.subprocess, "run", side_effect=fake_run):
+                exit_code = self.module.main(
+                    [
+                        "2",
+                        "--task-slice",
+                        str(fixture["task_slice_path"]),
+                        "--materialized-root",
+                        str(fixture["materialized_root"]),
+                        "--oauth-file",
+                        str(fixture["oauth_file"]),
+                        "--refine-protocol-path",
+                        str(fixture["protocol_path"]),
+                        "--bundle-contract-path",
+                        str(fixture["bundle_path"]),
+                        "--output-suffix",
+                        "parallel-smoke",
+                        "--max-concurrent-pairs",
+                        "2",
+                        "--no-docker-health-check",
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(max_active, 2)
+            summary_path = (
+                fixture["materialized_root"]
+                / "launcher_logs"
+                / "parallel-smoke"
+                / "summary.json"
+            )
+            summary = json.loads(summary_path.read_text())
+            self.assertEqual(summary["max_concurrent_pairs"], 2)
+            self.assertEqual(summary["succeeded_pairs"], 4)
+            self.assertEqual(summary["failed_pairs"], 0)
 
 
 if __name__ == "__main__":

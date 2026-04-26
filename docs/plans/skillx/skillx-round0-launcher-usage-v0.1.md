@@ -162,7 +162,28 @@ uv run python scripts/launch_skillx_round0.py --dry-run --task civ6-adjacency-op
 - 推荐先用 `--dry-run` 检查一下即将运行哪些 pair
 - 这对于确认 task 选择范围很有用
 
-### 8. 使用新的输出目录后缀
+### 8. 控制 pair 级并发
+
+默认情况下，launcher 会同时跑最多 `3` 个 task-schema pair：
+
+```bash
+uv run python scripts/launch_skillx_round0.py 3
+```
+
+如果需要恢复串行运行：
+
+```bash
+uv run python scripts/launch_skillx_round0.py 3 --max-concurrent-pairs 1
+```
+
+tmux helper 使用同一套参数，默认也是 `3`。可以用环境变量覆盖：
+
+```bash
+SKILLX_MAX_CONCURRENT_PAIRS=1 \
+  scripts/run_skillx_inner_loop_tmux.sh run-serial skillx-serial 8767 -- 3
+```
+
+### 9. 使用新的输出目录后缀
 
 ```bash
 uv run python scripts/launch_skillx_round0.py \

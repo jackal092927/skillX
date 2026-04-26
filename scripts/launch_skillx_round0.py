@@ -4,25 +4,33 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 from datetime import datetime, timezone
 import json
 import re
 import shlex
 import subprocess
 import sys
+import threading
 import tomllib
 import traceback
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
 SRC = ROOT / "src"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from runtime_guard import assert_healthy_python_executable, assert_supported_python_runtime
 from skillx.docker_health import attempt_docker_recovery, probe_docker_health
 from skillx.model_routing import resolve_benchmark_agent_name
 from skillx.run_failure_utils import build_run_failure_payload
+
+assert_supported_python_runtime()
 
 DEFAULT_TASK_SLICE = (
     ROOT
@@ -45,6 +53,8 @@ DEFAULT_REFINE_PROTOCOL_PATH = ROOT / "docs" / "protocols" / "skillx-refine-prot
 DEFAULT_BUNDLE_CONTRACT_PATH = ROOT / "docs" / "protocols" / "skillx-refine-bundle-contract-v0.1.md"
 DEFAULT_AGENT = "claude-code"
 DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
+DEFAULT_PYTHON_RUNTIME = "3.11"
+DEFAULT_MAX_CONCURRENT_PAIRS = 3
 MIN_DOCKER_MEMORY_BYTES = 16_000_000_000
 HIGH_TASK_MEMORY_MB = 8192
 MEDIUM_TASK_MEMORY_MB = 4096
@@ -52,6 +62,7 @@ BUILDTOOL_TOKENS = ("build-essential", " gcc", "g++", "clang", "make")
 SEISMIC_NATIVE_TOKENS = ("seisbench", "obspy")
 FROM_LINE_PATTERN = re.compile(r"^FROM\s+(.+)$", re.MULTILINE)
 MEMORY_STRING_PATTERN = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*([KMGTP])B?\s*$", re.IGNORECASE)
+NDJSON_WRITE_LOCK = threading.Lock()
 
 
 def read_json(path: Path) -> Any:
@@ -255,8 +266,13 @@ def build_launcher_log_dir(materialized_root: Path, *, output_suffix: str | None
 
 
 def append_ndjson(path: Path, payload: dict[str, Any]) -> None:
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(payload, sort_keys=True) + "\n")
+    with NDJSON_WRITE_LOCK:
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, sort_keys=True) + "\n")
+
+
+def sorted_result_values(results_by_index: dict[int, dict[str, Any]]) -> list[dict[str, Any]]:
+    return [results_by_index[index] for index in sorted(results_by_index)]
 
 
 def write_launcher_failed_run_status(
@@ -333,6 +349,7 @@ def build_launcher_summary(
     materialized_root: Path,
     selected_task_names: list[str],
     selected_pair_count: int,
+    max_concurrent_pairs: int,
     results: list[dict[str, Any]],
     aborted: bool = False,
     abort_reason: str | None = None,
@@ -348,6 +365,7 @@ def build_launcher_summary(
         "completed_pairs": len(results),
         "succeeded_pairs": succeeded_pairs,
         "failed_pairs": failed_pairs,
+        "max_concurrent_pairs": max_concurrent_pairs,
         "aborted": aborted,
         "abort_reason": abort_reason,
         "results": results,
@@ -791,6 +809,8 @@ def build_refine_command(
     refine_protocol_path: Path,
     bundle_contract_path: Path,
     output_suffix: str | None,
+    python_runtime: str = DEFAULT_PYTHON_RUNTIME,
+    python_executable: str | Path | None = None,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
 ) -> list[str]:
@@ -806,10 +826,9 @@ def build_refine_command(
         output_suffix=output_suffix,
     )
     resolved_agent = resolve_benchmark_agent_name(agent, model)
+    resolved_python_executable = assert_healthy_python_executable(python_executable or sys.executable)
     command = [
-        "uv",
-        "run",
-        "python",
+        str(resolved_python_executable),
         str(ROOT / "scripts" / "run_skillx_refine_benchmark.py"),
         "--skillsbench-root",
         str(skillsbench_root),
@@ -884,6 +903,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--round-budget", type=int, default=3)
     parser.add_argument("--agent")
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument(
+        "--python-runtime",
+        default=DEFAULT_PYTHON_RUNTIME,
+        help=f"Python runtime passed to nested uv calls. Default: {DEFAULT_PYTHON_RUNTIME}.",
+    )
+    parser.add_argument(
+        "--max-concurrent-pairs",
+        type=int,
+        default=DEFAULT_MAX_CONCURRENT_PAIRS,
+        help=f"Maximum number of task-schema pairs to run at once. Default: {DEFAULT_MAX_CONCURRENT_PAIRS}.",
+    )
     parser.add_argument("--override-memory-mb", type=int)
     parser.add_argument("--override-storage-mb", type=int)
     parser.add_argument(
@@ -942,6 +972,11 @@ def _print_task_list(task_names: list[str]) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = build_arg_parser()
     args = parser.parse_args(argv)
+    if args.max_concurrent_pairs <= 0:
+        raise ValueError("--max-concurrent-pairs must be positive")
+    if not str(args.python_runtime).strip():
+        raise ValueError("--python-runtime must be non-empty")
+    refine_python_executable = assert_healthy_python_executable(sys.executable)
 
     task_names = load_task_names(args.task_slice)
     if args.list_tasks:
@@ -987,6 +1022,8 @@ def main(argv: list[str] | None = None) -> int:
                 refine_protocol_path=args.refine_protocol_path,
                 bundle_contract_path=args.bundle_contract_path,
                 output_suffix=args.output_suffix,
+                python_runtime=args.python_runtime,
+                python_executable=refine_python_executable,
                 override_memory_mb=args.override_memory_mb,
                 override_storage_mb=args.override_storage_mb,
             )
@@ -1074,19 +1111,55 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("Preflight Docker risk audit: no task-specific risks detected")
 
-    results: list[dict[str, Any]] = []
-    aborted = False
-    abort_reason: str | None = None
+    results_by_index: dict[int, dict[str, Any]] = {}
+    abort_state: dict[str, Any] = {"aborted": False, "abort_reason": None}
+    abort_event = threading.Event()
+    state_lock = threading.Lock()
+    events_lock = threading.Lock()
+    print_lock = threading.Lock()
+    docker_lock = threading.Lock()
+    preflight_health_report_state: dict[str, dict[str, Any] | None] = {
+        "report": preflight_docker_report,
+    }
 
-    for index, pair_spec in enumerate(selected_pairs, start=1):
+    def emit_event(payload: dict[str, Any]) -> None:
+        with events_lock:
+            append_ndjson(events_path, payload)
+
+    def log_line(message: str) -> None:
+        with print_lock:
+            print(message, flush=True)
+
+    def write_current_summary_locked() -> None:
+        write_json(
+            summary_path,
+            build_launcher_summary(
+                task_slice_path=args.task_slice,
+                materialized_root=args.materialized_root,
+                selected_task_names=selected_task_names,
+                selected_pair_count=len(selected_pairs),
+                max_concurrent_pairs=args.max_concurrent_pairs,
+                results=sorted_result_values(results_by_index),
+                aborted=bool(abort_state["aborted"]),
+                abort_reason=abort_state["abort_reason"],
+            ),
+        )
+
+    def record_result(index: int, result: dict[str, Any]) -> None:
+        with state_lock:
+            results_by_index[index] = result
+            write_current_summary_locked()
+
+    def run_pair(index: int, pair_spec: dict[str, Any]) -> dict[str, Any] | None:
+        if abort_event.is_set():
+            return None
         pair_id = str(pair_spec.get("pair_id", f"pair-{index}"))
         task_name = str(pair_spec.get("task_name", "unknown-task"))
         schema_id = str(pair_spec.get("schema_id", "unknown-schema"))
         run_id: str | None = None
         output_dir: str | None = None
-        print(f"[{index}/{len(selected_pairs)}] {pair_id}")
-        append_ndjson(
-            events_path,
+        log_line(f"[{index}/{len(selected_pairs)}] {pair_id}")
+        emit_event(
             {
                 "event": "pair_started",
                 "index": index,
@@ -1114,9 +1187,12 @@ def main(argv: list[str] | None = None) -> int:
                 refine_protocol_path=args.refine_protocol_path,
                 bundle_contract_path=args.bundle_contract_path,
                 output_suffix=args.output_suffix,
+                python_runtime=args.python_runtime,
+                python_executable=refine_python_executable,
                 override_memory_mb=args.override_memory_mb,
                 override_storage_mb=args.override_storage_mb,
             )
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
         except Exception as exc:
             ensure_launcher_failure_artifacts(
                 output_dir=output_dir,
@@ -1130,6 +1206,7 @@ def main(argv: list[str] | None = None) -> int:
                 traceback_text=traceback.format_exc(),
             )
             result = {
+                "index": index,
                 "pair_id": pair_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
@@ -1140,9 +1217,7 @@ def main(argv: list[str] | None = None) -> int:
                 "error": str(exc),
                 "traceback": traceback.format_exc(),
             }
-            results.append(result)
-            append_ndjson(
-                events_path,
+            emit_event(
                 {
                     "event": "pair_failed",
                     "index": index,
@@ -1154,38 +1229,34 @@ def main(argv: list[str] | None = None) -> int:
                     "observed_at": datetime.now(timezone.utc).isoformat(),
                 },
             )
-            write_json(
-                summary_path,
-                build_launcher_summary(
-                    task_slice_path=args.task_slice,
-                    materialized_root=args.materialized_root,
-                    selected_task_names=selected_task_names,
-                    selected_pair_count=len(selected_pairs),
-                    results=results,
-                    aborted=aborted,
-                    abort_reason=abort_reason,
-                ),
-            )
-            print(f"  FAILED during command build: {exc}")
-            continue
+            log_line(f"  FAILED during command build for {pair_id}: {exc}")
+            return result
 
         if not args.no_docker_health_check:
-            healthy, health_report, recovery_report = ensure_launcher_docker_health(
-                pair_spec=pair_spec,
-                materialized_root=args.materialized_root,
-                output_dir=output_dir,
-                run_id=run_id,
-                round_budget=args.round_budget,
-                auto_recover=args.docker_auto_recover,
-                events_path=events_path,
-                index=index,
-                total_pairs=len(selected_pairs),
-                initial_health_report=preflight_docker_report if index == 1 else None,
-            )
+            with docker_lock:
+                if abort_event.is_set():
+                    return None
+                initial_health_report = preflight_health_report_state["report"]
+                preflight_health_report_state["report"] = None
+                healthy, health_report, recovery_report = ensure_launcher_docker_health(
+                    pair_spec=pair_spec,
+                    materialized_root=args.materialized_root,
+                    output_dir=output_dir,
+                    run_id=run_id,
+                    round_budget=args.round_budget,
+                    auto_recover=args.docker_auto_recover,
+                    events_path=events_path,
+                    index=index,
+                    total_pairs=len(selected_pairs),
+                    initial_health_report=initial_health_report,
+                )
             if not healthy:
-                abort_reason = health_report["message"]
-                aborted = True
+                with state_lock:
+                    abort_state["abort_reason"] = health_report["message"]
+                    abort_state["aborted"] = True
+                abort_event.set()
                 result = {
+                    "index": index,
                     "pair_id": pair_id,
                     "task_name": task_name,
                     "schema_id": schema_id,
@@ -1197,9 +1268,7 @@ def main(argv: list[str] | None = None) -> int:
                     "docker_health_category": health_report["category"],
                     "docker_recovery_attempted": bool(recovery_report),
                 }
-                results.append(result)
-                append_ndjson(
-                    events_path,
+                emit_event(
                     {
                         "event": "pair_failed",
                         "index": index,
@@ -1211,28 +1280,17 @@ def main(argv: list[str] | None = None) -> int:
                         "observed_at": datetime.now(timezone.utc).isoformat(),
                     },
                 )
-                write_json(
-                    summary_path,
-                    build_launcher_summary(
-                        task_slice_path=args.task_slice,
-                        materialized_root=args.materialized_root,
-                        selected_task_names=selected_task_names,
-                        selected_pair_count=len(selected_pairs),
-                        results=results,
-                        aborted=aborted,
-                        abort_reason=abort_reason,
-                    ),
-                )
-                print(f"  ABORTING: Docker unhealthy before launch: {health_report['message']}")
-                break
+                log_line(f"  ABORTING: Docker unhealthy before launch for {pair_id}: {health_report['message']}")
+                return result
             if recovery_report is not None:
-                print("  Docker recovered after cleanup")
+                log_line(f"  Docker recovered after cleanup before {pair_id}")
 
         try:
             completed = subprocess.run(command, cwd=str(ROOT), check=False)
             returncode = int(completed.returncode)
             if returncode == 0:
                 result = {
+                    "index": index,
                     "pair_id": pair_id,
                     "task_name": task_name,
                     "schema_id": schema_id,
@@ -1243,9 +1301,7 @@ def main(argv: list[str] | None = None) -> int:
                     "returncode": returncode,
                     "command": command,
                 }
-                results.append(result)
-                append_ndjson(
-                    events_path,
+                emit_event(
                     {
                         "event": "pair_succeeded",
                         "index": index,
@@ -1256,7 +1312,7 @@ def main(argv: list[str] | None = None) -> int:
                         "observed_at": datetime.now(timezone.utc).isoformat(),
                     },
                 )
-                print("  OK")
+                log_line(f"  OK {pair_id}")
             else:
                 ensure_launcher_failure_artifacts(
                     output_dir=output_dir,
@@ -1271,6 +1327,7 @@ def main(argv: list[str] | None = None) -> int:
                     command=command,
                 )
                 result = {
+                    "index": index,
                     "pair_id": pair_id,
                     "task_name": task_name,
                     "schema_id": schema_id,
@@ -1282,9 +1339,7 @@ def main(argv: list[str] | None = None) -> int:
                     "command": command,
                     "error": f"subprocess exited with code {returncode}",
                 }
-                results.append(result)
-                append_ndjson(
-                    events_path,
+                emit_event(
                     {
                         "event": "pair_failed",
                         "index": index,
@@ -1296,7 +1351,8 @@ def main(argv: list[str] | None = None) -> int:
                         "observed_at": datetime.now(timezone.utc).isoformat(),
                     },
                 )
-                print(f"  FAILED with exit code {returncode}")
+                log_line(f"  FAILED {pair_id} with exit code {returncode}")
+            return result
         except subprocess.CalledProcessError as exc:
             ensure_launcher_failure_artifacts(
                 output_dir=output_dir,
@@ -1312,6 +1368,7 @@ def main(argv: list[str] | None = None) -> int:
                 command=command,
             )
             result = {
+                "index": index,
                 "pair_id": pair_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
@@ -1324,9 +1381,7 @@ def main(argv: list[str] | None = None) -> int:
                 "error": str(exc),
                 "traceback": traceback.format_exc(),
             }
-            results.append(result)
-            append_ndjson(
-                events_path,
+            emit_event(
                 {
                     "event": "pair_failed",
                     "index": index,
@@ -1339,7 +1394,8 @@ def main(argv: list[str] | None = None) -> int:
                     "observed_at": datetime.now(timezone.utc).isoformat(),
                 },
             )
-            print(f"  FAILED with exit code {exc.returncode}")
+            log_line(f"  FAILED {pair_id} with exit code {exc.returncode}")
+            return result
         except Exception as exc:
             ensure_launcher_failure_artifacts(
                 output_dir=output_dir,
@@ -1354,6 +1410,7 @@ def main(argv: list[str] | None = None) -> int:
                 command=command,
             )
             result = {
+                "index": index,
                 "pair_id": pair_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
@@ -1365,9 +1422,7 @@ def main(argv: list[str] | None = None) -> int:
                 "error": str(exc),
                 "traceback": traceback.format_exc(),
             }
-            results.append(result)
-            append_ndjson(
-                events_path,
+            emit_event(
                 {
                     "event": "pair_failed",
                     "index": index,
@@ -1379,23 +1434,68 @@ def main(argv: list[str] | None = None) -> int:
                     "observed_at": datetime.now(timezone.utc).isoformat(),
                 },
             )
-            print(f"  FAILED with launcher exception: {exc}")
+            log_line(f"  FAILED {pair_id} with launcher exception: {exc}")
+            return result
 
-        write_json(
-            summary_path,
-            build_launcher_summary(
-                task_slice_path=args.task_slice,
-                materialized_root=args.materialized_root,
-                selected_task_names=selected_task_names,
-                selected_pair_count=len(selected_pairs),
-                results=results,
-                aborted=aborted,
-                abort_reason=abort_reason,
-            ),
-        )
+    max_workers = min(args.max_concurrent_pairs, len(selected_pairs)) or 1
+    print(f"Running pairs with max_concurrent_pairs={max_workers}")
+    if max_workers == 1:
+        for index, pair_spec in enumerate(selected_pairs, start=1):
+            result = run_pair(index, pair_spec)
+            if result is not None:
+                record_result(index, result)
+            if abort_event.is_set():
+                break
+    else:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_index = {
+                executor.submit(run_pair, index, pair_spec): index
+                for index, pair_spec in enumerate(selected_pairs, start=1)
+            }
+            for future in concurrent.futures.as_completed(future_to_index):
+                index = future_to_index[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    pair_spec = selected_pairs[index - 1]
+                    pair_id = str(pair_spec.get("pair_id", f"pair-{index}"))
+                    task_name = str(pair_spec.get("task_name", "unknown-task"))
+                    schema_id = str(pair_spec.get("schema_id", "unknown-schema"))
+                    result = {
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "status": "failed",
+                        "stage": "launcher_thread_exception",
+                        "run_id": None,
+                        "output_dir": None,
+                        "error": str(exc),
+                        "traceback": traceback.format_exc(),
+                    }
+                    emit_event(
+                        {
+                            "event": "pair_failed",
+                            "index": index,
+                            "pair_id": pair_id,
+                            "task_name": task_name,
+                            "schema_id": schema_id,
+                            "stage": "launcher_thread_exception",
+                            "error": str(exc),
+                            "observed_at": datetime.now(timezone.utc).isoformat(),
+                        },
+                    )
+                    log_line(f"  FAILED {pair_id} with launcher thread exception: {exc}")
+                if result is not None:
+                    record_result(index, result)
+                if abort_event.is_set():
+                    for pending in future_to_index:
+                        if not pending.done():
+                            pending.cancel()
 
-    failed_pairs = sum(1 for item in results if item.get("status") == "failed")
-    succeeded_pairs = sum(1 for item in results if item.get("status") == "succeeded")
+    final_results = sorted_result_values(results_by_index)
+    failed_pairs = sum(1 for item in final_results if item.get("status") == "failed")
+    succeeded_pairs = sum(1 for item in final_results if item.get("status") == "succeeded")
     print(
         "Finished round0 launch:"
         f" succeeded={succeeded_pairs}"

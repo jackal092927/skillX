@@ -380,9 +380,25 @@ def build_global_status(
     *,
     skillsbench_root: Path,
     round0_root: Path,
+    task_filter: list[str] | None = None,
+    schema_filter: list[str] | None = None,
 ) -> dict[str, Any]:
     task_ids = discover_task_ids(skillsbench_root)
+    if task_filter:
+        known_task_ids = set(task_ids)
+        unknown = [task_id for task_id in task_filter if task_id not in known_task_ids]
+        if unknown:
+            raise KeyError(f"unknown task(s): {', '.join(unknown)}")
+        task_filter_set = set(task_filter)
+        task_ids = [task_id for task_id in task_ids if task_id in task_filter_set]
     schema_ids = discover_schema_ids(round0_root)
+    if schema_filter:
+        known_schema_ids = set(schema_ids)
+        unknown = [schema_id for schema_id in schema_filter if schema_id not in known_schema_ids]
+        if unknown:
+            raise KeyError(f"unknown schema id(s): {', '.join(unknown)}")
+        schema_filter_set = set(schema_filter)
+        schema_ids = [schema_id for schema_id in schema_ids if schema_id in schema_filter_set]
     report_paths = discover_run_report_paths(round0_root)
     report_rows, attempts_by_pair = summarize_reports(report_paths)
     pair_rows = build_pair_rows(
@@ -413,6 +429,18 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--skillsbench-root", type=Path, default=DEFAULT_SKILLSBENCH_ROOT)
     parser.add_argument("--round0-root", type=Path, default=DEFAULT_ROUND0_ROOT)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument(
+        "--task",
+        action="append",
+        default=None,
+        help="Optional task id to include. Repeatable. Defaults to all detected tasks.",
+    )
+    parser.add_argument(
+        "--schema-id",
+        action="append",
+        default=None,
+        help="Optional schema id to include. Repeatable. Defaults to all detected schemas.",
+    )
     return parser
 
 
@@ -423,6 +451,8 @@ def main() -> int:
     payload = build_global_status(
         skillsbench_root=args.skillsbench_root.resolve(),
         round0_root=args.round0_root.resolve(),
+        task_filter=args.task,
+        schema_filter=args.schema_id,
     )
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,65 @@
+[
+  {
+    "action": "update",
+    "category_id": "analytic-pipeline",
+    "priority_score": 5.75,
+    "reason": "selected_by_priority",
+    "recommended_challenger_mode": "differentiating",
+    "reliable_support_size": 2,
+    "support_size": 2
+  },
+  {
+    "action": "freeze",
+    "category_id": "artifact-generation",
+    "priority_score": 5.0,
+    "reason": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 1,
+    "support_size": 1
+  },
+  {
+    "action": "freeze",
+    "category_id": "engineering-composition",
+    "priority_score": 4.0,
+    "reason": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 0,
+    "support_size": 0
+  },
+  {
+    "action": "freeze",
+    "category_id": "environment-control",
+    "priority_score": 3.0,
+    "reason": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 1,
+    "support_size": 1
+  },
+  {
+    "action": "update",
+    "category_id": "methodology-guardrail",
+    "priority_score": 5.0,
+    "reason": "selected_by_priority",
+    "recommended_challenger_mode": "differentiating",
+    "reliable_support_size": 2,
+    "support_size": 2
+  },
+  {
+    "action": "freeze",
+    "category_id": "orchestration-delegation",
+    "priority_score": 2.0,
+    "reason": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 0,
+    "support_size": 0
+  },
+  {
+    "action": "freeze",
+    "category_id": "retrieval-heavy-synthesis",
+    "priority_score": 3.0,
+    "reason": "freeze_low_support",
+    "recommended_challenger_mode": "incumbent",
+    "reliable_support_size": 0,
+    "support_size": 0
+  }
+]

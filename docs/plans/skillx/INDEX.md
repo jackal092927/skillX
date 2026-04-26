@@ -42,6 +42,8 @@ incubation repo.
 - `skillx-collaborator-quickstart-v0.1.md`
 - `skillx-parallel-development-playbook-v0.1.md`
 - `skillx-experiment-results-versioning-policy-v0.1.md`
+- `skillx-full-loop-playbook-v0.1.md`
+- `skillx-outer-loop-agent-playbook-v0.1.md`
 - `skillx-round0-launcher-usage-v0.1.md`
 - `skillx-round0-mxn-runbook-v0.1.md`
 - `round0-rerun-recovery-handoff-v0.1.md`

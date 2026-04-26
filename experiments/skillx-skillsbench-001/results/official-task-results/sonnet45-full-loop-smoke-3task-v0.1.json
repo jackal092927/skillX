@@ -1,0 +1,40 @@
+{
+  "artifact_type": "skillx_full_loop_smoke_task_slice",
+  "version": "v0.1",
+  "date": "2026-04-24",
+  "purpose": "Three-task local smoke test for a complete outer-loop -> inner-loop -> outer-loop cycle.",
+  "selection_policy": {
+    "primary_rule": "Use tasks already run across all seven schemas with clean completed pair results.",
+    "secondary_rule": "Prefer faster/simple tasks while retaining at least one non-saturated task with useful optimization signal.",
+    "excluded_fast_candidate": {
+      "task_name": "powerlifting-coef-calc",
+      "reason": "Fast and stable, but every observed schema scored 100, so it contributes little outer-loop learning signal."
+    }
+  },
+  "tasks": [
+    {
+      "task_name": "citation-check",
+      "initial_schema_seed": "methodology-guardrail",
+      "official_sonnet45_no_skills_score": 100.0,
+      "official_sonnet45_with_skills_score": 100.0,
+      "observed_round0_pair_completion": "7/7",
+      "selection_note": "Stable, fast, and simple methodology-guardrail task."
+    },
+    {
+      "task_name": "pdf-excel-diff",
+      "initial_schema_seed": "analytic-pipeline",
+      "official_sonnet45_no_skills_score": 80.0,
+      "official_sonnet45_with_skills_score": 40.0,
+      "observed_round0_pair_completion": "7/7",
+      "selection_note": "Stable, fast, and has a clear artifact/data comparison contract."
+    },
+    {
+      "task_name": "court-form-filling",
+      "initial_schema_seed": "artifact-generation",
+      "official_sonnet45_no_skills_score": 20.0,
+      "official_sonnet45_with_skills_score": 20.0,
+      "observed_round0_pair_completion": "7/7",
+      "selection_note": "Still completed cleanly, but provides non-saturated score signal for outer-loop updates."
+    }
+  ]
+}

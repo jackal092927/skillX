@@ -1,0 +1,2262 @@
+{
+  "config": {
+    "assignment_random_seed": "skillx-round0-assignment-v1",
+    "assignment_score_mode": "trajectory",
+    "balance_tie_max_loss_pp": 1.0,
+    "dominant_share_threshold": 0.6,
+    "epsilon_pp": 5.0,
+    "flat_column_range_pp": 10.0,
+    "global_pair_status_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/reports/global-round0-status/global_pair_status.json",
+    "growth_score_weight": 0.2,
+    "high_confidence_margin_pp": 10.0,
+    "medium_confidence_margin_pp": 5.0,
+    "near_empty_threshold": 3,
+    "prompt_bank_path": "docs/plans/skillx/skillx-prompt-bank-v0.1.json",
+    "require_full_coverage": true,
+    "round0_root": "experiments/skillx-skillsbench-001/results/outer-loop-round0",
+    "round_id": "outer-loop-round0",
+    "round_mean_score_weight": 0.3,
+    "round_score_weights": {
+      "0": 0.15,
+      "1": 0.2,
+      "2": 0.3,
+      "3": 0.35
+    },
+    "task_cluster_inputs_path": "docs/plans/skillx/skillsbench-task-cluster-inputs-v0.1.jsonl",
+    "terminal_score_weight": 0.5,
+    "top3_tie_threshold_pp": 10.0,
+    "update_floor_fraction": 0.1
+  },
+  "diagnostics": {
+    "collapse_warnings": [
+      {
+        "kind": "high_low_margin_fraction",
+        "message": "Low-margin fraction is 0.83."
+      }
+    ],
+    "flat_schema_columns": [],
+    "incomplete_tasks": [
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "3d-scan-calc"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "adaptive-cruise-control"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "azure-bgp-oscillation-route-leak"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "crystallographic-wyckoff-position-analysis"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "dapt-intrusion-detection"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "data-to-d3"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "dialogue-parser"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "dynamic-object-aware-egomotion"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "earthquake-plate-calculation"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "econ-detrending-correlation"
+      },
+      {
+        "ambiguous_schema_ids": [
+          "artifact-generation"
+        ],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation"
+        ],
+        "observed_schema_count": 6,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "energy-ac-optimal-power-flow"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "energy-market-pricing"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "enterprise-information-search"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "exceltable-in-ppt"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "exoplanet-detection-period"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "financial-modeling-qa"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "find-topk-similiar-chemicals"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "fix-build-agentops"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "fix-build-google-auto"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "fix-druid-loophole-cve"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "fix-erlang-ssh-cve"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "fix-visual-stability"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "flink-query"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "flood-risk-analysis"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "gh-repo-analytics"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "glm-lake-mendota"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "gravitational-wave-detection"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "grid-dispatch-operator"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "hvac-control"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "invoice-fraud-detection"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "jax-computing-basics"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "jpg-ocr-stat"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "lab-unit-harmonization"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "lake-warming-attribution"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "latex-formula-extraction"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "lean4-proof"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "manufacturing-codebook-normalization"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "manufacturing-equipment-maintenance"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "manufacturing-fjsp-optimization"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "mario-coin-counting"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "mars-clouds-clustering"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "mhc-layer-impl"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "multilingual-video-dubbing"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "offer-letter-generator"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "organize-messy-files"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "paper-anonymizer"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "parallel-tfidf-search"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "pddl-tpp-planning"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "pedestrian-traffic-counting"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "pg-essay-to-audiobook"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "pptx-reference-formatting"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "protein-expression-analysis"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "python-scala-translation"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "quantum-numerical-simulation"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "r2r-mpc-control"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "react-performance-debugging"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "reserves-at-risk-calc"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "sales-pivot-analysis"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "scheduling-email-assistant"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "sec-financial-report"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "seismic-phase-picking"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "task_name": "setup-fuzzing-py"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "shock-analysis-demand"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "shock-analysis-supply"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "simpo-code-reproduction"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "software-dependency-audit"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "speaker-diarization-subtitles"
+      },
+      {
+        "ambiguous_schema_ids": [
+          "retrieval-heavy-synthesis"
+        ],
+        "infra_blocked_schema_ids": [
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 4,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "spring-boot-jakarta-migration"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "suricata-custom-exfil"
+      },
+      {
+        "ambiguous_schema_ids": [
+          "engineering-composition"
+        ],
+        "infra_blocked_schema_ids": [
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 3,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "syzkaller-ppdev-syzlang"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "taxonomy-tree-merge"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "threejs-structure-parser"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "threejs-to-obj"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "travel-planning"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "trend-anomaly-causal-inference"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "video-filler-word-remover"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "video-silence-remover"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "video-tutorial-indexer"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "virtualhome-agent-planning"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "weighted-gdp-calc"
+      },
+      {
+        "ambiguous_schema_ids": [],
+        "infra_blocked_schema_ids": [],
+        "missing_schema_ids": [
+          "artifact-generation",
+          "analytic-pipeline",
+          "engineering-composition",
+          "retrieval-heavy-synthesis",
+          "environment-control",
+          "methodology-guardrail",
+          "orchestration-delegation"
+        ],
+        "observed_schema_count": 0,
+        "runtime_blocked_schema_ids": [],
+        "task_name": "xlsx-recover-data"
+      }
+    ],
+    "low_margin_tasks": [
+      {
+        "ambiguous_schema_ids": "",
+        "assigned_category": "methodology-guardrail",
+        "assigned_reported_score": 100.0,
+        "assigned_score": 90.0,
+        "assignment_confidence": "low",
+        "assignment_status": "assigned",
+        "best_observed_category": "analytic-pipeline",
+        "best_reported_score": 100.0,
+        "best_score": 90.0,
+        "full_coverage": true,
+        "infra_blocked_schema_ids": "",
+        "margin_pp": 0.0,
+        "missing_schema_ids": "",
+        "observed_schema_count": 7,
+        "runtime_blocked_schema_ids": "",
+        "second_best_category": "artifact-generation",
+        "second_best_score": 90.0,
+        "second_reported_score": 100.0,
+        "task_name": "citation-check",
+        "tie_break_reason": "semantic_prior",
+        "tie_break_used": true,
+        "tie_candidate_count": 7,
+        "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
+        "tie_candidate_score_range_pp": 0.0,
+        "tie_candidate_semantic_scores": "analytic-pipeline:0.0;artifact-generation:1.5;engineering-composition:0.0;environment-control:0.0;methodology-guardrail:7.5;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "ambiguous_schema_ids": "",
+        "assigned_category": "environment-control",
+        "assigned_reported_score": 60.0,
+        "assigned_score": 55.95,
+        "assignment_confidence": "low",
+        "assignment_status": "assigned",
+        "best_observed_category": "environment-control",
+        "best_reported_score": 60.0,
+        "best_score": 55.95,
+        "full_coverage": true,
+        "infra_blocked_schema_ids": "",
+        "margin_pp": 0.55,
+        "missing_schema_ids": "",
+        "observed_schema_count": 7,
+        "runtime_blocked_schema_ids": "",
+        "second_best_category": "artifact-generation",
+        "second_best_score": 55.4,
+        "second_reported_score": 60.0,
+        "task_name": "civ6-adjacency-optimizer",
+        "tie_break_reason": "score_preferred",
+        "tie_break_used": true,
+        "tie_candidate_count": 3,
+        "tie_candidate_schema_ids": "environment-control;artifact-generation;engineering-composition",
+        "tie_candidate_score_range_pp": 3.95,
+        "tie_candidate_semantic_scores": "environment-control:1.5;artifact-generation:0.0;engineering-composition:2.0",
+        "top3_spread_pp": 3.95
+      },
+      {
+        "ambiguous_schema_ids": "",
+        "assigned_category": "methodology-guardrail",
+        "assigned_reported_score": 100.0,
+        "assigned_score": 85.0,
+        "assignment_confidence": "low",
+        "assignment_status": "assigned",
+        "best_observed_category": "analytic-pipeline",
+        "best_reported_score": 100.0,
+        "best_score": 85.0,
+        "full_coverage": true,
+        "infra_blocked_schema_ids": "",
+        "margin_pp": 0.0,
+        "missing_schema_ids": "",
+        "observed_schema_count": 7,
+        "runtime_blocked_schema_ids": "",
+        "second_best_category": "methodology-guardrail",
+        "second_best_score": 85.0,
+        "second_reported_score": 100.0,
+        "task_name": "court-form-filling",
+        "tie_break_reason": "semantic_prior",
+        "tie_break_used": true,
+        "tie_candidate_count": 3,
+        "tie_candidate_schema_ids": "analytic-pipeline;methodology-guardrail;orchestration-delegation",
+        "tie_candidate_score_range_pp": 4.5,
+        "tie_candidate_semantic_scores": "analytic-pipeline:0.0;methodology-guardrail:2.5;orchestration-delegation:0.0",
+        "top3_spread_pp": 4.5
+      },
+      {
+        "ambiguous_schema_ids": "artifact-generation;analytic-pipeline;engineering-composition;retrieval-heavy-synthesis;environment-control;methodology-guardrail;orchestration-delegation",
+        "assigned_category": "analytic-pipeline",
+        "assigned_reported_score": 0.0,
+        "assigned_score": 10.0,
+        "assignment_confidence": "low",
+        "assignment_status": "assigned",
+        "best_observed_category": "analytic-pipeline",
+        "best_reported_score": 0.0,
+        "best_score": 10.0,
+        "full_coverage": true,
+        "infra_blocked_schema_ids": "",
+        "margin_pp": 0.0,
+        "missing_schema_ids": "",
+        "observed_schema_count": 7,
+        "runtime_blocked_schema_ids": "",
+        "second_best_category": "artifact-generation",
+        "second_best_score": 10.0,
+        "second_reported_score": 0.0,
+        "task_name": "earthquake-phase-association",
+        "tie_break_reason": "semantic_prior",
+        "tie_break_used": true,
+        "tie_candidate_count": 7,
+        "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
+        "tie_candidate_score_range_pp": 0.0,
+        "tie_candidate_semantic_scores": "analytic-pipeline:5.5;artifact-generation:0.0;engineering-composition:2.0;environment-control:1.5;methodology-guardrail:1.0;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "ambiguous_schema_ids": "",
+        "assigned_category": "artifact-generation",
+        "assigned_reported_score": 100.0,
+        "assigned_score": 90.0,
+        "assignment_confidence": "low",
+        "assignment_status": "assigned",
+        "best_observed_category": "analytic-pipeline",
+        "best_reported_score": 100.0,
+        "best_score": 90.0,
+        "full_coverage": true,
+        "infra_blocked_schema_ids": "",
+        "margin_pp": 0.0,
+        "missing_schema_ids": "",
+        "observed_schema_count": 7,
+        "runtime_blocked_schema_ids": "",
+        "second_best_category": "artifact-generation",
+        "second_best_score": 90.0,
+        "second_reported_score": 100.0,
+        "task_name": "powerlifting-coef-calc",
+        "tie_break_reason": "semantic_prior",
+        "tie_break_used": true,
+        "tie_candidate_count": 7,
+        "tie_candidate_schema_ids": "analytic-pipeline;artifact-generation;engineering-composition;environment-control;methodology-guardrail;orchestration-delegation;retrieval-heavy-synthesis",
+        "tie_candidate_score_range_pp": 0.0,
+        "tie_candidate_semantic_scores": "analytic-pipeline:1.5;artifact-generation:6.0;engineering-composition:0.0;environment-control:0.0;methodology-guardrail:1.5;orchestration-delegation:0.0;retrieval-heavy-synthesis:0.0",
+        "top3_spread_pp": 0.0
+      }
+    ],
+    "schema_diagnostics": [
+      {
+        "below_training_floor": false,
+        "below_update_floor": true,
+        "empty": false,
+        "mean_assigned_score": 90.0,
+        "mean_observed_score": 63.49,
+        "near_empty": true,
+        "observed_task_count": 8,
+        "occupancy_share": 0.1667,
+        "primary_assigned_count": 1,
+        "schema_id": "artifact-generation",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 32.75,
+        "top_k_tasks_added": [
+          "citation-check"
+        ],
+        "training_evidence_count": 2,
+        "update_evidence_task_names": [
+          "powerlifting-coef-calc",
+          "citation-check"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 52.75,
+        "mean_observed_score": 63.92,
+        "near_empty": true,
+        "observed_task_count": 9,
+        "occupancy_share": 0.3333,
+        "primary_assigned_count": 2,
+        "schema_id": "analytic-pipeline",
+        "score_range_pp": 85.5,
+        "score_stddev_pp": 31.68,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 2,
+        "update_evidence_task_names": [
+          "earthquake-phase-association",
+          "pdf-excel-diff"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": true,
+        "empty": true,
+        "mean_assigned_score": null,
+        "mean_observed_score": 57.83,
+        "near_empty": false,
+        "observed_task_count": 9,
+        "occupancy_share": 0.0,
+        "primary_assigned_count": 0,
+        "schema_id": "engineering-composition",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 35.67,
+        "top_k_tasks_added": [
+          "citation-check",
+          "powerlifting-coef-calc"
+        ],
+        "training_evidence_count": 2,
+        "update_evidence_task_names": [
+          "citation-check",
+          "powerlifting-coef-calc"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": true,
+        "empty": true,
+        "mean_assigned_score": null,
+        "mean_observed_score": 54.75,
+        "near_empty": false,
+        "observed_task_count": 8,
+        "occupancy_share": 0.0,
+        "primary_assigned_count": 0,
+        "schema_id": "retrieval-heavy-synthesis",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 37.05,
+        "top_k_tasks_added": [
+          "citation-check",
+          "pdf-excel-diff"
+        ],
+        "training_evidence_count": 2,
+        "update_evidence_task_names": [
+          "citation-check",
+          "pdf-excel-diff"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": true,
+        "empty": false,
+        "mean_assigned_score": 55.95,
+        "mean_observed_score": 48.85,
+        "near_empty": true,
+        "observed_task_count": 7,
+        "occupancy_share": 0.1667,
+        "primary_assigned_count": 1,
+        "schema_id": "environment-control",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 35.26,
+        "top_k_tasks_added": [
+          "citation-check"
+        ],
+        "training_evidence_count": 2,
+        "update_evidence_task_names": [
+          "civ6-adjacency-optimizer",
+          "citation-check"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 87.5,
+        "mean_observed_score": 65.93,
+        "near_empty": true,
+        "observed_task_count": 7,
+        "occupancy_share": 0.3333,
+        "primary_assigned_count": 2,
+        "schema_id": "methodology-guardrail",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 35.42,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 2,
+        "update_evidence_task_names": [
+          "citation-check",
+          "court-form-filling"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": true,
+        "empty": true,
+        "mean_assigned_score": null,
+        "mean_observed_score": 66.02,
+        "near_empty": false,
+        "observed_task_count": 7,
+        "occupancy_share": 0.0,
+        "primary_assigned_count": 0,
+        "schema_id": "orchestration-delegation",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 28.16,
+        "top_k_tasks_added": [
+          "citation-check",
+          "powerlifting-coef-calc"
+        ],
+        "training_evidence_count": 2,
+        "update_evidence_task_names": [
+          "citation-check",
+          "powerlifting-coef-calc"
+        ],
+        "update_floor_k": 2
+      }
+    ],
+    "schema_pair_correlations": [
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 8,
+        "pearson_correlation": 0.9837,
+        "right_schema_id": "analytic-pipeline"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 8,
+        "pearson_correlation": 0.9985,
+        "right_schema_id": "engineering-composition"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.5102,
+        "right_schema_id": "retrieval-heavy-synthesis"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 6,
+        "pearson_correlation": 0.7146,
+        "right_schema_id": "environment-control"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 6,
+        "pearson_correlation": 0.8799,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 6,
+        "pearson_correlation": 0.9653,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 9,
+        "pearson_correlation": 0.8684,
+        "right_schema_id": "engineering-composition"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 8,
+        "pearson_correlation": 0.4811,
+        "right_schema_id": "retrieval-heavy-synthesis"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.5927,
+        "right_schema_id": "environment-control"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.8756,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.9338,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "engineering-composition",
+        "pair_task_count": 8,
+        "pearson_correlation": 0.1532,
+        "right_schema_id": "retrieval-heavy-synthesis"
+      },
+      {
+        "left_schema_id": "engineering-composition",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.7578,
+        "right_schema_id": "environment-control"
+      },
+      {
+        "left_schema_id": "engineering-composition",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.5613,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "engineering-composition",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.65,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "retrieval-heavy-synthesis",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.683,
+        "right_schema_id": "environment-control"
+      },
+      {
+        "left_schema_id": "retrieval-heavy-synthesis",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.6021,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "retrieval-heavy-synthesis",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.647,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "environment-control",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.3283,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "environment-control",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.4497,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "methodology-guardrail",
+        "pair_task_count": 7,
+        "pearson_correlation": 0.9501,
+        "right_schema_id": "orchestration-delegation"
+      }
+    ],
+    "schema_training_assignments": [
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "artifact-generation",
+        "schema_id": "artifact-generation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "powerlifting-coef-calc"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "artifact-generation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_id": "analytic-pipeline",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 0.0,
+        "schema_score": 10.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 10.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_id": "analytic-pipeline",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 95.5,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 95.5,
+        "task_name": "pdf-excel-diff"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "engineering-composition",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "artifact-generation",
+        "schema_id": "engineering-composition",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "powerlifting-coef-calc"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "retrieval-heavy-synthesis",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_id": "retrieval-heavy-synthesis",
+        "schema_rank_for_task": 2,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 95.5,
+        "task_name": "pdf-excel-diff"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "environment-control",
+        "schema_id": "environment-control",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 60.0,
+        "schema_score": 55.95,
+        "task_best_schema": "environment-control",
+        "task_best_score": 55.95,
+        "task_name": "civ6-adjacency-optimizer"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "environment-control",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "methodology-guardrail",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "methodology-guardrail",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 85.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 85.0,
+        "task_name": "court-form-filling"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_id": "orchestration-delegation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "citation-check"
+      },
+      {
+        "evidence_role": "floor_top_score",
+        "primary_assigned_category": "artifact-generation",
+        "schema_id": "orchestration-delegation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 90.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 90.0,
+        "task_name": "powerlifting-coef-calc"
+      }
+    ],
+    "summary": {
+      "assigned_task_count": 6,
+      "assignment_score_formula": "0.5*reported_score + 0.3*weighted_mean(R0..R3) + 0.2*clamp(50 + best(R0..R3) - R0, 0, 100)",
+      "assignment_score_mode": "trajectory",
+      "cluster_size_entropy": 1.3297,
+      "cluster_sizes": {
+        "analytic-pipeline": 2,
+        "artifact-generation": 1,
+        "engineering-composition": 0,
+        "environment-control": 1,
+        "methodology-guardrail": 2,
+        "orchestration-delegation": 0,
+        "retrieval-heavy-synthesis": 0
+      },
+      "largest_cluster_share": 0.3333,
+      "low_margin_task_fraction": 0.8333,
+      "mean_abs_schema_pair_correlation": 0.6946,
+      "mean_assignment_margin_pp": 1.01,
+      "occupied_cluster_count": 4,
+      "task_count_full_coverage": 6,
+      "task_count_no_scores": 78,
+      "task_count_partial_coverage": 3,
+      "task_count_total": 87,
+      "task_count_with_scores": 9,
+      "tie_break_policy": "semantic_prior -> balance_when_score_range_leq_threshold -> stable_random",
+      "unassigned_task_count": 81,
+      "update_floor_k": 2
+    },
+    "top3_tied_tasks": [
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 90.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 90.0,
+        "task_name": "citation-check",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "best_observed_schema": "environment-control",
+        "best_observed_score": 55.95,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 55.4,
+        "task_name": "civ6-adjacency-optimizer",
+        "top3_spread_pp": 3.95
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 85.0,
+        "second_observed_schema": "methodology-guardrail",
+        "second_observed_score": 85.0,
+        "task_name": "court-form-filling",
+        "top3_spread_pp": 4.5
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 10.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 10.0,
+        "task_name": "earthquake-phase-association",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 95.5,
+        "second_observed_schema": "methodology-guardrail",
+        "second_observed_score": 90.0,
+        "task_name": "pdf-excel-diff",
+        "top3_spread_pp": 5.5
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 90.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 90.0,
+        "task_name": "powerlifting-coef-calc",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 10.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 10.0,
+        "task_name": "syzkaller-ppdev-syzlang",
+        "top3_spread_pp": 0.0
+      }
+    ]
+  },
+  "generated_at": "2026-04-24T00:06:14.209953+00:00"
+}

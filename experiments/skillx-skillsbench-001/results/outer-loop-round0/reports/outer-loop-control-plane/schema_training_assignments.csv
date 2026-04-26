@@ -1,0 +1,15 @@
+schema_id,task_name,evidence_role,schema_score,schema_reported_score,schema_rank_for_task,primary_assigned_category,task_best_schema,task_best_score
+artifact-generation,powerlifting-coef-calc,primary_assignment,90.0,100.0,1,artifact-generation,analytic-pipeline,90.0
+artifact-generation,citation-check,floor_top_score,90.0,100.0,1,methodology-guardrail,analytic-pipeline,90.0
+analytic-pipeline,earthquake-phase-association,primary_assignment,10.0,0.0,1,analytic-pipeline,analytic-pipeline,10.0
+analytic-pipeline,pdf-excel-diff,primary_assignment,95.5,100.0,1,analytic-pipeline,analytic-pipeline,95.5
+engineering-composition,citation-check,floor_top_score,90.0,100.0,1,methodology-guardrail,analytic-pipeline,90.0
+engineering-composition,powerlifting-coef-calc,floor_top_score,90.0,100.0,1,artifact-generation,analytic-pipeline,90.0
+retrieval-heavy-synthesis,citation-check,floor_top_score,90.0,100.0,1,methodology-guardrail,analytic-pipeline,90.0
+retrieval-heavy-synthesis,pdf-excel-diff,floor_top_score,90.0,100.0,2,analytic-pipeline,analytic-pipeline,95.5
+environment-control,civ6-adjacency-optimizer,primary_assignment,55.95,60.0,1,environment-control,environment-control,55.95
+environment-control,citation-check,floor_top_score,90.0,100.0,1,methodology-guardrail,analytic-pipeline,90.0
+methodology-guardrail,citation-check,primary_assignment,90.0,100.0,1,methodology-guardrail,analytic-pipeline,90.0
+methodology-guardrail,court-form-filling,primary_assignment,85.0,100.0,1,methodology-guardrail,analytic-pipeline,85.0
+orchestration-delegation,citation-check,floor_top_score,90.0,100.0,1,methodology-guardrail,analytic-pipeline,90.0
+orchestration-delegation,powerlifting-coef-calc,floor_top_score,90.0,100.0,1,artifact-generation,analytic-pipeline,90.0

@@ -1,0 +1,8 @@
+# Keep only lightweight, sanitized report artifacts in Git.
+# Raw run outputs are large and may contain local absolute paths.
+/launch_round0.sh
+/launcher_logs/
+/manifest.json
+/pair_specs.jsonl
+/pairs/
+!/reports/

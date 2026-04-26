@@ -75,12 +75,45 @@ Operationally this means:
 
 Use the task evaluator score as the primary scalar assignment score.
 
+For `R0 -> R3` inner-loop runs, the executable MVP should not use only
+one terminal scalar when round-level scores are available. The default
+assignment score should be trajectory-aware:
+
+```text
+assignment_score =
+  0.50 * reported_score
+  + 0.30 * weighted_mean(R0, R1, R2, R3)
+  + 0.20 * clamp(50 + best(R0..R3) - R0, 0, 100)
+```
+
+Recommended default round weights:
+
+```yaml
+R0: 0.15
+R1: 0.20
+R2: 0.30
+R3: 0.35
+```
+
+This keeps final quality central while also using:
+- the full reward curve, so two equal final scores can differ if one
+  was consistently better across the loop,
+- R0-relative growth, so the assignment signal captures which schema
+  actually induced useful improvement.
+
+The raw `reported_score`, `selected_score`, `best_observed_score`, and
+per-round scores should still be emitted. The trajectory-aware score is
+the default assignment scalar, not a replacement for the audit fields.
+
 ### 3.2 Optional support metrics
 
 In addition to the scalar score, collect:
 - success / failure flag
 - final score
 - best score (if multiple inner rounds)
+- per-round scores `R0`, `R1`, `R2`, `R3`
+- weighted round mean
+- `R0 -> best` and `R0 -> final` deltas
 - runtime / timeout flags
 - major failure family
 
@@ -150,9 +183,9 @@ if the primary evaluator score is in `[0,1]`.
 When ambiguity occurs, apply:
 
 1. semantic match
-2. cluster balance
+2. cluster balance, only when the score loss is very small
 3. previous assignment stability
-4. deterministic fallback
+4. seeded random fallback
 
 ---
 
@@ -209,6 +242,17 @@ balance_penalty(schema_k) = lambda * current_cluster_share(schema_k)
 
 Use only within low-margin cases.
 
+For the first executable pass, balance should not override a clearly better
+score. A practical starting guardrail is:
+
+```text
+balance_tie_max_loss <= 0.01
+```
+
+when scores are normalized to `[0, 1]` (`<= 1pp` in percent-score space).
+This lets balance resolve near-identical choices without turning assignment
+into forced equalization.
+
 ---
 
 ## 5.4 Previous-assignment stability
@@ -227,14 +271,14 @@ then keep the previous assignment.
 
 ---
 
-## 5.5 Deterministic fallback
+## 5.5 Seeded random fallback
 
-If ambiguity still remains, use a deterministic fallback, e.g.:
-- lexicographic prompt id order
-- or fixed prompt priority order
+If ambiguity still remains, use seeded random tie-breaking over the remaining
+candidates.
 
-This is only for reproducibility.
-It is not meant to encode meaning.
+The seed should be recorded in the artifact config. This keeps reruns
+reproducible while avoiding lexicographic or fixed-priority bias toward any
+schema id.
 
 ---
 
@@ -295,6 +339,25 @@ mean_margin: float
 low_margin_fraction: float
 ```
 
+### 7.4 Schema training assignment table
+
+Per `(schema, task)` update-evidence row:
+
+```yaml
+schema_id: string
+task_name: string
+evidence_role: primary_assignment|floor_top_score
+schema_score: float
+schema_rank_for_task: int
+primary_assigned_category: string | null
+task_best_schema: string | null
+task_best_score: float | null
+```
+
+This table is intentionally many-to-many. It is the artifact consumed by
+schema update packaging, while the primary assignment table remains the
+single-label score interpretation.
+
 ---
 
 ## 8. Minimum diagnostics at assignment time
@@ -310,7 +373,7 @@ This lets us see weak structure early.
 
 ---
 
-## 9. Minimum evidence allocation for schema updates
+## 9. Minimum training/evidence allocation for schema updates
 
 ### 9.1 Problem
 
@@ -323,13 +386,13 @@ never gets signal.
 
 ### 9.2 Rule: guaranteed update evidence floor
 
-After the primary assignment pass, compute the **update evidence set**
+After the primary assignment pass, compute a **schema training assignment set**
 for each schema `k`:
 
 ```text
-update_tasks(k) = primary_assigned_tasks(k)
-                  ∪ top_scoring_tasks(k, floor_K)
-                  where duplicates are removed
+training_tasks(k) = primary_assigned_tasks(k)
+                    ∪ top_scoring_tasks(k, floor_K)
+                    where duplicates are removed
 
 floor_K = max(2, ceil(0.10 * |task_set|))
 ```
@@ -338,17 +401,25 @@ That is: for every schema, always include the `floor_K` tasks on which
 that schema scored highest — even if those tasks were assigned to a
 different schema in the primary pass.
 
+In the first few outer-loop iterations, this floor is intentionally
+exploratory. It is acceptable for a schema to receive its best 2-3 available
+tasks even when it is not the top-ranked schema for those tasks, because the
+purpose is to prevent empty clusters from receiving no update signal.
+
 ### 9.3 Separation of concerns
 
-This does **not** change the primary assignment or the score matrix.
+This does **not** change the primary single-label assignment or the score matrix.
 The primary assignment remains `argmax_k S(t, k)` as defined in
 Section 4.
 
-The update evidence set is used **only** for feeding the schema update
-operator. It answers a different question:
+The schema training assignment set is used **only** for feeding the schema
+update operator. It answers a different question:
 - Primary assignment: "which schema is best for this task right now?"
-- Update evidence: "which tasks give this schema the most useful
+- Training assignment: "which tasks give this schema the most useful
   signal for improvement?"
+
+Because this is a training/evidence allocation, it is many-to-many: the same
+task may provide update signal to multiple schemas.
 
 ### 9.4 Why `max(2, ceil(10%))`
 
@@ -369,6 +440,7 @@ schemas_below_floor:
     primary_assigned_count: int
     floor_K: int
     top_K_tasks_added: [task_name]
+    training_evidence_count: int
 ```
 
 This makes it visible when and where the floor allocation is doing

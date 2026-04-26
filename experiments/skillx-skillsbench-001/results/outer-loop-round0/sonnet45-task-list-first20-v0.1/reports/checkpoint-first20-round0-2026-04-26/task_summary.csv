@@ -1,0 +1,21 @@
+task_name,pair_count,succeeded_pairs,all_7_succeeded,c0_pct,c1_pct,best_score_pct,best_schemas,delta_vs_c0_pp,delta_vs_c1_pp
+3d-scan-calc,7,7,True,80.0,80.0,100.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",20.0,20.0
+adaptive-cruise-control,7,7,True,0.0,0.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,0.0
+azure-bgp-oscillation-route-leak,7,7,True,0.0,0.0,100.0,"['analytic-pipeline', 'methodology-guardrail', 'orchestration-delegation']",100.0,100.0
+citation-check,7,7,True,100.0,100.0,100.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition']",0.0,0.0
+civ6-adjacency-optimizer,7,7,True,0.0,14.7,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,-14.7
+court-form-filling,7,7,True,20.0,20.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",-20.0,-20.0
+dapt-intrusion-detection,7,7,True,0.0,80.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,-80.0
+data-to-d3,7,7,True,60.0,80.0,100.0,"['engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",40.0,20.0
+earthquake-phase-association,7,7,True,20.0,20.0,100.0,['artifact-generation'],80.0,80.0
+earthquake-plate-calculation,7,7,True,0.0,60.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,-60.0
+econ-detrending-correlation,7,7,True,40.0,60.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",-40.0,-60.0
+energy-ac-optimal-power-flow,7,7,True,20.0,20.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",-20.0,-20.0
+energy-market-pricing,7,7,True,0.0,0.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,0.0
+exceltable-in-ppt,7,7,True,60.0,80.0,100.0,['artifact-generation'],40.0,20.0
+exoplanet-detection-period,7,7,True,0.0,0.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,0.0
+financial-modeling-qa,7,7,True,0.0,0.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,0.0
+find-topk-similiar-chemicals,7,7,True,20.0,10.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",-20.0,-10.0
+fix-build-agentops,7,7,True,0.0,0.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,0.0
+fix-build-google-auto,7,7,True,0.0,0.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",0.0,0.0
+fix-druid-loophole-cve,7,7,True,20.0,80.0,0.0,"['analytic-pipeline', 'artifact-generation', 'engineering-composition', 'environment-control', 'methodology-guardrail', 'orchestration-delegation', 'retrieval-heavy-synthesis']",-20.0,-80.0
