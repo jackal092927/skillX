@@ -1,0 +1,38 @@
+{
+  "artifact_type": "skillx_rate_limit_rerun_pair_manifest",
+  "batch_id": "batch-03",
+  "materialized_root": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1",
+  "pair_count": 22,
+  "selected_pair_ids": [
+    "azure-bgp-oscillation-route-leak__artifact-generation",
+    "civ6-adjacency-optimizer__artifact-generation",
+    "civ6-adjacency-optimizer__analytic-pipeline",
+    "civ6-adjacency-optimizer__engineering-composition",
+    "civ6-adjacency-optimizer__retrieval-heavy-synthesis",
+    "civ6-adjacency-optimizer__environment-control",
+    "civ6-adjacency-optimizer__methodology-guardrail",
+    "civ6-adjacency-optimizer__orchestration-delegation",
+    "exoplanet-detection-period__artifact-generation",
+    "exoplanet-detection-period__analytic-pipeline",
+    "exoplanet-detection-period__engineering-composition",
+    "exoplanet-detection-period__retrieval-heavy-synthesis",
+    "exoplanet-detection-period__environment-control",
+    "exoplanet-detection-period__methodology-guardrail",
+    "exoplanet-detection-period__orchestration-delegation",
+    "fix-druid-loophole-cve__artifact-generation",
+    "fix-druid-loophole-cve__analytic-pipeline",
+    "fix-druid-loophole-cve__engineering-composition",
+    "fix-druid-loophole-cve__retrieval-heavy-synthesis",
+    "fix-druid-loophole-cve__environment-control",
+    "fix-druid-loophole-cve__methodology-guardrail",
+    "fix-druid-loophole-cve__orchestration-delegation"
+  ],
+  "source_audit": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/quota-429-audit-first20-round0-2026-04-26/effective_pair_quota_flags.csv",
+  "task_count": 4,
+  "task_names": [
+    "civ6-adjacency-optimizer",
+    "exoplanet-detection-period",
+    "fix-druid-loophole-cve",
+    "azure-bgp-oscillation-route-leak"
+  ]
+}

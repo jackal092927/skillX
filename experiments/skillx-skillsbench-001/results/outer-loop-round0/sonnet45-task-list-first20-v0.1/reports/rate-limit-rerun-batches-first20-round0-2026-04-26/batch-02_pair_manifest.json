@@ -1,0 +1,41 @@
+{
+  "artifact_type": "skillx_rate_limit_rerun_pair_manifest",
+  "batch_id": "batch-02",
+  "materialized_root": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1",
+  "pair_count": 25,
+  "selected_pair_ids": [
+    "citation-check__artifact-generation",
+    "citation-check__analytic-pipeline",
+    "citation-check__engineering-composition",
+    "citation-check__retrieval-heavy-synthesis",
+    "citation-check__environment-control",
+    "citation-check__methodology-guardrail",
+    "citation-check__orchestration-delegation",
+    "energy-market-pricing__artifact-generation",
+    "energy-market-pricing__analytic-pipeline",
+    "energy-market-pricing__engineering-composition",
+    "energy-market-pricing__retrieval-heavy-synthesis",
+    "energy-market-pricing__environment-control",
+    "energy-market-pricing__methodology-guardrail",
+    "energy-market-pricing__orchestration-delegation",
+    "exceltable-in-ppt__artifact-generation",
+    "exceltable-in-ppt__analytic-pipeline",
+    "exceltable-in-ppt__engineering-composition",
+    "exceltable-in-ppt__retrieval-heavy-synthesis",
+    "exceltable-in-ppt__environment-control",
+    "exceltable-in-ppt__orchestration-delegation",
+    "fix-build-google-auto__engineering-composition",
+    "fix-build-google-auto__retrieval-heavy-synthesis",
+    "fix-build-google-auto__environment-control",
+    "fix-build-google-auto__methodology-guardrail",
+    "fix-build-google-auto__orchestration-delegation"
+  ],
+  "source_audit": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/quota-429-audit-first20-round0-2026-04-26/effective_pair_quota_flags.csv",
+  "task_count": 4,
+  "task_names": [
+    "citation-check",
+    "energy-market-pricing",
+    "exceltable-in-ppt",
+    "fix-build-google-auto"
+  ]
+}

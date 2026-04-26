@@ -1,0 +1,42 @@
+{
+  "artifact_type": "skillx_rate_limit_rerun_pair_manifest",
+  "batch_id": "batch-01",
+  "materialized_root": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1",
+  "pair_count": 26,
+  "selected_pair_ids": [
+    "adaptive-cruise-control__artifact-generation",
+    "adaptive-cruise-control__analytic-pipeline",
+    "adaptive-cruise-control__engineering-composition",
+    "adaptive-cruise-control__retrieval-heavy-synthesis",
+    "adaptive-cruise-control__environment-control",
+    "adaptive-cruise-control__methodology-guardrail",
+    "adaptive-cruise-control__orchestration-delegation",
+    "data-to-d3__artifact-generation",
+    "data-to-d3__analytic-pipeline",
+    "data-to-d3__engineering-composition",
+    "data-to-d3__retrieval-heavy-synthesis",
+    "data-to-d3__environment-control",
+    "earthquake-phase-association__artifact-generation",
+    "earthquake-phase-association__analytic-pipeline",
+    "earthquake-phase-association__engineering-composition",
+    "earthquake-phase-association__retrieval-heavy-synthesis",
+    "earthquake-phase-association__environment-control",
+    "earthquake-phase-association__methodology-guardrail",
+    "earthquake-phase-association__orchestration-delegation",
+    "energy-ac-optimal-power-flow__artifact-generation",
+    "energy-ac-optimal-power-flow__analytic-pipeline",
+    "energy-ac-optimal-power-flow__engineering-composition",
+    "energy-ac-optimal-power-flow__retrieval-heavy-synthesis",
+    "energy-ac-optimal-power-flow__environment-control",
+    "energy-ac-optimal-power-flow__methodology-guardrail",
+    "energy-ac-optimal-power-flow__orchestration-delegation"
+  ],
+  "source_audit": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/quota-429-audit-first20-round0-2026-04-26/effective_pair_quota_flags.csv",
+  "task_count": 4,
+  "task_names": [
+    "adaptive-cruise-control",
+    "earthquake-phase-association",
+    "energy-ac-optimal-power-flow",
+    "data-to-d3"
+  ]
+}
