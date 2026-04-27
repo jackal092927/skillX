@@ -767,6 +767,106 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertEqual(failure_payload["returncode"], 17)
             self.assertIn("launcher_logs/robust-smoke", stdout.getvalue())
 
+    def test_main_skip_existing_succeeded_resumes_only_incomplete_pairs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            succeeded_pair = next(
+                spec for spec in pair_specs if spec["pair_id"] == "task-alpha__analytic-pipeline"
+            )
+            failed_pair = next(
+                spec for spec in pair_specs if spec["pair_id"] == "task-alpha__artifact-generation"
+            )
+            _, succeeded_run_dir = self.module.resolve_pair_run_id_and_output_dir(
+                succeeded_pair,
+                materialized_root=fixture["materialized_root"],
+                output_suffix="resume-skip",
+            )
+            succeeded_run_dir.mkdir(parents=True)
+            (succeeded_run_dir / "RUN_STATUS.md").write_text("- status: `completed`\n")
+            _, failed_run_dir = self.module.resolve_pair_run_id_and_output_dir(
+                failed_pair,
+                materialized_root=fixture["materialized_root"],
+                output_suffix="resume-skip",
+            )
+            failed_run_dir.mkdir(parents=True)
+            (failed_run_dir / "RUN_STATUS.md").write_text("- status: `failed`\n")
+
+            seen_commands: list[list[str]] = []
+
+            def fake_run(command: list[str], cwd: str, check: bool) -> object:
+                seen_commands.append(command)
+                return mock.Mock(returncode=0)
+
+            stdout = io.StringIO()
+            with mock.patch.object(self.module.subprocess, "run", side_effect=fake_run):
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = self.module.main(
+                        [
+                            "--pair-id",
+                            "task-alpha__analytic-pipeline",
+                            "--pair-id",
+                            "task-alpha__artifact-generation",
+                            "--task-slice",
+                            str(fixture["task_slice_path"]),
+                            "--materialized-root",
+                            str(fixture["materialized_root"]),
+                            "--oauth-file",
+                            str(fixture["oauth_file"]),
+                            "--refine-protocol-path",
+                            str(fixture["protocol_path"]),
+                            "--bundle-contract-path",
+                            str(fixture["bundle_path"]),
+                            "--output-suffix",
+                            "resume-skip",
+                            "--skip-existing-succeeded",
+                            "--max-concurrent-pairs",
+                            "1",
+                            "--no-docker-health-check",
+                        ]
+                    )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(len(seen_commands), 1)
+            self.assertIn(
+                "task-alpha__artifact-generation__resume-skip",
+                " ".join(seen_commands[0]),
+            )
+            self.assertNotIn(
+                "task-alpha__analytic-pipeline__resume-skip",
+                " ".join(seen_commands[0]),
+            )
+            self.assertIn("SKIP existing success task-alpha__analytic-pipeline", stdout.getvalue())
+            summary_path = (
+                fixture["materialized_root"]
+                / "launcher_logs"
+                / "resume-skip"
+                / "summary.json"
+            )
+            summary = json.loads(summary_path.read_text())
+            self.assertEqual(summary["total_pairs"], 2)
+            self.assertEqual(summary["succeeded_pairs"], 2)
+            self.assertEqual(summary["failed_pairs"], 0)
+            skipped = [
+                item
+                for item in summary["results"]
+                if item.get("stage") == "skip_existing_succeeded"
+            ]
+            self.assertEqual(len(skipped), 1)
+            self.assertEqual(skipped[0]["pair_id"], "task-alpha__analytic-pipeline")
+            self.assertEqual(skipped[0]["existing_run_status"], "completed")
+            events_path = (
+                fixture["materialized_root"]
+                / "launcher_logs"
+                / "resume-skip"
+                / "events.ndjson"
+            )
+            events = [json.loads(line) for line in events_path.read_text().splitlines() if line.strip()]
+            self.assertIn(
+                "pair_skipped_existing_succeeded",
+                [event.get("event") for event in events],
+            )
+
     def test_main_aborts_early_when_docker_health_gate_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))

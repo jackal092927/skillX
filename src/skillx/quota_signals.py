@@ -39,6 +39,15 @@ SOFT_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("rate_limit_guard", re.compile(r"rate[-\s]*limit(?:[-\s]*(?:guard|handling|routing|fallback))", re.I)),
 ]
 
+RUNTIME_ERROR_EVENT_TYPES = {
+    "error",
+    "result",
+    "turn.failed",
+    "turn_failed",
+    "response.failed",
+    "response_failed",
+}
+
 SCAN_FILE_NAMES = {
     "result.json",
     "run_failure.json",
@@ -93,6 +102,38 @@ def iter_strings(value: Any, prefix: str = "$") -> Iterable[tuple[str, str]]:
             yield from iter_strings(child, f"{prefix}[{index}]")
 
 
+def iter_dicts(value: Any, prefix: str = "$") -> Iterable[tuple[str, dict[str, Any]]]:
+    if isinstance(value, dict):
+        yield prefix, value
+        for key, child in value.items():
+            child_path = f"{prefix}.{key}"
+            if is_metadata_path_field(child_path) or is_derived_signal_field(child_path):
+                continue
+            yield from iter_dicts(child, child_path)
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            yield from iter_dicts(child, f"{prefix}[{index}]")
+
+
+def iter_json_objects_from_text(text: str) -> Iterable[dict[str, Any]]:
+    stripped = text.strip()
+    if not stripped:
+        return
+    candidates = [stripped] if stripped[:1] in "{[" else []
+    candidates.extend(line.strip() for line in text.splitlines() if line.lstrip().startswith(("{", "[")))
+    for candidate in candidates:
+        try:
+            payload = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            yield payload
+        elif isinstance(payload, list):
+            for item in payload:
+                if isinstance(item, dict):
+                    yield item
+
+
 def compact_excerpt(text: str, match: re.Match[str], width: int = 110) -> str:
     start = max(0, match.start() - width)
     end = min(len(text), match.end() + width)
@@ -112,25 +153,131 @@ def is_derived_signal_field(field_path: str) -> bool:
     return bool(DERIVED_SIGNAL_FIELD_RE.search(field_path))
 
 
+def is_true(value: Any) -> bool:
+    return value is True or (isinstance(value, str) and value.lower() == "true")
+
+
+def coerce_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    return None
+
+
+def event_text_fields(event: dict[str, Any]) -> str:
+    fields: list[str] = []
+    for key in ("error", "message", "result", "detail", "details", "reason", "status"):
+        value = event.get(key)
+        if isinstance(value, str):
+            fields.append(value)
+    message = event.get("message")
+    if isinstance(message, dict):
+        error = message.get("error")
+        if isinstance(error, str):
+            fields.append(error)
+        content = message.get("content")
+        if isinstance(content, list):
+            for item in content:
+                if isinstance(item, dict) and isinstance(item.get("text"), str):
+                    fields.append(item["text"])
+    error = event.get("error")
+    if isinstance(error, dict):
+        for key in ("message", "type", "code", "status"):
+            value = error.get(key)
+            if isinstance(value, str):
+                fields.append(value)
+    return "\n".join(fields)
+
+
+def add_runtime_text_matches(
+    *,
+    text: str,
+    field: str,
+    hard_terms: set[str],
+    matches: list[dict[str, str]],
+) -> None:
+    for name, pattern in HARD_PATTERNS:
+        match = pattern.search(text)
+        if match:
+            hard_terms.add(name)
+            matches.append(
+                {
+                    "level": "hard",
+                    "term": name,
+                    "field": field,
+                    "excerpt": compact_excerpt(text, match),
+                }
+            )
+
+
+def scan_runtime_event(event: dict[str, Any], field: str) -> dict[str, Any]:
+    matches: list[dict[str, str]] = []
+    hard_terms: set[str] = set()
+    event_type = event.get("type")
+    event_error = event.get("error")
+
+    rate_limit_info = event.get("rate_limit_info")
+    if isinstance(rate_limit_info, dict):
+        status = str(rate_limit_info.get("status") or "").lower()
+        if status == "rejected":
+            hard_terms.add("rate_limit_rejected_event")
+            matches.append(
+                {
+                    "level": "hard",
+                    "term": "rate_limit_rejected_event",
+                    "field": f"{field}.rate_limit_info.status",
+                    "excerpt": f"rate_limit_event status={status}",
+                }
+            )
+
+    api_error_status = coerce_int(event.get("api_error_status"))
+    if api_error_status == 429 and is_true(event.get("is_error")):
+        hard_terms.add("api_error_status_429")
+        matches.append(
+            {
+                "level": "hard",
+                "term": "api_error_status_429",
+                "field": f"{field}.api_error_status",
+                "excerpt": "runtime result is_error=true api_error_status=429",
+            }
+        )
+
+    eligible_runtime_error = (
+        event_type in RUNTIME_ERROR_EVENT_TYPES
+        or event_error == "rate_limit"
+        or api_error_status == 429
+    )
+    if eligible_runtime_error:
+        text = event_text_fields(event)
+        if text:
+            add_runtime_text_matches(text=text, field=field, hard_terms=hard_terms, matches=matches)
+
+    return {
+        "hard_terms": hard_terms,
+        "matches": matches,
+    }
+
+
 def scan_payload(payload: Any) -> dict[str, Any]:
     matches: list[dict[str, str]] = []
     hard_terms: set[str] = set()
     soft_terms: set[str] = set()
+
+    for path, event in iter_dicts(payload):
+        event_scan = scan_runtime_event(event, path)
+        hard_terms.update(str(term) for term in event_scan.get("hard_terms") or [])
+        matches.extend(event_scan.get("matches") or [])
+
     for path, text in iter_strings(payload):
         if is_metadata_path_field(path) or is_derived_signal_field(path):
             continue
-        for name, pattern in HARD_PATTERNS:
-            match = pattern.search(text)
-            if match:
-                hard_terms.add(name)
-                matches.append(
-                    {
-                        "level": "hard",
-                        "term": name,
-                        "field": path,
-                        "excerpt": compact_excerpt(text, match),
-                    }
-                )
+        for event_index, event in enumerate(iter_json_objects_from_text(text)):
+            event_scan = scan_runtime_event(event, f"{path}.jsonl[{event_index}]")
+            hard_terms.update(str(term) for term in event_scan.get("hard_terms") or [])
+            matches.extend(event_scan.get("matches") or [])
         for name, pattern in SOFT_PATTERNS:
             match = pattern.search(text)
             if match:

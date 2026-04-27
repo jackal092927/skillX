@@ -2997,7 +2997,9 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             task_root = run_dir / "refine" / task_id
             round0_tune = task_root / "rounds" / "round-0" / "tune_check"
             round0_tune.mkdir(parents=True)
-            (round0_tune / "result.json").write_text(json.dumps({"error": "HTTP 429"}) + "\n")
+            (round0_tune / "result.json").write_text(
+                json.dumps({"type": "result", "is_error": True, "api_error_status": 429}) + "\n"
+            )
             report_path = task_root / "baseline_perfect_rerun.json"
             report_path.write_text(json.dumps({"enabled": True, "final_reward": 1.0}) + "\n")
 

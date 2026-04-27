@@ -66,6 +66,7 @@ BUILDTOOL_TOKENS = ("build-essential", " gcc", "g++", "clang", "make")
 SEISMIC_NATIVE_TOKENS = ("seisbench", "obspy")
 FROM_LINE_PATTERN = re.compile(r"^FROM\s+(.+)$", re.MULTILINE)
 MEMORY_STRING_PATTERN = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*([KMGTP])B?\s*$", re.IGNORECASE)
+RUN_STATUS_VALUE_PATTERN = re.compile(r"^- status:\s*`?([^`\n]+)`?\s*$")
 NDJSON_WRITE_LOCK = threading.Lock()
 
 
@@ -267,6 +268,26 @@ def resolve_pair_run_id_and_output_dir(
     if normalized_suffix is None:
         return pair_id, pair_dir / "refine_run"
     return f"{pair_id}__{normalized_suffix}", pair_dir / f"refine_run_{normalized_suffix}"
+
+
+def read_run_status_value(run_status_path: Path) -> str | None:
+    if not run_status_path.exists():
+        return None
+    try:
+        text = run_status_path.read_text()
+    except OSError:
+        return None
+    for raw_line in text.splitlines():
+        match = RUN_STATUS_VALUE_PATTERN.match(raw_line.strip())
+        if match is not None:
+            return match.group(1).strip()
+    return None
+
+
+def is_existing_success_status(status: str | None) -> bool:
+    if status is None:
+        return False
+    return status == "skipped_baseline_perfect" or status.startswith("completed")
 
 
 def build_launcher_log_dir(materialized_root: Path, *, output_suffix: str | None) -> Path:
@@ -987,6 +1008,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="JSON file containing selected_pair_ids for a frozen rerun batch.",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print selected commands without executing them.")
+    parser.add_argument(
+        "--skip-existing-succeeded",
+        action="store_true",
+        help=(
+            "Resume an existing output suffix by skipping pair output dirs whose "
+            "RUN_STATUS.md already reports completed or skipped_baseline_perfect."
+        ),
+    )
     parser.add_argument("--list-tasks", action="store_true", help="Print the ordered task list and exit.")
     parser.add_argument("--task-slice", type=Path, default=DEFAULT_TASK_SLICE)
     parser.add_argument("--materialized-root", type=Path, default=DEFAULT_MATERIALIZED_ROOT)
@@ -1386,6 +1415,52 @@ def main(argv: list[str] | None = None) -> int:
             )
             log_line(f"  FAILED during command build for {pair_id}: {exc}")
             return result
+
+        if args.skip_existing_succeeded:
+            existing_status = read_run_status_value(Path(output_dir) / "RUN_STATUS.md")
+            if is_existing_success_status(existing_status):
+                result = {
+                    "index": index,
+                    "pair_id": pair_id,
+                    "task_name": task_name,
+                    "schema_id": schema_id,
+                    "status": "succeeded",
+                    "stage": "skip_existing_succeeded",
+                    "run_id": run_id,
+                    "output_dir": output_dir,
+                    "returncode": 0,
+                    "skipped_existing_succeeded": True,
+                    "existing_run_status": existing_status,
+                }
+                observed_at = datetime.now(timezone.utc).isoformat()
+                emit_event(
+                    {
+                        "event": "pair_skipped_existing_succeeded",
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "run_id": run_id,
+                        "output_dir": output_dir,
+                        "existing_run_status": existing_status,
+                        "observed_at": observed_at,
+                    },
+                )
+                emit_event(
+                    {
+                        "event": "pair_succeeded",
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "returncode": 0,
+                        "skipped_existing_succeeded": True,
+                        "existing_run_status": existing_status,
+                        "observed_at": observed_at,
+                    },
+                )
+                log_line(f"  SKIP existing success {pair_id} ({existing_status})")
+                return result
 
         if not args.no_docker_health_check:
             with docker_lock:

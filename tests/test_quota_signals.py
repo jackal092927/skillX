@@ -53,6 +53,75 @@ def test_api_429_result_remains_hard_signal() -> None:
     assert "hit_your_limit" in scan["hard_terms"]
 
 
+def test_task_internal_pubchem_throttle_is_not_hard_signal() -> None:
+    scan = scan_payload(
+        {
+            "text": (
+                '{"type":"item.completed","item":{"type":"command_execution",'
+                '"aggregated_output":"pubchempy.ServerBusyError: PubChem HTTP Error 503 '
+                'PUGREST.ServerBusy: Too many requests or server too busy",'
+                '"exit_code":1,"status":"failed"}}'
+            )
+        }
+    )
+
+    assert scan["signal_level"] == "none"
+    assert scan["hard_terms"] == []
+
+
+def test_task_command_http_429_is_not_hard_signal() -> None:
+    scan = scan_payload(
+        {
+            "text": (
+                '{"type":"item.completed","item":{"type":"command_execution",'
+                '"aggregated_output":"Traceback (most recent call last):\\n'
+                'urllib.error.HTTPError: HTTP Error 429: Too Many Requests\\n",'
+                '"exit_code":1,"status":"failed"}}'
+            )
+        }
+    )
+
+    assert scan["signal_level"] == "none"
+    assert scan["hard_terms"] == []
+
+
+def test_runtime_result_429_jsonl_is_hard_signal() -> None:
+    scan = scan_payload(
+        {
+            "text": "\n".join(
+                [
+                    '{"type":"item.completed","item":{"type":"command_execution","aggregated_output":"ok"}}',
+                    (
+                        '{"type":"result","subtype":"success","is_error":true,'
+                        '"api_error_status":429,"result":"You have hit your limit; resets later"}'
+                    ),
+                ]
+            )
+        }
+    )
+
+    assert scan["signal_level"] == "hard"
+    assert "api_error_status_429" in scan["hard_terms"]
+    assert "hit_your_limit" in scan["hard_terms"]
+
+
+def test_quoted_old_quota_report_text_is_not_hard_signal() -> None:
+    scan = scan_payload(
+        {
+            "text": (
+                '{"type":"item.completed","item":{"type":"command_execution",'
+                '"aggregated_output":"decision_reason: Continue because round 2 failed '
+                'on a first-turn provider HTTP 429. quota_hard_terms: '
+                'api_error_status_429;rate_limit_reached",'
+                '"exit_code":0,"status":"completed"}}'
+            )
+        }
+    )
+
+    assert scan["signal_level"] == "none"
+    assert scan["hard_terms"] == []
+
+
 def test_rate_limit_rerun_paths_do_not_create_hard_signal() -> None:
     scan = scan_payload(
         {
@@ -101,3 +170,19 @@ def test_run_status_is_not_used_as_quota_evidence() -> None:
 
     assert scan["signal_level"] == "none"
     assert scan["hard_terms"] == []
+
+
+def test_summarize_run_dir_detects_runtime_result_429_jsonl() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        run_dir = Path(tmpdir)
+        agent_dir = run_dir / "rounds" / "round-0" / "tune_check" / "agent"
+        agent_dir.mkdir(parents=True)
+        (agent_dir / "claude-code.txt").write_text(
+            '{"type":"result","is_error":true,"api_error_status":429,'
+            '"result":"You have hit your limit; resets later"}\n'
+        )
+
+        scan = summarize_run_dir(run_dir)
+
+    assert scan["signal_level"] == "hard"
+    assert "api_error_status_429" in scan["hard_terms"]
