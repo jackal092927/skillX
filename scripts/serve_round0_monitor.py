@@ -298,6 +298,13 @@ def _extract_cli_args(command: str, flag: str) -> list[str]:
     return values
 
 
+def _resolve_cli_path(raw_path: str, *, base_dir: Path) -> Path:
+    path = Path(raw_path).expanduser()
+    if path.is_absolute():
+        return path.resolve()
+    return (base_dir / path).resolve()
+
+
 def _load_selection_from_pair_manifest(path: Path) -> tuple[int | None, list[str], list[str]]:
     payload = _safe_read_json(path)
     if not isinstance(payload, dict):
@@ -310,12 +317,114 @@ def _load_selection_from_pair_manifest(path: Path) -> tuple[int | None, list[str
     ]
     selected_task_names = [
         str(item)
-        for item in (payload.get("selected_task_names") or [])
+        for item in (payload.get("selected_task_names") or payload.get("task_names") or [])
         if isinstance(item, str) and item
     ]
     pair_count_total = payload.get("pair_count_total")
-    total_pairs = int(pair_count_total) if isinstance(pair_count_total, int) else None
+    pair_count = payload.get("pair_count")
+    if isinstance(pair_count_total, int):
+        total_pairs = pair_count_total
+    elif isinstance(pair_count, int):
+        total_pairs = pair_count
+    else:
+        total_pairs = None
     return total_pairs, selected_task_names, selected_pair_ids
+
+
+def _load_selection_from_command(
+    command: str,
+    *,
+    base_dir: Path,
+    pair_to_task_name: dict[str, str],
+) -> tuple[int | None, list[str], list[str] | None]:
+    pair_manifest_values = _extract_cli_args(command, "--pair-manifest")
+    if pair_manifest_values:
+        total_pairs, selected_task_names, selected_pair_ids = _load_selection_from_pair_manifest(
+            _resolve_cli_path(pair_manifest_values[-1], base_dir=base_dir)
+        )
+        if selected_pair_ids:
+            return total_pairs, selected_task_names, selected_pair_ids
+
+    explicit_pair_ids = _extract_cli_args(command, "--pair-id")
+    if explicit_pair_ids:
+        selected_task_names: list[str] = []
+        seen_tasks: set[str] = set()
+        for pair_id in explicit_pair_ids:
+            task_name = pair_to_task_name.get(pair_id)
+            if task_name and task_name not in seen_tasks:
+                selected_task_names.append(task_name)
+                seen_tasks.add(task_name)
+        return len(explicit_pair_ids), selected_task_names, explicit_pair_ids
+
+    return None, [], None
+
+
+def _read_inner_loop_script_workdir(script_path: Path) -> Path | None:
+    if not script_path.exists():
+        return None
+    for raw_line in script_path.read_text().splitlines():
+        line = raw_line.strip()
+        if not line.startswith("cd "):
+            continue
+        try:
+            parts = shlex.split(line)
+        except ValueError:
+            continue
+        if len(parts) == 2 and parts[0] == "cd":
+            return Path(parts[1]).expanduser().resolve()
+    return None
+
+
+def _load_selection_from_launcher_artifacts(
+    launcher_log_dir: Path,
+) -> tuple[int | None, list[str], list[str] | None]:
+    materialized_root = launcher_log_dir.parent.parent
+    pair_to_task_name = {
+        str(pair_spec.get("pair_id")): str(pair_spec.get("task_name"))
+        for pair_spec in _read_pair_specs(materialized_root)
+        if isinstance(pair_spec.get("pair_id"), str) and isinstance(pair_spec.get("task_name"), str)
+    }
+    inner_loop_script = launcher_log_dir / "run_inner_loop.sh"
+    if not inner_loop_script.exists():
+        return None, [], None
+
+    base_dir = _read_inner_loop_script_workdir(inner_loop_script) or Path.cwd()
+    for raw_line in inner_loop_script.read_text().splitlines():
+        line = raw_line.strip()
+        if "launch_skillx_round0.py" not in line:
+            continue
+        total_pairs, selected_task_names, selected_pair_ids = _load_selection_from_command(
+            line,
+            base_dir=base_dir,
+            pair_to_task_name=pair_to_task_name,
+        )
+        if selected_pair_ids:
+            return total_pairs, selected_task_names, selected_pair_ids
+
+    return None, [], None
+
+
+def _load_selection_from_summary(
+    summary: dict[str, Any] | None,
+) -> tuple[int | None, list[str], list[str] | None]:
+    if not isinstance(summary, dict):
+        return None, [], None
+    total_pairs = summary.get("total_pairs")
+    selected_task_names = [
+        str(item)
+        for item in (summary.get("selected_task_names") or [])
+        if isinstance(item, str) and item
+    ]
+    selected_pair_ids = [
+        str(item)
+        for item in (summary.get("selected_pair_ids") or [])
+        if isinstance(item, str) and item
+    ]
+    return (
+        int(total_pairs) if isinstance(total_pairs, int) else None,
+        selected_task_names,
+        selected_pair_ids or None,
+    )
 
 
 def _load_selection_from_launcher_processes(
@@ -334,24 +443,13 @@ def _load_selection_from_launcher_processes(
     }
 
     for command in commands:
-        pair_manifest_values = _extract_cli_args(command, "--pair-manifest")
-        if pair_manifest_values:
-            total_pairs, selected_task_names, selected_pair_ids = _load_selection_from_pair_manifest(
-                Path(pair_manifest_values[-1]).expanduser()
-            )
-            if selected_pair_ids:
-                return total_pairs, selected_task_names, selected_pair_ids
-
-        explicit_pair_ids = _extract_cli_args(command, "--pair-id")
-        if explicit_pair_ids:
-            selected_task_names: list[str] = []
-            seen_tasks: set[str] = set()
-            for pair_id in explicit_pair_ids:
-                task_name = pair_to_task_name.get(pair_id)
-                if task_name and task_name not in seen_tasks:
-                    selected_task_names.append(task_name)
-                    seen_tasks.add(task_name)
-            return len(explicit_pair_ids), selected_task_names, explicit_pair_ids
+        total_pairs, selected_task_names, selected_pair_ids = _load_selection_from_command(
+            command,
+            base_dir=Path.cwd(),
+            pair_to_task_name=pair_to_task_name,
+        )
+        if selected_pair_ids:
+            return total_pairs, selected_task_names, selected_pair_ids
 
     return None, [], None
 
@@ -542,6 +640,7 @@ def _collect_active_pair_details(
             else {}
         )
         pair_detail = _collect_pair_detail(active_run_dir) if isinstance(active_run_dir, Path) else None
+        retry_archives = _collect_retry_archives(active_run_dir) if isinstance(active_run_dir, Path) else []
         active_run_mtime = _latest_mtime(active_run_dir) if isinstance(active_run_dir, Path) else None
         latest_activity_at = (
             _isoformat(datetime.fromtimestamp(active_run_mtime, tz=timezone.utc))
@@ -558,6 +657,7 @@ def _collect_active_pair_details(
                 "active_run_status": active_run_status,
                 "active_processes": process_commands,
                 "pair_detail": pair_detail,
+                "retry_archives": retry_archives,
                 "latest_activity_at": latest_activity_at,
             }
         )
@@ -626,6 +726,78 @@ def _read_refine_summary(run_dir: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def _archive_timestamp_from_name(name: str) -> str | None:
+    prefix = "rate-limit-fallback-"
+    if not name.startswith(prefix):
+        return None
+    stamp = name.removeprefix(prefix)
+    try:
+        parsed = datetime.strptime(stamp, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+    return _isoformat(parsed)
+
+
+def _archive_round_indices(archive_dir: Path) -> list[int]:
+    rounds_root = archive_dir / "rounds"
+    if not rounds_root.exists():
+        return []
+    round_indices: list[int] = []
+    for round_dir in rounds_root.iterdir():
+        if not round_dir.is_dir():
+            continue
+        round_index = _round_index_from_name(round_dir.name)
+        if round_index is not None:
+            round_indices.append(round_index)
+    return sorted(round_indices)
+
+
+def _collect_retry_archives(run_dir: Path) -> list[dict[str, Any]]:
+    archives_root = run_dir / "archives"
+    if not archives_root.exists():
+        return []
+
+    archives: list[dict[str, Any]] = []
+    for archive_dir in sorted(path for path in archives_root.iterdir() if path.is_dir()):
+        if not archive_dir.name.startswith("rate-limit-fallback-"):
+            continue
+        run_status = _parse_run_status(archive_dir / "RUN_STATUS.md")
+        signal = _safe_read_json(archive_dir / "rate_limit_signal.json")
+        signal = signal if isinstance(signal, dict) else {}
+        refine_summary = _safe_read_json(archive_dir / "refine_summary.json")
+        refine_summary = refine_summary if isinstance(refine_summary, dict) else {}
+        selected = refine_summary.get("selected") if isinstance(refine_summary.get("selected"), dict) else {}
+        round_indices = _archive_round_indices(archive_dir)
+        archived_at = _archive_timestamp_from_name(archive_dir.name)
+        if archived_at is None:
+            archive_mtime = _latest_mtime(archive_dir)
+            archived_at = (
+                _isoformat(datetime.fromtimestamp(archive_mtime, tz=timezone.utc))
+                if archive_mtime is not None
+                else None
+            )
+        archives.append(
+            {
+                "archive_name": archive_dir.name,
+                "archive_dir": str(archive_dir),
+                "archived_at": archived_at,
+                "status": run_status.get("status"),
+                "signal_level": signal.get("signal_level"),
+                "hard_terms": signal.get("hard_terms") if isinstance(signal.get("hard_terms"), list) else [],
+                "rounds": round_indices,
+                "first_round": round_indices[0] if round_indices else None,
+                "last_round": round_indices[-1] if round_indices else None,
+                "selected_round": selected.get("round_index") if isinstance(selected.get("round_index"), int) else None,
+                "selected_score": (
+                    _reward_to_percent(selected.get("reward"))
+                    if isinstance(selected.get("reward"), (int, float))
+                    else None
+                ),
+            }
+        )
+    return archives
+
+
 def _pair_status_from_sources(
     *,
     launcher_result: dict[str, Any] | None,
@@ -646,6 +818,10 @@ def _pair_status_from_sources(
                 run_status=run_status,
                 run_dir=run_dir,
             )
+        if normalized == "skipped_baseline_perfect":
+            reruns = run_status.get("baseline_perfect_reruns")
+            suffix = f", reruns={reruns}" if reruns else ""
+            return f"skipped (R0 100%{suffix})"
         if normalized in {"failed", "failure", "error"}:
             return "failed"
         if normalized in {"running", "in_progress", "started", "active"}:
@@ -717,6 +893,7 @@ def _collect_pair_rows(
                 run_label=launcher_log_dir.name,
             )
         run_status = _parse_run_status(run_dir / "RUN_STATUS.md")
+        retry_archives = _collect_retry_archives(run_dir)
         round_scores_raw = _read_round_score_map(run_dir)
         round_scores = {
             f"R{round_index}": _reward_to_percent(round_scores_raw.get(round_index))
@@ -777,6 +954,10 @@ def _collect_pair_rows(
                     launcher_result=launcher_result,
                     run_status=run_status,
                 ),
+                "archive_count": len(retry_archives),
+                "latest_archive_status": retry_archives[-1].get("status") if retry_archives else None,
+                "latest_archive_rounds": retry_archives[-1].get("rounds") if retry_archives else [],
+                "retry_archives": retry_archives,
             }
         )
 
@@ -831,9 +1012,16 @@ def collect_launcher_status(
     summary = _safe_read_json(summary_path)
     events = _read_ndjson(events_path)
     parsed_total_pairs, parsed_task_names, parsed_max_concurrent_pairs = _parse_stdout_metadata(stdout_log_path)
+    summary_total_pairs, summary_task_names, summary_pair_ids = _load_selection_from_summary(
+        summary if isinstance(summary, dict) else None
+    )
+    artifact_total_pairs, artifact_task_names, artifact_pair_ids = _load_selection_from_launcher_artifacts(
+        launcher_log_dir
+    )
     fallback_total_pairs, fallback_task_names, fallback_pair_ids = _load_selection_from_launcher_processes(
         launcher_log_dir
     )
+    selected_pair_ids = summary_pair_ids or artifact_pair_ids or fallback_pair_ids
     active_pairs = _active_pairs_from_events(events)
     active_pair = active_pairs[0] if active_pairs else None
     active_pair_details = _collect_active_pair_details(launcher_log_dir, active_pairs)
@@ -870,17 +1058,20 @@ def collect_launcher_status(
         latest_event_at_dt = _coerce_datetime(latest_event_at_raw)
 
     if isinstance(summary, dict):
-        summary_total_pairs = int(summary.get("total_pairs", 0))
         completed_pairs = int(summary.get("completed_pairs", 0))
         succeeded_pairs = int(summary.get("succeeded_pairs", 0))
         failed_pairs = int(summary.get("failed_pairs", 0))
         selected_task_names = (
-            summary.get("selected_task_names") or parsed_task_names or fallback_task_names
+            summary_task_names
+            or parsed_task_names
+            or artifact_task_names
+            or fallback_task_names
         )
         max_concurrent_pairs = summary.get("max_concurrent_pairs") or parsed_max_concurrent_pairs
         total_pairs = max(
-            summary_total_pairs,
+            summary_total_pairs or 0,
             parsed_total_pairs or 0,
+            artifact_total_pairs or 0,
             fallback_total_pairs or 0,
             completed_pairs,
         )
@@ -888,13 +1079,13 @@ def collect_launcher_status(
         succeeded_pairs = sum(1 for event in events if event.get("event") == "pair_succeeded")
         failed_pairs = sum(1 for event in events if event.get("event") == "pair_failed")
         completed_pairs = succeeded_pairs + failed_pairs
-        total_pairs = parsed_total_pairs or fallback_total_pairs or completed_pairs
-        selected_task_names = parsed_task_names or fallback_task_names
+        total_pairs = parsed_total_pairs or artifact_total_pairs or fallback_total_pairs or completed_pairs
+        selected_task_names = parsed_task_names or artifact_task_names or fallback_task_names
         max_concurrent_pairs = parsed_max_concurrent_pairs
     pair_rows = _collect_pair_rows(
         launcher_log_dir=launcher_log_dir,
         selected_task_names=selected_task_names,
-        selected_pair_ids=fallback_pair_ids,
+        selected_pair_ids=selected_pair_ids,
         summary=summary if isinstance(summary, dict) else None,
         current_pair_id=active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
         active_pair_ids={
@@ -905,9 +1096,22 @@ def collect_launcher_status(
         active_run_dir=active_run_dir if isinstance(active_run_dir, Path) else None,
     )
     preflight_risk_audit = _read_preflight_risk_audit(launcher_log_dir)
-    total_pairs = max(total_pairs, len(pair_rows))
+    event_indices = [
+        int(event.get("index"))
+        for event in events
+        if isinstance(event.get("index"), int)
+        and event.get("event") in {"pair_started", "pair_succeeded", "pair_failed"}
+    ]
+    observed_total_floor = max(
+        completed_pairs + len(active_pairs),
+        max(event_indices, default=0),
+    )
+    total_pairs = max(total_pairs, observed_total_floor)
+    if selected_pair_ids is not None or not total_pairs:
+        total_pairs = max(total_pairs, len(pair_rows))
 
     issue_pairs = sum(1 for row in pair_rows if row.get("pair_has_issues"))
+    archived_retry_count = sum(int(row.get("archive_count") or 0) for row in pair_rows)
 
     if total_pairs > 0:
         progress_percent = 100.0 * completed_pairs / total_pairs
@@ -954,6 +1158,7 @@ def collect_launcher_status(
         "succeeded_pairs": succeeded_pairs,
         "failed_pairs": failed_pairs,
         "issue_pairs": issue_pairs,
+        "archived_retry_count": archived_retry_count,
         "progress_percent": progress_percent,
         "selected_task_names": selected_task_names,
         "pair_rows": pair_rows,
@@ -1051,6 +1256,8 @@ def _status_pill_class(value: Any) -> str:
         return "pill pill-warn"
     if text in {"succeeded", "success", "completed", "done", "ok"} or text.startswith("completed"):
         return "pill pill-ok"
+    if text.startswith("skipped"):
+        return "pill pill-other"
     if text in {"failed", "failure", "error"} or text.startswith("failed"):
         return "pill pill-fail"
     if text in {"running", "in_progress", "started", "active"} or text.startswith("running"):
@@ -1191,6 +1398,37 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             if status_pill_class
             else html.escape(str(run_status_value))
         )
+        retry_archives = (
+            active_detail.get("retry_archives")
+            if isinstance(active_detail.get("retry_archives"), list)
+            else []
+        )
+        archive_row_items = []
+        for archive in retry_archives:
+            if not isinstance(archive, dict):
+                continue
+            archive_rounds = ", ".join(f"R{round_index}" for round_index in (archive.get("rounds") or []))
+            archive_terms = ", ".join(str(term) for term in (archive.get("hard_terms") or []))
+            archive_row_items.append(
+                "<tr>"
+                f"<td>{html.escape(str(archive.get('archive_name') or ''))}</td>"
+                f"<td>{html.escape(str(archive.get('status') or 'unknown'))}</td>"
+                f"<td>{html.escape(archive_rounds)}</td>"
+                f"<td>{html.escape(archive_terms)}</td>"
+                f"<td class=\"num\">{html.escape(_format_metric(archive.get('selected_score')))}</td>"
+                "</tr>"
+            )
+        archive_rows_html = "\n".join(archive_row_items)
+        archive_block = ""
+        if archive_rows_html:
+            archive_block = (
+                '<div class="table-wrap">'
+                "<table>"
+                '<thead><tr><th>Archived Retry</th><th>Status</th><th>Rounds</th><th>Hard Terms</th><th class="num">Best Score</th></tr></thead>'
+                f"<tbody>{archive_rows_html}</tbody>"
+                "</table>"
+                "</div>"
+            )
         return (
             '<div class="pair-detail-card">'
             f"<h3>#{html.escape(index_text)} {html.escape(str(pair_id))} {status_pill}</h3>"
@@ -1200,9 +1438,11 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             f"<dt>Current round</dt><dd>{html.escape(str(detail.get('current_round_index')))}</dd>"
             f"<dt>Current stage</dt><dd>{html.escape(str(detail.get('current_stage') or 'none'))}</dd>"
             f"<dt>Last completed stage</dt><dd>{html.escape(str(detail.get('last_completed_stage') or 'none'))}</dd>"
+            f"<dt>Archived retries</dt><dd>{html.escape(str(len(retry_archives)))}</dd>"
             f"<dt>Latest activity</dt><dd>{html.escape(str(active_detail.get('latest_activity_at') or 'none'))}</dd>"
             f"<dt>Run dir</dt><dd>{html.escape(str(active_detail.get('active_run_dir') or 'none'))}</dd>"
             "</dl>"
+            f"{archive_block}"
             '<div class="table-wrap"><table>'
             '<thead><tr><th class="num">Round</th><th>Executor</th><th>Role A</th><th>Role B</th><th>Latest Event</th><th class="num">Event Time</th></tr></thead>'
             f"<tbody>{round_rows_html}</tbody>"
@@ -1247,6 +1487,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         d0 = row.get("delta_vs_c0")
         d1 = row.get("delta_vs_c1")
         dr0 = row.get("delta_vs_r0")
+        archive_count = int(row.get("archive_count") or 0)
         status_value = row.get("pair_status") or ""
         status_pill_class = _status_pill_class(status_value)
         status_cell = (
@@ -1270,11 +1511,12 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             f'<td class="{_delta_class(d0)}">{html.escape(_format_metric(d0))}</td>'
             f'<td class="{_delta_class(d1)}">{html.escape(_format_metric(d1))}</td>'
             f'<td class="col-status">{status_cell}</td>'
+            f'<td class="num">{html.escape(str(archive_count))}</td>'
             "</tr>"
         )
     pair_rows_html = (
         "\n".join(pair_row_items)
-        or '<tr><td colspan="14">No pair rows available.</td></tr>'
+        or '<tr><td colspan="15">No pair rows available.</td></tr>'
     )
 
     return f"""<!DOCTYPE html>
@@ -1716,6 +1958,10 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         <div class="metric-label">Failed</div>
         <div class="metric-value">{html.escape(str(status.get("failed_pairs", 0)))}</div>
       </div>
+      <div class="metric-card{' metric-warn' if int(status.get('archived_retry_count', 0) or 0) > 0 else ''}">
+        <div class="metric-label">Archived Retries</div>
+        <div class="metric-value">{html.escape(str(status.get("archived_retry_count", 0)))}</div>
+      </div>
       <div class="metric-card">
         <div class="metric-label">Progress</div>
         <div class="metric-value">{float(status.get('progress_percent', 0.0)):.1f}%</div>
@@ -1774,6 +2020,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
               <th class="num">Δ vs C0</th>
               <th class="num">Δ vs C1</th>
               <th>Status</th>
+              <th class="num">Retries</th>
             </tr>
           </thead>
           <tbody>

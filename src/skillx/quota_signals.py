@@ -8,11 +8,24 @@ from typing import Any, Iterable
 
 HARD_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("api_error_status_429", re.compile(r"api_error_status[^0-9]{0,20}429", re.I)),
+    (
+        "rate_limit_rejected_event",
+        re.compile(
+            r"rate_limit_event.{0,500}rate_limit_info.{0,200}[\"']status[\"']\s*:\s*[\"']rejected[\"']",
+            re.I | re.S,
+        ),
+    ),
     ("http_429", re.compile(r"\bHTTP\s*429\b", re.I)),
     ("status_429", re.compile(r"\b(?:status|code|error)[^A-Za-z0-9]{0,20}429\b", re.I)),
     ("too_many_requests", re.compile(r"too many requests", re.I)),
     ("rate_limit_error", re.compile(r"\bRateLimitError\b", re.I)),
-    ("rate_limit_reached", re.compile(r"rate[-\s]*limit(?:ed|ing)?(?:[-\s]*(?:reached|exceeded|hit|stop|cutoff|failure|abort|blocked))?", re.I)),
+    (
+        "rate_limit_reached",
+        re.compile(
+            r"\brate[-_\s]*limit(?:ed|ing)?[-_\s]*(?:reached|exceeded|hit|stop|cutoff|failure|abort|blocked|rejected)\b",
+            re.I,
+        ),
+    ),
     ("usage_limit_reached", re.compile(r"(?:usage|quota|provider)[-\s]*(?:limit|quota)[-\s]*(?:reached|exceeded|hit|blocked)", re.I)),
     ("claude_limit_reached", re.compile(r"(?:Claude|Anthropic)[-\s]*(?:usage|rate)?[-\s]*limit[-\s]*(?:reached|exceeded|hit)", re.I)),
     ("hit_your_limit", re.compile(r"hit your limit", re.I)),
@@ -27,7 +40,6 @@ SOFT_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 ]
 
 SCAN_FILE_NAMES = {
-    "RUN_STATUS.md",
     "result.json",
     "run_failure.json",
     "round_decision.json",
@@ -35,6 +47,7 @@ SCAN_FILE_NAMES = {
     "verifier_summary.json",
     "orchestrator_log.ndjson",
     "claude-code.txt",
+    "codex.txt",
     "codex.jsonl",
     "stderr.txt",
     "stdout.txt",
@@ -43,6 +56,30 @@ SCAN_FILE_NAMES = {
 }
 MAX_SCAN_BYTES = 2_000_000
 SKIP_DIR_NAMES = {"archives", "__pycache__", ".git"}
+PATH_METADATA_FIELD_RE = re.compile(
+    r"(?:^|[.$])(?:path|paths|uri|uris|ref|refs|dir|dirs|root|roots)(?:$|\[|[.$])",
+    re.I,
+)
+PATH_METADATA_SUFFIXES = (
+    "_path",
+    "_paths",
+    "_uri",
+    "_uris",
+    "_ref",
+    "_refs",
+    "_dir",
+    "_dirs",
+    "_root",
+    "_roots",
+)
+DERIVED_SIGNAL_FIELD_RE = re.compile(
+    r"(?:^|[.$])(?:"
+    r"quota_signal(?:_level|_hard_terms|_soft_terms|_matches)?|"
+    r"quota_hard_terms|quota_soft_terms|"
+    r"hard_terms|soft_terms|matches|signal_level|has_hard_signal"
+    r")(?:$|\[|[.$])",
+    re.I,
+)
 
 
 def iter_strings(value: Any, prefix: str = "$") -> Iterable[tuple[str, str]]:
@@ -63,11 +100,25 @@ def compact_excerpt(text: str, match: re.Match[str], width: int = 110) -> str:
     return re.sub(r"\s+", " ", excerpt).strip()
 
 
+def is_metadata_path_field(field_path: str) -> bool:
+    normalized = field_path.replace("[", ".").replace("]", ".")
+    parts = [part for part in re.split(r"[.$]+", normalized) if part]
+    if any(part.lower().endswith(PATH_METADATA_SUFFIXES) for part in parts):
+        return True
+    return bool(PATH_METADATA_FIELD_RE.search(field_path))
+
+
+def is_derived_signal_field(field_path: str) -> bool:
+    return bool(DERIVED_SIGNAL_FIELD_RE.search(field_path))
+
+
 def scan_payload(payload: Any) -> dict[str, Any]:
     matches: list[dict[str, str]] = []
     hard_terms: set[str] = set()
     soft_terms: set[str] = set()
     for path, text in iter_strings(payload):
+        if is_metadata_path_field(path) or is_derived_signal_field(path):
+            continue
         for name, pattern in HARD_PATTERNS:
             match = pattern.search(text)
             if match:

@@ -364,6 +364,8 @@ def build_launcher_summary(
     selected_pair_count: int,
     max_concurrent_pairs: int,
     results: list[dict[str, Any]],
+    selected_pair_ids: list[str] | None = None,
+    pair_manifest_path: Path | None = None,
     runtime_profiles: list[dict[str, Any]] | None = None,
     active_profile_index: int | None = None,
     aborted: bool = False,
@@ -376,6 +378,10 @@ def build_launcher_summary(
         "task_slice_path": str(task_slice_path.resolve()),
         "materialized_root": str(materialized_root.resolve()),
         "selected_task_names": selected_task_names,
+        "selected_pair_ids": selected_pair_ids or [],
+        "pair_manifest_path": (
+            str(pair_manifest_path.resolve()) if pair_manifest_path is not None else None
+        ),
         "total_pairs": selected_pair_count,
         "completed_pairs": len(results),
         "succeeded_pairs": succeeded_pairs,
@@ -1259,6 +1265,8 @@ def main(argv: list[str] | None = None) -> int:
                 task_slice_path=args.task_slice,
                 materialized_root=args.materialized_root,
                 selected_task_names=selected_task_names,
+                selected_pair_ids=[str(pair["pair_id"]) for pair in selected_pairs],
+                pair_manifest_path=args.pair_manifest,
                 selected_pair_count=len(selected_pairs),
                 max_concurrent_pairs=args.max_concurrent_pairs,
                 results=sorted_result_values(results_by_index),
@@ -1616,7 +1624,99 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     log_line(f"  FAILED {pair_id} with exit code {returncode} via {profile.label}")
                 return result
+            except subprocess.CalledProcessError as exc:
+                returncode = int(exc.returncode)
+                attempts.append(
+                    {
+                        "attempt": attempt_number,
+                        "runtime_profile": profile_summary(profile),
+                        "returncode": returncode,
+                        "quota_signal_level": None,
+                        "quota_hard_terms": [],
+                    }
+                )
+                ensure_launcher_failure_artifacts(
+                    output_dir=output_dir,
+                    run_id=run_id,
+                    task_name=task_name,
+                    schema_id=schema_id,
+                    pair_id=pair_id,
+                    round_budget=args.round_budget,
+                    stage="run",
+                    error=f"subprocess exited with code {returncode}",
+                    returncode=returncode,
+                    command=command,
+                    extra={"attempts": attempts, "runtime_profile": profile_summary(profile)},
+                )
+                result = {
+                    "index": index,
+                    "pair_id": pair_id,
+                    "task_name": task_name,
+                    "schema_id": schema_id,
+                    "status": "failed",
+                    "stage": "run",
+                    "run_id": run_id,
+                    "output_dir": output_dir,
+                    "returncode": returncode,
+                    "command": command,
+                    "error": f"subprocess exited with code {returncode}",
+                    "runtime_profile": profile_summary(profile),
+                    "attempts": attempts,
+                }
+                emit_event(
+                    {
+                        "event": "pair_failed",
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "stage": "run",
+                        "returncode": returncode,
+                        "runtime_profile": profile_summary(profile),
+                        "observed_at": datetime.now(timezone.utc).isoformat(),
+                    },
+                )
+                log_line(f"  FAILED {pair_id} with exit code {returncode} via {profile.label}")
+                return result
             except Exception as exc:
+                if command is None:
+                    ensure_launcher_failure_artifacts(
+                        output_dir=output_dir,
+                        run_id=run_id,
+                        task_name=task_name,
+                        schema_id=schema_id,
+                        pair_id=pair_id,
+                        round_budget=args.round_budget,
+                        stage="build_command",
+                        error=str(exc),
+                        traceback_text=traceback.format_exc(),
+                    )
+                    result = {
+                        "index": index,
+                        "pair_id": pair_id,
+                        "task_name": task_name,
+                        "schema_id": schema_id,
+                        "status": "failed",
+                        "stage": "build_command",
+                        "run_id": run_id,
+                        "output_dir": output_dir,
+                        "error": str(exc),
+                        "traceback": traceback.format_exc(),
+                    }
+                    emit_event(
+                        {
+                            "event": "pair_failed",
+                            "index": index,
+                            "pair_id": pair_id,
+                            "task_name": task_name,
+                            "schema_id": schema_id,
+                            "stage": "build_command",
+                            "error": str(exc),
+                            "observed_at": datetime.now(timezone.utc).isoformat(),
+                        },
+                    )
+                    log_line(f"  FAILED during command build for {pair_id}: {exc}")
+                    return result
                 ensure_launcher_failure_artifacts(
                     output_dir=output_dir,
                     run_id=run_id,
@@ -1658,6 +1758,9 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 log_line(f"  FAILED {pair_id} with launcher exception: {exc}")
                 return result
+
+    with state_lock:
+        write_current_summary_locked()
 
     max_workers = min(args.max_concurrent_pairs, len(selected_pairs)) or 1
     print(f"Running pairs with max_concurrent_pairs={max_workers}")

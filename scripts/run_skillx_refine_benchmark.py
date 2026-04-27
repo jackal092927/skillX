@@ -88,6 +88,8 @@ DEFAULT_ORCHESTRATION_MODE = "legacy"
 MIN_DOCKER_MEMORY_BYTES = 16_000_000_000
 DEFAULT_REFINED_TASK_MEMORY_MB = 8192
 DEFAULT_REFINED_TASK_STORAGE_MB = 20480
+DEFAULT_R0_PERFECT_MAX_RERUNS = 3
+PERFECT_REWARD_THRESHOLD = 0.999999
 DEFAULT_RETRY_EXCLUDE = [
     "AgentTimeoutError",
     "VerifierTimeoutError",
@@ -745,6 +747,10 @@ def build_round_row(round_index: int, round_dir_path: Path, tune_result: dict[st
             reward_missing=reward is None,
         ).to_dict(),
     }
+
+
+def reward_is_perfect(reward: Any) -> bool:
+    return isinstance(reward, (int, float)) and float(reward) >= PERFECT_REWARD_THRESHOLD
 
 
 def build_c3_result_from_row(task_id: str, row: dict[str, Any]) -> SkillXC3Result:
@@ -2412,6 +2418,171 @@ def ensure_c4ar_executor_outputs(
     )
 
 
+def archive_r0_perfect_attempt(
+    *,
+    round_dir_path: Path,
+    attempt_index: int,
+    tune_result: dict[str, Any],
+) -> Path:
+    archive_dir = ensure_dir(
+        round_dir_path / "baseline_perfect_reruns" / f"attempt-{attempt_index}"
+    )
+    for artifact_name in ("tune_check", "executor"):
+        source_path = round_dir_path / artifact_name
+        if source_path.exists():
+            destination = archive_dir / artifact_name
+            if destination.exists():
+                shutil.rmtree(destination)
+            shutil.move(str(source_path), str(destination))
+    write_json(
+        archive_dir / "attempt_summary.json",
+        {
+            "attempt_index": attempt_index,
+            "rerun_index": max(0, attempt_index),
+            "reward": tune_result.get("reward"),
+            "eval_name": tune_result.get("eval_name"),
+            "exception_stats": tune_result.get("exception_stats") or {},
+            "archived_at": _timestamp(),
+            "reason": "r0_baseline_reward_perfect",
+        },
+    )
+    return archive_dir
+
+
+def read_baseline_perfect_rerun_report(paths: RefinePaths) -> dict[str, Any] | None:
+    report_path = paths.root_dir / "baseline_perfect_rerun.json"
+    payload = read_json(report_path) if report_path.exists() else None
+    return payload if isinstance(payload, dict) else None
+
+
+def write_baseline_perfect_rerun_report(
+    *,
+    paths: RefinePaths,
+    report: dict[str, Any],
+) -> None:
+    write_json(paths.root_dir / "baseline_perfect_rerun.json", report)
+
+
+def guard_r0_perfect_baseline_before_inner_loop(
+    *,
+    task: TaskInputs,
+    paths: RefinePaths,
+    skillsbench_root: Path,
+    oauth_file: Path | None,
+    agent_name: str,
+    model_name: str,
+    tune_timeout_multiplier: float,
+    run_dir: Path,
+    max_reruns: int,
+    override_memory_mb: int | None = None,
+    override_storage_mb: int | None = None,
+) -> dict[str, Any]:
+    round_dir_path = round_dir(paths, 0)
+    report_path = paths.root_dir / "baseline_perfect_rerun.json"
+    existing_report = read_json(report_path) if report_path.exists() else None
+    if isinstance(existing_report, dict) and existing_report.get("skipped_inner_loop"):
+        return existing_report
+    if (
+        isinstance(existing_report, dict)
+        and existing_report.get("enabled")
+        and isinstance(existing_report.get("attempts"), list)
+        and existing_report.get("reason") == "r0_baseline_reward_not_perfect"
+    ):
+        return existing_report
+    if max_reruns <= 0:
+        report = {
+            "enabled": False,
+            "max_reruns": max_reruns,
+            "rerun_count": 0,
+            "skipped_inner_loop": False,
+            "attempts": [],
+            "reason": "disabled",
+            "observed_at": _timestamp(),
+        }
+        write_baseline_perfect_rerun_report(paths=paths, report=report)
+        return report
+    if existing_c4ar_round_outputs(round_dir_path=round_dir_path, task_id=task.task_id) is not None:
+        report = {
+            "enabled": True,
+            "max_reruns": max_reruns,
+            "rerun_count": 0,
+            "skipped_inner_loop": False,
+            "attempts": [],
+            "reason": "round_zero_already_entered_inner_loop",
+            "observed_at": _timestamp(),
+        }
+        write_baseline_perfect_rerun_report(paths=paths, report=report)
+        return report
+
+    attempts: list[dict[str, Any]] = []
+    rerun_count = 0
+    for attempt_index in range(max_reruns + 1):
+        _, tune_result = ensure_c4ar_executor_outputs(
+            task=task,
+            round_dir_path=round_dir_path,
+            skillsbench_root=skillsbench_root,
+            oauth_file=oauth_file,
+            agent_name=agent_name,
+            model_name=model_name,
+            tune_timeout_multiplier=tune_timeout_multiplier,
+            run_dir=run_dir,
+            override_memory_mb=override_memory_mb,
+            override_storage_mb=override_storage_mb,
+        )
+        reward = tune_result.get("reward")
+        attempts.append(
+            {
+                "attempt_index": attempt_index,
+                "rerun_index": max(0, attempt_index),
+                "is_rerun": attempt_index > 0,
+                "reward": reward,
+                "is_perfect": reward_is_perfect(reward),
+                "result_path": str(round_dir_path / "tune_check" / "result.json"),
+            }
+        )
+        if not reward_is_perfect(reward):
+            report = {
+                "enabled": True,
+                "max_reruns": max_reruns,
+                "rerun_count": rerun_count,
+                "skipped_inner_loop": False,
+                "attempts": attempts,
+                "initial_reward": attempts[0].get("reward") if attempts else None,
+                "final_reward": reward,
+                "reason": "r0_baseline_reward_not_perfect",
+                "observed_at": _timestamp(),
+            }
+            write_baseline_perfect_rerun_report(paths=paths, report=report)
+            return report
+        if attempt_index >= max_reruns:
+            report = {
+                "enabled": True,
+                "max_reruns": max_reruns,
+                "rerun_count": rerun_count,
+                "skipped_inner_loop": True,
+                "attempts": attempts,
+                "initial_reward": attempts[0].get("reward") if attempts else None,
+                "final_reward": reward,
+                "reason": "r0_baseline_reward_perfect_after_max_reruns",
+                "skip_reason": (
+                    "R0 baseline stayed at 100% after the configured reruns; "
+                    "inner-loop refinement was skipped because no improvement is possible."
+                ),
+                "observed_at": _timestamp(),
+            }
+            write_baseline_perfect_rerun_report(paths=paths, report=report)
+            return report
+        archive_dir = archive_r0_perfect_attempt(
+            round_dir_path=round_dir_path,
+            attempt_index=attempt_index,
+            tune_result=tune_result,
+        )
+        attempts[-1]["archive_dir"] = str(archive_dir)
+        rerun_count += 1
+
+    raise RuntimeError("unreachable R0 perfect rerun state")
+
+
 def infer_c4ar_resume_round_index(
     *,
     run_dir: Path,
@@ -3088,6 +3259,7 @@ def write_bundle_manifest(
     tune_run_dirs: list[Path],
     round_budget: int,
     rounds: list[dict[str, Any]],
+    baseline_perfect_rerun: dict[str, Any] | None = None,
 ) -> None:
     payload = {
         "experiment_id": "skillx-skillsbench-001",
@@ -3105,6 +3277,8 @@ def write_bundle_manifest(
         "tune_run_dirs": [str(path) for path in tune_run_dirs],
         "rounds": rounds,
     }
+    if baseline_perfect_rerun is not None:
+        payload["baseline_perfect_rerun"] = baseline_perfect_rerun
     write_json(paths.manifest_path, payload)
 
 
@@ -3141,6 +3315,11 @@ def write_final_bundle(
         paths.final_dir / "final_diff_summary.md",
     )
     candidate_pool = ", ".join(f"R{row['round_index']}" for row in tune_rows)
+    baseline_perfect_rerun = (
+        selected_row.get("baseline_perfect_rerun")
+        if isinstance(selected_row.get("baseline_perfect_rerun"), dict)
+        else None
+    )
     selection_note = "\n".join(
         [
             "# Final Selection Note",
@@ -3149,6 +3328,15 @@ def write_final_bundle(
             f"- selected_reward: `{selected_row.get('reward')}`",
             "- selection_rule: highest reward, earliest round on tie",
             f"- candidate_pool: `{candidate_pool}`",
+            *(
+                [
+                    "- inner_loop_skipped: `true`",
+                    f"- skip_reason: `{baseline_perfect_rerun.get('skip_reason')}`",
+                    f"- baseline_perfect_reruns: `{baseline_perfect_rerun.get('rerun_count')}`",
+                ]
+                if baseline_perfect_rerun and baseline_perfect_rerun.get("skipped_inner_loop")
+                else []
+            ),
         ]
     )
     (paths.final_dir / "final_selection_note.md").write_text(selection_note + "\n")
@@ -3180,6 +3368,7 @@ def write_environment_notes(run_dir: Path, env_payload: dict[str, Any], args: ar
             f"- benchmark_agent: `{args.agent}`",
             f"- benchmark_model: `{args.model}`",
             f"- round_budget: `{args.round_budget}`",
+            f"- r0_perfect_max_reruns: `{args.r0_perfect_max_reruns}`",
             f"- round_timeout_multiplier: `{args.round_timeout_multiplier}`",
             f"- tune_timeout_multiplier: `{args.tune_timeout_multiplier}`",
             f"- override_memory_mb: `{args.override_memory_mb}`",
@@ -3292,6 +3481,7 @@ def run_refine_rounds(
     failure_context: dict[str, Any] | None = None,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
+    r0_perfect_max_reruns: int = 0,
 ) -> list[dict[str, Any]]:
     if orchestration_mode == "c4ar":
         round_rows = existing_completed_round_rows(
@@ -3299,6 +3489,40 @@ def run_refine_rounds(
             task_id=task.task_id,
             stop_before_round_index=start_round_index,
         )
+        if start_round_index == 0:
+            update_failure_context(failure_context, failed_stage="r0_perfect_guard")
+            r0_guard = guard_r0_perfect_baseline_before_inner_loop(
+                task=task,
+                paths=paths,
+                skillsbench_root=skillsbench_root,
+                oauth_file=oauth_file,
+                agent_name=agent_name,
+                model_name=model_name,
+                tune_timeout_multiplier=tune_timeout_multiplier,
+                run_dir=run_dir,
+                max_reruns=r0_perfect_max_reruns,
+                override_memory_mb=override_memory_mb,
+                override_storage_mb=override_storage_mb,
+            )
+            if r0_guard.get("skipped_inner_loop"):
+                tune_result = existing_tune_result(
+                    task_id=task.task_id,
+                    round_dir_path=round_dir(paths, 0),
+                    skill_source=str(round_dir(paths, 0) / "skillpack"),
+                )
+                if tune_result is None:
+                    raise RuntimeError("R0 perfect guard skipped without a persisted tune result")
+                round_row = build_round_row(0, round_dir(paths, 0), tune_result)
+                round_row["baseline_perfect_rerun"] = r0_guard
+                round_rows.append(round_row)
+                append_refine_ledger(
+                    paths=paths,
+                    round_index=0,
+                    parent_round_index=None,
+                    tune_result=tune_result,
+                    note="baseline stayed at 100%; inner loop skipped",
+                )
+                return round_rows
         for round_index in range(start_round_index, round_budget + 1):
             update_failure_context(
                 failure_context,
@@ -3536,6 +3760,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--round-budget", type=int, default=3)
     parser.add_argument(
+        "--r0-perfect-max-reruns",
+        type=int,
+        default=DEFAULT_R0_PERFECT_MAX_RERUNS,
+        help=(
+            "Maximum number of times to rerun the R0 baseline executor when it scores 100% "
+            f"before entering the inner loop. Default: {DEFAULT_R0_PERFECT_MAX_RERUNS}."
+        ),
+    )
+    parser.add_argument(
         "--refine-protocol-path",
         type=Path,
         default=ROOT / "plans" / "skillx" / "skillx-refine-protocol-v0.1.md",
@@ -3670,7 +3903,9 @@ def main() -> int:
             failure_context=failure_context,
             override_memory_mb=args.override_memory_mb,
             override_storage_mb=args.override_storage_mb,
+            r0_perfect_max_reruns=args.r0_perfect_max_reruns,
         )
+        baseline_perfect_rerun = read_baseline_perfect_rerun_report(paths)
         update_failure_context(failure_context, failed_stage="write_bundle_manifest")
         write_bundle_manifest(
             paths=paths,
@@ -3680,16 +3915,33 @@ def main() -> int:
             tune_run_dirs=args.tune_run_dir,
             round_budget=args.round_budget,
             rounds=round_rows,
+            baseline_perfect_rerun=baseline_perfect_rerun,
         )
         update_failure_context(failure_context, failed_stage="select_final_candidate")
         selected_row = select_final_candidate(round_rows)
         update_failure_context(failure_context, failed_stage="write_final_bundle")
         write_final_bundle(task=task, paths=paths, selected_row=selected_row, tune_rows=round_rows)
         update_failure_context(failure_context, failed_stage="write_summary")
-        write_json(paths.summary_path, {"task_id": task.task_id, "selected": selected_row, "rounds": round_rows})
+        summary_payload: dict[str, Any] = {
+            "task_id": task.task_id,
+            "selected": selected_row,
+            "rounds": round_rows,
+        }
+        if baseline_perfect_rerun is not None:
+            summary_payload["baseline_perfect_rerun"] = baseline_perfect_rerun
+        write_json(paths.summary_path, summary_payload)
         if run_failure_path.exists():
             run_failure_path.unlink()
         completed_status, completed_status_details = derive_completed_run_status(round_rows)
+        if baseline_perfect_rerun and baseline_perfect_rerun.get("skipped_inner_loop"):
+            completed_status = "skipped_baseline_perfect"
+            completed_status_details = {
+                **completed_status_details,
+                "inner_loop_skipped": True,
+                "skip_reason": baseline_perfect_rerun.get("skip_reason"),
+                "baseline_perfect_reruns": baseline_perfect_rerun.get("rerun_count"),
+                "baseline_final_reward": baseline_perfect_rerun.get("final_reward"),
+            }
         quota_signal = summarize_run_dir(run_dir)
         if quota_signal.get("has_hard_signal"):
             completed_status = "completed_with_quota_issues"

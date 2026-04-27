@@ -158,6 +158,205 @@ class ServeRound0MonitorTests(unittest.TestCase):
             self.assertEqual(pair_detail["round_rows"][1]["stage_states"]["role_a"], "pending")
             self.assertEqual(pair_detail["round_rows"][1]["stage_states"]["role_b"], "pending")
 
+    def test_collect_launcher_status_surfaces_rate_limit_retry_archives(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["artifact-generation"]}) + "\n"
+            )
+            pair_dir = materialized_root / "pairs" / "task-alpha__artifact-generation"
+            run_dir = pair_dir / "refine_run_run-demo"
+            round0 = run_dir / "refine" / "task-alpha" / "rounds" / "round-0"
+            round0.mkdir(parents=True)
+            (run_dir / "RUN_STATUS.md").write_text("- status: `running`\n- task: `task-alpha`\n")
+            (round0 / "orchestrator_log.ndjson").write_text(
+                json.dumps({"round_index": 0, "event_type": "round_started", "timestamp": "2026-04-10T08:00:00+00:00"})
+                + "\n"
+            )
+            archive_dir = run_dir / "archives" / "rate-limit-fallback-20260410T081500Z"
+            (archive_dir / "rounds" / "round-0" / "tune_check").mkdir(parents=True)
+            (archive_dir / "rounds" / "round-1" / "tune_check").mkdir(parents=True)
+            (archive_dir / "RUN_STATUS.md").write_text("- status: `completed_with_quota_issues`\n")
+            (archive_dir / "rate_limit_signal.json").write_text(
+                json.dumps({"signal_level": "hard", "hard_terms": ["api_error_status_429"]}) + "\n"
+            )
+            (archive_dir / "refine_summary.json").write_text(
+                json.dumps({"selected": {"round_index": 1, "reward": 0.42}}) + "\n"
+            )
+            (materialized_root / "pair_specs.jsonl").write_text(
+                json.dumps(
+                    {
+                        "pair_id": "task-alpha__artifact-generation",
+                        "task_name": "task-alpha",
+                        "schema_id": "artifact-generation",
+                        "pair_dir": str(pair_dir),
+                    }
+                )
+                + "\n"
+            )
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 1 pair(s)\n"
+                "Tasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text(
+                json.dumps(
+                    {
+                        "event": "pair_started",
+                        "index": 1,
+                        "observed_at": "2026-04-10T07:56:04+00:00",
+                        "pair_id": "task-alpha__artifact-generation",
+                        "schema_id": "artifact-generation",
+                        "task_name": "task-alpha",
+                    }
+                )
+                + "\n"
+            )
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:16:00+00:00",
+            )
+
+            self.assertEqual(status["archived_retry_count"], 1)
+            self.assertEqual(status["pair_rows"][0]["archive_count"], 1)
+            self.assertEqual(status["pair_rows"][0]["latest_archive_rounds"], [0, 1])
+            archive = status["active_pair_details"][0]["retry_archives"][0]
+            self.assertEqual(archive["status"], "completed_with_quota_issues")
+            self.assertEqual(archive["hard_terms"], ["api_error_status_429"])
+            self.assertEqual(archive["selected_round"], 1)
+            self.assertEqual(archive["selected_score"], 42.0)
+
+    def test_collect_launcher_status_uses_pair_manifest_from_inner_loop_script(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            worktree_root = Path(tmpdir)
+            materialized_root = worktree_root / "materialized"
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["artifact-generation", "analytic-pipeline"]}) + "\n"
+            )
+            pair_specs = [
+                {
+                    "pair_id": "task-alpha__artifact-generation",
+                    "task_name": "task-alpha",
+                    "schema_id": "artifact-generation",
+                    "pair_dir": str(materialized_root / "pairs" / "task-alpha__artifact-generation"),
+                },
+                {
+                    "pair_id": "task-alpha__analytic-pipeline",
+                    "task_name": "task-alpha",
+                    "schema_id": "analytic-pipeline",
+                    "pair_dir": str(materialized_root / "pairs" / "task-alpha__analytic-pipeline"),
+                },
+            ]
+            (materialized_root / "pair_specs.jsonl").write_text(
+                "\n".join(json.dumps(item) for item in pair_specs) + "\n"
+            )
+            pair_manifest = materialized_root / "reports" / "batch-01_pair_manifest.json"
+            pair_manifest.parent.mkdir(parents=True)
+            pair_manifest.write_text(
+                json.dumps(
+                    {
+                        "pair_count": 1,
+                        "task_names": ["task-alpha"],
+                        "selected_pair_ids": ["task-alpha__artifact-generation"],
+                    }
+                )
+                + "\n"
+            )
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 1 pair(s)\n"
+                "Tasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text("")
+            (launcher_log_dir / "run_inner_loop.sh").write_text(
+                "#!/usr/bin/env bash\n"
+                "set -euo pipefail\n"
+                f"cd {worktree_root}\n"
+                "uv run python scripts/launch_skillx_round0.py "
+                "--pair-manifest materialized/reports/batch-01_pair_manifest.json "
+                f"--materialized-root {materialized_root} "
+                "--output-suffix run-demo\n"
+            )
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:16:00+00:00",
+            )
+
+            self.assertEqual(status["total_pairs"], 1)
+            self.assertEqual(len(status["pair_rows"]), 1)
+            self.assertEqual(status["pair_rows"][0]["pair_id"], "task-alpha__artifact-generation")
+
+    def test_collect_launcher_status_uses_selected_pair_ids_from_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["artifact-generation", "analytic-pipeline"]}) + "\n"
+            )
+            pair_specs = [
+                {
+                    "pair_id": "task-alpha__artifact-generation",
+                    "task_name": "task-alpha",
+                    "schema_id": "artifact-generation",
+                    "pair_dir": str(materialized_root / "pairs" / "task-alpha__artifact-generation"),
+                },
+                {
+                    "pair_id": "task-alpha__analytic-pipeline",
+                    "task_name": "task-alpha",
+                    "schema_id": "analytic-pipeline",
+                    "pair_dir": str(materialized_root / "pairs" / "task-alpha__analytic-pipeline"),
+                },
+            ]
+            (materialized_root / "pair_specs.jsonl").write_text(
+                "\n".join(json.dumps(item) for item in pair_specs) + "\n"
+            )
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 1 pair(s)\n"
+                "Tasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text("")
+            (launcher_log_dir / "summary.json").write_text(
+                json.dumps(
+                    {
+                        "selected_task_names": ["task-alpha"],
+                        "selected_pair_ids": ["task-alpha__analytic-pipeline"],
+                        "total_pairs": 1,
+                        "completed_pairs": 0,
+                        "succeeded_pairs": 0,
+                        "failed_pairs": 0,
+                        "results": [],
+                    }
+                )
+                + "\n"
+            )
+
+            status = self.module.collect_launcher_status(
+                launcher_log_dir,
+                now="2026-04-10T08:16:00+00:00",
+            )
+
+            self.assertEqual(status["total_pairs"], 1)
+            self.assertEqual(len(status["pair_rows"]), 1)
+            self.assertEqual(status["pair_rows"][0]["pair_id"], "task-alpha__analytic-pipeline")
+
+    def test_pair_status_labels_skipped_baseline_perfect(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            label = self.module._pair_status_from_sources(
+                launcher_result={"status": "succeeded"},
+                run_status={
+                    "status": "skipped_baseline_perfect",
+                    "baseline_perfect_reruns": "3",
+                },
+                run_dir=Path(tmpdir),
+            )
+
+            self.assertEqual(label, "skipped (R0 100%, reruns=3)")
+
     def test_collect_launcher_status_synthesizes_latest_event_from_active_run_activity(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             materialized_root = Path(tmpdir)

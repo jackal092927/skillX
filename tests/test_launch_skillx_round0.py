@@ -423,6 +423,11 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                 selected_task_names=["task-alpha", "task-beta"],
                 selected_pair_count=4,
                 max_concurrent_pairs=3,
+                selected_pair_ids=[
+                    "task-alpha__artifact-generation",
+                    "task-alpha__analytic-pipeline",
+                ],
+                pair_manifest_path=root / "batch-pairs.json",
                 results=[
                     {
                         "pair_id": "task-alpha__artifact-generation",
@@ -435,6 +440,14 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertEqual(summary["completed_pairs"], 1)
             self.assertEqual(summary["succeeded_pairs"], 1)
             self.assertEqual(summary["failed_pairs"], 0)
+            self.assertEqual(
+                summary["selected_pair_ids"],
+                [
+                    "task-alpha__artifact-generation",
+                    "task-alpha__analytic-pipeline",
+                ],
+            )
+            self.assertEqual(summary["pair_manifest_path"], str((root / "batch-pairs.json").resolve()))
 
     def test_build_preflight_docker_risk_audit_flags_amd64_pin_as_medium_risk(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

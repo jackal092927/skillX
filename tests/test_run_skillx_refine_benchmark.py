@@ -59,6 +59,34 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             rewrite_manifest_path=None,
         )
 
+    def _build_demo_refine_fixture(self, root: Path):
+        task_root = root / "skillsbench" / "tasks" / "demo-task"
+        skills_dir = task_root / "environment" / "skills" / "skill-a"
+        skills_dir.mkdir(parents=True)
+        (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+        (task_root / "instruction.md").write_text("instr\n")
+        (task_root / "task.toml").write_text("[agent]\n")
+        (task_root / "tests").mkdir()
+        (task_root / "tests" / "test.sh").write_text("echo ok\n")
+        (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+        task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+        paths = self.module.ensure_refine_paths(root / "out", task.task_id)
+        starting_skillpack_dir = root / "start" / "skillpack"
+        (starting_skillpack_dir / "skill-a").mkdir(parents=True)
+        (starting_skillpack_dir / "skill-a" / "SKILL.md").write_text("# Derived Execution Layer\ncustom\n")
+        source = self._make_source_artifacts(
+            starting_skillpack_dir=starting_skillpack_dir,
+            starting_label="R0",
+        )
+        r0_row = self.module.make_round_zero_artifacts(task=task, paths=paths, source=source, tune_rows=[])
+        protocols = self.module.ProtocolInputs(
+            refine_protocol_path=root / "proto.md",
+            bundle_contract_path=root / "bundle.md",
+        )
+        protocols.refine_protocol_path.write_text("proto\n")
+        protocols.bundle_contract_path.write_text("bundle\n")
+        return task, paths, r0_row, protocols
+
     def test_collect_tune_evidence_from_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             run_dir = Path(tmpdir) / "run-a"
@@ -2813,6 +2841,234 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["round_index"], 0)
             self.assertEqual(rows[0]["reward"], 0.8444)
+
+    def test_run_refine_rounds_c4ar_reruns_perfect_r0_before_roles(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task, paths, r0_row, protocols = self._build_demo_refine_fixture(root)
+            attempt_rewards = [1.0, 0.6]
+            observed_attempts: list[float] = []
+
+            def fake_executor_outputs(**kwargs):
+                reward = attempt_rewards[len(observed_attempts)]
+                observed_attempts.append(reward)
+                round_dir_path = kwargs["round_dir_path"]
+                tune_dir = round_dir_path / "tune_check"
+                executor_dir = round_dir_path / "executor"
+                tune_dir.mkdir(parents=True, exist_ok=True)
+                executor_dir.mkdir(parents=True, exist_ok=True)
+                tune_result = {
+                    "reward": reward,
+                    "eval_name": "pytest",
+                    "exception_stats": {},
+                    "n_trials": 1,
+                    "n_errors": 0,
+                }
+                (tune_dir / "result.json").write_text(json.dumps(tune_result) + "\n")
+                verifier_summary = executor_dir / "verifier_summary.json"
+                verifier_summary.write_text(json.dumps({"reward": reward}) + "\n")
+                session_log = executor_dir / "executor.log"
+                session_log.write_text("ok\n")
+                return (
+                    self.module.ExecutorOutputs(
+                        session_log_path=str(session_log),
+                        verifier_summary_path=str(verifier_summary),
+                        current_skillpack_dir=str(round_dir_path / "skillpack"),
+                        current_bundle_path=None,
+                    ),
+                    tune_result,
+                )
+
+            c4ar_called = 0
+
+            def fake_run_c4ar_round_with_harbor(**kwargs):
+                nonlocal c4ar_called
+                c4ar_called += 1
+                self.assertEqual(kwargs["round_index"], 0)
+                self.assertEqual(observed_attempts, [1.0, 0.6])
+                round_dir_path = kwargs["round_dir_path"]
+                next_skillpack_dir = round_dir_path / "role_b" / "next_skillpack"
+                (next_skillpack_dir / "skills" / "skill-a").mkdir(parents=True, exist_ok=True)
+                (next_skillpack_dir / "skills" / "skill-a" / "SKILL.md").write_text("# next\n")
+                return (
+                    type(
+                        "FakeOrchestratorOutputs",
+                        (),
+                        {
+                            "session_evidence": type(
+                                "FakeSessionEvidence",
+                                (),
+                                {"dominant_failure_pattern": "none", "recommended_edit_targets": []},
+                            )(),
+                            "next_skillpack_manifest": type(
+                                "FakeNextManifest",
+                                (),
+                                {
+                                    "skill_files": ["skills/skill-a/SKILL.md"],
+                                    "prompt_invariant": True,
+                                    "skillpack_dir": str(next_skillpack_dir),
+                                    "bundle_path": None,
+                                },
+                            )(),
+                            "round_decision": type(
+                                "FakeRoundDecision",
+                                (),
+                                {
+                                    "decision": "continue",
+                                    "reason": "continue after non-perfect rerun",
+                                    "next_round_index": 1,
+                                    "next_skillpack_dir": str(next_skillpack_dir),
+                                    "selected_candidate_label": "R0",
+                                },
+                            )(),
+                        },
+                    )(),
+                    {
+                        "reward": 0.6,
+                        "eval_name": "pytest",
+                        "exception_stats": {},
+                        "n_trials": 1,
+                        "n_errors": 0,
+                    },
+                )
+
+            def fake_run_terminal_c4ar_round(**kwargs):
+                self.assertEqual(kwargs["round_index"], 1)
+                return {
+                    "reward": 0.7,
+                    "eval_name": "pytest",
+                    "exception_stats": {},
+                    "n_trials": 1,
+                    "n_errors": 0,
+                }
+
+            original_executor = self.module.ensure_c4ar_executor_outputs
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            original_terminal_round = getattr(self.module, "run_terminal_c4ar_round", None)
+            try:
+                self.module.ensure_c4ar_executor_outputs = fake_executor_outputs
+                setattr(self.module, "run_c4ar_round_with_harbor", fake_run_c4ar_round_with_harbor)
+                setattr(self.module, "run_terminal_c4ar_round", fake_run_terminal_c4ar_round)
+                rows = self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=1.0,
+                    tune_timeout_multiplier=1.0,
+                    round_budget=1,
+                    r0_row=r0_row,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                    r0_perfect_max_reruns=3,
+                )
+            finally:
+                self.module.ensure_c4ar_executor_outputs = original_executor
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+                if original_terminal_round is None:
+                    delattr(self.module, "run_terminal_c4ar_round")
+                else:
+                    setattr(self.module, "run_terminal_c4ar_round", original_terminal_round)
+
+            report = json.loads((paths.root_dir / "baseline_perfect_rerun.json").read_text())
+            self.assertEqual(observed_attempts, [1.0, 0.6])
+            self.assertEqual(report["rerun_count"], 1)
+            self.assertFalse(report["skipped_inner_loop"])
+            self.assertTrue((paths.rounds_dir / "round-0" / "baseline_perfect_reruns" / "attempt-0").exists())
+            self.assertEqual(c4ar_called, 1)
+            self.assertEqual([row["round_index"] for row in rows], [0, 1])
+            self.assertEqual([row["reward"] for row in rows], [0.6, 0.7])
+
+    def test_run_refine_rounds_c4ar_skips_after_three_perfect_r0_reruns(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task, paths, r0_row, protocols = self._build_demo_refine_fixture(root)
+            observed_attempts: list[int] = []
+
+            def fake_executor_outputs(**kwargs):
+                observed_attempts.append(len(observed_attempts))
+                round_dir_path = kwargs["round_dir_path"]
+                tune_dir = round_dir_path / "tune_check"
+                executor_dir = round_dir_path / "executor"
+                tune_dir.mkdir(parents=True, exist_ok=True)
+                executor_dir.mkdir(parents=True, exist_ok=True)
+                tune_result = {
+                    "reward": 1.0,
+                    "eval_name": "pytest",
+                    "exception_stats": {},
+                    "n_trials": 1,
+                    "n_errors": 0,
+                }
+                (tune_dir / "result.json").write_text(json.dumps(tune_result) + "\n")
+                verifier_summary = executor_dir / "verifier_summary.json"
+                verifier_summary.write_text(json.dumps({"reward": 1.0}) + "\n")
+                session_log = executor_dir / "executor.log"
+                session_log.write_text("ok\n")
+                return (
+                    self.module.ExecutorOutputs(
+                        session_log_path=str(session_log),
+                        verifier_summary_path=str(verifier_summary),
+                        current_skillpack_dir=str(round_dir_path / "skillpack"),
+                        current_bundle_path=None,
+                    ),
+                    tune_result,
+                )
+
+            def fail_run_c4ar_round_with_harbor(**kwargs):
+                raise AssertionError("role A/B should not run when R0 baseline remains perfect")
+
+            original_executor = self.module.ensure_c4ar_executor_outputs
+            original_c4ar_round = getattr(self.module, "run_c4ar_round_with_harbor", None)
+            try:
+                self.module.ensure_c4ar_executor_outputs = fake_executor_outputs
+                setattr(self.module, "run_c4ar_round_with_harbor", fail_run_c4ar_round_with_harbor)
+                rows = self.module.run_refine_rounds(
+                    task=task,
+                    paths=paths,
+                    protocols=protocols,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    round_timeout_multiplier=1.0,
+                    tune_timeout_multiplier=1.0,
+                    round_budget=3,
+                    r0_row=r0_row,
+                    run_dir=root / "out",
+                    source_run_dir=root / "source-run",
+                    starting_label="R0",
+                    session_evidence=None,
+                    tune_rows=[],
+                    orchestration_mode="c4ar",
+                    r0_perfect_max_reruns=3,
+                )
+            finally:
+                self.module.ensure_c4ar_executor_outputs = original_executor
+                if original_c4ar_round is None:
+                    delattr(self.module, "run_c4ar_round_with_harbor")
+                else:
+                    setattr(self.module, "run_c4ar_round_with_harbor", original_c4ar_round)
+
+            report = json.loads((paths.root_dir / "baseline_perfect_rerun.json").read_text())
+            self.assertEqual(observed_attempts, [0, 1, 2, 3])
+            self.assertEqual(report["rerun_count"], 3)
+            self.assertTrue(report["skipped_inner_loop"])
+            self.assertEqual(report["final_reward"], 1.0)
+            self.assertEqual([row["round_index"] for row in rows], [0])
+            self.assertEqual(rows[0]["reward"], 1.0)
+            self.assertTrue(rows[0]["baseline_perfect_rerun"]["skipped_inner_loop"])
+            self.assertFalse((paths.rounds_dir / "round-0" / "role_a").exists())
+            self.assertFalse((paths.rounds_dir / "round-1").exists())
 
     def test_run_refine_rounds_c4ar_keeps_base_timeout_multiplier_after_timeout_result(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
