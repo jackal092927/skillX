@@ -718,6 +718,68 @@ def _read_round_score_map(run_dir: Path) -> dict[int, float | None]:
     return round_scores
 
 
+def _read_baseline_perfect_rerun_report(run_dir: Path) -> dict[str, Any] | None:
+    task_root = _find_refine_task_root(run_dir)
+    if task_root is None:
+        return None
+    payload = _safe_read_json(task_root / "baseline_perfect_rerun.json")
+    return payload if isinstance(payload, dict) else None
+
+
+def _last_r0_attempt_reward(report: dict[str, Any] | None) -> float | None:
+    if not isinstance(report, dict):
+        return None
+    attempts = report.get("attempts")
+    last_attempt = attempts[-1] if isinstance(attempts, list) and attempts else {}
+    reward = (
+        last_attempt.get("reward")
+        if isinstance(last_attempt, dict) and "reward" in last_attempt
+        else report.get("final_reward")
+    )
+    return float(reward) if isinstance(reward, (int, float)) else None
+
+
+def _rewards_match(left: float | None, right: float | None) -> bool:
+    if left is None or right is None:
+        return left is None and right is None
+    return abs(left - right) <= 1e-9
+
+
+def _effective_r0_reward(
+    *,
+    active_r0_reward: float | None,
+    baseline_perfect_rerun: dict[str, Any] | None,
+) -> dict[str, Any]:
+    report_reward = _last_r0_attempt_reward(baseline_perfect_rerun)
+    rerun_count = (
+        baseline_perfect_rerun.get("rerun_count")
+        if isinstance(baseline_perfect_rerun, dict)
+        else None
+    )
+    if not isinstance(rerun_count, int):
+        rerun_count = 0
+    has_report = isinstance(baseline_perfect_rerun, dict) and baseline_perfect_rerun.get("enabled")
+    is_stale = bool(
+        has_report
+        and active_r0_reward is not None
+        and report_reward is not None
+        and not _rewards_match(active_r0_reward, report_reward)
+    )
+    if is_stale:
+        effective_reward = active_r0_reward
+    elif report_reward is not None:
+        effective_reward = report_reward
+    else:
+        effective_reward = active_r0_reward
+    return {
+        "reward": effective_reward,
+        "score": _reward_to_percent(effective_reward),
+        "rerun_count": rerun_count,
+        "rerun_status": "stale" if is_stale else str(rerun_count),
+        "report_stale": is_stale,
+    }
+
+
 def _read_refine_summary(run_dir: Path) -> dict[str, Any] | None:
     task_root = _find_refine_task_root(run_dir)
     if task_root is None:
@@ -895,6 +957,13 @@ def _collect_pair_rows(
         run_status = _parse_run_status(run_dir / "RUN_STATUS.md")
         retry_archives = _collect_retry_archives(run_dir)
         round_scores_raw = _read_round_score_map(run_dir)
+        baseline_perfect_rerun = _read_baseline_perfect_rerun_report(run_dir)
+        effective_r0 = _effective_r0_reward(
+            active_r0_reward=round_scores_raw.get(0),
+            baseline_perfect_rerun=baseline_perfect_rerun,
+        )
+        if effective_r0.get("reward") is not None:
+            round_scores_raw[0] = effective_r0["reward"]
         round_scores = {
             f"R{round_index}": _reward_to_percent(round_scores_raw.get(round_index))
             for round_index in range(0, 4)
@@ -924,6 +993,12 @@ def _collect_pair_rows(
                     for round_index in range(0, 4)
                 },
                 "round_scores": round_scores,
+                "baseline_perfect_rerun": baseline_perfect_rerun,
+                "effective_r0_reward_raw": effective_r0.get("reward"),
+                "effective_r0_score": effective_r0.get("score"),
+                "r0_rerun_count": effective_r0.get("rerun_count"),
+                "r0_rerun_status": effective_r0.get("rerun_status"),
+                "r0_rerun_report_stale": effective_r0.get("report_stale"),
                 "selected_round": (
                     f"R{selected_round_index}" if isinstance(selected_round_index, int) else None
                 ),
@@ -1484,6 +1559,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         r1 = round_scores.get("R1")
         r2 = round_scores.get("R2")
         r3 = round_scores.get("R3")
+        r0_rerun_status = row.get("r0_rerun_status")
         d0 = row.get("delta_vs_c0")
         d1 = row.get("delta_vs_c1")
         dr0 = row.get("delta_vs_r0")
@@ -1505,6 +1581,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             f'<td class="{_heat_class(r1)}">{html.escape(_format_metric(r1))}</td>'
             f'<td class="{_heat_class(r2)}">{html.escape(_format_metric(r2))}</td>'
             f'<td class="{_heat_class(r3)}">{html.escape(_format_metric(r3))}</td>'
+            f'<td class="num">{html.escape(str(r0_rerun_status or "0"))}</td>'
             f'<td class="num">{html.escape(str(row.get("selected_round") or ""))}</td>'
             f'<td class="num num-strong">{html.escape(_format_metric(row.get("selected_score")))}</td>'
             f'<td class="{_delta_class(dr0)}">{html.escape(_format_metric(dr0))}</td>'
@@ -1516,7 +1593,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         )
     pair_rows_html = (
         "\n".join(pair_row_items)
-        or '<tr><td colspan="15">No pair rows available.</td></tr>'
+        or '<tr><td colspan="16">No pair rows available.</td></tr>'
     )
 
     return f"""<!DOCTYPE html>
@@ -2001,7 +2078,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
 
     <section class="panel">
       <h2>Task / Pair Results</h2>
-      <div class="subhead">Official C0/C1 scores are native 0-100 values. Local R0-R3 rewards are normalized 0-1 internally and shown here on a 0-100 scale; deltas are percentage-point differences.</div>
+      <div class="subhead">Official C0/C1 scores are native 0-100 values. Local R0-R3 rewards are normalized 0-1 internally and shown here on a 0-100 scale; R0 uses the final baseline-rerun attempt when present.</div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -2014,6 +2091,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
               <th class="num">R1</th>
               <th class="num">R2</th>
               <th class="num">R3</th>
+              <th class="num">R0 reruns</th>
               <th class="num">Best Round</th>
               <th class="num">Best Score</th>
               <th class="num">Δ vs R0</th>

@@ -2989,6 +2989,144 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertEqual([row["round_index"] for row in rows], [0, 1])
             self.assertEqual([row["reward"] for row in rows], [0.6, 0.7])
 
+    def test_cleanup_rate_limit_retry_artifacts_archives_r0_rerun_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            run_dir = root / "run"
+            task_id = "demo-task"
+            task_root = run_dir / "refine" / task_id
+            round0_tune = task_root / "rounds" / "round-0" / "tune_check"
+            round0_tune.mkdir(parents=True)
+            (round0_tune / "result.json").write_text(json.dumps({"error": "HTTP 429"}) + "\n")
+            report_path = task_root / "baseline_perfect_rerun.json"
+            report_path.write_text(json.dumps({"enabled": True, "final_reward": 1.0}) + "\n")
+
+            cleanup = self.module.cleanup_rate_limit_retry_artifacts(
+                run_dir=run_dir,
+                task_id=task_id,
+                round_budget=1,
+            )
+
+            self.assertTrue(cleanup["cleaned"])
+            self.assertEqual(cleanup["first_rate_limit_round"], 0)
+            self.assertFalse(report_path.exists())
+            archived_sources = {row["source"] for row in cleanup["archived_paths"]}
+            self.assertIn(str(report_path), archived_sources)
+            archived_report = [
+                Path(row["archive"])
+                for row in cleanup["archived_paths"]
+                if row["source"] == str(report_path)
+            ][0]
+            self.assertTrue(archived_report.exists())
+
+    def test_r0_guard_reuses_matching_rerun_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task, paths, _r0_row, _protocols = self._build_demo_refine_fixture(root)
+            round0 = paths.rounds_dir / "round-0"
+            (round0 / "tune_check").mkdir(parents=True, exist_ok=True)
+            (round0 / "tune_check" / "result.json").write_text(json.dumps({"reward": 0.5}) + "\n")
+            report = {
+                "enabled": True,
+                "rerun_count": 1,
+                "skipped_inner_loop": False,
+                "attempts": [{"attempt_index": 0, "reward": 1.0}, {"attempt_index": 1, "reward": 0.5}],
+                "final_reward": 0.5,
+                "reason": "r0_baseline_reward_not_perfect",
+            }
+            (paths.root_dir / "baseline_perfect_rerun.json").write_text(json.dumps(report) + "\n")
+
+            original_executor = self.module.ensure_c4ar_executor_outputs
+            try:
+                self.module.ensure_c4ar_executor_outputs = mock.Mock(
+                    side_effect=AssertionError("matching rerun report should be reused")
+                )
+                observed = self.module.guard_r0_perfect_baseline_before_inner_loop(
+                    task=task,
+                    paths=paths,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    tune_timeout_multiplier=1.0,
+                    run_dir=root / "out",
+                    max_reruns=3,
+                )
+            finally:
+                self.module.ensure_c4ar_executor_outputs = original_executor
+
+            self.assertEqual(observed, report)
+
+    def test_r0_guard_does_not_reuse_stale_rerun_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task, paths, _r0_row, _protocols = self._build_demo_refine_fixture(root)
+            round0 = paths.rounds_dir / "round-0"
+            (round0 / "tune_check").mkdir(parents=True, exist_ok=True)
+            (round0 / "tune_check" / "result.json").write_text(json.dumps({"reward": 0.5}) + "\n")
+            (paths.root_dir / "baseline_perfect_rerun.json").write_text(
+                json.dumps(
+                    {
+                        "enabled": True,
+                        "rerun_count": 1,
+                        "skipped_inner_loop": False,
+                        "attempts": [
+                            {"attempt_index": 0, "reward": 1.0},
+                            {"attempt_index": 1, "reward": 1.0},
+                        ],
+                        "final_reward": 1.0,
+                        "reason": "r0_baseline_reward_not_perfect",
+                    }
+                )
+                + "\n"
+            )
+            observed_calls = 0
+
+            def fake_executor_outputs(**kwargs):
+                nonlocal observed_calls
+                observed_calls += 1
+                round_dir_path = kwargs["round_dir_path"]
+                tune_dir = round_dir_path / "tune_check"
+                executor_dir = round_dir_path / "executor"
+                tune_dir.mkdir(parents=True, exist_ok=True)
+                executor_dir.mkdir(parents=True, exist_ok=True)
+                tune_result = {"reward": 0.4, "eval_name": "pytest", "exception_stats": {}}
+                (tune_dir / "result.json").write_text(json.dumps(tune_result) + "\n")
+                verifier_summary = executor_dir / "verifier_summary.json"
+                verifier_summary.write_text(json.dumps({"reward": 0.4}) + "\n")
+                session_log = executor_dir / "executor.log"
+                session_log.write_text("ok\n")
+                return (
+                    self.module.ExecutorOutputs(
+                        session_log_path=str(session_log),
+                        verifier_summary_path=str(verifier_summary),
+                        current_skillpack_dir=str(round_dir_path / "skillpack"),
+                        current_bundle_path=None,
+                    ),
+                    tune_result,
+                )
+
+            original_executor = self.module.ensure_c4ar_executor_outputs
+            try:
+                self.module.ensure_c4ar_executor_outputs = fake_executor_outputs
+                observed = self.module.guard_r0_perfect_baseline_before_inner_loop(
+                    task=task,
+                    paths=paths,
+                    skillsbench_root=root / "skillsbench",
+                    oauth_file=root / "oauth.txt",
+                    agent_name="claude-code",
+                    model_name="anthropic/claude-sonnet-4-5",
+                    tune_timeout_multiplier=1.0,
+                    run_dir=root / "out",
+                    max_reruns=3,
+                )
+            finally:
+                self.module.ensure_c4ar_executor_outputs = original_executor
+
+            self.assertEqual(observed_calls, 1)
+            self.assertEqual(observed["final_reward"], 0.4)
+            self.assertEqual(observed["rerun_count"], 0)
+
     def test_run_refine_rounds_c4ar_skips_after_three_perfect_r0_reruns(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)

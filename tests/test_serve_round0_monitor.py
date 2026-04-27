@@ -667,6 +667,152 @@ class ServeRound0MonitorTests(unittest.TestCase):
             self.assertIsNone(running["selected_round"])
             self.assertEqual(running["pair_status"], "running")
 
+    def test_collect_launcher_status_uses_final_r0_rerun_attempt_as_effective_r0(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["artifact-generation"]}) + "\n"
+            )
+            pair_specs = [
+                {
+                    "pair_id": "task-alpha__artifact-generation",
+                    "task_name": "task-alpha",
+                    "schema_id": "artifact-generation",
+                    "pair_dir": str(materialized_root / "pairs" / "task-alpha__artifact-generation"),
+                    "official_scores": {"no_skills": 10.0, "with_skills": 20.0},
+                }
+            ]
+            (materialized_root / "pair_specs.jsonl").write_text(
+                "\n".join(json.dumps(item) for item in pair_specs) + "\n"
+            )
+            run_dir = materialized_root / "pairs" / "task-alpha__artifact-generation" / "refine_run_run-demo"
+            task_root = run_dir / "refine" / "task-alpha"
+            (task_root / "rounds" / "round-0" / "tune_check").mkdir(parents=True)
+            (task_root / "rounds" / "round-1" / "tune_check").mkdir(parents=True)
+            (task_root / "rounds" / "round-0" / "tune_check" / "result.json").write_text(
+                json.dumps({"reward": 0.0}) + "\n"
+            )
+            (task_root / "rounds" / "round-1" / "tune_check" / "result.json").write_text(
+                json.dumps({"reward": 0.4}) + "\n"
+            )
+            (task_root / "baseline_perfect_rerun.json").write_text(
+                json.dumps(
+                    {
+                        "enabled": True,
+                        "rerun_count": 2,
+                        "attempts": [
+                            {"attempt_index": 0, "reward": 1.0},
+                            {"attempt_index": 1, "reward": 1.0},
+                            {"attempt_index": 2, "reward": 0.0},
+                        ],
+                        "final_reward": 0.0,
+                        "reason": "r0_baseline_reward_not_perfect",
+                    }
+                )
+                + "\n"
+            )
+            (task_root / "refine_summary.json").write_text(
+                json.dumps({"selected": {"round_index": 1, "reward": 0.4}}) + "\n"
+            )
+            (run_dir / "RUN_STATUS.md").write_text("- status: `completed`\n")
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 1 pair(s)\nTasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text("")
+            (launcher_log_dir / "summary.json").write_text(
+                json.dumps(
+                    {
+                        "selected_task_names": ["task-alpha"],
+                        "total_pairs": 1,
+                        "completed_pairs": 1,
+                        "succeeded_pairs": 1,
+                        "failed_pairs": 0,
+                        "results": [{"pair_id": "task-alpha__artifact-generation", "status": "succeeded"}],
+                    }
+                )
+                + "\n"
+            )
+
+            status = self.module.collect_launcher_status(launcher_log_dir)
+
+            row = status["pair_rows"][0]
+            self.assertEqual(row["round_rewards_raw"]["R0"], 0.0)
+            self.assertEqual(row["round_scores"]["R0"], 0.0)
+            self.assertEqual(row["r0_rerun_count"], 2)
+            self.assertEqual(row["r0_rerun_status"], "2")
+            self.assertFalse(row["r0_rerun_report_stale"])
+            self.assertEqual(row["delta_vs_r0"], 40.0)
+
+    def test_collect_launcher_status_marks_stale_r0_rerun_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps({"schema_ids": ["artifact-generation"]}) + "\n"
+            )
+            pair_id = "task-alpha__artifact-generation"
+            (materialized_root / "pair_specs.jsonl").write_text(
+                json.dumps(
+                    {
+                        "pair_id": pair_id,
+                        "task_name": "task-alpha",
+                        "schema_id": "artifact-generation",
+                        "pair_dir": str(materialized_root / "pairs" / pair_id),
+                    }
+                )
+                + "\n"
+            )
+            run_dir = materialized_root / "pairs" / pair_id / "refine_run_run-demo"
+            task_root = run_dir / "refine" / "task-alpha"
+            (task_root / "rounds" / "round-0" / "tune_check").mkdir(parents=True)
+            (task_root / "rounds" / "round-0" / "tune_check" / "result.json").write_text(
+                json.dumps({"reward": 1.0}) + "\n"
+            )
+            (task_root / "baseline_perfect_rerun.json").write_text(
+                json.dumps(
+                    {
+                        "enabled": True,
+                        "rerun_count": 2,
+                        "attempts": [
+                            {"attempt_index": 0, "reward": 1.0},
+                            {"attempt_index": 1, "reward": 1.0},
+                            {"attempt_index": 2, "reward": 0.0},
+                        ],
+                        "final_reward": 0.0,
+                    }
+                )
+                + "\n"
+            )
+            (run_dir / "RUN_STATUS.md").write_text("- status: `completed`\n")
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 1 pair(s)\nTasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text("")
+            (launcher_log_dir / "summary.json").write_text(
+                json.dumps(
+                    {
+                        "selected_task_names": ["task-alpha"],
+                        "total_pairs": 1,
+                        "completed_pairs": 1,
+                        "succeeded_pairs": 1,
+                        "failed_pairs": 0,
+                        "results": [{"pair_id": pair_id, "status": "succeeded"}],
+                    }
+                )
+                + "\n"
+            )
+
+            status = self.module.collect_launcher_status(launcher_log_dir)
+
+            row = status["pair_rows"][0]
+            self.assertEqual(row["round_rewards_raw"]["R0"], 1.0)
+            self.assertEqual(row["round_scores"]["R0"], 100.0)
+            self.assertEqual(row["r0_rerun_status"], "stale")
+            self.assertTrue(row["r0_rerun_report_stale"])
+
     def test_collect_launcher_status_handles_relative_pair_dirs_and_active_events(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             materialized_root = Path(tmpdir)

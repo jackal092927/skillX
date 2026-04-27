@@ -2455,6 +2455,39 @@ def read_baseline_perfect_rerun_report(paths: RefinePaths) -> dict[str, Any] | N
     return payload if isinstance(payload, dict) else None
 
 
+def coerce_reward(value: Any) -> float | None:
+    return float(value) if isinstance(value, (int, float)) else None
+
+
+def rewards_match(left: Any, right: Any) -> bool:
+    left_reward = coerce_reward(left)
+    right_reward = coerce_reward(right)
+    if left_reward is None or right_reward is None:
+        return left_reward is None and right_reward is None
+    return abs(left_reward - right_reward) <= 1e-9
+
+
+def baseline_perfect_report_matches_active_r0(
+    *,
+    report: dict[str, Any],
+    round_dir_path: Path,
+) -> bool:
+    tune_result_path = round_dir_path / "tune_check" / "result.json"
+    if not tune_result_path.exists():
+        return False
+    tune_result = read_json(tune_result_path)
+    if not isinstance(tune_result, dict):
+        return False
+    attempts = report.get("attempts")
+    last_attempt = attempts[-1] if isinstance(attempts, list) and attempts else {}
+    report_reward = (
+        last_attempt.get("reward")
+        if isinstance(last_attempt, dict) and "reward" in last_attempt
+        else report.get("final_reward")
+    )
+    return rewards_match(tune_result.get("reward"), report_reward)
+
+
 def write_baseline_perfect_rerun_report(
     *,
     paths: RefinePaths,
@@ -2480,15 +2513,20 @@ def guard_r0_perfect_baseline_before_inner_loop(
     round_dir_path = round_dir(paths, 0)
     report_path = paths.root_dir / "baseline_perfect_rerun.json"
     existing_report = read_json(report_path) if report_path.exists() else None
-    if isinstance(existing_report, dict) and existing_report.get("skipped_inner_loop"):
-        return existing_report
-    if (
-        isinstance(existing_report, dict)
-        and existing_report.get("enabled")
-        and isinstance(existing_report.get("attempts"), list)
-        and existing_report.get("reason") == "r0_baseline_reward_not_perfect"
-    ):
-        return existing_report
+    if isinstance(existing_report, dict):
+        existing_report_matches_active_r0 = baseline_perfect_report_matches_active_r0(
+            report=existing_report,
+            round_dir_path=round_dir_path,
+        )
+        if existing_report.get("skipped_inner_loop") and existing_report_matches_active_r0:
+            return existing_report
+        if (
+            existing_report.get("enabled")
+            and isinstance(existing_report.get("attempts"), list)
+            and existing_report.get("reason") == "r0_baseline_reward_not_perfect"
+            and existing_report_matches_active_r0
+        ):
+            return existing_report
     if max_reruns <= 0:
         report = {
             "enabled": False,
@@ -2830,6 +2868,8 @@ def cleanup_rate_limit_retry_artifacts(
     if rounds_dir.exists():
         for round_index in range(first_rate_limit_round, round_budget + 1):
             archive_path(rounds_dir / f"round-{round_index}")
+    if first_rate_limit_round == 0:
+        archive_path(root_dir / "baseline_perfect_rerun.json")
 
     for stale_path in (
         root_dir / "C4-final",
