@@ -1,0 +1,764 @@
+{
+  "all_tasks_have_7_succeeded_pairs": true,
+  "artifact_type": "skillx_first20_round0_checkpoint",
+  "base_failed_pair_ids": [
+    "azure-bgp-oscillation-route-leak__analytic-pipeline",
+    "azure-bgp-oscillation-route-leak__engineering-composition",
+    "azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis",
+    "data-to-d3__environment-control",
+    "data-to-d3__methodology-guardrail"
+  ],
+  "base_failed_pairs": 5,
+  "base_run_label": "run-first20x7-round0-2026-04-24",
+  "base_run_report": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/run-first20x7-round0-2026-04-24/run_report.json",
+  "checkpoint_label": "first20-round0-rate-limit-rerun-3batch-final-2026-04-29",
+  "classification_counts": {
+    "clean_success": 79,
+    "runtime_failure": 1,
+    "scientific_failure": 60
+  },
+  "effective_pair_count": 140,
+  "generated_at": "2026-04-29T05:00:02.401175+00:00",
+  "launcher_failed_pairs": 0,
+  "launcher_status_counts": {
+    "succeeded": 140
+  },
+  "launcher_succeeded_pairs": 140,
+  "rerun_labels": [
+    "run-first20x7-rerun-failed5-2026-04-25-v2",
+    "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+    "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+    "run-first20-rate-limit-rerun-2026-04-27-3batch-b03"
+  ],
+  "rerun_replaced_pairs": 120,
+  "rerun_replacements": [
+    {
+      "base_status": "failed",
+      "pair_id": "azure-bgp-oscillation-route-leak__analytic-pipeline",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "azure-bgp-oscillation-route-leak__engineering-composition",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "data-to-d3__environment-control",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "data-to-d3__methodology-guardrail",
+      "rerun_label": "run-first20x7-rerun-failed5-2026-04-25-v2",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "adaptive-cruise-control__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "adaptive-cruise-control__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "adaptive-cruise-control__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "adaptive-cruise-control__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "adaptive-cruise-control__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "adaptive-cruise-control__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "adaptive-cruise-control__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "citation-check__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "citation-check__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "citation-check__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "citation-check__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "citation-check__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "citation-check__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "citation-check__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "civ6-adjacency-optimizer__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "civ6-adjacency-optimizer__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "civ6-adjacency-optimizer__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "civ6-adjacency-optimizer__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "civ6-adjacency-optimizer__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "civ6-adjacency-optimizer__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "civ6-adjacency-optimizer__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "court-form-filling__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "court-form-filling__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "court-form-filling__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "court-form-filling__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "court-form-filling__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "court-form-filling__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "court-form-filling__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "dapt-intrusion-detection__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "dapt-intrusion-detection__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "dapt-intrusion-detection__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "dapt-intrusion-detection__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "dapt-intrusion-detection__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "dapt-intrusion-detection__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "dapt-intrusion-detection__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "data-to-d3__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "data-to-d3__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "data-to-d3__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "data-to-d3__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "data-to-d3__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b01",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-phase-association__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-phase-association__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-phase-association__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-phase-association__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-phase-association__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-phase-association__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-phase-association__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-plate-calculation__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-plate-calculation__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-plate-calculation__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-plate-calculation__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-plate-calculation__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-plate-calculation__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "earthquake-plate-calculation__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "econ-detrending-correlation__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "econ-detrending-correlation__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "econ-detrending-correlation__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "econ-detrending-correlation__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "econ-detrending-correlation__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "econ-detrending-correlation__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "econ-detrending-correlation__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-ac-optimal-power-flow__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-ac-optimal-power-flow__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-ac-optimal-power-flow__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-ac-optimal-power-flow__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-ac-optimal-power-flow__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-ac-optimal-power-flow__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-ac-optimal-power-flow__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-market-pricing__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-market-pricing__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-market-pricing__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-market-pricing__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-market-pricing__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-market-pricing__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "energy-market-pricing__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "azure-bgp-oscillation-route-leak__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b02",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exoplanet-detection-period__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exoplanet-detection-period__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exoplanet-detection-period__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exoplanet-detection-period__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exoplanet-detection-period__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exoplanet-detection-period__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exoplanet-detection-period__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "financial-modeling-qa__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "financial-modeling-qa__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "financial-modeling-qa__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "financial-modeling-qa__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "financial-modeling-qa__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "financial-modeling-qa__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "financial-modeling-qa__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "find-topk-similiar-chemicals__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "find-topk-similiar-chemicals__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "find-topk-similiar-chemicals__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "find-topk-similiar-chemicals__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "find-topk-similiar-chemicals__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "find-topk-similiar-chemicals__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "find-topk-similiar-chemicals__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-druid-loophole-cve__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-druid-loophole-cve__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-druid-loophole-cve__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-druid-loophole-cve__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-druid-loophole-cve__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-druid-loophole-cve__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-druid-loophole-cve__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exceltable-in-ppt__artifact-generation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exceltable-in-ppt__analytic-pipeline",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exceltable-in-ppt__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exceltable-in-ppt__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exceltable-in-ppt__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "exceltable-in-ppt__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-build-google-auto__engineering-composition",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-build-google-auto__retrieval-heavy-synthesis",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-build-google-auto__environment-control",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-build-google-auto__methodology-guardrail",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "fix-build-google-auto__orchestration-delegation",
+      "rerun_label": "run-first20-rate-limit-rerun-2026-04-27-3batch-b03",
+      "rerun_status": "succeeded"
+    }
+  ],
+  "rerun_reports": [
+    "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/run-first20x7-rerun-failed5-2026-04-25-v2/run_report.json",
+    "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/run-first20-rate-limit-rerun-2026-04-27-3batch-b01/run_report.json",
+    "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/run-first20-rate-limit-rerun-2026-04-27-3batch-b02/run_report.json",
+    "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/run-first20-rate-limit-rerun-2026-04-27-3batch-b03/run_report.json"
+  ],
+  "schema_count": 7,
+  "task_count": 20
+}

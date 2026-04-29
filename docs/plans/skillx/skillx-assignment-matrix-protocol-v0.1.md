@@ -73,33 +73,36 @@ Operationally this means:
 
 ### 3.1 Primary score
 
-Use the task evaluator score as the primary scalar assignment score.
+Use the task evaluator score as the primary scalar score when only a
+single result is available.
 
-For `R0 -> R3` inner-loop runs, the executable MVP should not use only
-one terminal scalar when round-level scores are available. The default
-assignment score should be trajectory-aware:
+For `R0 -> R3` inner-loop runs, treat `R0` as the baseline only. The
+default assignment score should be trajectory-aware and R0-relative:
 
 ```text
 assignment_score =
-  0.50 * reported_score
-  + 0.30 * weighted_mean(R0, R1, R2, R3)
-  + 0.20 * clamp(50 + best(R0..R3) - R0, 0, 100)
+  0.40 * mean(max(R1..R3 - R0, 0))
+  + 0.25 * post_r0_monotonicity
+  + 0.20 * fraction(R1..R3 > R0)
+  + 0.15 * max(last_post_round - R0, 0)
 ```
 
-Recommended default round weights:
+The best pattern is:
 
-```yaml
-R0: 0.15
-R1: 0.20
-R2: 0.30
-R3: 0.35
+```text
+R3 >= R2 >= R1 >= R0 and at least one post-R0 delta is positive
 ```
 
-This keeps final quality central while also using:
-- the full reward curve, so two equal final scores can differ if one
-  was consistently better across the loop,
-- R0-relative growth, so the assignment signal captures which schema
-  actually induced useful improvement.
+This makes `R0=0, R1=R2=R3=100` optimal. `R1=0, R2=R3=100`
+still receives a strong score. A late-only gain such as
+`R1=R2=0, R3=100` receives a weaker but positive score. Transient gains
+that later fall back to baseline receive partial credit through the
+number and size of improved post-R0 rounds, but they lose terminal and
+monotonicity credit.
+
+If every schema has assignment score `0` for a task, leave the task
+unassigned for this round with `unassigned_no_positive_signal` rather
+than assigning it through a semantic tie-break.
 
 The raw `reported_score`, `selected_score`, `best_observed_score`, and
 per-round scores should still be emitted. The trajectory-aware score is

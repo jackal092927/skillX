@@ -1,0 +1,359 @@
+[
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 80.0,
+    "c1_pct": 80.0,
+    "delta_vs_c0_pp": 20.0,
+    "delta_vs_c1_pp": 20.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "3d-scan-calc"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 0.0,
+    "c1_pct": 0.0,
+    "delta_vs_c0_pp": 100.0,
+    "delta_vs_c1_pp": 100.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "adaptive-cruise-control"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "methodology-guardrail",
+      "orchestration-delegation"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 0.0,
+    "c1_pct": 0.0,
+    "delta_vs_c0_pp": 100.0,
+    "delta_vs_c1_pp": 100.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "azure-bgp-oscillation-route-leak"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 100.0,
+    "c1_pct": 100.0,
+    "delta_vs_c0_pp": 0.0,
+    "delta_vs_c1_pp": 0.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "citation-check"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "artifact-generation",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation"
+    ],
+    "best_score_pct": 60.0,
+    "c0_pct": 0.0,
+    "c1_pct": 14.7,
+    "delta_vs_c0_pp": 60.0,
+    "delta_vs_c1_pp": 45.3,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "civ6-adjacency-optimizer"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 20.0,
+    "c1_pct": 20.0,
+    "delta_vs_c0_pp": 80.0,
+    "delta_vs_c1_pp": 80.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "court-form-filling"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 0.0,
+    "c1_pct": 80.0,
+    "delta_vs_c0_pp": 100.0,
+    "delta_vs_c1_pp": 20.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "dapt-intrusion-detection"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "methodology-guardrail",
+      "orchestration-delegation"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 60.0,
+    "c1_pct": 80.0,
+    "delta_vs_c0_pp": 40.0,
+    "delta_vs_c1_pp": 20.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "data-to-d3"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 20.0,
+    "c1_pct": 20.0,
+    "delta_vs_c0_pp": 80.0,
+    "delta_vs_c1_pp": 80.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "earthquake-phase-association"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "artifact-generation",
+      "orchestration-delegation"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 0.0,
+    "c1_pct": 60.0,
+    "delta_vs_c0_pp": 100.0,
+    "delta_vs_c1_pp": 40.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "earthquake-plate-calculation"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 40.0,
+    "c1_pct": 60.0,
+    "delta_vs_c0_pp": 60.0,
+    "delta_vs_c1_pp": 40.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "econ-detrending-correlation"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 20.0,
+    "c1_pct": 20.0,
+    "delta_vs_c0_pp": 80.0,
+    "delta_vs_c1_pp": 80.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "energy-ac-optimal-power-flow"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "environment-control",
+      "methodology-guardrail",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 0.0,
+    "c1_pct": 0.0,
+    "delta_vs_c0_pp": 100.0,
+    "delta_vs_c1_pp": 100.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "energy-market-pricing"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 60.0,
+    "c1_pct": 80.0,
+    "delta_vs_c0_pp": 40.0,
+    "delta_vs_c1_pp": 20.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "exceltable-in-ppt"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "engineering-composition",
+      "environment-control",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 0.0,
+    "c1_pct": 0.0,
+    "delta_vs_c0_pp": 100.0,
+    "delta_vs_c1_pp": 100.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "exoplanet-detection-period"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "environment-control",
+      "methodology-guardrail"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 0.0,
+    "c1_pct": 0.0,
+    "delta_vs_c0_pp": 100.0,
+    "delta_vs_c1_pp": 100.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "financial-modeling-qa"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "engineering-composition",
+      "orchestration-delegation"
+    ],
+    "best_score_pct": 100.0,
+    "c0_pct": 20.0,
+    "c1_pct": 10.0,
+    "delta_vs_c0_pp": 80.0,
+    "delta_vs_c1_pp": 90.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "find-topk-similiar-chemicals"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 0.0,
+    "c0_pct": 0.0,
+    "c1_pct": 0.0,
+    "delta_vs_c0_pp": 0.0,
+    "delta_vs_c1_pp": 0.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "fix-build-agentops"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 0.0,
+    "c0_pct": 0.0,
+    "c1_pct": 0.0,
+    "delta_vs_c0_pp": 0.0,
+    "delta_vs_c1_pp": 0.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "fix-build-google-auto"
+  },
+  {
+    "all_7_succeeded": true,
+    "best_schemas": [
+      "analytic-pipeline",
+      "artifact-generation",
+      "engineering-composition",
+      "environment-control",
+      "methodology-guardrail",
+      "orchestration-delegation",
+      "retrieval-heavy-synthesis"
+    ],
+    "best_score_pct": 0.0,
+    "c0_pct": 20.0,
+    "c1_pct": 80.0,
+    "delta_vs_c0_pp": -20.0,
+    "delta_vs_c1_pp": -80.0,
+    "pair_count": 7,
+    "succeeded_pairs": 7,
+    "task_name": "fix-druid-loophole-cve"
+  }
+]

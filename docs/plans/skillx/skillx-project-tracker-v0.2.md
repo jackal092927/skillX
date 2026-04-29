@@ -26,7 +26,7 @@ Current milestone: `M1: Setting A to Round-1 E2E`
 
 Current benchmark anchor: `SkillsBench`
 
-Current active step: `#3 [P0] Build round-0 score matrix, assignments, and diagnostics`
+Current active step: `#8 [P0] Package first-round schema updates`
 
 Current framing:
 
@@ -35,7 +35,7 @@ Current framing:
   improve benchmark-level skill delta on the current dataset
 - Current experimental unit: `20 tasks x 7 schemas`
 - Current default inner-loop budget: `R0 -> R3`
-- Latest checkpoint: `docs/checkpoints/CHECKPOINT-2026-04-26-skillx-first20-round0.md`
+- Latest checkpoint: `docs/checkpoints/CHECKPOINT-2026-04-29-skillx-first20-round0-final.md`
 - Current execution focus: end-to-end benchmark validation, not paper
   polishing and not Setting B
 
@@ -71,7 +71,8 @@ Primary benchmark:
 Primary issues:
 
 - `#2` Run full Setting A round-0 matrix — completed effective `20 x 7`
-- `#3` Build score matrix / assignments / diagnostics
+- `#3` Build score matrix / assignments / diagnostics — completed final
+  `20 x 7` control plane with R0-relative assignment scoring
 - `#8` Package first-round schema updates
 - `#9` Run reduced round-1 rerun and compare before/after
 - `#7` Close the first true outer-loop round-1 umbrella

@@ -52,6 +52,119 @@ def selected_score(pair: dict[str, Any]) -> float | None:
     return None
 
 
+def round_score_map(pair: dict[str, Any]) -> dict[int, float]:
+    scores: dict[int, float] = {}
+    rounds = pair.get("rounds")
+    if not isinstance(rounds, list):
+        return scores
+    for round_info in rounds:
+        if not isinstance(round_info, dict):
+            continue
+        round_index = round_info.get("round_index")
+        score_pct = round_info.get("score_pct")
+        if isinstance(round_index, int) and isinstance(score_pct, (int, float)):
+            scores[round_index] = float(score_pct)
+    return scores
+
+
+def _round_values(scores: dict[int, float], indexes: list[int]) -> list[float]:
+    return [float(scores[index]) for index in indexes if index in scores]
+
+
+def _is_non_decreasing(values: list[float]) -> bool | None:
+    if len(values) < 2:
+        return None
+    return all(right >= left for left, right in zip(values, values[1:]))
+
+
+def trajectory_features(pair: dict[str, Any]) -> dict[str, Any]:
+    scores = round_score_map(pair)
+    r0_score = scores.get(0)
+    ordered_scores = _round_values(scores, [0, 1, 2, 3])
+    post_scores = _round_values(scores, [1, 2, 3])
+    best_score = max(ordered_scores, default=None)
+    post_best_score = max(post_scores, default=None)
+    final_round_index = max(scores, default=None)
+    final_score = scores.get(final_round_index) if final_round_index is not None else None
+    post_deltas = [
+        float(scores[index]) - float(r0_score)
+        for index in (1, 2, 3)
+        if index in scores and r0_score is not None
+    ]
+    all_rounds_non_decreasing = _is_non_decreasing(ordered_scores)
+    post_r0_delta_non_decreasing = _is_non_decreasing(post_deltas)
+    post_r0_all_ge_r0 = (
+        all(score >= float(r0_score) for score in post_scores)
+        if r0_score is not None and post_scores
+        else None
+    )
+    post_r0_all_100 = bool(post_scores) and all(score >= 100.0 for score in post_scores)
+    ideal_zero_to_full_stable = (
+        r0_score is not None
+        and float(r0_score) <= 0.0
+        and len(post_scores) == 3
+        and post_r0_all_100
+    )
+    delta_vs_r0_best = (
+        round(float(best_score) - float(r0_score), 4)
+        if best_score is not None and r0_score is not None
+        else None
+    )
+    delta_vs_r0_final = (
+        round(float(final_score) - float(r0_score), 4)
+        if final_score is not None and r0_score is not None
+        else None
+    )
+    delta_vs_r0_post_best = (
+        round(float(post_best_score) - float(r0_score), 4)
+        if post_best_score is not None and r0_score is not None
+        else None
+    )
+    if not post_scores:
+        quality = "baseline_only"
+    elif ideal_zero_to_full_stable:
+        quality = "ideal_zero_to_full_stable"
+    elif post_r0_all_100 and r0_score is not None and float(r0_score) < 100.0:
+        quality = "fast_to_full_stable"
+    elif all_rounds_non_decreasing and delta_vs_r0_post_best is not None and delta_vs_r0_post_best > 0:
+        quality = "stable_non_decreasing_gain"
+    elif (
+        post_r0_all_ge_r0
+        and post_r0_delta_non_decreasing
+        and delta_vs_r0_post_best is not None
+        and delta_vs_r0_post_best > 0
+    ):
+        quality = "post_r0_monotonic_gain"
+    elif delta_vs_r0_post_best is not None and delta_vs_r0_post_best > 0:
+        quality = "non_monotonic_gain"
+    elif post_r0_all_ge_r0:
+        quality = "stable_no_loss"
+    else:
+        quality = "regression_or_mixed"
+    return {
+        "round_r0_score_pct": scores.get(0),
+        "round_r1_score_pct": scores.get(1),
+        "round_r2_score_pct": scores.get(2),
+        "round_r3_score_pct": scores.get(3),
+        "post_r0_best_score_pct": post_best_score,
+        "delta_vs_r0_best_pp": delta_vs_r0_best,
+        "delta_vs_r0_final_pp": delta_vs_r0_final,
+        "delta_vs_r0_post_best_pp": delta_vs_r0_post_best,
+        "delta_vs_r0_r1_pp": round(post_deltas[0], 4) if len(post_deltas) > 0 else None,
+        "delta_vs_r0_r2_pp": round(post_deltas[1], 4) if len(post_deltas) > 1 else None,
+        "delta_vs_r0_r3_pp": round(post_deltas[2], 4) if len(post_deltas) > 2 else None,
+        "trajectory_quality": quality,
+        "trajectory_non_decreasing_all_rounds": all_rounds_non_decreasing,
+        "trajectory_post_r0_delta_non_decreasing": post_r0_delta_non_decreasing,
+        "trajectory_post_r0_all_ge_r0": post_r0_all_ge_r0,
+        "trajectory_ideal_zero_to_full_stable": ideal_zero_to_full_stable,
+        "earliest_full_score_round": min(
+            (round_index for round_index, score in scores.items() if float(score) >= 100.0),
+            default=None,
+        ),
+    }
+
+
 def index_report(report: dict[str, Any], source_label: str) -> dict[str, dict[str, Any]]:
     indexed: dict[str, dict[str, Any]] = {}
     for pair in report.get("pair_results", []):
@@ -155,6 +268,7 @@ def build_schema_summary(pair_results: list[dict[str, Any]]) -> list[dict[str, A
 def build_pair_rows(pair_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for pair in pair_results:
+        trajectory = trajectory_features(pair)
         rows.append(
             {
                 "pair_id": pair.get("pair_id"),
@@ -171,6 +285,7 @@ def build_pair_rows(pair_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "c1_pct": pair.get("official_scores", {}).get("c1_pct"),
                 "delta_vs_c0_pp": pair.get("delta_vs_c0_pp"),
                 "delta_vs_c1_pp": pair.get("delta_vs_c1_pp"),
+                **trajectory,
                 "early_stop": pair.get("early_stop"),
                 "timeout_detected": pair.get("timeout_detected"),
             }

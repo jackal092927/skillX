@@ -512,9 +512,15 @@ def run_outer_loop_optimization(
         task_cluster_inputs_path=task_cluster_inputs_path,
         round_id=round_id,
         assignment_score_mode=control_plane.DEFAULT_ASSIGNMENT_SCORE_MODE,
-        terminal_score_weight=control_plane.DEFAULT_TERMINAL_SCORE_WEIGHT,
-        round_mean_score_weight=control_plane.DEFAULT_ROUND_MEAN_SCORE_WEIGHT,
-        growth_score_weight=control_plane.DEFAULT_GROWTH_SCORE_WEIGHT,
+        post_r0_improvement_area_weight=control_plane.DEFAULT_POST_R0_IMPROVEMENT_AREA_WEIGHT,
+        post_r0_monotonicity_weight=control_plane.DEFAULT_POST_R0_MONOTONICITY_WEIGHT,
+        post_r0_improved_round_count_weight=(
+            control_plane.DEFAULT_POST_R0_IMPROVED_ROUND_COUNT_WEIGHT
+        ),
+        post_r0_terminal_improvement_weight=(
+            control_plane.DEFAULT_POST_R0_TERMINAL_IMPROVEMENT_WEIGHT
+        ),
+        min_assignment_score_pct=control_plane.DEFAULT_MIN_ASSIGNMENT_SCORE_PCT,
         epsilon_pp=control_plane.DEFAULT_MEDIUM_CONFIDENCE_MARGIN_PP,
         high_confidence_margin_pp=control_plane.DEFAULT_HIGH_CONFIDENCE_MARGIN_PP,
         medium_confidence_margin_pp=control_plane.DEFAULT_MEDIUM_CONFIDENCE_MARGIN_PP,
@@ -524,6 +530,9 @@ def run_outer_loop_optimization(
         near_empty_threshold=control_plane.DEFAULT_NEAR_EMPTY_THRESHOLD,
         update_floor_fraction=control_plane.DEFAULT_UPDATE_FLOOR_FRACTION,
         flat_column_range_pp=control_plane.DEFAULT_FLAT_COLUMN_RANGE_PP,
+        multi_assignment_min_score_pct=control_plane.DEFAULT_MULTI_ASSIGNMENT_MIN_SCORE_PCT,
+        multi_assignment_near_best_margin_pp=control_plane.DEFAULT_MULTI_ASSIGNMENT_NEAR_BEST_MARGIN_PP,
+        multi_assignment_min_delta_vs_r0_pp=control_plane.DEFAULT_MULTI_ASSIGNMENT_MIN_DELTA_VS_R0_PP,
     )
     control_outputs = control_plane.write_outer_loop_artifacts(
         payload=control_payload,

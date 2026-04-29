@@ -36,6 +36,11 @@ STATUS_CODE = {
     "failed_other": "F",
     "unrun": "-",
 }
+COMPLETED_RUN_STATUSES = {
+    "completed",
+    "completed_with_runtime_failures",
+    "skipped_baseline_perfect",
+}
 
 
 def discover_default_skillsbench_root() -> Path:
@@ -66,7 +71,7 @@ def write_json(path: Path, payload: Any) -> None:
 def write_csv(path: Path, rows: list[dict[str, Any]], fieldnames: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -111,7 +116,15 @@ def classify_attempt_status(row: dict[str, Any]) -> str:
     run = row.get("run") or {}
     failure = row.get("failure") or {}
     summary = str(failure.get("summary") or failure.get("error_message") or "")
-    if run.get("status") == "completed" and launcher.get("status") == "succeeded":
+    selected = row.get("selected") or {}
+    best_observed = row.get("best_observed") or {}
+    has_score = isinstance(selected.get("score_pct"), (int, float)) or isinstance(
+        best_observed.get("score_pct"),
+        (int, float),
+    )
+    if launcher.get("status") == "succeeded" and (
+        run.get("status") in COMPLETED_RUN_STATUSES or has_score
+    ):
         return "completed"
     if "Docker memory too low: 0 bytes" in summary:
         return "docker_incident"

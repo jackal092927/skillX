@@ -48,11 +48,16 @@ DEFAULT_NEAR_EMPTY_THRESHOLD = 3
 DEFAULT_UPDATE_FLOOR_FRACTION = 0.10
 DEFAULT_FLAT_COLUMN_RANGE_PP = 10.0
 DEFAULT_ASSIGNMENT_SCORE_MODE = "trajectory"
-DEFAULT_TERMINAL_SCORE_WEIGHT = 0.50
-DEFAULT_ROUND_MEAN_SCORE_WEIGHT = 0.30
-DEFAULT_GROWTH_SCORE_WEIGHT = 0.20
+DEFAULT_POST_R0_IMPROVEMENT_AREA_WEIGHT = 0.40
+DEFAULT_POST_R0_MONOTONICITY_WEIGHT = 0.25
+DEFAULT_POST_R0_IMPROVED_ROUND_COUNT_WEIGHT = 0.20
+DEFAULT_POST_R0_TERMINAL_IMPROVEMENT_WEIGHT = 0.15
+DEFAULT_MIN_ASSIGNMENT_SCORE_PCT = 0.0
 DEFAULT_BALANCE_TIE_MAX_LOSS_PP = 1.0
 DEFAULT_ASSIGNMENT_RANDOM_SEED = "skillx-round0-assignment-v1"
+DEFAULT_MULTI_ASSIGNMENT_MIN_SCORE_PCT = 80.0
+DEFAULT_MULTI_ASSIGNMENT_NEAR_BEST_MARGIN_PP = 10.0
+DEFAULT_MULTI_ASSIGNMENT_MIN_DELTA_VS_R0_PP = 10.0
 DEFAULT_ROUND_SCORE_WEIGHTS = {
     0: 0.15,
     1: 0.20,
@@ -240,6 +245,169 @@ def arithmetic_round_mean_score(round_scores: dict[int, float]) -> float | None:
     return mean(float(value) for value in round_scores.values())
 
 
+def _round_values(round_scores: dict[int, float], indexes: list[int]) -> list[float]:
+    return [float(round_scores[index]) for index in indexes if index in round_scores]
+
+
+def _is_non_decreasing(values: list[float]) -> bool | None:
+    if len(values) < 2:
+        return None
+    return all(right >= left for left, right in zip(values, values[1:]))
+
+
+def build_trajectory_features(round_scores: dict[int, float]) -> dict[str, Any]:
+    r0_score = round_scores.get(0)
+    ordered_scores = _round_values(round_scores, [0, 1, 2, 3])
+    post_scores = _round_values(round_scores, [1, 2, 3])
+    post_score_non_decreasing = _is_non_decreasing(post_scores)
+    post_round_scores = {
+        round_index: float(round_scores[round_index])
+        for round_index in (1, 2, 3)
+        if round_index in round_scores
+    }
+    best_round_score = max(ordered_scores, default=None)
+    final_round_index = max(round_scores, default=None)
+    final_round_score = (
+        float(round_scores[final_round_index]) if final_round_index is not None else None
+    )
+    post_r0_best_score = max(post_scores, default=None)
+    deltas_vs_r0 = {
+        round_index: (
+            round(float(score) - float(r0_score), 4) if r0_score is not None else None
+        )
+        for round_index, score in post_round_scores.items()
+    }
+    post_delta_values = [
+        float(deltas_vs_r0[round_index])
+        for round_index in (1, 2, 3)
+        if deltas_vs_r0.get(round_index) is not None
+    ]
+    positive_post_deltas = [max(delta, 0.0) for delta in post_delta_values]
+    post_r0_improved_round_count = sum(1 for delta in post_delta_values if delta > 0.0)
+    post_r0_improvement_area_score = (
+        round(mean(positive_post_deltas), 4)
+        if positive_post_deltas
+        else (0.0 if r0_score is not None else None)
+    )
+    post_r0_improved_round_fraction_score = (
+        round(100.0 * post_r0_improved_round_count / len(post_delta_values), 4)
+        if post_delta_values
+        else (0.0 if r0_score is not None else None)
+    )
+    last_post_score = post_scores[-1] if post_scores else None
+    post_r0_terminal_improvement_score = (
+        round(clamp(float(last_post_score) - float(r0_score), 0.0, 100.0), 4)
+        if last_post_score is not None and r0_score is not None
+        else (0.0 if r0_score is not None else None)
+    )
+    all_rounds_non_decreasing = _is_non_decreasing(ordered_scores)
+    post_r0_delta_non_decreasing = _is_non_decreasing(post_delta_values)
+    post_r0_all_ge_r0 = (
+        all(score >= float(r0_score) for score in post_scores)
+        if r0_score is not None and post_scores
+        else None
+    )
+    post_r0_all_100 = bool(post_scores) and all(score >= 100.0 for score in post_scores)
+    earliest_full_score_round = min(
+        (round_index for round_index, score in round_scores.items() if float(score) >= 100.0),
+        default=None,
+    )
+    delta_vs_r0_best = (
+        round(float(best_round_score) - float(r0_score), 4)
+        if best_round_score is not None and r0_score is not None
+        else None
+    )
+    delta_vs_r0_final = (
+        round(float(final_round_score) - float(r0_score), 4)
+        if final_round_score is not None and r0_score is not None
+        else None
+    )
+    delta_vs_r0_post_best = (
+        round(float(post_r0_best_score) - float(r0_score), 4)
+        if post_r0_best_score is not None and r0_score is not None
+        else None
+    )
+    ideal_zero_to_full_stable = (
+        r0_score is not None
+        and float(r0_score) <= 0.0
+        and len(post_scores) == 3
+        and post_r0_all_100
+    )
+    full_post_r0_non_decreasing_gain = bool(
+        post_scores
+        and post_r0_all_ge_r0
+        and post_score_non_decreasing
+        and post_r0_improved_round_count > 0
+    )
+    terminal_gain = bool(
+        post_r0_terminal_improvement_score is not None
+        and post_r0_terminal_improvement_score > 0
+    )
+
+    if not post_scores:
+        trajectory_quality = "baseline_only"
+        trajectory_signal_score = 0.0 if r0_score is not None else None
+    elif ideal_zero_to_full_stable:
+        trajectory_quality = "ideal_zero_to_full_stable"
+        trajectory_signal_score = 100.0
+    elif post_r0_all_100 and r0_score is not None and float(r0_score) < 100.0:
+        trajectory_quality = "fast_to_full_stable"
+        trajectory_signal_score = 100.0
+    elif full_post_r0_non_decreasing_gain:
+        trajectory_quality = "stable_non_decreasing_gain"
+        trajectory_signal_score = 100.0
+    elif post_score_non_decreasing and terminal_gain:
+        trajectory_quality = "post_r0_monotonic_gain"
+        trajectory_signal_score = 80.0
+    elif post_r0_all_ge_r0 and post_r0_improved_round_count > 0 and terminal_gain:
+        trajectory_quality = "stable_no_loss_gain"
+        trajectory_signal_score = 70.0
+    elif post_r0_all_ge_r0 and post_r0_improved_round_count > 0:
+        trajectory_quality = "partial_gain_then_regression"
+        trajectory_signal_score = 45.0
+    elif post_r0_improved_round_count >= 2:
+        trajectory_quality = "non_monotonic_multi_gain"
+        trajectory_signal_score = 45.0
+    elif terminal_gain:
+        trajectory_quality = "late_or_noisy_gain"
+        trajectory_signal_score = 35.0
+    elif post_r0_improved_round_count > 0:
+        trajectory_quality = "transient_gain"
+        trajectory_signal_score = 25.0
+    elif post_r0_all_ge_r0:
+        trajectory_quality = "stable_no_loss"
+        trajectory_signal_score = 0.0
+    else:
+        trajectory_quality = "regression_or_mixed"
+        trajectory_signal_score = 0.0
+
+    return {
+        "trajectory_quality": trajectory_quality,
+        "trajectory_signal_score_pct": trajectory_signal_score,
+        "trajectory_round_count": len(ordered_scores),
+        "trajectory_post_r0_round_count": len(post_scores),
+        "trajectory_non_decreasing_all_rounds": all_rounds_non_decreasing,
+        "trajectory_post_r0_score_non_decreasing": post_score_non_decreasing,
+        "trajectory_post_r0_delta_non_decreasing": post_r0_delta_non_decreasing,
+        "trajectory_post_r0_all_ge_r0": post_r0_all_ge_r0,
+        "trajectory_post_r0_all_100": post_r0_all_100,
+        "trajectory_ideal_zero_to_full_stable": ideal_zero_to_full_stable,
+        "post_r0_improved_round_count": post_r0_improved_round_count,
+        "post_r0_improvement_area_score_pct": post_r0_improvement_area_score,
+        "post_r0_improved_round_fraction_score_pct": post_r0_improved_round_fraction_score,
+        "post_r0_terminal_improvement_score_pct": post_r0_terminal_improvement_score,
+        "earliest_full_score_round": earliest_full_score_round,
+        "rounds_at_100_count": sum(1 for score in ordered_scores if score >= 100.0),
+        "post_r0_best_score_pct": post_r0_best_score,
+        "delta_vs_r0_best_pp": delta_vs_r0_best,
+        "delta_vs_r0_final_pp": delta_vs_r0_final,
+        "delta_vs_r0_post_best_pp": delta_vs_r0_post_best,
+        "delta_vs_r0_r1_pp": deltas_vs_r0.get(1),
+        "delta_vs_r0_r2_pp": deltas_vs_r0.get(2),
+        "delta_vs_r0_r3_pp": deltas_vs_r0.get(3),
+    }
+
+
 def compute_growth_component_score(round_scores: dict[int, float]) -> float | None:
     r0_score = round_scores.get(0)
     if r0_score is None:
@@ -254,10 +422,12 @@ def compute_assignment_score(
     *,
     reported_score_pct: float | None,
     round_scores: dict[int, float],
+    trajectory_features: dict[str, Any],
     assignment_score_mode: str,
-    terminal_score_weight: float,
-    round_mean_score_weight: float,
-    growth_score_weight: float,
+    post_r0_improvement_area_weight: float,
+    post_r0_monotonicity_weight: float,
+    post_r0_improved_round_count_weight: float,
+    post_r0_terminal_improvement_weight: float,
 ) -> float | None:
     if reported_score_pct is None:
         return None
@@ -266,16 +436,30 @@ def compute_assignment_score(
     if assignment_score_mode != "trajectory":
         raise ValueError(f"unsupported assignment score mode: {assignment_score_mode}")
 
-    trajectory_mean = weighted_round_mean_score(round_scores)
-    growth_component = compute_growth_component_score(round_scores)
+    if round_scores.get(0) is None:
+        return round(reported_score_pct, 4)
+
     components = [
-        (reported_score_pct, terminal_score_weight),
-        (trajectory_mean, round_mean_score_weight),
-        (growth_component, growth_score_weight),
+        (
+            coerce_float(trajectory_features.get("post_r0_improvement_area_score_pct")),
+            post_r0_improvement_area_weight,
+        ),
+        (
+            coerce_float(trajectory_features.get("trajectory_signal_score_pct")),
+            post_r0_monotonicity_weight,
+        ),
+        (
+            coerce_float(trajectory_features.get("post_r0_improved_round_fraction_score_pct")),
+            post_r0_improved_round_count_weight,
+        ),
+        (
+            coerce_float(trajectory_features.get("post_r0_terminal_improvement_score_pct")),
+            post_r0_terminal_improvement_weight,
+        ),
     ]
     total_weight = sum(weight for value, weight in components if value is not None and weight > 0)
     if total_weight <= 0:
-        return round(reported_score_pct, 4)
+        return 0.0
     score = sum(float(value) * weight for value, weight in components if value is not None and weight > 0)
     return round(score / total_weight, 4)
 
@@ -403,13 +587,15 @@ def summarize_pair_row(
     pair_status: dict[str, Any],
     pair_report: dict[str, Any] | None,
     assignment_score_mode: str,
-    terminal_score_weight: float,
-    round_mean_score_weight: float,
-    growth_score_weight: float,
+    post_r0_improvement_area_weight: float,
+    post_r0_monotonicity_weight: float,
+    post_r0_improved_round_count_weight: float,
+    post_r0_terminal_improvement_weight: float,
 ) -> dict[str, Any]:
     latest_status = str(pair_status.get("latest_status") or "unrun")
     reported_score_pct, score_basis = extract_reported_score(pair_report, pair_status)
     round_scores = extract_round_score_map(pair_report)
+    trajectory_features = build_trajectory_features(round_scores)
     round_mean_score_pct = arithmetic_round_mean_score(round_scores)
     round_weighted_mean_score_pct = weighted_round_mean_score(round_scores)
     growth_component_score_pct = compute_growth_component_score(round_scores)
@@ -420,10 +606,12 @@ def summarize_pair_row(
     assignment_score_pct = compute_assignment_score(
         reported_score_pct=reported_score_pct,
         round_scores=round_scores,
+        trajectory_features=trajectory_features,
         assignment_score_mode=assignment_score_mode,
-        terminal_score_weight=terminal_score_weight,
-        round_mean_score_weight=round_mean_score_weight,
-        growth_score_weight=growth_score_weight,
+        post_r0_improvement_area_weight=post_r0_improvement_area_weight,
+        post_r0_monotonicity_weight=post_r0_monotonicity_weight,
+        post_r0_improved_round_count_weight=post_r0_improved_round_count_weight,
+        post_r0_terminal_improvement_weight=post_r0_terminal_improvement_weight,
     )
     failure = pair_report.get("failure") if isinstance(pair_report, dict) else {}
     failure_summary = ""
@@ -491,6 +679,45 @@ def summarize_pair_row(
         "growth_component_score_pct": (
             round(growth_component_score_pct, 4) if growth_component_score_pct is not None else None
         ),
+        "trajectory_signal_score_pct": (
+            round(float(trajectory_features["trajectory_signal_score_pct"]), 4)
+            if trajectory_features["trajectory_signal_score_pct"] is not None
+            else None
+        ),
+        "trajectory_quality": trajectory_features["trajectory_quality"],
+        "trajectory_round_count": trajectory_features["trajectory_round_count"],
+        "trajectory_post_r0_round_count": trajectory_features["trajectory_post_r0_round_count"],
+        "trajectory_non_decreasing_all_rounds": trajectory_features["trajectory_non_decreasing_all_rounds"],
+        "trajectory_post_r0_score_non_decreasing": trajectory_features[
+            "trajectory_post_r0_score_non_decreasing"
+        ],
+        "trajectory_post_r0_delta_non_decreasing": trajectory_features[
+            "trajectory_post_r0_delta_non_decreasing"
+        ],
+        "trajectory_post_r0_all_ge_r0": trajectory_features["trajectory_post_r0_all_ge_r0"],
+        "trajectory_post_r0_all_100": trajectory_features["trajectory_post_r0_all_100"],
+        "trajectory_ideal_zero_to_full_stable": trajectory_features[
+            "trajectory_ideal_zero_to_full_stable"
+        ],
+        "post_r0_improved_round_count": trajectory_features["post_r0_improved_round_count"],
+        "post_r0_improvement_area_score_pct": trajectory_features[
+            "post_r0_improvement_area_score_pct"
+        ],
+        "post_r0_improved_round_fraction_score_pct": trajectory_features[
+            "post_r0_improved_round_fraction_score_pct"
+        ],
+        "post_r0_terminal_improvement_score_pct": trajectory_features[
+            "post_r0_terminal_improvement_score_pct"
+        ],
+        "earliest_full_score_round": trajectory_features["earliest_full_score_round"],
+        "rounds_at_100_count": trajectory_features["rounds_at_100_count"],
+        "post_r0_best_score_pct": trajectory_features["post_r0_best_score_pct"],
+        "delta_vs_r0_best_pp": trajectory_features["delta_vs_r0_best_pp"],
+        "delta_vs_r0_final_pp": trajectory_features["delta_vs_r0_final_pp"],
+        "delta_vs_r0_post_best_pp": trajectory_features["delta_vs_r0_post_best_pp"],
+        "delta_vs_r0_r1_pp": trajectory_features["delta_vs_r0_r1_pp"],
+        "delta_vs_r0_r2_pp": trajectory_features["delta_vs_r0_r2_pp"],
+        "delta_vs_r0_r3_pp": trajectory_features["delta_vs_r0_r3_pp"],
         "round_r0_to_best_delta_pp": (
             round(best_round_score - r0_score, 4)
             if best_round_score is not None and r0_score is not None
@@ -546,9 +773,10 @@ def build_pair_rows(
     global_pair_status_path: Path,
     round0_root: Path,
     assignment_score_mode: str,
-    terminal_score_weight: float,
-    round_mean_score_weight: float,
-    growth_score_weight: float,
+    post_r0_improvement_area_weight: float,
+    post_r0_monotonicity_weight: float,
+    post_r0_improved_round_count_weight: float,
+    post_r0_terminal_improvement_weight: float,
 ) -> tuple[list[str], list[dict[str, Any]]]:
     payload = read_json(global_pair_status_path)
     schema_ids = payload.get("schema_ids")
@@ -570,9 +798,10 @@ def build_pair_rows(
                 pair_status=pair_status,
                 pair_report=pair_report,
                 assignment_score_mode=assignment_score_mode,
-                terminal_score_weight=terminal_score_weight,
-                round_mean_score_weight=round_mean_score_weight,
-                growth_score_weight=growth_score_weight,
+                post_r0_improvement_area_weight=post_r0_improvement_area_weight,
+                post_r0_monotonicity_weight=post_r0_monotonicity_weight,
+                post_r0_improved_round_count_weight=post_r0_improved_round_count_weight,
+                post_r0_terminal_improvement_weight=post_r0_terminal_improvement_weight,
             )
         )
     return [str(item) for item in schema_ids], sorted(pair_rows, key=lambda row: (row["task_name"], row["schema_id"]))
@@ -672,6 +901,122 @@ def group_pair_rows_by_task(
     return task_rows
 
 
+def _truthy(value: Any) -> bool:
+    return value is True or str(value).strip().lower() in {"1", "true", "yes"}
+
+
+def build_multi_assignments(
+    *,
+    pair_rows: list[dict[str, Any]],
+    assignments: list[dict[str, Any]],
+    min_score_pct: float,
+    near_best_margin_pp: float,
+    min_delta_vs_r0_pp: float,
+) -> list[dict[str, Any]]:
+    primary_by_task = {str(row["task_name"]): row for row in assignments}
+    rows_by_task: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in pair_rows:
+        if not row.get("assignment_eligible"):
+            continue
+        if row.get("assignment_score_pct") is None:
+            continue
+        rows_by_task[str(row["task_name"])].append(row)
+
+    multi_rows: list[dict[str, Any]] = []
+    for task_name, rows in sorted(rows_by_task.items()):
+        best_score = max(float(row["assignment_score_pct"]) for row in rows)
+        primary = primary_by_task.get(task_name, {})
+        primary_schema = primary.get("assigned_category")
+        for row in sorted(rows, key=lambda item: str(item["schema_id"])):
+            assignment_score = float(row["assignment_score_pct"])
+            reported_score = coerce_float(row.get("reported_score_pct"))
+            near_best_delta = round(best_score - assignment_score, 4)
+            near_best = near_best_delta <= near_best_margin_pp
+            high_score = assignment_score >= min_score_pct
+            delta_vs_r0 = coerce_float(row.get("delta_vs_r0_post_best_pp"))
+            if delta_vs_r0 is None:
+                delta_vs_r0 = coerce_float(row.get("delta_vs_r0_best_pp"))
+            stable_gain = bool(
+                (
+                    _truthy(row.get("trajectory_ideal_zero_to_full_stable"))
+                    or _truthy(row.get("trajectory_non_decreasing_all_rounds"))
+                    or (
+                        _truthy(row.get("trajectory_post_r0_all_ge_r0"))
+                        and _truthy(row.get("trajectory_post_r0_delta_non_decreasing"))
+                    )
+                )
+                and delta_vs_r0 is not None
+                and delta_vs_r0 >= min_delta_vs_r0_pp
+            )
+            primary_assignment = row["schema_id"] == primary_schema
+            include = primary_assignment or (near_best and high_score) or stable_gain
+            if not include:
+                continue
+
+            reasons: list[str] = []
+            if primary_assignment:
+                reasons.append("primary")
+            if near_best:
+                reasons.append("near_best")
+            if high_score:
+                reasons.append("high_score")
+            if stable_gain:
+                reasons.append("stable_gain")
+            if _truthy(row.get("trajectory_ideal_zero_to_full_stable")):
+                reasons.append("ideal_zero_to_full")
+
+            if primary_assignment:
+                role = "primary_assignment"
+            elif stable_gain:
+                role = "stable_gain_support"
+            elif high_score and near_best:
+                role = "near_best_high_score_support"
+            else:
+                role = "secondary_support"
+
+            multi_rows.append(
+                {
+                    "task_name": task_name,
+                    "schema_id": row["schema_id"],
+                    "assignment_role": role,
+                    "assignment_reasons": ";".join(reasons),
+                    "primary_assigned_category": primary_schema,
+                    "primary_assignment": primary_assignment,
+                    "assignment_score_pct": row["assignment_score_pct"],
+                    "reported_score_pct": row["reported_score_pct"],
+                    "best_task_assignment_score_pct": round(best_score, 4),
+                    "within_best_margin_pp": near_best_delta,
+                    "delta_vs_r0_post_best_pp": row.get("delta_vs_r0_post_best_pp"),
+                    "delta_vs_r0_final_pp": row.get("delta_vs_r0_final_pp"),
+                    "trajectory_quality": row.get("trajectory_quality"),
+                    "trajectory_signal_score_pct": row.get("trajectory_signal_score_pct"),
+                    "post_r0_improved_round_count": row.get("post_r0_improved_round_count"),
+                    "post_r0_improvement_area_score_pct": row.get(
+                        "post_r0_improvement_area_score_pct"
+                    ),
+                    "post_r0_improved_round_fraction_score_pct": row.get(
+                        "post_r0_improved_round_fraction_score_pct"
+                    ),
+                    "post_r0_terminal_improvement_score_pct": row.get(
+                        "post_r0_terminal_improvement_score_pct"
+                    ),
+                    "trajectory_non_decreasing_all_rounds": row.get(
+                        "trajectory_non_decreasing_all_rounds"
+                    ),
+                    "trajectory_post_r0_delta_non_decreasing": row.get(
+                        "trajectory_post_r0_delta_non_decreasing"
+                    ),
+                    "trajectory_post_r0_all_ge_r0": row.get("trajectory_post_r0_all_ge_r0"),
+                    "trajectory_ideal_zero_to_full_stable": row.get(
+                        "trajectory_ideal_zero_to_full_stable"
+                    ),
+                    "evidence_class": row.get("evidence_class"),
+                    "latest_status": row.get("latest_status"),
+                }
+            )
+    return multi_rows
+
+
 def classify_margin_confidence(
     margin_pp: float | None,
     *,
@@ -692,6 +1037,7 @@ def assign_tasks(
     task_rows: list[dict[str, Any]],
     schema_ids: list[str],
     epsilon_pp: float,
+    min_assignment_score_pct: float,
     high_confidence_margin_pp: float,
     medium_confidence_margin_pp: float,
     require_full_coverage: bool,
@@ -731,6 +1077,8 @@ def assign_tasks(
             assignment_status = "unassigned_insufficient_scores"
         elif require_full_coverage and not task_row["full_coverage"]:
             assignment_status = "unassigned_incomplete_row"
+        elif best_score is None or best_score <= min_assignment_score_pct:
+            assignment_status = "unassigned_no_positive_signal"
         else:
             top_score = float(observed_scores[0]["score_pct"])
             candidates = [
@@ -926,6 +1274,7 @@ def build_diagnostics(
     *,
     task_rows: list[dict[str, Any]],
     assignments: list[dict[str, Any]],
+    multi_assignments: list[dict[str, Any]],
     schema_ids: list[str],
     epsilon_pp: float,
     dominant_share_threshold: float,
@@ -999,6 +1348,9 @@ def build_diagnostics(
     schema_training_assignments: list[dict[str, Any]] = []
     flat_schema_columns: list[dict[str, Any]] = []
     assignments_by_task = {str(row["task_name"]): row for row in assigned_rows}
+    multi_by_schema: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in multi_assignments:
+        multi_by_schema[str(row["schema_id"])].append(row)
     for schema_id in schema_ids:
         observed_scores = [
             float(row["scores"][schema_id])
@@ -1036,7 +1388,17 @@ def build_diagnostics(
             ),
             key=lambda item: (-float(item["score_pct"]), str(item["task_name"])),
         )
-        update_evidence_task_names = [str(row["task_name"]) for row in assigned_for_schema]
+        update_evidence_task_names = [
+            str(row["task_name"])
+            for row in sorted(
+                multi_by_schema.get(schema_id, []),
+                key=lambda item: (
+                    0 if item.get("primary_assignment") else 1,
+                    -float(item.get("assignment_score_pct") or 0.0),
+                    str(item.get("task_name")),
+                ),
+            )
+        ]
         top_k_tasks_added: list[str] = []
         for item in top_tasks:
             task_name = str(item["task_name"])
@@ -1048,25 +1410,35 @@ def build_diagnostics(
             top_k_tasks_added.append(task_name)
 
         top_task_by_name = {str(item["task_name"]): item for item in top_tasks}
+        multi_by_task = {
+            str(row["task_name"]): row
+            for row in multi_by_schema.get(schema_id, [])
+        }
         for task_name in update_evidence_task_names:
             item = top_task_by_name.get(task_name)
             if item is None:
                 continue
             primary_assignment = assignments_by_task.get(task_name)
+            multi_row = multi_by_task.get(task_name, {})
             schema_training_assignments.append(
                 {
                     "schema_id": schema_id,
                     "task_name": task_name,
                     "evidence_role": (
-                        "primary_assignment"
-                        if task_name not in top_k_tasks_added
-                        and primary_assignment is not None
-                        and primary_assignment.get("assigned_category") == schema_id
+                        str(multi_row.get("assignment_role"))
+                        if task_name not in top_k_tasks_added and multi_row
                         else "floor_top_score"
                     ),
+                    "evidence_reasons": str(multi_row.get("assignment_reasons") or ""),
                     "schema_score": item["score_pct"],
                     "schema_reported_score": item["reported_score_pct"],
                     "schema_rank_for_task": item["schema_rank"],
+                    "schema_delta_vs_r0_post_best_pp": (
+                        multi_row.get("delta_vs_r0_post_best_pp") if multi_row else None
+                    ),
+                    "schema_trajectory_quality": (
+                        multi_row.get("trajectory_quality") if multi_row else None
+                    ),
                     "primary_assigned_category": (
                         None if primary_assignment is None else primary_assignment.get("assigned_category")
                     ),
@@ -1081,6 +1453,7 @@ def build_diagnostics(
         schema_row = {
             "schema_id": schema_id,
             "primary_assigned_count": cluster_size_map[schema_id],
+            "multi_assigned_count": len(multi_by_schema.get(schema_id, [])),
             "observed_task_count": len(observed_scores),
             "occupancy_share": (
                 round(cluster_size_map[schema_id] / assigned_task_count, 4) if assigned_task_count else 0.0
@@ -1161,6 +1534,11 @@ def build_diagnostics(
             "unassigned_task_count": len(assignments) - assigned_task_count,
             "occupied_cluster_count": occupied_cluster_count,
             "cluster_sizes": cluster_size_map,
+            "multi_assignment_count": len(multi_assignments),
+            "multi_assignment_schema_counts": {
+                schema_id: len(multi_by_schema.get(schema_id, []))
+                for schema_id in schema_ids
+            },
             "largest_cluster_share": largest_cluster_share,
             "cluster_size_entropy": round(entropy, 4) if assigned_task_count else None,
             "mean_assignment_margin_pp": round(mean(margins), 2) if margins else None,
@@ -1200,6 +1578,37 @@ def build_score_matrix_artifacts(
                 "round_mean_score_pct": row["round_mean_score_pct"],
                 "round_weighted_mean_score_pct": row["round_weighted_mean_score_pct"],
                 "growth_component_score_pct": row["growth_component_score_pct"],
+                "trajectory_signal_score_pct": row["trajectory_signal_score_pct"],
+                "trajectory_quality": row["trajectory_quality"],
+                "trajectory_round_count": row["trajectory_round_count"],
+                "trajectory_post_r0_round_count": row["trajectory_post_r0_round_count"],
+                "trajectory_non_decreasing_all_rounds": row["trajectory_non_decreasing_all_rounds"],
+                "trajectory_post_r0_score_non_decreasing": row[
+                    "trajectory_post_r0_score_non_decreasing"
+                ],
+                "trajectory_post_r0_delta_non_decreasing": row["trajectory_post_r0_delta_non_decreasing"],
+                "trajectory_post_r0_all_ge_r0": row["trajectory_post_r0_all_ge_r0"],
+                "trajectory_post_r0_all_100": row["trajectory_post_r0_all_100"],
+                "trajectory_ideal_zero_to_full_stable": row["trajectory_ideal_zero_to_full_stable"],
+                "post_r0_improved_round_count": row["post_r0_improved_round_count"],
+                "post_r0_improvement_area_score_pct": row[
+                    "post_r0_improvement_area_score_pct"
+                ],
+                "post_r0_improved_round_fraction_score_pct": row[
+                    "post_r0_improved_round_fraction_score_pct"
+                ],
+                "post_r0_terminal_improvement_score_pct": row[
+                    "post_r0_terminal_improvement_score_pct"
+                ],
+                "earliest_full_score_round": row["earliest_full_score_round"],
+                "rounds_at_100_count": row["rounds_at_100_count"],
+                "post_r0_best_score_pct": row["post_r0_best_score_pct"],
+                "delta_vs_r0_best_pp": row["delta_vs_r0_best_pp"],
+                "delta_vs_r0_final_pp": row["delta_vs_r0_final_pp"],
+                "delta_vs_r0_post_best_pp": row["delta_vs_r0_post_best_pp"],
+                "delta_vs_r0_r1_pp": row["delta_vs_r0_r1_pp"],
+                "delta_vs_r0_r2_pp": row["delta_vs_r0_r2_pp"],
+                "delta_vs_r0_r3_pp": row["delta_vs_r0_r3_pp"],
                 "round_r0_to_best_delta_pp": row["round_r0_to_best_delta_pp"],
                 "round_r0_to_final_delta_pp": row["round_r0_to_final_delta_pp"],
                 "round_r0_score_pct": row[round_score_key(0)],
@@ -1275,14 +1684,15 @@ def render_summary_markdown(
         f"- tasks_with_scores: `{summary['task_count_with_scores']}`",
         f"- full_coverage_tasks: `{summary['task_count_full_coverage']}`",
         f"- assigned_tasks: `{summary['assigned_task_count']}`",
+        f"- multi_assignments: `{summary.get('multi_assignment_count')}`",
         f"- occupied_cluster_count: `{summary['occupied_cluster_count']}`",
         f"- mean_assignment_margin_pp: `{summary['mean_assignment_margin_pp']}`",
         f"- low_margin_task_fraction: `{summary['low_margin_task_fraction']}`",
         "",
         "## Cluster Occupancy",
         "",
-        "| schema_id | primary_assigned | training_evidence | mean_assigned_score | observed_task_count | floor_k | below_training_floor |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| schema_id | primary_assigned | multi_assigned | training_evidence | mean_assigned_score | observed_task_count | floor_k | below_training_floor |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in diagnostics["schema_diagnostics"]:
         lines.append(
@@ -1291,6 +1701,7 @@ def render_summary_markdown(
                 [
                     str(row["schema_id"]),
                     str(row["primary_assigned_count"]),
+                    str(row["multi_assigned_count"]),
                     str(row["training_evidence_count"]),
                     "-" if row["mean_assigned_score"] is None else f"{row['mean_assigned_score']:.2f}",
                     str(row["observed_task_count"]),
@@ -1307,8 +1718,8 @@ def render_summary_markdown(
                 "",
                 "## Schema Training Assignments",
                 "",
-                "| schema_id | task | role | score | rank | primary_assigned |",
-                "| --- | --- | --- | ---: | ---: | --- |",
+                "| schema_id | task | role | reasons | score | dR0 | trajectory | rank | primary_assigned |",
+                "| --- | --- | --- | --- | ---: | ---: | --- | ---: | --- |",
             ]
         )
         for row in diagnostics["schema_training_assignments"]:
@@ -1319,7 +1730,14 @@ def render_summary_markdown(
                         str(row["schema_id"]),
                         str(row["task_name"]),
                         str(row["evidence_role"]),
+                        str(row.get("evidence_reasons") or "-"),
                         "-" if row["schema_score"] is None else f"{float(row['schema_score']):.2f}",
+                        (
+                            "-"
+                            if row.get("schema_delta_vs_r0_post_best_pp") is None
+                            else f"{float(row['schema_delta_vs_r0_post_best_pp']):.2f}"
+                        ),
+                        str(row.get("schema_trajectory_quality") or "-"),
                         "-" if row["schema_rank_for_task"] is None else str(row["schema_rank_for_task"]),
                         str(row["primary_assigned_category"]),
                     ]
@@ -1384,9 +1802,11 @@ def build_outer_loop_artifacts(
     prompt_bank_path: Path,
     round_id: str,
     assignment_score_mode: str,
-    terminal_score_weight: float,
-    round_mean_score_weight: float,
-    growth_score_weight: float,
+    post_r0_improvement_area_weight: float = DEFAULT_POST_R0_IMPROVEMENT_AREA_WEIGHT,
+    post_r0_monotonicity_weight: float = DEFAULT_POST_R0_MONOTONICITY_WEIGHT,
+    post_r0_improved_round_count_weight: float = DEFAULT_POST_R0_IMPROVED_ROUND_COUNT_WEIGHT,
+    post_r0_terminal_improvement_weight: float = DEFAULT_POST_R0_TERMINAL_IMPROVEMENT_WEIGHT,
+    min_assignment_score_pct: float = DEFAULT_MIN_ASSIGNMENT_SCORE_PCT,
     epsilon_pp: float,
     high_confidence_margin_pp: float,
     medium_confidence_margin_pp: float,
@@ -1396,6 +1816,9 @@ def build_outer_loop_artifacts(
     near_empty_threshold: int,
     update_floor_fraction: float,
     flat_column_range_pp: float,
+    multi_assignment_min_score_pct: float = DEFAULT_MULTI_ASSIGNMENT_MIN_SCORE_PCT,
+    multi_assignment_near_best_margin_pp: float = DEFAULT_MULTI_ASSIGNMENT_NEAR_BEST_MARGIN_PP,
+    multi_assignment_min_delta_vs_r0_pp: float = DEFAULT_MULTI_ASSIGNMENT_MIN_DELTA_VS_R0_PP,
     task_cluster_inputs_path: Path | None = DEFAULT_TASK_CLUSTER_INPUTS_PATH,
     balance_tie_max_loss_pp: float = DEFAULT_BALANCE_TIE_MAX_LOSS_PP,
     assignment_random_seed: str = DEFAULT_ASSIGNMENT_RANDOM_SEED,
@@ -1406,9 +1829,10 @@ def build_outer_loop_artifacts(
         global_pair_status_path=global_pair_status_path,
         round0_root=round0_root,
         assignment_score_mode=assignment_score_mode,
-        terminal_score_weight=terminal_score_weight,
-        round_mean_score_weight=round_mean_score_weight,
-        growth_score_weight=growth_score_weight,
+        post_r0_improvement_area_weight=post_r0_improvement_area_weight,
+        post_r0_monotonicity_weight=post_r0_monotonicity_weight,
+        post_r0_improved_round_count_weight=post_r0_improved_round_count_weight,
+        post_r0_terminal_improvement_weight=post_r0_terminal_improvement_weight,
     )
     schema_ids = [
         schema_id for schema_id in prompt_bank_schema_ids if schema_id in discovered_schema_ids
@@ -1420,15 +1844,36 @@ def build_outer_loop_artifacts(
         task_rows=task_rows,
         schema_ids=schema_ids,
         epsilon_pp=epsilon_pp,
+        min_assignment_score_pct=min_assignment_score_pct,
         high_confidence_margin_pp=high_confidence_margin_pp,
         medium_confidence_margin_pp=medium_confidence_margin_pp,
         require_full_coverage=require_full_coverage,
         balance_tie_max_loss_pp=balance_tie_max_loss_pp,
         assignment_random_seed=assignment_random_seed,
     )
+    multi_assignments = build_multi_assignments(
+        pair_rows=pair_rows,
+        assignments=assignments,
+        min_score_pct=multi_assignment_min_score_pct,
+        near_best_margin_pp=multi_assignment_near_best_margin_pp,
+        min_delta_vs_r0_pp=multi_assignment_min_delta_vs_r0_pp,
+    )
+    multi_by_task: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in multi_assignments:
+        multi_by_task[str(row["task_name"])].append(row)
+    for assignment in assignments:
+        task_multi = sorted(
+            multi_by_task.get(str(assignment["task_name"]), []),
+            key=lambda item: str(item["schema_id"]),
+        )
+        assignment["multi_assigned_categories"] = ";".join(
+            str(row["schema_id"]) for row in task_multi
+        )
+        assignment["multi_assignment_count"] = len(task_multi)
     diagnostics = build_diagnostics(
         task_rows=task_rows,
         assignments=assignments,
+        multi_assignments=multi_assignments,
         schema_ids=schema_ids,
         epsilon_pp=epsilon_pp,
         dominant_share_threshold=dominant_share_threshold,
@@ -1441,9 +1886,10 @@ def build_outer_loop_artifacts(
     diagnostics["summary"]["assignment_score_formula"] = (
         "reported_score" if assignment_score_mode == "reported"
         else (
-            f"{terminal_score_weight:g}*reported_score + "
-            f"{round_mean_score_weight:g}*weighted_mean(R0..R3) + "
-            f"{growth_score_weight:g}*clamp(50 + best(R0..R3) - R0, 0, 100)"
+            f"{post_r0_improvement_area_weight:g}*mean(max(R1..R3 - R0, 0)) + "
+            f"{post_r0_monotonicity_weight:g}*post_r0_monotonicity + "
+            f"{post_r0_improved_round_count_weight:g}*fraction(R1..R3 > R0) + "
+            f"{post_r0_terminal_improvement_weight:g}*max(last_post_round - R0, 0)"
         )
     )
     diagnostics["summary"]["tie_break_policy"] = (
@@ -1466,9 +1912,11 @@ def build_outer_loop_artifacts(
                 None if task_cluster_inputs_path is None else display_path(task_cluster_inputs_path.resolve())
             ),
             "assignment_score_mode": assignment_score_mode,
-            "terminal_score_weight": terminal_score_weight,
-            "round_mean_score_weight": round_mean_score_weight,
-            "growth_score_weight": growth_score_weight,
+            "post_r0_improvement_area_weight": post_r0_improvement_area_weight,
+            "post_r0_monotonicity_weight": post_r0_monotonicity_weight,
+            "post_r0_improved_round_count_weight": post_r0_improved_round_count_weight,
+            "post_r0_terminal_improvement_weight": post_r0_terminal_improvement_weight,
+            "min_assignment_score_pct": min_assignment_score_pct,
             "round_score_weights": DEFAULT_ROUND_SCORE_WEIGHTS,
             "balance_tie_max_loss_pp": balance_tie_max_loss_pp,
             "assignment_random_seed": assignment_random_seed,
@@ -1481,11 +1929,15 @@ def build_outer_loop_artifacts(
             "near_empty_threshold": near_empty_threshold,
             "update_floor_fraction": update_floor_fraction,
             "flat_column_range_pp": flat_column_range_pp,
+            "multi_assignment_min_score_pct": multi_assignment_min_score_pct,
+            "multi_assignment_near_best_margin_pp": multi_assignment_near_best_margin_pp,
+            "multi_assignment_min_delta_vs_r0_pp": multi_assignment_min_delta_vs_r0_pp,
         },
         "schema_ids": schema_ids,
         "pair_rows": pair_rows,
         "score_matrix": score_matrix,
         "assignments": assignments,
+        "multi_assignments": multi_assignments,
         "diagnostics": diagnostics,
     }
 
@@ -1494,6 +1946,7 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
     output_dir.mkdir(parents=True, exist_ok=True)
     score_matrix = payload["score_matrix"]
     assignments = payload["assignments"]
+    multi_assignments = payload["multi_assignments"]
     diagnostics = payload["diagnostics"]
 
     score_matrix_csv_path = output_dir / "score_matrix.csv"
@@ -1501,6 +1954,8 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
     score_matrix_json_path = output_dir / "score_matrix.json"
     assignments_csv_path = output_dir / "assignments.csv"
     assignments_json_path = output_dir / "assignments.json"
+    multi_assignments_csv_path = output_dir / "multi_assignments.csv"
+    multi_assignments_json_path = output_dir / "multi_assignments.json"
     schema_training_assignments_csv_path = output_dir / "schema_training_assignments.csv"
     schema_training_assignments_json_path = output_dir / "schema_training_assignments.json"
     diagnostics_json_path = output_dir / "diagnostics.json"
@@ -1521,6 +1976,13 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
             "round_mean_score_pct",
             "round_weighted_mean_score_pct",
             "growth_component_score_pct",
+            "trajectory_signal_score_pct",
+            "trajectory_quality",
+            "trajectory_post_r0_score_non_decreasing",
+            "post_r0_improved_round_count",
+            "post_r0_improvement_area_score_pct",
+            "post_r0_improved_round_fraction_score_pct",
+            "post_r0_terminal_improvement_score_pct",
             "round_r0_to_best_delta_pp",
             "round_r0_to_final_delta_pp",
             "round_r0_score_pct",
@@ -1613,6 +2075,44 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
             "assignments": assignments,
         },
     )
+    write_csv(
+        multi_assignments_csv_path,
+        multi_assignments,
+        fieldnames=list(multi_assignments[0].keys()) if multi_assignments else [
+            "task_name",
+            "schema_id",
+            "assignment_role",
+            "assignment_reasons",
+            "primary_assigned_category",
+            "primary_assignment",
+            "assignment_score_pct",
+            "reported_score_pct",
+            "best_task_assignment_score_pct",
+            "within_best_margin_pp",
+            "delta_vs_r0_post_best_pp",
+            "delta_vs_r0_final_pp",
+            "trajectory_quality",
+            "trajectory_signal_score_pct",
+            "post_r0_improved_round_count",
+            "post_r0_improvement_area_score_pct",
+            "post_r0_improved_round_fraction_score_pct",
+            "post_r0_terminal_improvement_score_pct",
+            "trajectory_non_decreasing_all_rounds",
+            "trajectory_post_r0_delta_non_decreasing",
+            "trajectory_post_r0_all_ge_r0",
+            "trajectory_ideal_zero_to_full_stable",
+            "evidence_class",
+            "latest_status",
+        ],
+    )
+    write_json(
+        multi_assignments_json_path,
+        {
+            "generated_at": payload["generated_at"],
+            "config": payload["config"],
+            "multi_assignments": multi_assignments,
+        },
+    )
     schema_training_assignments = diagnostics.get("schema_training_assignments", [])
     write_csv(
         schema_training_assignments_csv_path,
@@ -1621,9 +2121,12 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
             "schema_id",
             "task_name",
             "evidence_role",
+            "evidence_reasons",
             "schema_score",
             "schema_reported_score",
             "schema_rank_for_task",
+            "schema_delta_vs_r0_post_best_pp",
+            "schema_trajectory_quality",
             "primary_assigned_category",
             "task_best_schema",
             "task_best_score",
@@ -1662,6 +2165,8 @@ def write_outer_loop_artifacts(*, payload: dict[str, Any], output_dir: Path) -> 
         "score_matrix_json": display_path(score_matrix_json_path),
         "assignments_csv": display_path(assignments_csv_path),
         "assignments_json": display_path(assignments_json_path),
+        "multi_assignments_csv": display_path(multi_assignments_csv_path),
+        "multi_assignments_json": display_path(multi_assignments_json_path),
         "schema_training_assignments_csv": display_path(schema_training_assignments_csv_path),
         "schema_training_assignments_json": display_path(schema_training_assignments_json_path),
         "diagnostics_json": display_path(diagnostics_json_path),
@@ -1685,19 +2190,34 @@ def parse_args() -> argparse.Namespace:
         help="Use reported final/best score only, or the default trajectory-aware score.",
     )
     parser.add_argument(
-        "--terminal-score-weight",
+        "--post-r0-improvement-area-weight",
         type=float,
-        default=DEFAULT_TERMINAL_SCORE_WEIGHT,
+        default=DEFAULT_POST_R0_IMPROVEMENT_AREA_WEIGHT,
+        help="Weight for the average positive R1/R2/R3 improvement over R0.",
     )
     parser.add_argument(
-        "--round-mean-score-weight",
+        "--post-r0-monotonicity-weight",
         type=float,
-        default=DEFAULT_ROUND_MEAN_SCORE_WEIGHT,
+        default=DEFAULT_POST_R0_MONOTONICITY_WEIGHT,
+        help="Weight for the R0-relative monotonicity/persistence signal.",
     )
     parser.add_argument(
-        "--growth-score-weight",
+        "--post-r0-improved-round-count-weight",
         type=float,
-        default=DEFAULT_GROWTH_SCORE_WEIGHT,
+        default=DEFAULT_POST_R0_IMPROVED_ROUND_COUNT_WEIGHT,
+        help="Weight for the fraction of post-R0 rounds that beat R0.",
+    )
+    parser.add_argument(
+        "--post-r0-terminal-improvement-weight",
+        type=float,
+        default=DEFAULT_POST_R0_TERMINAL_IMPROVEMENT_WEIGHT,
+        help="Weight for the last observed post-R0 round's improvement over R0.",
+    )
+    parser.add_argument(
+        "--min-assignment-score-pct",
+        type=float,
+        default=DEFAULT_MIN_ASSIGNMENT_SCORE_PCT,
+        help="Do not primary-assign tasks whose best R0-relative score is at or below this value.",
     )
     parser.add_argument(
         "--balance-tie-max-loss-pp",
@@ -1747,6 +2267,21 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=DEFAULT_FLAT_COLUMN_RANGE_PP,
     )
+    parser.add_argument(
+        "--multi-assignment-min-score-pct",
+        type=float,
+        default=DEFAULT_MULTI_ASSIGNMENT_MIN_SCORE_PCT,
+    )
+    parser.add_argument(
+        "--multi-assignment-near-best-margin-pp",
+        type=float,
+        default=DEFAULT_MULTI_ASSIGNMENT_NEAR_BEST_MARGIN_PP,
+    )
+    parser.add_argument(
+        "--multi-assignment-min-delta-vs-r0-pp",
+        type=float,
+        default=DEFAULT_MULTI_ASSIGNMENT_MIN_DELTA_VS_R0_PP,
+    )
     return parser.parse_args()
 
 
@@ -1758,9 +2293,11 @@ def main() -> int:
         prompt_bank_path=args.prompt_bank_path,
         round_id=str(args.round_id),
         assignment_score_mode=str(args.assignment_score_mode),
-        terminal_score_weight=float(args.terminal_score_weight),
-        round_mean_score_weight=float(args.round_mean_score_weight),
-        growth_score_weight=float(args.growth_score_weight),
+        post_r0_improvement_area_weight=float(args.post_r0_improvement_area_weight),
+        post_r0_monotonicity_weight=float(args.post_r0_monotonicity_weight),
+        post_r0_improved_round_count_weight=float(args.post_r0_improved_round_count_weight),
+        post_r0_terminal_improvement_weight=float(args.post_r0_terminal_improvement_weight),
+        min_assignment_score_pct=float(args.min_assignment_score_pct),
         epsilon_pp=float(args.epsilon_pp),
         high_confidence_margin_pp=float(args.high_confidence_margin_pp),
         medium_confidence_margin_pp=float(args.medium_confidence_margin_pp),
@@ -1770,6 +2307,9 @@ def main() -> int:
         near_empty_threshold=int(args.near_empty_threshold),
         update_floor_fraction=float(args.update_floor_fraction),
         flat_column_range_pp=float(args.flat_column_range_pp),
+        multi_assignment_min_score_pct=float(args.multi_assignment_min_score_pct),
+        multi_assignment_near_best_margin_pp=float(args.multi_assignment_near_best_margin_pp),
+        multi_assignment_min_delta_vs_r0_pp=float(args.multi_assignment_min_delta_vs_r0_pp),
         task_cluster_inputs_path=args.task_cluster_inputs_path,
         balance_tie_max_loss_pp=float(args.balance_tie_max_loss_pp),
         assignment_random_seed=str(args.assignment_random_seed),

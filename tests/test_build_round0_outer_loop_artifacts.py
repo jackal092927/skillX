@@ -45,6 +45,35 @@ class BuildRound0OuterLoopArtifactsTests(unittest.TestCase):
         }
         (run_dir / "run_report.json").write_text(json.dumps(payload))
 
+    def test_r0_relative_assignment_score_prioritizes_stable_post_r0_growth(self) -> None:
+        def assignment_score(round_values: list[float]) -> float:
+            round_scores = {index: score for index, score in enumerate(round_values)}
+            trajectory_features = self.module.build_trajectory_features(round_scores)
+            score = self.module.compute_assignment_score(
+                reported_score_pct=100.0,
+                round_scores=round_scores,
+                trajectory_features=trajectory_features,
+                assignment_score_mode="trajectory",
+                post_r0_improvement_area_weight=0.40,
+                post_r0_monotonicity_weight=0.25,
+                post_r0_improved_round_count_weight=0.20,
+                post_r0_terminal_improvement_weight=0.15,
+            )
+            assert score is not None
+            return score
+
+        ideal = assignment_score([0.0, 100.0, 100.0, 100.0])
+        delayed_stable = assignment_score([0.0, 0.0, 100.0, 100.0])
+        late_only = assignment_score([0.0, 0.0, 0.0, 100.0])
+        transient_then_regress = assignment_score([0.0, 100.0, 100.0, 0.0])
+        baseline_perfect = assignment_score([100.0, 100.0, 100.0, 100.0])
+
+        self.assertAlmostEqual(ideal, 100.0)
+        self.assertGreater(delayed_stable, late_only)
+        self.assertGreater(late_only, transient_then_regress)
+        self.assertGreater(transient_then_regress, baseline_perfect)
+        self.assertEqual(baseline_perfect, 0.0)
+
     def test_build_outer_loop_artifacts_uses_latest_pair_attempt_and_emits_conservative_assignments(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -397,9 +426,10 @@ class BuildRound0OuterLoopArtifactsTests(unittest.TestCase):
                 prompt_bank_path=prompt_bank_path,
                 round_id="round0-test",
                 assignment_score_mode="trajectory",
-                terminal_score_weight=0.50,
-                round_mean_score_weight=0.30,
-                growth_score_weight=0.20,
+                post_r0_improvement_area_weight=0.40,
+                post_r0_monotonicity_weight=0.25,
+                post_r0_improved_round_count_weight=0.20,
+                post_r0_terminal_improvement_weight=0.15,
                 epsilon_pp=5.0,
                 high_confidence_margin_pp=10.0,
                 medium_confidence_margin_pp=5.0,
@@ -527,9 +557,10 @@ class BuildRound0OuterLoopArtifactsTests(unittest.TestCase):
                 prompt_bank_path=prompt_bank_path,
                 round_id="round0-trajectory-test",
                 assignment_score_mode="trajectory",
-                terminal_score_weight=0.50,
-                round_mean_score_weight=0.30,
-                growth_score_weight=0.20,
+                post_r0_improvement_area_weight=0.40,
+                post_r0_monotonicity_weight=0.25,
+                post_r0_improved_round_count_weight=0.20,
+                post_r0_terminal_improvement_weight=0.15,
                 epsilon_pp=5.0,
                 high_confidence_margin_pp=10.0,
                 medium_confidence_margin_pp=5.0,
@@ -636,9 +667,10 @@ class BuildRound0OuterLoopArtifactsTests(unittest.TestCase):
                 prompt_bank_path=prompt_bank_path,
                 round_id="round0-tie-test",
                 assignment_score_mode="trajectory",
-                terminal_score_weight=0.50,
-                round_mean_score_weight=0.30,
-                growth_score_weight=0.20,
+                post_r0_improvement_area_weight=0.40,
+                post_r0_monotonicity_weight=0.25,
+                post_r0_improved_round_count_weight=0.20,
+                post_r0_terminal_improvement_weight=0.15,
                 epsilon_pp=5.0,
                 high_confidence_margin_pp=10.0,
                 medium_confidence_margin_pp=5.0,
