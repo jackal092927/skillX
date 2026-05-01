@@ -219,6 +219,129 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
                 self.assertTrue((Path(outdir) / "round1_candidate_prompt_bank.json").exists())
                 self.assertIn("summary_md", outputs)
 
+    def test_uses_schema_training_assignments_including_floor_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            prompt_bank_path = self._write_prompt_bank(root)
+            task_profiles_path = self._write_task_profiles(root)
+            bundle_path = root / "control-plane-bundle.json"
+            bundle_path.write_text(
+                json.dumps(
+                    {
+                        "assignments": [
+                            {
+                                "task_name": "task-a",
+                                "assignment_status": "assigned",
+                                "assigned_category": "schema-alpha",
+                                "assignment_confidence": "high",
+                                "margin_pp": 20.0,
+                            },
+                            {
+                                "task_name": "task-b",
+                                "assignment_status": "assigned",
+                                "assigned_category": "schema-alpha",
+                                "assignment_confidence": "medium",
+                                "margin_pp": 4.0,
+                            },
+                        ],
+                        "score_matrix": {
+                            "long_rows": [
+                                {
+                                    "task_name": "task-a",
+                                    "schema_id": "schema-alpha",
+                                    "score": 80.0,
+                                    "reported_score": 80.0,
+                                    "delta_vs_c1_pp": 10.0,
+                                    "round_r0_to_best_delta_pp": 20.0,
+                                    "evidence_class": "measured",
+                                },
+                                {
+                                    "task_name": "task-b",
+                                    "schema_id": "schema-alpha",
+                                    "score": 55.0,
+                                    "reported_score": 55.0,
+                                    "delta_vs_c1_pp": 5.0,
+                                    "round_r0_to_best_delta_pp": 5.0,
+                                    "evidence_class": "measured",
+                                },
+                                {
+                                    "task_name": "task-b",
+                                    "schema_id": "schema-beta",
+                                    "score": 31.25,
+                                    "reported_score": 100.0,
+                                    "delta_vs_c1_pp": 0.0,
+                                    "round_r0_to_best_delta_pp": 100.0,
+                                    "trajectory_quality": "partial_gain_then_regression",
+                                    "evidence_class": "measured",
+                                },
+                            ]
+                        },
+                        "diagnostics": {
+                            "schema_training_assignments": [
+                                {
+                                    "schema_id": "schema-alpha",
+                                    "task_name": "task-a",
+                                    "evidence_role": "primary_assignment",
+                                    "evidence_reasons": "primary",
+                                    "schema_score": 80.0,
+                                    "schema_reported_score": 80.0,
+                                    "schema_rank_for_task": 1,
+                                    "schema_delta_vs_r0_post_best_pp": 20.0,
+                                    "schema_trajectory_quality": "stable_non_decreasing_gain",
+                                    "primary_assigned_category": "schema-alpha",
+                                    "task_best_schema": "schema-alpha",
+                                    "task_best_score": 80.0,
+                                },
+                                {
+                                    "schema_id": "schema-beta",
+                                    "task_name": "task-b",
+                                    "evidence_role": "floor_top_score",
+                                    "evidence_reasons": "",
+                                    "schema_score": 31.25,
+                                    "schema_reported_score": 100.0,
+                                    "schema_rank_for_task": 2,
+                                    "schema_delta_vs_r0_post_best_pp": 100.0,
+                                    "schema_trajectory_quality": "partial_gain_then_regression",
+                                    "primary_assigned_category": "schema-alpha",
+                                    "task_best_schema": "schema-alpha",
+                                    "task_best_score": 55.0,
+                                },
+                            ]
+                        },
+                    }
+                )
+            )
+
+            package = self.module.build_schema_update_package(
+                control_plane_bundle_path=bundle_path,
+                prompt_bank_path=prompt_bank_path,
+                task_cluster_inputs_path=task_profiles_path,
+                rewrite_mode="deterministic",
+                llm_model="anthropic/claude-sonnet-4-5",
+                llm_timeout_sec=1.0,
+                llm_work_dir=None,
+                round_id="round0-test",
+                next_round_id="round1-test",
+                min_support_size=1,
+                low_margin_pp=5.0,
+                boundary_margin_pp=10.0,
+                max_update_schemas=0,
+                max_eval_tasks_per_schema=5,
+            )
+
+            beta_evidence = package["schema_evidence_bundles"]["schema-beta"]
+            self.assertEqual(beta_evidence["support_size"], 1)
+            self.assertEqual(beta_evidence["assigned_task_summaries"][0]["task_name"], "task-b")
+            self.assertEqual(
+                beta_evidence["assigned_task_summaries"][0]["evidence_role"],
+                "floor_top_score",
+            )
+            self.assertTrue(beta_evidence["assigned_task_summaries"][0]["floor_evidence"])
+            self.assertEqual(
+                package["config"]["training_evidence_source"],
+                "schema_training_assignments",
+            )
+
     def test_freezes_schema_below_support_floor(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)

@@ -189,6 +189,37 @@ def assignment_schema_ids(assignment: dict[str, Any]) -> list[str]:
     return normalize_string_list(assignment.get("assigned_category"))
 
 
+def training_evidence_rows_from_bundle(bundle: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return schema-level training evidence rows, falling back to legacy assignments."""
+    diagnostics = bundle.get("diagnostics") or {}
+    rows = diagnostics.get("schema_training_assignments")
+    if isinstance(rows, list) and rows:
+        return [row for row in rows if isinstance(row, dict)]
+
+    rows = bundle.get("schema_training_assignments")
+    if isinstance(rows, list) and rows:
+        return [row for row in rows if isinstance(row, dict)]
+
+    fallback_rows: list[dict[str, Any]] = []
+    for assignment in bundle.get("assignments", []) or []:
+        if not isinstance(assignment, dict):
+            continue
+        task_name = assignment.get("task_name")
+        if not isinstance(task_name, str):
+            continue
+        for schema_id in assignment_schema_ids(assignment):
+            fallback_rows.append(
+                {
+                    "schema_id": schema_id,
+                    "task_name": task_name,
+                    "evidence_role": "assignment_support",
+                    "evidence_reasons": "legacy_assignment",
+                    "primary_assigned_category": assignment.get("assigned_category"),
+                }
+            )
+    return fallback_rows
+
+
 def score_value(row: dict[str, Any]) -> float | None:
     for key in ("score", "assignment_score_pct", "reported_score", "reported_score_pct"):
         value = coerce_float(row.get(key))
@@ -277,6 +308,7 @@ def build_schema_evidence(
     *,
     schema_id: str,
     assignments: list[dict[str, Any]],
+    training_evidence_rows: list[dict[str, Any]],
     score_by_pair: dict[tuple[str, str], dict[str, Any]],
     scores_by_task: dict[str, dict[str, float]],
     task_profiles: dict[str, dict[str, Any]],
@@ -297,15 +329,36 @@ def build_schema_evidence(
     delta_vs_c1_values: list[float] = []
     growth_values: list[float] = []
     assigned_task_names: set[str] = set()
+    assignments_by_task = {
+        str(row.get("task_name")): row
+        for row in assignments
+        if isinstance(row.get("task_name"), str)
+    }
+    seen_support_keys: set[tuple[str, str]] = set()
 
-    for assignment in assignments:
-        task_name = assignment.get("task_name")
+    for support_row in training_evidence_rows:
+        if str(support_row.get("schema_id") or "") != schema_id:
+            continue
+        task_name = support_row.get("task_name")
         if not isinstance(task_name, str):
             continue
-        if schema_id not in assignment_schema_ids(assignment):
+        support_key = (schema_id, task_name)
+        if support_key in seen_support_keys:
             continue
+        seen_support_keys.add(support_key)
         assigned_task_names.add(task_name)
-        score_row = score_by_pair.get((task_name, schema_id), {})
+        assignment = assignments_by_task.get(task_name, {})
+        score_row = dict(score_by_pair.get((task_name, schema_id), {}))
+        if score_value(score_row) is None:
+            score_row["score"] = support_row.get("schema_score")
+        if coerce_float(score_row.get("reported_score")) is None:
+            score_row["reported_score"] = support_row.get("schema_reported_score")
+        if coerce_float(score_row.get("round_r0_to_best_delta_pp")) is None:
+            score_row["round_r0_to_best_delta_pp"] = support_row.get(
+                "schema_delta_vs_r0_post_best_pp"
+            )
+        if not score_row.get("trajectory_quality"):
+            score_row["trajectory_quality"] = support_row.get("schema_trajectory_quality")
         score = score_value(score_row)
         outcome = classify_outcome(score_row)
         outcome_counts[outcome] += 1
@@ -339,6 +392,16 @@ def build_schema_evidence(
         assigned_task_summaries.append(
             {
                 "task_name": task_name,
+                "evidence_role": str(support_row.get("evidence_role") or "assignment_support"),
+                "evidence_reasons": normalize_string_list(support_row.get("evidence_reasons")),
+                "schema_rank_for_task": coerce_float(support_row.get("schema_rank_for_task")),
+                "schema_trajectory_quality": support_row.get("schema_trajectory_quality")
+                or score_row.get("trajectory_quality"),
+                "primary_assigned_category": support_row.get("primary_assigned_category")
+                or assignment.get("assigned_category"),
+                "task_best_schema": support_row.get("task_best_schema"),
+                "task_best_score": coerce_float(support_row.get("task_best_score")),
+                "floor_evidence": str(support_row.get("evidence_role") or "") == "floor_top_score",
                 "score": score,
                 "reported_score": coerce_float(
                     score_row.get("reported_score", score_row.get("reported_score_pct"))
@@ -1470,10 +1533,15 @@ def build_schema_update_package(
     assignments = [
         row for row in bundle.get("assignments", []) if isinstance(row, dict)
     ]
+    training_evidence_rows = training_evidence_rows_from_bundle(bundle)
     score_rows = score_rows_from_bundle(bundle)
     score_by_pair, scores_by_task = index_score_rows(score_rows)
     task_names = sorted(
-        {str(row.get("task_name")) for row in assignments if isinstance(row.get("task_name"), str)}
+        {
+            str(row.get("task_name"))
+            for row in [*assignments, *training_evidence_rows]
+            if isinstance(row.get("task_name"), str)
+        }
     )
     log_progress(
         "start package build: "
@@ -1492,6 +1560,7 @@ def build_schema_update_package(
         evidence = build_schema_evidence(
             schema_id=schema_id,
             assignments=assignments,
+            training_evidence_rows=training_evidence_rows,
             score_by_pair=score_by_pair,
             scores_by_task=scores_by_task,
             task_profiles=task_profiles,
@@ -1590,6 +1659,15 @@ def build_schema_update_package(
             "llm_model": llm_model if rewrite_mode == "llm" else None,
             "llm_timeout_sec": llm_timeout_sec if rewrite_mode == "llm" else None,
             "llm_work_dir": None if llm_work_dir is None else display_path(llm_work_dir.resolve()),
+            "training_evidence_source": (
+                "schema_training_assignments"
+                if training_evidence_rows
+                and (
+                    (bundle.get("diagnostics") or {}).get("schema_training_assignments")
+                    or bundle.get("schema_training_assignments")
+                )
+                else "legacy_assignments"
+            ),
             "min_support_size": min_support_size,
             "low_margin_pp": low_margin_pp,
             "boundary_margin_pp": boundary_margin_pp,

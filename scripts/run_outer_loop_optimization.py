@@ -610,6 +610,15 @@ def run_outer_loop_optimization(
         "artifact_type": "skillx_outer_loop_optimization_run",
         "round_id": round_id,
         "next_round_id": next_round_id,
+        "schema_update_policy": (
+            "all_eligible_schemas" if max_update_schemas <= 0 else f"top_{max_update_schemas}_schemas"
+        ),
+        "next_pair_plan_policy": (
+            "intentional_full_matrix_rerun"
+            if next_pair_plan_mode == "full_matrix"
+            else "reduced_challenger_eval"
+        ),
+        "max_update_schemas": max_update_schemas,
         "control_plane_outputs": control_outputs,
         "schema_update_outputs": schema_update_outputs,
         "next_round_materialized_outputs": materialized["outputs"],

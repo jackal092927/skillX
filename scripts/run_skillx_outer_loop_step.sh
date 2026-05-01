@@ -24,6 +24,8 @@ Environment overrides:
   SKILLX_EXPORT_REPORT      1 exports the completed inner-loop run report first. Default: 1
   SKILLX_BUILD_GLOBAL_STATUS
                             1 rebuilds reports/global-round0-status. Default: 1
+  SKILLX_TASK_SLICE         Optional task-slice JSON used to filter global status.
+                            Supports rows under .tasks[] with task_name/task_id/name.
   SKILLX_ROUND_ID           Source outer-loop round id. Default: outer-loop-round0
   SKILLX_NEXT_ROUND_ID      Next outer-loop round id. Default: outer-loop-round1
   SKILLX_NEXT_RUN_ID        Run id embedded into next-round pair specs.
@@ -83,6 +85,7 @@ NEXT_MATERIALIZED_ROOT="$(resolve_path "${3:-${SKILLX_NEXT_MATERIALIZED_ROOT:-$D
 
 EXPORT_REPORT="${SKILLX_EXPORT_REPORT:-1}"
 BUILD_GLOBAL_STATUS="${SKILLX_BUILD_GLOBAL_STATUS:-1}"
+TASK_SLICE="${SKILLX_TASK_SLICE:-}"
 CONTROL_PLANE_OUTPUT_DIR="$ROUND_ROOT/reports/$OUTER_LABEL/control-plane"
 SCHEMA_UPDATE_OUTPUT_DIR="$ROUND_ROOT/reports/$OUTER_LABEL/schema-updates"
 GLOBAL_STATUS_PATH="$ROUND_ROOT/reports/global-round0-status/global_pair_status.json"
@@ -131,6 +134,42 @@ fi
 
 cd "$EXP_WORKTREE"
 
+task_filter_args=()
+if [[ -n "$TASK_SLICE" ]]; then
+  TASK_SLICE_PATH="$(resolve_path "$TASK_SLICE")"
+  if [[ ! -f "$TASK_SLICE_PATH" ]]; then
+    echo "Missing task slice: $TASK_SLICE_PATH" >&2
+    exit 1
+  fi
+  while IFS= read -r task_name; do
+    if [[ -n "$task_name" ]]; then
+      task_filter_args+=(--task "$task_name")
+    fi
+  done < <(
+    uv run --python "$PYTHON_RUNTIME" python - "$TASK_SLICE_PATH" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text())
+tasks = payload.get("tasks", [])
+for item in tasks:
+    if isinstance(item, str):
+        name = item
+    elif isinstance(item, dict):
+        name = item.get("task_name") or item.get("task_id") or item.get("name")
+    else:
+        name = None
+    if isinstance(name, str) and name:
+        print(name)
+PY
+  )
+  if [[ ${#task_filter_args[@]} -eq 0 ]]; then
+    echo "Task slice did not yield any task names: $TASK_SLICE_PATH" >&2
+    exit 1
+  fi
+fi
+
 if [[ "$EXPORT_REPORT" == "1" ]]; then
   uv run --python "$PYTHON_RUNTIME" python scripts/export_round0_run_report.py \
     --materialized-root "$PREVIOUS_MATERIALIZED_ROOT" \
@@ -148,6 +187,7 @@ if [[ "$BUILD_GLOBAL_STATUS" == "1" ]]; then
     --round0-root
     "$ROUND_ROOT"
   )
+  global_status_cmd+=("${task_filter_args[@]}")
   if [[ -n "${SKILLX_SKILLSBENCH_ROOT:-}" ]]; then
     global_status_cmd+=(--skillsbench-root "$(resolve_path "$SKILLX_SKILLSBENCH_ROOT")")
   fi
@@ -213,6 +253,7 @@ echo "  inner-run-label: ${INNER_RUN_LABEL:-skipped}"
 echo "  round-root: $ROUND_ROOT"
 echo "  outer-label: $OUTER_LABEL"
 echo "  python: $PYTHON_RUNTIME"
+echo "  task-slice: ${TASK_SLICE:-all-detected-tasks}"
 echo "  next-pair-plan-mode: $NEXT_PAIR_PLAN_MODE"
 echo "  control-plane: $CONTROL_PLANE_OUTPUT_DIR"
 echo "  schema-updates: $SCHEMA_UPDATE_OUTPUT_DIR"
