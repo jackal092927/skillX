@@ -1,0 +1,96 @@
+{
+  "acceptance_notes": [
+    "Evidence shows strong boundary competition with analytic-pipeline on 7 borderline cases",
+    "All 4 assigned tasks share staged-multi-step topology but split between engineering vs analytical verification",
+    "Mean score 58.6% suggests schema captures real pattern but needs sharper boundaries",
+    "Deterministic seed correctly identifies need to make workflow assumptions explicit and state winning conditions vs analytic-pipeline",
+    "Low support size (4 tasks) means edits should be conservative - sharpen boundaries rather than expand scope"
+  ],
+  "challenger_guidance": {
+    "conservative": "Accept if boundary sharpening against analytic-pipeline is essential and you trust the engineering-gate distinction",
+    "differentiating": "Accept - this directly addresses the 7-case analytic-pipeline boundary ambiguity by making engineering constraints the decisive signal",
+    "exploratory": "Accept to test whether explicit engineering verification gates improve schema discrimination on borderline pipeline tasks"
+  },
+  "expected_effect": [
+    "Sharper boundary with analytic-pipeline: tasks go to engineering-composition when they need compile/test/build gates, not just pipeline execution",
+    "Reduced false positives: pure analytical pipelines without engineering verification should route to analytic-pipeline",
+    "More explicit workflow assumption: staged-multi-step topology becomes a named precondition rather than implicit",
+    "Better loss analysis: engineering constraint extraction becomes first diagnostic step",
+    "Risk: may lose some pipeline tasks if engineering gates aren't truly load-bearing - but evidence shows these are already going to analytic-pipeline"
+  ],
+  "operator_summary": {
+    "add": [
+      "emphasize: extract task-specific engineering constraints (build/compile/test requirements) before procedural scaffolding",
+      "emphasize: make staged-multi-step assumption explicit in schema application logic",
+      "emphasize: articulate when engineering gates (not just output verification) are load-bearing",
+      "expected_good_fit: tasks requiring code modification with cross-file dependency tracking",
+      "expected_bad_fit: pure analytical pipelines where the pipeline output is the deliverable",
+      "expected_bad_fit: tasks with only output-contract verification, no engineering gates",
+      "hypothesized_primary_failure_modes: boundary ambiguity with analytic-pipeline when task has pipeline structure but unclear engineering constraints"
+    ],
+    "exclude": [
+      "Over-expanding into analytical pipeline territory without clear engineering verification gates",
+      "Adding procedural scaffolding without grounding in task-specific build/test/compile constraints"
+    ],
+    "keep": [
+      "diagnose -> patch/edit -> verify sequencing (core to engineering discipline)",
+      "explicit precedence and dependency handling (distinguishes from simple pipelines)",
+      "benchmark / build / test gate awareness (key differentiator from analytic-pipeline)",
+      "expected_good_fit: build fixes, migrations, code implementation tasks with compile/test/benchmark constraints"
+    ],
+    "remove": [],
+    "sharpen": [
+      "tool wrappers / execution interfaces \u2192 tool wrappers and execution infrastructure when build/test/deployment matters (not just script orchestration)",
+      "vague reviewer-only advice \u2192 vague advice that doesn't specify which engineering gates (compile/test/deploy) to validate against"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "treating all pipeline-structured tasks as engineering tasks without identifying engineering verification gates"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "vague advice that doesn't specify which engineering gates (compile/test/deploy/benchmark) to validate against",
+          "old": "vague reviewer-only advice without execution discipline"
+        }
+      ]
+    },
+    "emphasize": {
+      "add": [
+        "extract task-specific engineering constraints (build/compile/test/deploy requirements) before adding procedural scaffolding",
+        "make the staged-multi-step workflow assumption explicit when rendering task guidance",
+        "articulate why engineering verification gates (compile/test/benchmark) are load-bearing for this task vs pure output validation"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "tool wrappers and execution infrastructure when build/test/deployment gates matter, not just script orchestration",
+          "old": "tool wrappers / execution interfaces / reproducible commands"
+        }
+      ]
+    },
+    "expected_bad_fit": {
+      "add": [
+        "pure analytical pipelines where the pipeline output is the final deliverable",
+        "tasks with only output-contract or result verification, no build/compile/test gates"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "tasks requiring code modification with cross-file dependency tracking or compilation",
+        "tasks where engineering verification gates (compile/test/benchmark) are distinct from output contract validation"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "boundary ambiguity with analytic-pipeline: losing tasks that have pipeline structure but lack clear engineering verification gates"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

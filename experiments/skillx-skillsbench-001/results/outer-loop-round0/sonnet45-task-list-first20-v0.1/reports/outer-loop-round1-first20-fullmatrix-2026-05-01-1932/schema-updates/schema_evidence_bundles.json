@@ -1,0 +1,2371 @@
+{
+  "analytic-pipeline": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "3d-scan-calc"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "methodology-guardrail",
+        "competing_schema_score": 60.0,
+        "current_schema_score": 60.0,
+        "margin_pp": 0.0,
+        "task_name": "azure-bgp-oscillation-route-leak"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "engineering-composition",
+        "competing_schema_score": 100.0,
+        "current_schema_score": 100.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "environment-control",
+        "competing_schema_score": 100.0,
+        "current_schema_score": 100.0,
+        "margin_pp": 0.0,
+        "task_name": "exceltable-in-ppt"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "engineering-composition",
+        "competing_schema_score": 31.25,
+        "current_schema_score": 31.25,
+        "margin_pp": 0.0,
+        "task_name": "find-topk-similiar-chemicals"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-agentops"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-google-auto"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "artifact-generation",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 80.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 20.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "court-form-filling",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "field-constrained PDF artifact; required vs omitted form sections and no-extra-fill discipline dominate",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 80.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "earthquake-phase-association",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load waveforms, run DL phase picking via SeisBench, associate picks into events, and pass F1 \u2265 0.6 gate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 100.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "stable_gain"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 60.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 60.0,
+        "task_name": "azure-bgp-oscillation-route-leak",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load topology files, detect oscillation/leak violations, evaluate solution candidates, and emit structured JSON report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 20.0,
+        "evidence_reasons": [
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "environment-control",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "exceltable-in-ppt",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "embedded Excel extraction, targeted update, and PPTX preservation require ordered artifact manipulation",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 40.3,
+        "evidence_reasons": [
+          "stable_gain"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 21.17,
+        "outcome": "success",
+        "primary_assigned_category": "artifact-generation",
+        "reported_score": 55.0,
+        "round_r0_to_best_delta_pp": 55.0,
+        "schema_rank_for_task": 2.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 47.25,
+        "task_best_schema": "artifact-generation",
+        "task_best_score": 68.4167,
+        "task_name": "civ6-adjacency-optimizer",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "parse .Civ6Map, compute adjacency bonuses for district placements, and maximize total score against an optimal benchmark",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      }
+    ],
+    "category_id": "analytic-pipeline",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 47.25,
+        "gap_pp": 21.1667,
+        "task_name": "civ6-adjacency-optimizer",
+        "winning_score": 68.4167,
+        "won_by": "artifact-generation"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 5,
+        "value": "artifact-generation"
+      },
+      {
+        "count": 2,
+        "value": "engineering-composition"
+      },
+      {
+        "count": 1,
+        "value": "methodology-guardrail"
+      },
+      {
+        "count": 1,
+        "value": "environment-control"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": 81.45,
+    "mean_delta_vs_c1_pp": 64.06,
+    "mean_r0_to_best_delta_pp": 91.0,
+    "observed_task_count": 20,
+    "outcome_counts": {
+      "success": 5
+    },
+    "reliable_support_size": 5,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 5,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 4,
+          "value": "pipeline"
+        },
+        {
+          "count": 1,
+          "value": "generator"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 3,
+          "value": "analytic-pipeline"
+        },
+        {
+          "count": 2,
+          "value": "artifact-generation"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 3,
+          "value": "tool-medium"
+        },
+        {
+          "count": 1,
+          "value": "tool-heavy-script-recommended"
+        },
+        {
+          "count": 1,
+          "value": "tool-heavy-script-optional"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 2,
+          "value": "deterministic-output-contract"
+        },
+        {
+          "count": 2,
+          "value": "benchmark-threshold"
+        },
+        {
+          "count": 1,
+          "value": "deterministic-artifact-plus-stage-check"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 4,
+          "value": "staged-multi-step"
+        },
+        {
+          "count": 1,
+          "value": "single-step-with-review"
+        }
+      ]
+    }
+  },
+  "artifact-generation": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "3d-scan-calc"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-agentops"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-google-auto"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 45.3,
+        "evidence_reasons": [
+          "primary",
+          "near_best"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 21.17,
+        "outcome": "success",
+        "primary_assigned_category": "artifact-generation",
+        "reported_score": 60.0,
+        "round_r0_to_best_delta_pp": 60.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "stable_no_loss_gain",
+        "score": 68.4167,
+        "task_best_schema": "artifact-generation",
+        "task_best_score": 68.4167,
+        "task_name": "civ6-adjacency-optimizer",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "parse .Civ6Map, compute adjacency bonuses for district placements, and maximize total score against an optimal benchmark",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 80.0,
+        "evidence_reasons": [],
+        "evidence_role": "floor_top_score",
+        "floor_evidence": true,
+        "main_failure_notes": [],
+        "margin_pp": 20.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 4.0,
+        "schema_trajectory_quality": "partial_gain_then_regression",
+        "score": 31.25,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "court-form-filling",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "field-constrained PDF artifact; required vs omitted form sections and no-extra-fill discipline dominate",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        }
+      }
+    ],
+    "category_id": "artifact-generation",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "3d-scan-calc",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 31.25,
+        "gap_pp": 68.75,
+        "task_name": "court-form-filling",
+        "winning_score": 100.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-agentops",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-google-auto",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 5,
+        "value": "analytic-pipeline"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": 49.8334,
+    "mean_delta_vs_c1_pp": 62.65,
+    "mean_r0_to_best_delta_pp": 80.0,
+    "observed_task_count": 20,
+    "outcome_counts": {
+      "success": 2
+    },
+    "reliable_support_size": 2,
+    "stability_notes": [],
+    "support_size": 2,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 1,
+          "value": "pipeline"
+        },
+        {
+          "count": 1,
+          "value": "generator"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 1,
+          "value": "analytic-pipeline"
+        },
+        {
+          "count": 1,
+          "value": "artifact-generation"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 1,
+          "value": "tool-heavy-script-optional"
+        },
+        {
+          "count": 1,
+          "value": "tool-medium"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 1,
+          "value": "benchmark-threshold"
+        },
+        {
+          "count": 1,
+          "value": "deterministic-output-contract"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 1,
+          "value": "staged-multi-step"
+        },
+        {
+          "count": 1,
+          "value": "single-step-with-review"
+        }
+      ]
+    }
+  },
+  "engineering-composition": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "3d-scan-calc"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 100.0,
+        "current_schema_score": 100.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "environment-control",
+        "competing_schema_score": 60.0,
+        "current_schema_score": 60.0,
+        "margin_pp": 0.0,
+        "task_name": "exoplanet-detection-period"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 31.25,
+        "current_schema_score": 31.25,
+        "margin_pp": 0.0,
+        "task_name": "find-topk-similiar-chemicals"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-agentops"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-google-auto"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 100.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "stable_gain"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "engineering-composition",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 60.0,
+        "task_best_schema": "engineering-composition",
+        "task_best_score": 60.0,
+        "task_name": "exoplanet-detection-period",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "filter TESS lightcurve, remove stellar-activity variability, and output one rounded orbital period value; strong ordered analysis but single-value contract",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 90.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "engineering-composition",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "partial_gain_then_regression",
+        "score": 31.25,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 31.25,
+        "task_name": "find-topk-similiar-chemicals",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "build a reusable Python function using PubChem/RDKit for Morgan fingerprint Tanimoto similarity; no hardcoded SMILES",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "engineering-composition",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 80.0,
+        "evidence_reasons": [
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "earthquake-phase-association",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load waveforms, run DL phase picking via SeisBench, associate picks into events, and pass F1 \u2265 0.6 gate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 25.3,
+        "evidence_reasons": [
+          "stable_gain"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 21.17,
+        "outcome": "success",
+        "primary_assigned_category": "artifact-generation",
+        "reported_score": 40.0,
+        "round_r0_to_best_delta_pp": 40.0,
+        "schema_rank_for_task": 3.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 43.0,
+        "task_best_schema": "artifact-generation",
+        "task_best_score": 68.4167,
+        "task_name": "civ6-adjacency-optimizer",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "parse .Civ6Map, compute adjacency bonuses for district placements, and maximize total score against an optimal benchmark",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      }
+    ],
+    "category_id": "engineering-composition",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "3d-scan-calc",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 43.0,
+        "gap_pp": 25.4167,
+        "task_name": "civ6-adjacency-optimizer",
+        "winning_score": 68.4167,
+        "won_by": "artifact-generation"
+      },
+      {
+        "current_schema_score": 100.0,
+        "gap_pp": 0.0,
+        "task_name": "earthquake-phase-association",
+        "winning_score": 100.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 31.25,
+        "gap_pp": 0.0,
+        "task_name": "find-topk-similiar-chemicals",
+        "winning_score": 31.25,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-agentops",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-google-auto",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 7,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "environment-control"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": 58.5625,
+    "mean_delta_vs_c1_pp": 73.825,
+    "mean_r0_to_best_delta_pp": 85.0,
+    "observed_task_count": 20,
+    "outcome_counts": {
+      "success": 4
+    },
+    "reliable_support_size": 4,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 4,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 4,
+          "value": "pipeline"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 3,
+          "value": "analytic-pipeline"
+        },
+        {
+          "count": 1,
+          "value": "engineering-composition"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 2,
+          "value": "tool-heavy-script-optional"
+        },
+        {
+          "count": 2,
+          "value": "tool-heavy-script-recommended"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 2,
+          "value": "deterministic-output-contract"
+        },
+        {
+          "count": 2,
+          "value": "benchmark-threshold"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 4,
+          "value": "staged-multi-step"
+        }
+      ]
+    }
+  },
+  "environment-control": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "3d-scan-calc"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "retrieval-heavy-synthesis",
+        "competing_schema_score": 80.0,
+        "current_schema_score": 80.0,
+        "margin_pp": 0.0,
+        "task_name": "energy-market-pricing"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 100.0,
+        "current_schema_score": 100.0,
+        "margin_pp": 0.0,
+        "task_name": "exceltable-in-ppt"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "engineering-composition",
+        "competing_schema_score": 60.0,
+        "current_schema_score": 60.0,
+        "margin_pp": 0.0,
+        "task_name": "exoplanet-detection-period"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-agentops"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-google-auto"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 80.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 100.0,
+        "outcome": "success",
+        "primary_assigned_category": "environment-control",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "environment-control",
+        "task_best_score": 100.0,
+        "task_name": "energy-ac-optimal-power-flow",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "solve AC-OPF from math model, produce structured JSON report with generators, buses, branches, and feasibility checks",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 20.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "environment-control",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "exceltable-in-ppt",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "embedded Excel extraction, targeted update, and PPTX preservation require ordered artifact manipulation",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 100.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 68.75,
+        "outcome": "success",
+        "primary_assigned_category": "environment-control",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "environment-control",
+        "task_best_score": 100.0,
+        "task_name": "financial-modeling-qa",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "instruction is a concrete workbook-plus-background analysis task that reduces to one numeric answer.txt output rather than an open-ended finance QA surface",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 100.0,
+        "evidence_reasons": [
+          "near_best",
+          "high_score",
+          "stable_gain"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "retrieval-heavy-synthesis",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 80.0,
+        "task_best_schema": "environment-control",
+        "task_best_score": 80.0,
+        "task_name": "energy-market-pricing",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "run DC-OPF with reserve co-optimization for base and counterfactual scenarios; produce comparative JSON report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 100.0,
+        "evidence_reasons": [
+          "near_best",
+          "stable_gain"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "engineering-composition",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 60.0,
+        "task_best_schema": "engineering-composition",
+        "task_best_score": 60.0,
+        "task_name": "exoplanet-detection-period",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "filter TESS lightcurve, remove stellar-activity variability, and output one rounded orbital period value; strong ordered analysis but single-value contract",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      }
+    ],
+    "category_id": "environment-control",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "3d-scan-calc",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 100.0,
+        "gap_pp": 0.0,
+        "task_name": "exceltable-in-ppt",
+        "winning_score": 100.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 60.0,
+        "gap_pp": 0.0,
+        "task_name": "exoplanet-detection-period",
+        "winning_score": 60.0,
+        "won_by": "engineering-composition"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-agentops",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-google-auto",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 6,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "retrieval-heavy-synthesis"
+      },
+      {
+        "count": 1,
+        "value": "engineering-composition"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": 88.0,
+    "mean_delta_vs_c1_pp": 80.0,
+    "mean_r0_to_best_delta_pp": 100.0,
+    "observed_task_count": 20,
+    "outcome_counts": {
+      "success": 5
+    },
+    "reliable_support_size": 5,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 5,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 5,
+          "value": "pipeline"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 4,
+          "value": "analytic-pipeline"
+        },
+        {
+          "count": 1,
+          "value": "artifact-generation"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 2,
+          "value": "tool-heavy-script-recommended"
+        },
+        {
+          "count": 2,
+          "value": "tool-medium"
+        },
+        {
+          "count": 1,
+          "value": "tool-heavy-script-optional"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 4,
+          "value": "deterministic-output-contract"
+        },
+        {
+          "count": 1,
+          "value": "deterministic-artifact-plus-stage-check"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 5,
+          "value": "staged-multi-step"
+        }
+      ]
+    }
+  },
+  "methodology-guardrail": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "3d-scan-calc"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 60.0,
+        "current_schema_score": 60.0,
+        "margin_pp": 0.0,
+        "task_name": "azure-bgp-oscillation-route-leak"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "retrieval-heavy-synthesis",
+        "competing_schema_score": 100.0,
+        "current_schema_score": 100.0,
+        "margin_pp": 0.0,
+        "task_name": "dapt-intrusion-detection"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-agentops"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-google-auto"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 20.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "methodology-guardrail",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "methodology-guardrail",
+        "task_best_score": 100.0,
+        "task_name": "dapt-intrusion-detection",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "pcap analysis requires computing ~30 network metrics plus boolean analysis flags and filling a structured CSV template",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 20.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 31.25,
+        "outcome": "success",
+        "primary_assigned_category": "methodology-guardrail",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "partial_gain_then_regression",
+        "score": 31.25,
+        "task_best_schema": "methodology-guardrail",
+        "task_best_score": 31.25,
+        "task_name": "data-to-d3",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "task requires a coupled multi-file web artifact with precise D3 chart behavior, layout constraints, and linked interactions",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "generator",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 80.0,
+        "evidence_reasons": [
+          "high_score",
+          "stable_gain"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 20.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 2.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 80.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "court-form-filling",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "field-constrained PDF artifact; required vs omitted form sections and no-extra-fill discipline dominate",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 100.0,
+        "evidence_reasons": [
+          "near_best",
+          "stable_gain"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 60.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 60.0,
+        "task_name": "azure-bgp-oscillation-route-leak",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load topology files, detect oscillation/leak violations, evaluate solution candidates, and emit structured JSON report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      }
+    ],
+    "category_id": "methodology-guardrail",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "3d-scan-calc",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 60.0,
+        "gap_pp": 0.0,
+        "task_name": "azure-bgp-oscillation-route-leak",
+        "winning_score": 60.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 80.0,
+        "gap_pp": 20.0,
+        "task_name": "court-form-filling",
+        "winning_score": 100.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-agentops",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-google-auto",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 6,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "retrieval-heavy-synthesis"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": 67.8125,
+    "mean_delta_vs_c1_pp": 55.0,
+    "mean_r0_to_best_delta_pp": 100.0,
+    "observed_task_count": 20,
+    "outcome_counts": {
+      "success": 4
+    },
+    "reliable_support_size": 4,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 4,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 3,
+          "value": "pipeline"
+        },
+        {
+          "count": 1,
+          "value": "generator"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 2,
+          "value": "analytic-pipeline"
+        },
+        {
+          "count": 2,
+          "value": "artifact-generation"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 3,
+          "value": "tool-medium"
+        },
+        {
+          "count": 1,
+          "value": "tool-heavy-script-optional"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 3,
+          "value": "deterministic-output-contract"
+        },
+        {
+          "count": 1,
+          "value": "deterministic-artifact-plus-stage-check"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 3,
+          "value": "staged-multi-step"
+        },
+        {
+          "count": 1,
+          "value": "single-step-with-review"
+        }
+      ]
+    }
+  },
+  "orchestration-delegation": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "3d-scan-calc"
+      },
+      {
+        "case_type": "assigned_low_margin",
+        "competing_schema_id": "retrieval-heavy-synthesis",
+        "competing_schema_score": 31.25,
+        "current_schema_score": 31.25,
+        "margin_pp": 0.0,
+        "task_name": "adaptive-cruise-control"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 100.0,
+        "current_schema_score": 100.0,
+        "margin_pp": 0.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 100.0,
+        "current_schema_score": 100.0,
+        "margin_pp": 0.0,
+        "task_name": "exceltable-in-ppt"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 31.25,
+        "current_schema_score": 31.25,
+        "margin_pp": 0.0,
+        "task_name": "find-topk-similiar-chemicals"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-agentops"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-google-auto"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 40.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 68.75,
+        "outcome": "success",
+        "primary_assigned_category": "orchestration-delegation",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "orchestration-delegation",
+        "task_best_score": 100.0,
+        "task_name": "earthquake-plate-calculation",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "geospatial analysis using GeoPandas: filter earthquakes inside Pacific plate, compute max boundary distance, emit JSON",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 40.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 100.0,
+        "outcome": "success",
+        "primary_assigned_category": "orchestration-delegation",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "orchestration-delegation",
+        "task_best_score": 100.0,
+        "task_name": "econ-detrending-correlation",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "extract nominal series, deflate with CPI, HP-filter log-real series, compute Pearson correlation, output single number",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 80.0,
+        "evidence_reasons": [
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "earthquake-phase-association",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "load waveforms, run DL phase picking via SeisBench, associate picks into events, and pass F1 \u2265 0.6 gate",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 20.0,
+        "evidence_reasons": [
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "environment-control",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "exceltable-in-ppt",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "embedded Excel extraction, targeted update, and PPTX preservation require ordered artifact manipulation",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-artifact-plus-stage-check",
+          "workflow_topology": "staged-multi-step"
+        }
+      }
+    ],
+    "category_id": "orchestration-delegation",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "3d-scan-calc",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 100.0,
+        "gap_pp": 0.0,
+        "task_name": "earthquake-phase-association",
+        "winning_score": 100.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 100.0,
+        "gap_pp": 0.0,
+        "task_name": "exceltable-in-ppt",
+        "winning_score": 100.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 31.25,
+        "gap_pp": 0.0,
+        "task_name": "find-topk-similiar-chemicals",
+        "winning_score": 31.25,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-agentops",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-google-auto",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 8,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "retrieval-heavy-synthesis"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": 100.0,
+    "mean_delta_vs_c1_pp": 45.0,
+    "mean_r0_to_best_delta_pp": 100.0,
+    "observed_task_count": 20,
+    "outcome_counts": {
+      "success": 4
+    },
+    "reliable_support_size": 4,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 4,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 4,
+          "value": "pipeline"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 3,
+          "value": "analytic-pipeline"
+        },
+        {
+          "count": 1,
+          "value": "artifact-generation"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 2,
+          "value": "tool-heavy-script-optional"
+        },
+        {
+          "count": 1,
+          "value": "tool-heavy-script-recommended"
+        },
+        {
+          "count": 1,
+          "value": "tool-medium"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 2,
+          "value": "deterministic-output-contract"
+        },
+        {
+          "count": 1,
+          "value": "benchmark-threshold"
+        },
+        {
+          "count": 1,
+          "value": "deterministic-artifact-plus-stage-check"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 4,
+          "value": "staged-multi-step"
+        }
+      ]
+    }
+  },
+  "retrieval-heavy-synthesis": {
+    "ambiguous_borderline_cases": [
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "3d-scan-calc"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "orchestration-delegation",
+        "competing_schema_score": 31.25,
+        "current_schema_score": 31.25,
+        "margin_pp": 0.0,
+        "task_name": "adaptive-cruise-control"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "citation-check"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "methodology-guardrail",
+        "competing_schema_score": 100.0,
+        "current_schema_score": 100.0,
+        "margin_pp": 0.0,
+        "task_name": "dapt-intrusion-detection"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "environment-control",
+        "competing_schema_score": 80.0,
+        "current_schema_score": 80.0,
+        "margin_pp": 0.0,
+        "task_name": "energy-market-pricing"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-agentops"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-build-google-auto"
+      },
+      {
+        "case_type": "near_boundary_loss",
+        "competing_schema_id": "analytic-pipeline",
+        "competing_schema_score": 0.0,
+        "current_schema_score": 0.0,
+        "margin_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve"
+      }
+    ],
+    "assigned_task_summaries": [
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 100.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best",
+          "high_score",
+          "stable_gain"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "retrieval-heavy-synthesis",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 80.0,
+        "task_best_schema": "environment-control",
+        "task_best_score": 80.0,
+        "task_name": "energy-market-pricing",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "run DC-OPF with reserve co-optimization for base and counterfactual scenarios; produce comparative JSON report",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 100.0,
+        "evidence_reasons": [
+          "primary",
+          "near_best"
+        ],
+        "evidence_role": "primary_assignment",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "retrieval-heavy-synthesis",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "partial_gain_then_regression",
+        "score": 31.25,
+        "task_best_schema": "orchestration-delegation",
+        "task_best_score": 31.25,
+        "task_name": "adaptive-cruise-control",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "controller design, simulation, tuning, and metric targets form an ordered control-system workflow",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "tool-wrapper",
+            "reviewer"
+          ],
+          "task_object_seed": "environment-control",
+          "tool_surface_regime": "tool-heavy-script-recommended",
+          "verifier_mode": "benchmark-threshold",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "low",
+        "delta_vs_c1_pp": 20.0,
+        "evidence_reasons": [
+          "near_best",
+          "high_score",
+          "stable_gain",
+          "ideal_zero_to_full"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 0.0,
+        "outcome": "success",
+        "primary_assigned_category": "methodology-guardrail",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 1.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "score": 100.0,
+        "task_best_schema": "methodology-guardrail",
+        "task_best_score": 100.0,
+        "task_name": "dapt-intrusion-detection",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "pcap analysis requires computing ~30 network metrics plus boolean analysis flags and filling a structured CSV template",
+          "primary_pattern": "pipeline",
+          "secondary_patterns": [
+            "reviewer",
+            "tool-wrapper"
+          ],
+          "task_object_seed": "analytic-pipeline",
+          "tool_surface_regime": "tool-heavy-script-optional",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "staged-multi-step"
+        }
+      },
+      {
+        "assignment_confidence": "high",
+        "delta_vs_c1_pp": 80.0,
+        "evidence_reasons": [
+          "stable_gain"
+        ],
+        "evidence_role": "stable_gain_support",
+        "floor_evidence": false,
+        "main_failure_notes": [],
+        "margin_pp": 20.0,
+        "outcome": "success",
+        "primary_assigned_category": "analytic-pipeline",
+        "reported_score": 100.0,
+        "round_r0_to_best_delta_pp": 100.0,
+        "schema_rank_for_task": 3.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "score": 60.0,
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "court-form-filling",
+        "task_profile": {
+          "confidence": "high",
+          "evidence_note": "field-constrained PDF artifact; required vs omitted form sections and no-extra-fill discipline dominate",
+          "primary_pattern": "generator",
+          "secondary_patterns": [
+            "reviewer"
+          ],
+          "task_object_seed": "artifact-generation",
+          "tool_surface_regime": "tool-medium",
+          "verifier_mode": "deterministic-output-contract",
+          "workflow_topology": "single-step-with-review"
+        }
+      }
+    ],
+    "category_id": "retrieval-heavy-synthesis",
+    "cross_schema_losses": [
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "3d-scan-calc",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 31.25,
+        "gap_pp": 0.0,
+        "task_name": "adaptive-cruise-control",
+        "winning_score": 31.25,
+        "won_by": "orchestration-delegation"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "citation-check",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 60.0,
+        "gap_pp": 40.0,
+        "task_name": "court-form-filling",
+        "winning_score": 100.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 100.0,
+        "gap_pp": 0.0,
+        "task_name": "dapt-intrusion-detection",
+        "winning_score": 100.0,
+        "won_by": "methodology-guardrail"
+      },
+      {
+        "current_schema_score": 80.0,
+        "gap_pp": 0.0,
+        "task_name": "energy-market-pricing",
+        "winning_score": 80.0,
+        "won_by": "environment-control"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-agentops",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-build-google-auto",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      },
+      {
+        "current_schema_score": 0.0,
+        "gap_pp": 0.0,
+        "task_name": "fix-druid-loophole-cve",
+        "winning_score": 0.0,
+        "won_by": "analytic-pipeline"
+      }
+    ],
+    "main_borderline_competitors": [
+      {
+        "count": 5,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "orchestration-delegation"
+      },
+      {
+        "count": 1,
+        "value": "methodology-guardrail"
+      },
+      {
+        "count": 1,
+        "value": "environment-control"
+      }
+    ],
+    "main_failure_patterns": [],
+    "mean_assigned_score": 67.8125,
+    "mean_delta_vs_c1_pp": 75.0,
+    "mean_r0_to_best_delta_pp": 100.0,
+    "observed_task_count": 20,
+    "outcome_counts": {
+      "success": 4
+    },
+    "reliable_support_size": 4,
+    "stability_notes": [
+      "assigned evidence contains low-margin boundary cases"
+    ],
+    "support_size": 4,
+    "task_profile_signals": {
+      "primary_pattern": [
+        {
+          "count": 3,
+          "value": "pipeline"
+        },
+        {
+          "count": 1,
+          "value": "generator"
+        }
+      ],
+      "task_object_seed": [
+        {
+          "count": 2,
+          "value": "analytic-pipeline"
+        },
+        {
+          "count": 1,
+          "value": "environment-control"
+        },
+        {
+          "count": 1,
+          "value": "artifact-generation"
+        }
+      ],
+      "tool_surface_regime": [
+        {
+          "count": 2,
+          "value": "tool-heavy-script-recommended"
+        },
+        {
+          "count": 1,
+          "value": "tool-heavy-script-optional"
+        },
+        {
+          "count": 1,
+          "value": "tool-medium"
+        }
+      ],
+      "verifier_mode": [
+        {
+          "count": 3,
+          "value": "deterministic-output-contract"
+        },
+        {
+          "count": 1,
+          "value": "benchmark-threshold"
+        }
+      ],
+      "workflow_topology": [
+        {
+          "count": 3,
+          "value": "staged-multi-step"
+        },
+        {
+          "count": 1,
+          "value": "single-step-with-review"
+        }
+      ]
+    }
+  }
+}

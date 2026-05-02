@@ -1,0 +1,97 @@
+{
+  "acceptance_notes": [
+    "Schema's conceptual identity is sound but needed operationalization of what makes it distinct from analytic-pipeline",
+    "Evidence showed 5 zero-score ties with analytic-pipeline indicating severe boundary ambiguity on pipeline-pattern tasks",
+    "Edits double down on provenance chains and external source grounding as the load-bearing distinction",
+    "Expected bad fit additions explicitly exclude pure pipeline tasks lacking evidence discipline requirements",
+    "Challenger guidance provides clear decision criterion: does the task require claim-to-source provenance tracking?"
+  ],
+  "challenger_guidance": {
+    "conservative": "Challenge retrieval-heavy-synthesis if the task is primarily staged data processing without explicit requirements to track which external source supports each claim. If provenance chains are not load-bearing for task success, prefer analytic-pipeline.",
+    "differentiating": "The boundary is external source provenance discipline. Retrieval-heavy-synthesis wins when the task requires: (1) tracking which external source supports each claim, (2) maintaining explicit provenance chains, (3) multi-source reconciliation, or (4) abstain behavior when evidence insufficient. Analytic-pipeline wins when the task is about processing data through stages without load-bearing source-tracking requirements\u2014even if external data is involved.",
+    "exploratory": "Challenge on tasks with pipeline characteristics (staged-multi-step workflow) but unclear evidence/provenance requirements. Test whether the task actually requires tracking claim-to-source mappings or just data transformation through stages."
+  },
+  "expected_effect": [
+    "Sharpen boundary against analytic-pipeline by operationalizing external source provenance as the distinguishing criterion",
+    "Reduce ambiguous borderline cases by making explicit when retrieval-synthesis wins (provenance discipline) vs analytic-pipeline (workflow orchestration)",
+    "Improve schema distinctness by focusing on unique value: evidence tracking with traceable claim-to-source mappings",
+    "Accept that data-processing pipelines without provenance requirements should route to analytic-pipeline"
+  ],
+  "operator_summary": {
+    "add": [
+      "Emphasize: external source grounding with explicit provenance chains",
+      "Emphasize: multi-source reconciliation when sources conflict or provide partial evidence",
+      "Avoid: treating staged data processing as retrieval-synthesis when no external source tracking required",
+      "Expected good fit: tasks requiring provenance chains from claims to external sources",
+      "Expected bad fit: staged data processing pipelines without external source grounding discipline",
+      "Failure mode: boundary ambiguity with analytic-pipeline on data-processing tasks lacking provenance requirements"
+    ],
+    "exclude": [
+      "Pure pipeline tasks where the challenge is workflow orchestration rather than evidence grounding"
+    ],
+    "keep": [
+      "Core retrieval-synthesis identity: evidence tracking, provenance discipline, compression without support loss, abstain behavior",
+      "Focus on external source grounding (not just data transformation)",
+      "Explicit unknown/abstain behavior when evidence insufficient"
+    ],
+    "remove": [],
+    "sharpen": [
+      "Emphasize items to make external source tracking and provenance chains explicit",
+      "Compression item to preserve source citations alongside data transformation"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "treating staged data processing as retrieval-synthesis when the task does not require external source provenance tracking"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "external source grounding discipline - explicitly identify and track which external source (file, API, database, document) supports each claim",
+        "explicit provenance chains - maintain traceable mappings from output claims back to specific input evidence locations",
+        "multi-source reconciliation - handle conflicting or partial evidence across multiple external sources with explicit conflict resolution"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "retrieval plan that explicitly identifies external sources and access paths before processing",
+          "old": "retrieval plan and source grounding"
+        },
+        {
+          "new": "evidence tracking with explicit provenance chains linking each claim to its supporting external source",
+          "old": "evidence tracking / provenance discipline"
+        },
+        {
+          "new": "compression that preserves source citations and provenance chains alongside synthesized output",
+          "old": "compression without support loss"
+        }
+      ]
+    },
+    "expected_bad_fit": {
+      "add": [
+        "staged multi-step data processing pipelines without explicit external source grounding requirements",
+        "tasks where the primary challenge is workflow orchestration rather than evidence provenance discipline"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "tasks requiring multi-source evidence reconciliation with explicit provenance tracking",
+        "tasks where abstain/unknown behavior is critical when external evidence is insufficient or conflicting",
+        "tasks that demand tracking which external source supports each output claim"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "boundary ambiguity with analytic-pipeline on tasks that process data but don't require external source provenance tracking",
+        "schema assignment to pipeline-pattern tasks that lack load-bearing evidence grounding requirements"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

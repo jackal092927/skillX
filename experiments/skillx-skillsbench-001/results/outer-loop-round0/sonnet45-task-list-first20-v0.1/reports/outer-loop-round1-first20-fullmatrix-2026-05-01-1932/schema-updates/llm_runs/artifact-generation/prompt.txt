@@ -1,0 +1,306 @@
+You are the SkillX outer-loop schema update operator.
+Update the schema as structured operations, not as a final accepted prompt bank.
+
+Rules:
+- Use evidence-grounded operations only.
+- Prefer slot-level operations over free-form prompt rewriting.
+- You may add, remove, and sharpen items when evidence supports it.
+- Do not remove a useful incumbent item unless it is redundant, harmful, or contradicted by evidence.
+- Keep Render frozen; optimize only the schema-level guidance.
+- Preserve schema distinctness and explicitly handle low-margin competitors.
+- Output strictly valid JSON matching the provided schema.
+
+CURRENT_SCHEMA:
+{
+  "avoid": [
+    "unnecessary multi-stage scaffolding",
+    "speculative filling of unknown fields",
+    "tool usage that is not required by the artifact contract"
+  ],
+  "category_id": "artifact-generation",
+  "emphasize": [
+    "exact output schema / format / placement requirements",
+    "preservation constraints and no-invention discipline",
+    "missing-input detection before finalization",
+    "short final reviewer pass against explicit contract items"
+  ],
+  "expected_bad_fit": [
+    "benchmark-gated code repair",
+    "control/simulation loops",
+    "deep retrieval-heavy synthesis"
+  ],
+  "expected_good_fit": [
+    "form filling",
+    "formatting / conversion with strict output expectations",
+    "single-artifact generation or transformation"
+  ],
+  "meta_prompt": "You are revising a skill for an artifact-generation task.\nOptimize the skill for exactness of the final artifact, not breadth of procedure.\n\nPrioritize:\n1. explicit statement of the required output artifact and allowed transformations,\n2. no-invention / do-not-guess rules for missing or ambiguous inputs,\n3. preservation of formatting, structure, or source truth where required,\n4. a short final verification checklist before producing the final artifact.\n\nKeep the skill lean.\nOnly introduce stages, tools, or wrappers when they are clearly necessary for meeting the artifact contract.\n\nDo not turn the skill into a generic multi-stage workflow if the task is fundamentally a constrained artifact-writing problem.",
+  "semantic_intent": "Produce a constrained artifact that must exactly satisfy an output contract."
+}
+
+EVIDENCE_BUNDLE:
+{
+  "ambiguous_borderline_cases": [
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "3d-scan-calc"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "citation-check"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-agentops"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-google-auto"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve"
+    }
+  ],
+  "assigned_task_summaries": [
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 45.3,
+      "evidence_reasons": [
+        "primary",
+        "near_best"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 21.17,
+      "outcome": "success",
+      "primary_assigned_category": "artifact-generation",
+      "reported_score": 60.0,
+      "round_r0_to_best_delta_pp": 60.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "stable_no_loss_gain",
+      "score": 68.4167,
+      "task_best_schema": "artifact-generation",
+      "task_best_score": 68.4167,
+      "task_name": "civ6-adjacency-optimizer",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "parse .Civ6Map, compute adjacency bonuses for district placements, and maximize total score against an optimal benchmark",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-optional",
+        "verifier_mode": "benchmark-threshold",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 80.0,
+      "evidence_reasons": [],
+      "evidence_role": "floor_top_score",
+      "floor_evidence": true,
+      "main_failure_notes": [],
+      "margin_pp": 20.0,
+      "outcome": "success",
+      "primary_assigned_category": "analytic-pipeline",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 4.0,
+      "schema_trajectory_quality": "partial_gain_then_regression",
+      "score": 31.25,
+      "task_best_schema": "analytic-pipeline",
+      "task_best_score": 100.0,
+      "task_name": "court-form-filling",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "field-constrained PDF artifact; required vs omitted form sections and no-extra-fill discipline dominate",
+        "primary_pattern": "generator",
+        "secondary_patterns": [
+          "reviewer"
+        ],
+        "task_object_seed": "artifact-generation",
+        "tool_surface_regime": "tool-medium",
+        "verifier_mode": "deterministic-output-contract",
+        "workflow_topology": "single-step-with-review"
+      }
+    }
+  ],
+  "category_id": "artifact-generation",
+  "cross_schema_losses": [
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "3d-scan-calc",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "citation-check",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 31.25,
+      "gap_pp": 68.75,
+      "task_name": "court-form-filling",
+      "winning_score": 100.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-build-agentops",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-build-google-auto",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    }
+  ],
+  "main_borderline_competitors": [
+    {
+      "count": 5,
+      "value": "analytic-pipeline"
+    }
+  ],
+  "main_failure_patterns": [],
+  "mean_assigned_score": 49.8334,
+  "mean_delta_vs_c1_pp": 62.65,
+  "mean_r0_to_best_delta_pp": 80.0,
+  "outcome_counts": {
+    "success": 2
+  },
+  "reliable_support_size": 2,
+  "stability_notes": [],
+  "support_size": 2,
+  "task_profile_signals": {
+    "primary_pattern": [
+      {
+        "count": 1,
+        "value": "pipeline"
+      },
+      {
+        "count": 1,
+        "value": "generator"
+      }
+    ],
+    "task_object_seed": [
+      {
+        "count": 1,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "artifact-generation"
+      }
+    ],
+    "tool_surface_regime": [
+      {
+        "count": 1,
+        "value": "tool-heavy-script-optional"
+      },
+      {
+        "count": 1,
+        "value": "tool-medium"
+      }
+    ],
+    "verifier_mode": [
+      {
+        "count": 1,
+        "value": "benchmark-threshold"
+      },
+      {
+        "count": 1,
+        "value": "deterministic-output-contract"
+      }
+    ],
+    "workflow_topology": [
+      {
+        "count": 1,
+        "value": "staged-multi-step"
+      },
+      {
+        "count": 1,
+        "value": "single-step-with-review"
+      }
+    ]
+  }
+}
+
+DETERMINISTIC_SEED_EDITS_FOR_REFERENCE_ONLY:
+{
+  "avoid": {
+    "add": [],
+    "remove": [],
+    "sharpen": []
+  },
+  "emphasize": {
+    "add": [
+      "extract the task-specific failure mode before adding broader procedural scaffolding",
+      "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+      "name the required execution and verification handoffs instead of leaving tool use implicit",
+      "state why this schema should win over analytic-pipeline on borderline tasks"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "expected_bad_fit": {
+    "add": [
+      "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+    ],
+    "remove": []
+  },
+  "expected_good_fit": {
+    "add": [
+      "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task",
+      "tasks whose dominant operational pattern is pipeline"
+    ],
+    "remove": []
+  },
+  "hypothesized_primary_failure_modes": {
+    "add": [
+      "low-margin schema-boundary ambiguity against analytic-pipeline"
+    ],
+    "remove": [],
+    "sharpen": []
+  }
+}
+

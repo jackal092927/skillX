@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -62,8 +63,12 @@ from runtime_guard import assert_supported_python_runtime  # noqa: E402
 assert_supported_python_runtime()
 
 from skillx.model_routing import resolve_cli_model_name, resolve_playbook_cli_name  # noqa: E402
+from skillx.quota_signals import scan_payload  # noqa: E402
 
 LLMJsonRunner = Callable[[str, dict[str, Any], str, Path, float], dict[str, Any]]
+DEFAULT_FALLBACK_CLAUDE_CONFIG_DIR = Path.home() / ".claude-skillx-fallback"
+CLAUDE_CLI_ACTIVE_PROFILE_INDEX = 0
+CLAUDE_CLI_ACTIVE_PROFILE_KEY: tuple[str, ...] | None = None
 
 
 def log_progress(message: str) -> None:
@@ -89,6 +94,168 @@ def write_csv(path: Path, rows: list[dict[str, Any]], fieldnames: list[str]) -> 
         writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
+
+
+def split_env_paths(raw_value: str | None) -> list[Path]:
+    if not raw_value:
+        return []
+    return [
+        Path(item).expanduser()
+        for item in raw_value.split(os.pathsep)
+        if item.strip()
+    ]
+
+
+def comparable_path(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    expanded = path.expanduser()
+    try:
+        return str(expanded.resolve())
+    except OSError:
+        return str(expanded)
+
+
+def claude_config_has_token(config_dir: Path) -> bool:
+    return (config_dir.expanduser() / "claude-code-oauth-token").exists()
+
+
+def claude_rate_limit_fallback_disabled() -> bool:
+    for env_name in (
+        "SKILLX_DISABLE_LLM_RATE_LIMIT_FALLBACK",
+        "SKILLX_DISABLE_RATE_LIMIT_FALLBACK",
+    ):
+        value = os.environ.get(env_name, "").strip().lower()
+        if value in {"1", "true", "yes"}:
+            return True
+    return False
+
+
+def claude_cli_runtime_profiles() -> list[dict[str, Any]]:
+    primary_config_raw = (
+        os.environ.get("SKILLX_LLM_CLAUDE_CONFIG_DIR")
+        or os.environ.get("CLAUDE_CONFIG_DIR")
+    )
+    primary_config_dir = Path(primary_config_raw).expanduser() if primary_config_raw else None
+    profiles: list[dict[str, Any]] = [
+        {
+            "index": 0,
+            "label": "primary-claude",
+            "config_dir": primary_config_dir,
+            "source": (
+                "env"
+                if primary_config_raw
+                else "default-claude-config"
+            ),
+        }
+    ]
+    if claude_rate_limit_fallback_disabled():
+        return profiles
+
+    fallback_dirs: list[Path] = []
+    fallback_dirs.extend(split_env_paths(os.environ.get("SKILLX_LLM_FALLBACK_CLAUDE_CONFIG_DIRS")))
+    fallback_dirs.extend(split_env_paths(os.environ.get("SKILLX_LLM_FALLBACK_CLAUDE_CONFIG_DIR")))
+    fallback_dirs.extend(split_env_paths(os.environ.get("SKILLX_FALLBACK_CLAUDE_CONFIG_DIR")))
+    fallback_oauth = (
+        os.environ.get("SKILLX_LLM_FALLBACK_CLAUDE_OAUTH_FILE")
+        or os.environ.get("SKILLX_FALLBACK_CLAUDE_OAUTH_FILE")
+    )
+    if fallback_oauth:
+        fallback_dirs.append(Path(fallback_oauth).expanduser().parent)
+    if DEFAULT_FALLBACK_CLAUDE_CONFIG_DIR.exists():
+        fallback_dirs.append(DEFAULT_FALLBACK_CLAUDE_CONFIG_DIR)
+
+    seen: set[str] = {
+        comparable_path(primary_config_dir) or comparable_path(Path.home() / ".claude") or ""
+    }
+    for config_dir in fallback_dirs:
+        key = comparable_path(config_dir)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        if not config_dir.expanduser().exists() or not claude_config_has_token(config_dir):
+            continue
+        profiles.append(
+            {
+                "index": len(profiles),
+                "label": f"fallback-claude-{len(profiles)}",
+                "config_dir": config_dir.expanduser(),
+                "source": "fallback-config-dir",
+            }
+        )
+    return profiles
+
+
+def claude_profile_key(profile: dict[str, Any]) -> str:
+    config_dir = profile.get("config_dir")
+    return f"{profile.get('label')}:{comparable_path(config_dir) if config_dir is not None else 'default'}"
+
+
+def ordered_claude_cli_runtime_profiles() -> list[dict[str, Any]]:
+    global CLAUDE_CLI_ACTIVE_PROFILE_INDEX
+    global CLAUDE_CLI_ACTIVE_PROFILE_KEY
+    profiles = claude_cli_runtime_profiles()
+    profile_key = tuple(claude_profile_key(profile) for profile in profiles)
+    if profile_key != CLAUDE_CLI_ACTIVE_PROFILE_KEY:
+        CLAUDE_CLI_ACTIVE_PROFILE_KEY = profile_key
+        CLAUDE_CLI_ACTIVE_PROFILE_INDEX = 0
+    start_index = min(CLAUDE_CLI_ACTIVE_PROFILE_INDEX, max(len(profiles) - 1, 0))
+    return profiles[start_index:]
+
+
+def remember_claude_cli_profile(profile: dict[str, Any]) -> None:
+    global CLAUDE_CLI_ACTIVE_PROFILE_INDEX
+    CLAUDE_CLI_ACTIVE_PROFILE_INDEX = int(profile.get("index") or 0)
+
+
+def llm_runtime_profile_summary(model_name: str) -> list[dict[str, Any]]:
+    if resolve_playbook_cli_name(model_name) != "claude":
+        return [
+            {
+                "index": 0,
+                "label": "codex",
+                "cli": "codex",
+                "config_dir": None,
+                "source": "model-routing",
+            }
+        ]
+    return [
+        {
+            "index": int(profile["index"]),
+            "label": str(profile["label"]),
+            "cli": "claude",
+            "config_dir": (
+                None
+                if profile.get("config_dir") is None
+                else str(Path(profile["config_dir"]).expanduser())
+            ),
+            "source": profile.get("source"),
+        }
+        for profile in claude_cli_runtime_profiles()
+    ]
+
+
+def cli_quota_signal(*, stdout: str, stderr: str, returncode: int | None) -> dict[str, Any]:
+    text = "\n".join(part for part in (stdout, stderr) if part)
+    return scan_payload(
+        {
+            "type": "error",
+            "returncode": returncode,
+            "message": text,
+        }
+    )
+
+
+def sanitized_profile_label(label: str) -> str:
+    return "".join(ch if ch.isalnum() or ch in {"-", "_"} else "-" for ch in label).strip("-") or "profile"
+
+
+def command_for_record(command: list[str], profile: dict[str, Any]) -> str:
+    config_dir = profile.get("config_dir")
+    prefix = ""
+    if config_dir is not None:
+        prefix = f"CLAUDE_CONFIG_DIR={Path(config_dir).expanduser()} "
+    return prefix + " ".join(command)
 
 
 def display_path(path: Path) -> str:
@@ -852,6 +1019,7 @@ def run_llm_json_prompt(
     stderr_path = output_dir / "stderr.txt"
     last_message_path = output_dir / "last_message.json"
     command_path = output_dir / "command.txt"
+    attempts_path = output_dir / "attempts.json"
     schema_path.write_text(json.dumps(response_schema, indent=2, sort_keys=True) + "\n")
     prompt_path.write_text(prompt + "\n")
 
@@ -884,29 +1052,134 @@ def run_llm_json_prompt(
             str(last_message_path),
             "--",
         ]
-    command_path.write_text(" ".join(command) + "\n")
-    proc = subprocess.run(
-        command,
-        cwd=str(ROOT),
-        input=prompt,
-        text=True,
-        capture_output=True,
-        timeout=timeout_sec,
-    )
-    stdout_path.write_text(proc.stdout or "")
-    stderr_path.write_text(proc.stderr or "")
-    if proc.returncode != 0:
-        raise RuntimeError(f"LLM rewrite failed with exit code {proc.returncode}; see {stderr_path}")
-    if cli_name == "claude":
-        payload = json.loads(proc.stdout)
-        structured_output = payload.get("structured_output")
-        if not isinstance(structured_output, dict):
-            raise ValueError(f"Claude output missing structured_output: {stdout_path}")
-        write_json(last_message_path, structured_output)
-        return structured_output
-    if not last_message_path.exists():
-        raise ValueError(f"Codex output missing last message: {last_message_path}")
-    return read_json(last_message_path)
+    profiles = ordered_claude_cli_runtime_profiles() if cli_name == "claude" else [
+        {"index": 0, "label": "codex", "config_dir": None, "source": "model-routing"}
+    ]
+    attempt_records: list[dict[str, Any]] = []
+    last_error: Exception | None = None
+
+    for attempt_index, profile in enumerate(profiles, start=1):
+        profile_label = str(profile["label"])
+        attempt_dir = output_dir / "attempts" / f"{attempt_index:02d}-{sanitized_profile_label(profile_label)}"
+        attempt_dir.mkdir(parents=True, exist_ok=True)
+        attempt_stdout_path = attempt_dir / "stdout.json"
+        attempt_stderr_path = attempt_dir / "stderr.txt"
+        attempt_last_message_path = attempt_dir / "last_message.json"
+        attempt_command_path = attempt_dir / "command.txt"
+        attempt_env = os.environ.copy()
+        if cli_name == "claude":
+            config_dir = profile.get("config_dir")
+            if config_dir is None:
+                attempt_env.pop("CLAUDE_CONFIG_DIR", None)
+            else:
+                attempt_env["CLAUDE_CONFIG_DIR"] = str(Path(config_dir).expanduser())
+        attempt_command_path.write_text(command_for_record(command, profile) + "\n")
+        command_path.write_text(command_for_record(command, profile) + "\n")
+
+        proc = subprocess.run(
+            command,
+            cwd=str(ROOT),
+            input=prompt,
+            text=True,
+            capture_output=True,
+            timeout=timeout_sec,
+            env=attempt_env,
+        )
+        stdout_text = proc.stdout or ""
+        stderr_text = proc.stderr or ""
+        attempt_stdout_path.write_text(stdout_text)
+        attempt_stderr_path.write_text(stderr_text)
+        stdout_path.write_text(stdout_text)
+        stderr_path.write_text(stderr_text)
+        quota_signal = cli_quota_signal(
+            stdout=stdout_text,
+            stderr=stderr_text,
+            returncode=int(proc.returncode),
+        )
+        attempt_record = {
+            "attempt": attempt_index,
+            "profile": {
+                "index": int(profile["index"]),
+                "label": profile_label,
+                "cli": cli_name,
+                "config_dir": (
+                    None
+                    if profile.get("config_dir") is None
+                    else str(Path(profile["config_dir"]).expanduser())
+                ),
+                "source": profile.get("source"),
+            },
+            "returncode": int(proc.returncode),
+            "quota_signal_level": quota_signal.get("signal_level"),
+            "quota_hard_terms": quota_signal.get("hard_terms") or [],
+            "stdout_path": str(attempt_stdout_path),
+            "stderr_path": str(attempt_stderr_path),
+        }
+
+        if proc.returncode != 0:
+            attempt_record["status"] = "hard_rate_limit" if quota_signal.get("has_hard_signal") else "failed"
+            attempt_record["quota_signal"] = quota_signal
+            attempt_records.append(attempt_record)
+            write_json(attempts_path, {"attempts": attempt_records})
+            if cli_name == "claude" and quota_signal.get("has_hard_signal") and attempt_index < len(profiles):
+                log_progress(
+                    "LLM rewrite rate/quota fallback: "
+                    f"{profile_label} -> {profiles[attempt_index]['label']} "
+                    f"terms={','.join(str(item) for item in quota_signal.get('hard_terms') or [])}"
+                )
+                remember_claude_cli_profile(profiles[attempt_index])
+                continue
+            last_error = RuntimeError(
+                f"LLM rewrite failed with exit code {proc.returncode}; see {stderr_path}"
+            )
+            break
+
+        try:
+            if cli_name == "claude":
+                payload = json.loads(stdout_text)
+                structured_output = payload.get("structured_output")
+                if not isinstance(structured_output, dict):
+                    raise ValueError(f"Claude output missing structured_output: {stdout_path}")
+                write_json(attempt_last_message_path, structured_output)
+                write_json(last_message_path, structured_output)
+                attempt_record["status"] = "succeeded"
+                attempt_records.append(attempt_record)
+                write_json(attempts_path, {"attempts": attempt_records})
+                return structured_output
+            if not last_message_path.exists():
+                raise ValueError(f"Codex output missing last message: {last_message_path}")
+            structured_output = read_json(last_message_path)
+            attempt_record["status"] = "succeeded"
+            attempt_records.append(attempt_record)
+            write_json(attempts_path, {"attempts": attempt_records})
+            return structured_output
+        except (json.JSONDecodeError, ValueError) as exc:
+            quota_signal = cli_quota_signal(
+                stdout=stdout_text,
+                stderr=stderr_text,
+                returncode=int(proc.returncode),
+            )
+            attempt_record["status"] = (
+                "hard_rate_limit_parse_failure"
+                if quota_signal.get("has_hard_signal")
+                else "parse_failed"
+            )
+            attempt_record["quota_signal"] = quota_signal
+            attempt_records.append(attempt_record)
+            write_json(attempts_path, {"attempts": attempt_records})
+            if cli_name == "claude" and quota_signal.get("has_hard_signal") and attempt_index < len(profiles):
+                log_progress(
+                    "LLM rewrite rate/quota fallback after parse failure: "
+                    f"{profile_label} -> {profiles[attempt_index]['label']}"
+                )
+                remember_claude_cli_profile(profiles[attempt_index])
+                continue
+            last_error = exc
+            break
+
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError(f"LLM rewrite failed without a completed attempt; see {output_dir}")
 
 
 def propose_llm_slot_edits(
@@ -1659,6 +1932,9 @@ def build_schema_update_package(
             "llm_model": llm_model if rewrite_mode == "llm" else None,
             "llm_timeout_sec": llm_timeout_sec if rewrite_mode == "llm" else None,
             "llm_work_dir": None if llm_work_dir is None else display_path(llm_work_dir.resolve()),
+            "llm_runtime_profiles": (
+                llm_runtime_profile_summary(llm_model) if rewrite_mode == "llm" else []
+            ),
             "training_evidence_source": (
                 "schema_training_assignments"
                 if training_evidence_rows
@@ -1805,7 +2081,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--llm-model",
         default=DEFAULT_LLM_MODEL,
-        help="Model used for --rewrite-mode llm. Routed to claude or codex CLI from the model name.",
+        help=(
+            "Model used for --rewrite-mode llm. Routed to claude or codex CLI from the model name. "
+            "Claude CLI rewrites auto-retry configured fallback Claude profiles on hard rate/quota signals."
+        ),
     )
     parser.add_argument("--llm-timeout-sec", type=float, default=DEFAULT_LLM_TIMEOUT_SEC)
     parser.add_argument("--round-id", default=DEFAULT_ROUND_ID)

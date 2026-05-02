@@ -1,0 +1,87 @@
+{
+  "acceptance_notes": [
+    "Evidence shows strong baseline performance: 81.45 mean score, 91pp R0-to-best gain, no catastrophic failures",
+    "Main weakness is boundary ambiguity with artifact-generation: 5 low-margin cases (0pp margin), 1 cross-schema loss (21pp gap on civ6-adjacency-optimizer)",
+    "Operations sharpen when/why this schema wins without rewriting working guidance; focus is differentiation, not capability fixes",
+    "Task profile signals support tightening: 4/5 staged-multi-step, 4/5 pipeline primary pattern \u2014 schema should own this cluster more decisively"
+  ],
+  "challenger_guidance": {
+    "conservative": "Retain current schema; monitor artifact-generation boundary cases and adjust expected_bad_fit if low-margin assignments persist",
+    "differentiating": "Emphasize quality-cascade property in meta_prompt opening; add explicit decision rule: 'If intermediate stage errors would cause final-stage failures invisible to the verifier until late in execution, this schema owns the task'",
+    "exploratory": "Test a merged artifact-generation + analytic-pipeline schema with an explicit quality-cascade gate to unify borderline cases"
+  },
+  "expected_effect": [
+    "Clearer boundary with artifact-generation reduces 0-margin assignments and prevents over-matching on single-artifact tasks",
+    "Quality-cascade emphasis strengthens schema identity and helps future assignment decisions distinguish true pipelines from artifact workflows",
+    "Explicit bad-fit exclusions prevent generator task mismatches like court-form-filling while preserving strong pipeline wins like earthquake-phase-association"
+  ],
+  "operator_summary": {
+    "add": [
+      "quality-cascade property as the core differentiator vs artifact-generation",
+      "explicit boundary rule: prefer when intermediate output quality affects downstream correctness",
+      "exclude single-artifact tasks where only final output verification matters"
+    ],
+    "exclude": [
+      "form-filling tasks without quality-cascade property",
+      "single-artifact generation where all verification is final-output-only"
+    ],
+    "keep": [
+      "stage decomposition and stage ordering emphasis",
+      "handoff integrity between stages",
+      "final output tied back to pipeline evidence",
+      "core meta_prompt structure emphasizing staged workflows"
+    ],
+    "remove": [],
+    "sharpen": [
+      "intermediate artifacts emphasis to focus on quality-dependent handoffs",
+      "good-fit criteria to emphasize error propagation from early stages",
+      "bad-fit to exclude tasks where stage ordering is arbitrary"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "treating single-artifact generation as a pipeline when only the final output contract matters",
+        "stage decomposition when no intermediate validation adds verifier value or catches upstream errors"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "the quality-cascade property: intermediate processing quality determines downstream correctness",
+        "explicit schema boundary: choose this when stage output quality matters for later stages, not just final artifact structure",
+        "extract task-specific stage dependencies and failure modes before adding generic pipeline scaffolding"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "explicit intermediate validation when downstream stages depend on upstream output quality or correctness",
+          "old": "explicit intermediate artifacts / checkpoints"
+        }
+      ]
+    },
+    "expected_bad_fit": {
+      "add": [
+        "single-artifact tasks where all verification occurs on the final output only",
+        "form-filling or template tasks where stage ordering is arbitrary or cosmetic"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "multi-stage workflows where intermediate processing errors propagate to final output quality",
+        "tasks whose verifier can fail due to early-stage mistakes even when late-stage logic is correct"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "boundary ambiguity with artifact-generation when both schemas fit but artifact-generation workflow is more natural for single-output tasks",
+        "over-matching on generator tasks that have review steps but no quality-cascade between stages"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

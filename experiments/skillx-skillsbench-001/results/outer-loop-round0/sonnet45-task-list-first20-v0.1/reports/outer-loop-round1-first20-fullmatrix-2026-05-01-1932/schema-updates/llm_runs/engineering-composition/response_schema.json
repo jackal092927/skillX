@@ -1,0 +1,271 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_notes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "challenger_guidance": {
+      "additionalProperties": false,
+      "properties": {
+        "conservative": {
+          "type": "string"
+        },
+        "differentiating": {
+          "type": "string"
+        },
+        "exploratory": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conservative",
+        "exploratory",
+        "differentiating"
+      ],
+      "type": "object"
+    },
+    "expected_effect": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "operator_summary": {
+      "additionalProperties": false,
+      "properties": {
+        "add": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "exclude": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "keep": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "remove": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "sharpen": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "keep",
+        "add",
+        "remove",
+        "sharpen",
+        "exclude"
+      ],
+      "type": "object"
+    },
+    "slot_edits": {
+      "additionalProperties": false,
+      "properties": {
+        "avoid": {
+          "additionalProperties": false,
+          "properties": {
+            "add": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "remove": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "sharpen": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "new": {
+                    "type": "string"
+                  },
+                  "old": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "old",
+                  "new"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "add",
+            "remove",
+            "sharpen"
+          ],
+          "type": "object"
+        },
+        "emphasize": {
+          "additionalProperties": false,
+          "properties": {
+            "add": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "remove": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "sharpen": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "new": {
+                    "type": "string"
+                  },
+                  "old": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "old",
+                  "new"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "add",
+            "remove",
+            "sharpen"
+          ],
+          "type": "object"
+        },
+        "expected_bad_fit": {
+          "additionalProperties": false,
+          "properties": {
+            "add": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "remove": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "add",
+            "remove"
+          ],
+          "type": "object"
+        },
+        "expected_good_fit": {
+          "additionalProperties": false,
+          "properties": {
+            "add": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "remove": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "add",
+            "remove"
+          ],
+          "type": "object"
+        },
+        "hypothesized_primary_failure_modes": {
+          "additionalProperties": false,
+          "properties": {
+            "add": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "remove": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "sharpen": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "new": {
+                    "type": "string"
+                  },
+                  "old": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "old",
+                  "new"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "add",
+            "remove",
+            "sharpen"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "emphasize",
+        "avoid",
+        "expected_good_fit",
+        "expected_bad_fit",
+        "hypothesized_primary_failure_modes"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "operator_summary",
+    "slot_edits",
+    "challenger_guidance",
+    "expected_effect",
+    "acceptance_notes"
+  ],
+  "type": "object"
+}

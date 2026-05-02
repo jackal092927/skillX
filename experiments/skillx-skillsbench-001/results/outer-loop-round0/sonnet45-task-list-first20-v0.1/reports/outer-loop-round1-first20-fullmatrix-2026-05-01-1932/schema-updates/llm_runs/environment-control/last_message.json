@@ -1,0 +1,98 @@
+{
+  "acceptance_notes": [
+    "Strong performance (88% mean score) with clear wins on optimization tasks like energy-ac-optimal-power-flow (100%, feasibility checks)",
+    "Significant boundary ambiguity with analytic-pipeline: 6 of 8 borderline cases and 6 of 7 cross-schema losses",
+    "Evidence suggests focusing on optimization/control/constraint-satisfaction rather than general environment interaction",
+    "Low-confidence assignments (exceltable-in-ppt, exoplanet-detection-period) indicate over-assignment to tasks better served by analytic-pipeline",
+    "All assigned tasks have staged-multi-step workflow, but differentiation should be optimization objectives not workflow topology"
+  ],
+  "challenger_guidance": {
+    "conservative": "Pick environment-control only when the task has explicit optimization objectives, hard constraints, or control-loop iteration with feasibility checks. If it's primarily staged transformation with verification, defer to analytic-pipeline.",
+    "differentiating": "Choose environment-control over analytic-pipeline when: (1) task requires solving for optimal parameters/plans/policies under constraints, (2) feasibility or validity checks are hard requirements not just verification steps, (3) there's explicit objective function optimization. Choose analytic-pipeline when the task is primarily staged data transformation with stage-wise verification.",
+    "exploratory": "Try environment-control when there are optimization goals, constraint-satisfaction requirements, or metric-driven planning loops, even if the task also has pipeline structure."
+  },
+  "expected_effect": [
+    "Higher precision on optimization and control tasks with constraint satisfaction",
+    "Reduced false positives on pure pipeline tasks without optimization character",
+    "Clearer boundary with analytic-pipeline based on optimization vs transformation distinction",
+    "Better alignment between schema emphasis and actual strong-win tasks"
+  ],
+  "operator_summary": {
+    "add": [
+      "emphasize: identify optimization objectives, constraints, or validity requirements before designing solution approach",
+      "emphasize: distinguish control/planning/optimization tasks from staged analysis pipelines",
+      "avoid: treating optimization/control tasks as pure analysis pipelines without constraint reasoning",
+      "expected_bad_fit: staged analysis pipelines without optimization or constraint-satisfaction requirements",
+      "failure_mode: boundary ambiguity with analytic-pipeline on tasks with both pipeline structure and optimization elements"
+    ],
+    "exclude": [
+      "Tasks that are pure pipelines without control-loop or optimization character (even if they have validation steps)"
+    ],
+    "keep": [
+      "explicit control or planning loop structure",
+      "planning with validity constraints",
+      "metric-facing evaluation after execution"
+    ],
+    "remove": [],
+    "sharpen": [
+      "emphasize: 'world/simulator/environment state understanding' \u2192 'model state space, action space, and transition dynamics for control/planning tasks'",
+      "emphasize: 'explicit control or planning loop' \u2192 'control or planning loop with constraint satisfaction and feasibility verification'",
+      "emphasize: 'parameter, policy, or plan validation' \u2192 'validate solutions against hard constraints and optimization objectives'",
+      "expected_good_fit: 'simulator-driven evaluation tasks' \u2192 'optimization problems with feasibility constraints or metric-driven objectives'"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "treating optimization/control tasks as if they were pure analysis pipelines",
+        "applying pipeline scaffolding to tasks that require constraint-based reasoning"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "identify optimization objectives, constraints, or validity requirements before designing the solution approach",
+        "distinguish control/planning/optimization tasks from staged analysis pipelines",
+        "for optimization tasks: model the objective function, constraints, and feasible region explicitly"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "model the state space, action space, and transition dynamics for control/planning tasks",
+          "old": "world / simulator / environment state understanding"
+        },
+        {
+          "new": "explicit control or planning loop with constraint satisfaction and feasibility verification",
+          "old": "explicit control or planning loop structure"
+        },
+        {
+          "new": "validate solutions against hard constraints and optimization objectives",
+          "old": "parameter, policy, or plan validation"
+        }
+      ]
+    },
+    "expected_bad_fit": {
+      "add": [
+        "staged analysis pipelines without optimization or constraint-satisfaction requirements",
+        "tasks where analytic-pipeline's workflow bias is more central than control-loop structure"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "optimization problems with feasibility constraints or metric-driven objectives",
+        "tasks requiring constraint satisfaction and solution validation"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "boundary ambiguity with analytic-pipeline on tasks that have both pipeline structure and optimization elements",
+        "being assigned to pure pipeline tasks that lack control-loop or optimization character"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

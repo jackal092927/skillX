@@ -31,6 +31,12 @@ Environment overrides:
   SKILLX_NEXT_RUN_ID        Run id embedded into next-round pair specs.
   SKILLX_REWRITE_MODE       llm or deterministic. Default: llm
   SKILLX_LLM_MODEL          Outer-loop rewriter model. Default: anthropic/claude-sonnet-4-5
+  SKILLX_LLM_CLAUDE_CONFIG_DIR
+                            Primary Claude CLI config dir for schema rewrite. Default: current Claude config.
+  SKILLX_LLM_FALLBACK_CLAUDE_CONFIG_DIRS
+                            Optional colon-separated fallback Claude config dirs. If unset, auto-detects ~/.claude-skillx-fallback when present.
+  SKILLX_DISABLE_LLM_RATE_LIMIT_FALLBACK
+                            1 disables Claude schema-rewrite rate-limit fallback. Default: 0.
   SKILLX_PYTHON             Python runtime used by uv. Default: 3.11
   SKILLX_NEXT_PAIR_PLAN_MODE
                             full_matrix or challenger_eval. Default: full_matrix
@@ -244,6 +250,14 @@ fi
 if [[ "$ALLOW_PARTIAL_ASSIGNMENT" == "1" || "$ALLOW_PARTIAL_ASSIGNMENT" == "true" ]]; then
   outer_cmd+=(--allow-partial-assignment)
 fi
+
+echo "Outer-loop monitor command:"
+echo "  uv run --python $PYTHON_RUNTIME python scripts/serve_outer_loop_monitor.py \\"
+echo "    --control-plane-dir $CONTROL_PLANE_OUTPUT_DIR \\"
+echo "    --schema-update-dir $SCHEMA_UPDATE_OUTPUT_DIR \\"
+echo "    --next-materialized-root $NEXT_MATERIALIZED_ROOT \\"
+echo "    --port 8771"
+echo
 
 "${outer_cmd[@]}"
 

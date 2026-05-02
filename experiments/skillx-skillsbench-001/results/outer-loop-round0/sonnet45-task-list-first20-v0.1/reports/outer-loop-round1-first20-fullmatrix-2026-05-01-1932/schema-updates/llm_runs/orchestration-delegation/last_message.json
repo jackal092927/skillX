@@ -1,0 +1,81 @@
+{
+  "acceptance_notes": [
+    "All 4 emphasize additions are evidence-grounded from the deterministic seed and address the 8 near-boundary losses to analytic-pipeline",
+    "The expected_good_fit additions make the side-effect coordination requirement explicit, which is absent from current schema",
+    "The expected_bad_fit addition creates a clear exclusion zone for pure transformation pipelines",
+    "The hypothesized failure mode directly names the observed 0.0-margin boundary ambiguity pattern",
+    "No incumbent items removed - this is purely additive sharpening based on boundary evidence"
+  ],
+  "challenger_guidance": {
+    "conservative": "Accept all emphasize additions to sharpen orchestration vs. pipeline distinction. The 0.0-margin boundary losses indicate urgent need for differentiation guidance.",
+    "differentiating": "The key differentiator is side-effect coordination vs. data transformation. If a task's complexity comes from managing external state changes and handoffs between systems, it's orchestration. If complexity comes from multi-stage data processing with verification gates, it's pipeline.",
+    "exploratory": "Consider whether orchestration-delegation should explicitly exclude pure analysis tasks in avoid section, or whether expected_bad_fit is sufficient boundary marker."
+  },
+  "expected_effect": [
+    "Sharper boundary with analytic-pipeline by making coordination vs. transformation distinction explicit",
+    "Reduced 0.0-margin ties by giving the schema language to articulate when orchestration concerns dominate",
+    "Better task routing on borderline cases by naming the handoff protocol requirement",
+    "Preserved 100% success rate on core orchestration tasks while improving boundary discipline"
+  ],
+  "operator_summary": {
+    "add": [
+      "Emphasize: Extract coordination-specific failure modes before adding procedural scaffolding",
+      "Emphasize: Make multi-system/multi-stage handoff protocols explicit in task analysis",
+      "Emphasize: Name which execution outputs become constraints for downstream stages",
+      "Emphasize: Differentiate orchestration (action sequencing with side effects) from pipeline (data transformation)",
+      "Expected_good_fit: Tasks where execution order matters due to external side effects or system state changes",
+      "Expected_good_fit: Tasks requiring explicit handoff protocols between independent tools or systems",
+      "Expected_bad_fit: Tasks primarily focused on data transformation workflows without external coordination",
+      "Hypothesized_primary_failure_modes: Boundary confusion with analytic-pipeline on tasks with both coordination and analysis aspects"
+    ],
+    "exclude": [
+      "Pure analysis pipelines where the workflow is staged-multi-step but lacks side-effect coordination"
+    ],
+    "keep": [
+      "All current avoid items remain valid for dependency and ordering discipline",
+      "All current emphasize items remain core to orchestration tasks",
+      "Current expected_good_fit items capture the delegation/coordination intent"
+    ],
+    "remove": [],
+    "sharpen": [
+      "Expected_good_fit items should emphasize external coordination over internal data flow"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "extract coordination-specific failure modes (state conflicts, ordering violations, side-effect races) before adding general procedural scaffolding",
+        "make multi-system or multi-stage handoff protocols explicit when one component's output constrains another's input",
+        "name which execution stage outputs become binding constraints or prerequisites for downstream stages",
+        "differentiate orchestration workflows (action sequencing with external side effects) from pipeline workflows (data transformation with verification gates)"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "expected_bad_fit": {
+      "add": [
+        "tasks primarily focused on data transformation pipelines without external coordination requirements"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "tasks where execution order matters due to external side effects, system state changes, or cross-tool dependencies",
+        "tasks requiring explicit handoff protocols between independent systems where one stage's output constrains the next"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "boundary confusion with analytic-pipeline on tasks that have both coordination aspects and analysis workflows, where the schema fails to articulate why orchestration concerns dominate"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

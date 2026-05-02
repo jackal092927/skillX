@@ -1,0 +1,103 @@
+{
+  "acceptance_notes": [
+    "court-form-filling loss (68.75pp gap) on a definitional fit suggests insufficient artifact-contract emphasis vs analytic-pipeline's workflow strengths",
+    "civ6 win on a pipeline-seeded task indicates the schema is capturing computational artifact generation but losing pure transformation tasks",
+    "5 zero-margin borderline cases signal weak boundary with analytic-pipeline",
+    "small support size (n=2) means edits should be conservative and evidence-grounded",
+    "priority: sharpen artifact-first discipline to reclaim court-form-filling type tasks"
+  ],
+  "challenger_guidance": {
+    "conservative": "Minimal sharpen only: clarify artifact contract verification in emphasize slots, add one expected_bad_fit item to exclude pipeline-dominant tasks. Preserve all incumbent guidance. Lowest risk of disrupting civ6 success.",
+    "differentiating": "Targeted boundary strengthening: add field-level verification emphasis to reclaim court-form-filling class tasks, sharpen avoid/expected_bad_fit to push computational pipelines to analytic-pipeline, add failure mode hypothesis for the 68.75pp loss. Balances risk and evidence\u2014recommended path.",
+    "exploratory": "Deep restructure: split schema into 'pure-artifact-generation' (form-filling, format conversion) vs 'computational-artifact-generation' (pipeline-then-artifact). Rewrite meta_prompt to explicitly bifurcate these patterns. High risk but directly addresses the identity inversion."
+  },
+  "expected_effect": [
+    "Reclaim court-form-filling class tasks by emphasizing field-level artifact contract discipline over procedural scaffolding",
+    "Strengthen boundary with analytic-pipeline by explicitly excluding computation-dominant tasks from artifact-generation",
+    "Reduce zero-margin borderline ties by making artifact-first vs computation-first orientation explicit in expected_good_fit/bad_fit",
+    "Preserve civ6 success by keeping core no-invention and schema compliance guidance while clarifying when computational steps are in-scope",
+    "Risk: May reduce win rate on pipeline-seeded tasks like civ6 if sharpened guidance pushes them toward analytic-pipeline; mitigated by keeping emphasize items that support computational artifact generation"
+  ],
+  "operator_summary": {
+    "add": [
+      "field-level artifact contract verification before finalization",
+      "explicit distinction from analytic-pipeline's computation-first orientation",
+      "deterministic field population emphasis for form-like tasks"
+    ],
+    "exclude": [
+      "tasks where computational analysis dominates and artifact is merely the output format",
+      "multi-stage analytical workflows where pipeline orchestration is the primary challenge"
+    ],
+    "keep": [
+      "no-invention / do-not-guess discipline for missing inputs",
+      "preservation of formatting and structure requirements",
+      "explicit output schema compliance focus"
+    ],
+    "remove": [],
+    "sharpen": [
+      "make artifact contract verification concrete and operational",
+      "clarify when computational steps are in-scope vs out-of-scope",
+      "strengthen the artifact-first vs computation-first distinction"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "computational optimization or analysis beyond what is strictly required to populate artifact fields",
+        "treating the task as a multi-stage pipeline when it is fundamentally a constrained output-formatting problem"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "multi-stage scaffolding when the task is a direct input-to-artifact transformation with no intermediate analytical steps",
+          "old": "unnecessary multi-stage scaffolding"
+        }
+      ]
+    },
+    "emphasize": {
+      "add": [
+        "field-level artifact completeness verification - every required field present and valid before submission",
+        "explicit artifact contract checklist derived from output requirements",
+        "deterministic field population from inputs - computation only to satisfy schema, not to analyze or optimize"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "exact output schema compliance - verify each required field, format constraint, and structural requirement before finalization",
+          "old": "exact output schema / format / placement requirements"
+        },
+        {
+          "new": "missing-input detection with explicit user query before attempting to populate or finalize incomplete artifacts",
+          "old": "missing-input detection before finalization"
+        },
+        {
+          "new": "final contract verification pass - checklist each artifact requirement, flag any deviation or omission",
+          "old": "short final reviewer pass against explicit contract items"
+        }
+      ]
+    },
+    "expected_bad_fit": {
+      "add": [
+        "tasks where computation or optimization is required to determine what content belongs in the artifact",
+        "multi-stage analytical pipelines where the artifact is the terminal output of a computational workflow",
+        "tasks where analytic-pipeline's workflow orchestration bias is more central than artifact contract satisfaction"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "deterministic field population where inputs map directly to output fields",
+        "tasks with explicit artifact schema and field-level validation requirements"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "insufficient artifact-contract-first emphasis causes losses to analytic-pipeline on pure form-filling tasks (evidenced by court-form-filling 68.75pp gap)",
+        "schema boundary ambiguity with analytic-pipeline on tasks requiring both artifact production and computational steps"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

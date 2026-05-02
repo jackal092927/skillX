@@ -1,0 +1,438 @@
+You are the SkillX outer-loop schema update operator.
+Update the schema as structured operations, not as a final accepted prompt bank.
+
+Rules:
+- Use evidence-grounded operations only.
+- Prefer slot-level operations over free-form prompt rewriting.
+- You may add, remove, and sharpen items when evidence supports it.
+- Do not remove a useful incumbent item unless it is redundant, harmful, or contradicted by evidence.
+- Keep Render frozen; optimize only the schema-level guidance.
+- Preserve schema distinctness and explicitly handle low-margin competitors.
+- Output strictly valid JSON matching the provided schema.
+
+CURRENT_SCHEMA:
+{
+  "avoid": [
+    "collapsing multiple sensitive transforms into one vague step",
+    "skipping intermediate validation",
+    "overly generic prose-only guidance"
+  ],
+  "category_id": "analytic-pipeline",
+  "emphasize": [
+    "stage decomposition and stage ordering",
+    "explicit intermediate artifacts / checkpoints",
+    "handoff integrity between stages",
+    "final output tied back to pipeline evidence"
+  ],
+  "expected_bad_fit": [
+    "simple one-shot artifact tasks",
+    "pure code patch / compile-test loops"
+  ],
+  "expected_good_fit": [
+    "scientific / signal / video / security analysis workflows",
+    "ordered transformation + measurement tasks"
+  ],
+  "meta_prompt": "You are revising a skill for an analytic-pipeline task.\nOptimize the skill as a staged workflow whose correctness depends on preserving structure between stages.\n\nPrioritize:\n1. stage-by-stage decomposition,\n2. explicit intermediate artifacts or checks when a later step depends on earlier processing quality,\n3. clear handoff rules between extraction, transformation, analysis, and final reporting,\n4. a final output step that summarizes the pipeline result without dropping critical constraints.\n\nStrengthen stage contracts before adding more generic scaffolding.\nIf the task is failing, assume stage-handoff weakness before assuming the task needs more general instructions.",
+  "semantic_intent": "Run an ordered analysis pipeline where intermediate processing quality strongly affects final correctness."
+}
+
+EVIDENCE_BUNDLE:
+{
+  "ambiguous_borderline_cases": [
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "artifact-generation",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "3d-scan-calc"
+    },
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "methodology-guardrail",
+      "competing_schema_score": 60.0,
+      "current_schema_score": 60.0,
+      "margin_pp": 0.0,
+      "task_name": "azure-bgp-oscillation-route-leak"
+    },
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "artifact-generation",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "citation-check"
+    },
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "engineering-composition",
+      "competing_schema_score": 100.0,
+      "current_schema_score": 100.0,
+      "margin_pp": 0.0,
+      "task_name": "earthquake-phase-association"
+    },
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "environment-control",
+      "competing_schema_score": 100.0,
+      "current_schema_score": 100.0,
+      "margin_pp": 0.0,
+      "task_name": "exceltable-in-ppt"
+    },
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "engineering-composition",
+      "competing_schema_score": 31.25,
+      "current_schema_score": 31.25,
+      "margin_pp": 0.0,
+      "task_name": "find-topk-similiar-chemicals"
+    },
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "artifact-generation",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-agentops"
+    },
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "artifact-generation",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-google-auto"
+    },
+    {
+      "case_type": "assigned_low_margin",
+      "competing_schema_id": "artifact-generation",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve"
+    }
+  ],
+  "assigned_task_summaries": [
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 80.0,
+      "evidence_reasons": [
+        "primary",
+        "near_best",
+        "high_score",
+        "stable_gain",
+        "ideal_zero_to_full"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 20.0,
+      "outcome": "success",
+      "primary_assigned_category": "analytic-pipeline",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "ideal_zero_to_full_stable",
+      "score": 100.0,
+      "task_best_schema": "analytic-pipeline",
+      "task_best_score": 100.0,
+      "task_name": "court-form-filling",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "field-constrained PDF artifact; required vs omitted form sections and no-extra-fill discipline dominate",
+        "primary_pattern": "generator",
+        "secondary_patterns": [
+          "reviewer"
+        ],
+        "task_object_seed": "artifact-generation",
+        "tool_surface_regime": "tool-medium",
+        "verifier_mode": "deterministic-output-contract",
+        "workflow_topology": "single-step-with-review"
+      }
+    },
+    {
+      "assignment_confidence": "low",
+      "delta_vs_c1_pp": 80.0,
+      "evidence_reasons": [
+        "primary",
+        "near_best",
+        "high_score",
+        "stable_gain",
+        "ideal_zero_to_full"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 0.0,
+      "outcome": "success",
+      "primary_assigned_category": "analytic-pipeline",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "ideal_zero_to_full_stable",
+      "score": 100.0,
+      "task_best_schema": "analytic-pipeline",
+      "task_best_score": 100.0,
+      "task_name": "earthquake-phase-association",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "load waveforms, run DL phase picking via SeisBench, associate picks into events, and pass F1 \u2265 0.6 gate",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-recommended",
+        "verifier_mode": "benchmark-threshold",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "low",
+      "delta_vs_c1_pp": 100.0,
+      "evidence_reasons": [
+        "primary",
+        "near_best",
+        "stable_gain"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 0.0,
+      "outcome": "success",
+      "primary_assigned_category": "analytic-pipeline",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "stable_non_decreasing_gain",
+      "score": 60.0,
+      "task_best_schema": "analytic-pipeline",
+      "task_best_score": 60.0,
+      "task_name": "azure-bgp-oscillation-route-leak",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "load topology files, detect oscillation/leak violations, evaluate solution candidates, and emit structured JSON report",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "reviewer",
+          "tool-wrapper"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-medium",
+        "verifier_mode": "deterministic-output-contract",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "low",
+      "delta_vs_c1_pp": 20.0,
+      "evidence_reasons": [
+        "near_best",
+        "high_score",
+        "stable_gain",
+        "ideal_zero_to_full"
+      ],
+      "evidence_role": "stable_gain_support",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 0.0,
+      "outcome": "success",
+      "primary_assigned_category": "environment-control",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "ideal_zero_to_full_stable",
+      "score": 100.0,
+      "task_best_schema": "analytic-pipeline",
+      "task_best_score": 100.0,
+      "task_name": "exceltable-in-ppt",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "embedded Excel extraction, targeted update, and PPTX preservation require ordered artifact manipulation",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "artifact-generation",
+        "tool_surface_regime": "tool-medium",
+        "verifier_mode": "deterministic-artifact-plus-stage-check",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 40.3,
+      "evidence_reasons": [
+        "stable_gain"
+      ],
+      "evidence_role": "stable_gain_support",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 21.17,
+      "outcome": "success",
+      "primary_assigned_category": "artifact-generation",
+      "reported_score": 55.0,
+      "round_r0_to_best_delta_pp": 55.0,
+      "schema_rank_for_task": 2.0,
+      "schema_trajectory_quality": "stable_non_decreasing_gain",
+      "score": 47.25,
+      "task_best_schema": "artifact-generation",
+      "task_best_score": 68.4167,
+      "task_name": "civ6-adjacency-optimizer",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "parse .Civ6Map, compute adjacency bonuses for district placements, and maximize total score against an optimal benchmark",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-optional",
+        "verifier_mode": "benchmark-threshold",
+        "workflow_topology": "staged-multi-step"
+      }
+    }
+  ],
+  "category_id": "analytic-pipeline",
+  "cross_schema_losses": [
+    {
+      "current_schema_score": 47.25,
+      "gap_pp": 21.1667,
+      "task_name": "civ6-adjacency-optimizer",
+      "winning_score": 68.4167,
+      "won_by": "artifact-generation"
+    }
+  ],
+  "main_borderline_competitors": [
+    {
+      "count": 5,
+      "value": "artifact-generation"
+    },
+    {
+      "count": 2,
+      "value": "engineering-composition"
+    },
+    {
+      "count": 1,
+      "value": "methodology-guardrail"
+    },
+    {
+      "count": 1,
+      "value": "environment-control"
+    }
+  ],
+  "main_failure_patterns": [],
+  "mean_assigned_score": 81.45,
+  "mean_delta_vs_c1_pp": 64.06,
+  "mean_r0_to_best_delta_pp": 91.0,
+  "outcome_counts": {
+    "success": 5
+  },
+  "reliable_support_size": 5,
+  "stability_notes": [
+    "assigned evidence contains low-margin boundary cases"
+  ],
+  "support_size": 5,
+  "task_profile_signals": {
+    "primary_pattern": [
+      {
+        "count": 4,
+        "value": "pipeline"
+      },
+      {
+        "count": 1,
+        "value": "generator"
+      }
+    ],
+    "task_object_seed": [
+      {
+        "count": 3,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 2,
+        "value": "artifact-generation"
+      }
+    ],
+    "tool_surface_regime": [
+      {
+        "count": 3,
+        "value": "tool-medium"
+      },
+      {
+        "count": 1,
+        "value": "tool-heavy-script-recommended"
+      },
+      {
+        "count": 1,
+        "value": "tool-heavy-script-optional"
+      }
+    ],
+    "verifier_mode": [
+      {
+        "count": 2,
+        "value": "deterministic-output-contract"
+      },
+      {
+        "count": 2,
+        "value": "benchmark-threshold"
+      },
+      {
+        "count": 1,
+        "value": "deterministic-artifact-plus-stage-check"
+      }
+    ],
+    "workflow_topology": [
+      {
+        "count": 4,
+        "value": "staged-multi-step"
+      },
+      {
+        "count": 1,
+        "value": "single-step-with-review"
+      }
+    ]
+  }
+}
+
+DETERMINISTIC_SEED_EDITS_FOR_REFERENCE_ONLY:
+{
+  "avoid": {
+    "add": [],
+    "remove": [],
+    "sharpen": []
+  },
+  "emphasize": {
+    "add": [
+      "extract the task-specific failure mode before adding broader procedural scaffolding",
+      "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+      "state why this schema should win over artifact-generation on borderline tasks"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "expected_bad_fit": {
+    "add": [
+      "borderline tasks where artifact-generation wins because its workflow bias is more central"
+    ],
+    "remove": []
+  },
+  "expected_good_fit": {
+    "add": [
+      "tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task",
+      "tasks whose dominant operational pattern is pipeline"
+    ],
+    "remove": []
+  },
+  "hypothesized_primary_failure_modes": {
+    "add": [
+      "low-margin schema-boundary ambiguity against artifact-generation"
+    ],
+    "remove": [],
+    "sharpen": []
+  }
+}
+

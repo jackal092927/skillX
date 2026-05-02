@@ -1,0 +1,78 @@
+{
+  "acceptance_notes": [
+    "Schema receives pipeline tasks but maintains reviewer-judgment core\u2014seed edits correctly identify need for explicit workflow assumptions",
+    "Differentiation from analytic-pipeline focuses on when extra judgment discipline adds value vs when execution bias should dominate",
+    "Expected_good_fit updated to specify deterministic-output-contract tasks where schema's workflow bias matches",
+    "Boundary ambiguity failure mode added to track low-margin competition"
+  ],
+  "challenger_guidance": {
+    "conservative": "Strengthen emphasize section with workflow assumption checking; add expected_bad_fit entry for analytic-pipeline-dominant tasks; preserve all incumbent guidance on reviewer discipline and abstention",
+    "differentiating": "Make the staged-multi-step workflow assumption explicit in emphasize; state differentiation criterion vs analytic-pipeline (judgment discipline vs execution bias); add task-specific failure mode extraction to emphasize per seed edits",
+    "exploratory": "Test whether methodology-guardrail should focus exclusively on citation/fit-check tasks (as per original expected_good_fit) vs competing on pipeline tasks with extra judgment scaffolding"
+  },
+  "expected_effect": [
+    "Reduced boundary ambiguity with analytic-pipeline through explicit workflow assumption statements",
+    "Improved schema assignment on pipeline tasks that benefit from judgment discipline",
+    "Clearer abstention on pipeline tasks where analytic-pipeline's execution bias is more valuable",
+    "Better task-specific failure mode extraction before adding procedural scaffolding"
+  ],
+  "operator_summary": {
+    "add": [
+      "Emphasize: extract task-specific failure mode before adding broader procedural scaffolding",
+      "Emphasize: make staged-multi-step workflow assumption explicit before rendering guidance",
+      "Emphasize: state differentiation vs analytic-pipeline on borderline tasks",
+      "Expected_bad_fit: pipeline tasks where analytic-pipeline's execution bias is more central",
+      "Expected_good_fit: deterministic-output-contract tasks when schema's workflow bias matches",
+      "Hypothesized failure mode: low-margin schema-boundary ambiguity against analytic-pipeline"
+    ],
+    "exclude": [
+      "Adding pipeline-specific execution scaffolding that would blur distinctness from analytic-pipeline",
+      "Removing abstention/judgment emphasis despite pipeline task assignments",
+      "Free-form prompt rewriting instead of slot-level operations"
+    ],
+    "keep": [
+      "Core reviewer-judgment emphasis (fit-check, abstention, rule hierarchy)",
+      "Anti-hallucination discipline",
+      "Avoiding premature completion and overconfident synthesis",
+      "Expected_good_fit: taxonomy merge, citation screening, abstention-sensitive validation"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "extract the task-specific failure mode before adding broader procedural scaffolding",
+        "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+        "state why this schema should win over analytic-pipeline on borderline tasks"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "expected_bad_fit": {
+      "add": [
+        "pipeline tasks where analytic-pipeline's execution bias is more central than judgment discipline"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task",
+        "tasks whose dominant operational pattern is pipeline but require judgment discipline"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "low-margin schema-boundary ambiguity against analytic-pipeline on pipeline tasks"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

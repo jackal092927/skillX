@@ -1,0 +1,8 @@
+category_id,action,reason,priority_score,recommended_challenger_mode,support_size,reliable_support_size
+analytic-pipeline,update,selected_by_priority,9.5,differentiating,5,5
+artifact-generation,update,selected_by_priority,4.5,differentiating,2,2
+engineering-composition,update,selected_by_priority,8.0,differentiating,4,4
+environment-control,update,selected_by_priority,9.0,differentiating,5,5
+methodology-guardrail,update,selected_by_priority,7.5,differentiating,4,4
+orchestration-delegation,update,selected_by_priority,8.5,differentiating,4,4
+retrieval-heavy-synthesis,update,selected_by_priority,8.0,differentiating,4,4

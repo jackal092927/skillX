@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -497,6 +499,116 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
             self.assertIn("alpha sharpened principle", candidate_schema["emphasize"])
             self.assertNotIn("alpha avoid", candidate_schema["avoid"])
             self.assertIn("avoid generic low-evidence broadening", candidate_schema["avoid"])
+
+    def test_claude_json_runner_retries_fallback_config_on_hard_rate_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            primary_config = root / "primary-claude"
+            fallback_config = root / "fallback-claude"
+            primary_config.mkdir()
+            fallback_config.mkdir()
+            (fallback_config / "claude-code-oauth-token").write_text("fallback-token\n")
+            calls: list[str | None] = []
+
+            class FakeCompletedProcess:
+                def __init__(self, returncode: int, stdout: str, stderr: str) -> None:
+                    self.returncode = returncode
+                    self.stdout = stdout
+                    self.stderr = stderr
+
+            def fake_run(command, *, cwd, input, text, capture_output, timeout, env):
+                calls.append(env.get("CLAUDE_CONFIG_DIR"))
+                if len(calls) == 1:
+                    return FakeCompletedProcess(
+                        1,
+                        "",
+                        "HTTP 429: too many requests; Claude usage limit reached",
+                    )
+                return FakeCompletedProcess(
+                    0,
+                    json.dumps({"structured_output": {"ok": True}}),
+                    "",
+                )
+
+            env = {
+                "SKILLX_LLM_CLAUDE_CONFIG_DIR": str(primary_config),
+                "SKILLX_LLM_FALLBACK_CLAUDE_CONFIG_DIRS": str(fallback_config),
+                "SKILLX_DISABLE_LLM_RATE_LIMIT_FALLBACK": "0",
+                "SKILLX_DISABLE_RATE_LIMIT_FALLBACK": "0",
+            }
+            with mock.patch.dict(os.environ, env, clear=False), mock.patch.object(
+                self.module,
+                "DEFAULT_FALLBACK_CLAUDE_CONFIG_DIR",
+                root / "missing-default-fallback",
+            ), mock.patch.object(self.module.subprocess, "run", side_effect=fake_run):
+                payload = self.module.run_llm_json_prompt(
+                    "prompt",
+                    {"type": "object"},
+                    "anthropic/claude-sonnet-4-5",
+                    root / "llm-output",
+                    1.0,
+                )
+                sticky_payload = self.module.run_llm_json_prompt(
+                    "prompt",
+                    {"type": "object"},
+                    "anthropic/claude-sonnet-4-5",
+                    root / "llm-output-2",
+                    1.0,
+                )
+
+            self.assertEqual(payload, {"ok": True})
+            self.assertEqual(sticky_payload, {"ok": True})
+            self.assertEqual(calls, [str(primary_config), str(fallback_config), str(fallback_config)])
+            attempts = json.loads((root / "llm-output" / "attempts.json").read_text())["attempts"]
+            self.assertEqual(attempts[0]["status"], "hard_rate_limit")
+            self.assertIn("http_429", attempts[0]["quota_hard_terms"])
+            self.assertEqual(attempts[1]["status"], "succeeded")
+            sticky_attempts = json.loads((root / "llm-output-2" / "attempts.json").read_text())["attempts"]
+            self.assertEqual(sticky_attempts[0]["profile"]["label"], "fallback-claude-1")
+
+    def test_claude_json_runner_does_not_retry_non_quota_cli_warning(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            primary_config = root / "primary-claude"
+            fallback_config = root / "fallback-claude"
+            primary_config.mkdir()
+            fallback_config.mkdir()
+            (fallback_config / "claude-code-oauth-token").write_text("fallback-token\n")
+            calls: list[str | None] = []
+
+            class FakeCompletedProcess:
+                returncode = 1
+                stdout = ""
+                stderr = "Warning: invalid transport in MCP server github"
+
+            def fake_run(command, *, cwd, input, text, capture_output, timeout, env):
+                calls.append(env.get("CLAUDE_CONFIG_DIR"))
+                return FakeCompletedProcess()
+
+            env = {
+                "SKILLX_LLM_CLAUDE_CONFIG_DIR": str(primary_config),
+                "SKILLX_LLM_FALLBACK_CLAUDE_CONFIG_DIRS": str(fallback_config),
+                "SKILLX_DISABLE_LLM_RATE_LIMIT_FALLBACK": "0",
+                "SKILLX_DISABLE_RATE_LIMIT_FALLBACK": "0",
+            }
+            with mock.patch.dict(os.environ, env, clear=False), mock.patch.object(
+                self.module,
+                "DEFAULT_FALLBACK_CLAUDE_CONFIG_DIR",
+                root / "missing-default-fallback",
+            ), mock.patch.object(self.module.subprocess, "run", side_effect=fake_run):
+                with self.assertRaises(RuntimeError):
+                    self.module.run_llm_json_prompt(
+                        "prompt",
+                        {"type": "object"},
+                        "anthropic/claude-sonnet-4-5",
+                        root / "llm-output",
+                        1.0,
+                    )
+
+            self.assertEqual(calls, [str(primary_config)])
+            attempts = json.loads((root / "llm-output" / "attempts.json").read_text())["attempts"]
+            self.assertEqual(attempts[0]["status"], "failed")
+            self.assertEqual(attempts[0]["quota_hard_terms"], [])
 
 
 if __name__ == "__main__":

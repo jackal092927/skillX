@@ -1,0 +1,100 @@
+[
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "analytic-pipeline",
+    "task_count": 6,
+    "task_names": [
+      "court-form-filling",
+      "earthquake-phase-association",
+      "azure-bgp-oscillation-route-leak",
+      "exceltable-in-ppt",
+      "civ6-adjacency-optimizer",
+      "3d-scan-calc"
+    ]
+  },
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "artifact-generation",
+    "task_count": 6,
+    "task_names": [
+      "civ6-adjacency-optimizer",
+      "court-form-filling",
+      "3d-scan-calc",
+      "citation-check",
+      "fix-build-agentops",
+      "fix-build-google-auto"
+    ]
+  },
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "engineering-composition",
+    "task_count": 6,
+    "task_names": [
+      "exoplanet-detection-period",
+      "find-topk-similiar-chemicals",
+      "earthquake-phase-association",
+      "civ6-adjacency-optimizer",
+      "3d-scan-calc",
+      "citation-check"
+    ]
+  },
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "environment-control",
+    "task_count": 6,
+    "task_names": [
+      "energy-ac-optimal-power-flow",
+      "exceltable-in-ppt",
+      "financial-modeling-qa",
+      "energy-market-pricing",
+      "exoplanet-detection-period",
+      "3d-scan-calc"
+    ]
+  },
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "methodology-guardrail",
+    "task_count": 6,
+    "task_names": [
+      "dapt-intrusion-detection",
+      "data-to-d3",
+      "court-form-filling",
+      "azure-bgp-oscillation-route-leak",
+      "3d-scan-calc",
+      "citation-check"
+    ]
+  },
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "orchestration-delegation",
+    "task_count": 6,
+    "task_names": [
+      "earthquake-plate-calculation",
+      "econ-detrending-correlation",
+      "earthquake-phase-association",
+      "exceltable-in-ppt",
+      "3d-scan-calc",
+      "adaptive-cruise-control"
+    ]
+  },
+  {
+    "candidate_mode": "differentiating",
+    "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+    "schema_id": "retrieval-heavy-synthesis",
+    "task_count": 6,
+    "task_names": [
+      "energy-market-pricing",
+      "adaptive-cruise-control",
+      "dapt-intrusion-detection",
+      "court-form-filling",
+      "3d-scan-calc",
+      "citation-check"
+    ]
+  }
+]

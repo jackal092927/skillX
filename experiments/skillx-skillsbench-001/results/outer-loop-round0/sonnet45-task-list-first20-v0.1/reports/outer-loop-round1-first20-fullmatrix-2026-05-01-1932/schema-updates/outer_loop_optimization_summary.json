@@ -1,0 +1,45 @@
+{
+  "artifact_type": "skillx_outer_loop_optimization_run",
+  "round_id": "outer-loop-round0",
+  "next_round_id": "outer-loop-round1",
+  "schema_update_policy": "all_eligible_schemas",
+  "next_pair_plan_policy": "intentional_full_matrix_rerun",
+  "max_update_schemas": 0,
+  "control_plane_outputs": {
+    "score_matrix_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/score_matrix.csv",
+    "score_matrix_wide_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/score_matrix_wide.csv",
+    "score_matrix_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/score_matrix.json",
+    "assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/assignments.csv",
+    "assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/assignments.json",
+    "multi_assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/multi_assignments.csv",
+    "multi_assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/multi_assignments.json",
+    "schema_training_assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/schema_training_assignments.csv",
+    "schema_training_assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/schema_training_assignments.json",
+    "diagnostics_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/diagnostics.json",
+    "bundle_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/control_plane_bundle.json",
+    "summary_md": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/summary.md"
+  },
+  "schema_update_outputs": {
+    "schema_update_package_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/schema_update_package.json",
+    "schema_evidence_bundles_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/schema_evidence_bundles.json",
+    "schema_update_proposals_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/schema_update_proposals.json",
+    "round_update_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/round_update_plan.json",
+    "round_update_plan_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/round_update_plan.csv",
+    "rewrite_verification_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/rewrite_verification.json",
+    "challenger_eval_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/challenger_eval_plan.json",
+    "candidate_prompt_bank_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/round1_candidate_prompt_bank.json",
+    "summary_md": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/summary.md"
+  },
+  "next_round_materialized_outputs": {
+    "manifest_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/manifest.json",
+    "pair_specs_jsonl": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pair_specs.jsonl",
+    "next_round_pair_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/next_round_pair_plan.json",
+    "next_round_pair_plan_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/next_round_pair_plan.csv",
+    "candidate_prompt_bank_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/round1_candidate_prompt_bank.json",
+    "launch_script": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launch_next_round.sh"
+  },
+  "next_round_pair_count": 140,
+  "next_round_schema_count": 7,
+  "next_round_task_count": 20,
+  "next_pair_plan_mode": "full_matrix"
+}

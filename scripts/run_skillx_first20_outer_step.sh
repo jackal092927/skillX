@@ -16,6 +16,11 @@ Environment overrides:
   SKILLX_TASK_SLICE                  First20 task slice. Defaults to sonnet45-task-list-first20-v0.1.json.
   SKILLX_REWRITE_MODE                llm or deterministic. Default: llm.
   SKILLX_LLM_MODEL                   Outer-loop rewriter model. Default: anthropic/claude-sonnet-4-5.
+  SKILLX_LLM_CLAUDE_CONFIG_DIR       Primary Claude CLI config dir for schema rewrite. Default: current Claude config.
+  SKILLX_LLM_FALLBACK_CLAUDE_CONFIG_DIRS
+                                      Optional colon-separated fallback Claude config dirs. Auto-detects ~/.claude-skillx-fallback when present.
+  SKILLX_DISABLE_LLM_RATE_LIMIT_FALLBACK
+                                      1 disables Claude schema-rewrite rate-limit fallback. Default: 0.
   SKILLX_NEXT_PAIR_PLAN_MODE         Default: full_matrix.
   SKILLX_MAX_UPDATE_SCHEMAS          Default inherited from Python wrapper; unset means rewrite all eligible schemas.
   SKILLX_MIN_SUPPORT_SIZE            Default inherited from Python wrapper.

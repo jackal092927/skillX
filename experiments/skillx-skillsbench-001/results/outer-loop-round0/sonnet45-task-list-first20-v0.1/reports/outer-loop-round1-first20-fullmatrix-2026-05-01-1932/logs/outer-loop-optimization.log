@@ -1,0 +1,223 @@
+[outer-loop] start: round_id=outer-loop-round0 next_round_id=outer-loop-round1 rewrite_mode=llm llm_model=anthropic/claude-sonnet-4-5
+[outer-loop] input global status: tasks=20 schemas=7 pairs=140 path=experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/global-round0-status-first20-final-2026-04-29/global_pair_status.json
+[outer-loop] input tasks: 3d-scan-calc, adaptive-cruise-control, azure-bgp-oscillation-route-leak, citation-check, civ6-adjacency-optimizer, court-form-filling, dapt-intrusion-detection, data-to-d3, earthquake-phase-association, earthquake-plate-calculation, econ-detrending-correlation, energy-ac-optimal-power-flow, energy-market-pricing, exceltable-in-ppt, exoplanet-detection-period, financial-modeling-qa, find-topk-similiar-chemicals, fix-build-agentops, fix-build-google-auto, fix-druid-loophole-cve
+[outer-loop] phase 1/4: building task-to-schema score matrix and assignment control plane
+[outer-loop] control plane complete: assigned_tasks=15/20 occupied_schemas=7 outputs=experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane
+[outer-loop] phase 2/4: building schema evidence bundles and rewriting candidate schemas
+[schema-update] start package build: round_id=outer-loop-round0 next_round_id=outer-loop-round1 rewrite_mode=llm schemas=7 tasks=20 assignments=20 score_rows=140
+[schema-update] evidence tasks: 3d-scan-calc, adaptive-cruise-control, azure-bgp-oscillation-route-leak, citation-check, civ6-adjacency-optimizer, court-form-filling, dapt-intrusion-detection, data-to-d3, earthquake-phase-association, earthquake-plate-calculation, econ-detrending-correlation, energy-ac-optimal-power-flow, energy-market-pricing, exceltable-in-ppt, exoplanet-detection-period, financial-modeling-qa, find-topk-similiar-chemicals, fix-build-agentops, fix-build-google-auto, fix-druid-loophole-cve
+[schema-update] schema 1/7: building evidence for artifact-generation
+[schema-update] schema 1/7: update proposal for artifact-generation (assigned=2, boundary=5, cross_losses=6)
+[schema-update] schema 1/7: proposal complete for artifact-generation status=candidate_update source=llm support=2
+[schema-update] schema 2/7: building evidence for analytic-pipeline
+[schema-update] schema 2/7: update proposal for analytic-pipeline (assigned=5, boundary=9, cross_losses=1)
+[schema-update] schema 2/7: proposal complete for analytic-pipeline status=candidate_update source=llm support=5
+[schema-update] schema 3/7: building evidence for engineering-composition
+[schema-update] schema 3/7: update proposal for engineering-composition (assigned=4, boundary=8, cross_losses=8)
+[schema-update] schema 3/7: proposal complete for engineering-composition status=candidate_update source=llm support=4
+[schema-update] schema 4/7: building evidence for retrieval-heavy-synthesis
+[schema-update] schema 4/7: update proposal for retrieval-heavy-synthesis (assigned=4, boundary=8, cross_losses=9)
+[schema-update] schema 4/7: proposal complete for retrieval-heavy-synthesis status=candidate_update source=llm support=4
+[schema-update] schema 5/7: building evidence for environment-control
+[schema-update] schema 5/7: update proposal for environment-control (assigned=5, boundary=8, cross_losses=7)
+[schema-update] schema 5/7: proposal complete for environment-control status=candidate_update source=llm support=5
+[schema-update] schema 6/7: building evidence for methodology-guardrail
+[schema-update] schema 6/7: update proposal for methodology-guardrail (assigned=4, boundary=7, cross_losses=7)
+[schema-update] schema 6/7: proposal complete for methodology-guardrail status=candidate_update source=llm support=4
+[schema-update] schema 7/7: building evidence for orchestration-delegation
+[schema-update] schema 7/7: update proposal for orchestration-delegation (assigned=4, boundary=9, cross_losses=8)
+[schema-update] schema 7/7: proposal complete for orchestration-delegation status=candidate_update source=llm support=4
+[schema-update] round update plan selected: updates=7/7 schemas=analytic-pipeline, artifact-generation, engineering-composition, environment-control, methodology-guardrail, orchestration-delegation, retrieval-heavy-synthesis
+[schema-update] rewrite verification: status=passed completed=7/7
+[schema-update] challenger eval plan: schemas=7 planned_pairs=42
+[outer-loop] schema rewrite package complete: verification=passed completed_rewrites=7/7
+[outer-loop] phase 3/4: writing outer-loop schema update artifacts
+[outer-loop] schema update artifacts written: experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates
+[outer-loop] phase 4/4: materializing next-round schema-task candidate pairs
+[outer-loop] materializing next-round pair specs: mode=full_matrix tasks=20 schemas=7 pairs=140 output=/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates
+[outer-loop] materialize pair 1/140: task=3d-scan-calc schema=artifact-generation
+[outer-loop] materialize pair 2/140: task=3d-scan-calc schema=analytic-pipeline
+[outer-loop] materialize pair 3/140: task=3d-scan-calc schema=engineering-composition
+[outer-loop] materialize pair 4/140: task=3d-scan-calc schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 5/140: task=3d-scan-calc schema=environment-control
+[outer-loop] materialize pair 6/140: task=3d-scan-calc schema=methodology-guardrail
+[outer-loop] materialize pair 7/140: task=3d-scan-calc schema=orchestration-delegation
+[outer-loop] materialize pair 8/140: task=adaptive-cruise-control schema=artifact-generation
+[outer-loop] materialize pair 9/140: task=adaptive-cruise-control schema=analytic-pipeline
+[outer-loop] materialize pair 10/140: task=adaptive-cruise-control schema=engineering-composition
+[outer-loop] materialize pair 11/140: task=adaptive-cruise-control schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 12/140: task=adaptive-cruise-control schema=environment-control
+[outer-loop] materialize pair 13/140: task=adaptive-cruise-control schema=methodology-guardrail
+[outer-loop] materialize pair 14/140: task=adaptive-cruise-control schema=orchestration-delegation
+[outer-loop] materialize pair 15/140: task=azure-bgp-oscillation-route-leak schema=artifact-generation
+[outer-loop] materialize pair 16/140: task=azure-bgp-oscillation-route-leak schema=analytic-pipeline
+[outer-loop] materialize pair 17/140: task=azure-bgp-oscillation-route-leak schema=engineering-composition
+[outer-loop] materialize pair 18/140: task=azure-bgp-oscillation-route-leak schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 19/140: task=azure-bgp-oscillation-route-leak schema=environment-control
+[outer-loop] materialize pair 20/140: task=azure-bgp-oscillation-route-leak schema=methodology-guardrail
+[outer-loop] materialize pair 21/140: task=azure-bgp-oscillation-route-leak schema=orchestration-delegation
+[outer-loop] materialize pair 22/140: task=citation-check schema=artifact-generation
+[outer-loop] materialize pair 23/140: task=citation-check schema=analytic-pipeline
+[outer-loop] materialize pair 24/140: task=citation-check schema=engineering-composition
+[outer-loop] materialize pair 25/140: task=citation-check schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 26/140: task=citation-check schema=environment-control
+[outer-loop] materialize pair 27/140: task=citation-check schema=methodology-guardrail
+[outer-loop] materialize pair 28/140: task=citation-check schema=orchestration-delegation
+[outer-loop] materialize pair 29/140: task=civ6-adjacency-optimizer schema=artifact-generation
+[outer-loop] materialize pair 30/140: task=civ6-adjacency-optimizer schema=analytic-pipeline
+[outer-loop] materialize pair 31/140: task=civ6-adjacency-optimizer schema=engineering-composition
+[outer-loop] materialize pair 32/140: task=civ6-adjacency-optimizer schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 33/140: task=civ6-adjacency-optimizer schema=environment-control
+[outer-loop] materialize pair 34/140: task=civ6-adjacency-optimizer schema=methodology-guardrail
+[outer-loop] materialize pair 35/140: task=civ6-adjacency-optimizer schema=orchestration-delegation
+[outer-loop] materialize pair 36/140: task=court-form-filling schema=artifact-generation
+[outer-loop] materialize pair 37/140: task=court-form-filling schema=analytic-pipeline
+[outer-loop] materialize pair 38/140: task=court-form-filling schema=engineering-composition
+[outer-loop] materialize pair 39/140: task=court-form-filling schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 40/140: task=court-form-filling schema=environment-control
+[outer-loop] materialize pair 41/140: task=court-form-filling schema=methodology-guardrail
+[outer-loop] materialize pair 42/140: task=court-form-filling schema=orchestration-delegation
+[outer-loop] materialize pair 43/140: task=dapt-intrusion-detection schema=artifact-generation
+[outer-loop] materialize pair 44/140: task=dapt-intrusion-detection schema=analytic-pipeline
+[outer-loop] materialize pair 45/140: task=dapt-intrusion-detection schema=engineering-composition
+[outer-loop] materialize pair 46/140: task=dapt-intrusion-detection schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 47/140: task=dapt-intrusion-detection schema=environment-control
+[outer-loop] materialize pair 48/140: task=dapt-intrusion-detection schema=methodology-guardrail
+[outer-loop] materialize pair 49/140: task=dapt-intrusion-detection schema=orchestration-delegation
+[outer-loop] materialize pair 50/140: task=data-to-d3 schema=artifact-generation
+[outer-loop] materialize pair 51/140: task=data-to-d3 schema=analytic-pipeline
+[outer-loop] materialize pair 52/140: task=data-to-d3 schema=engineering-composition
+[outer-loop] materialize pair 53/140: task=data-to-d3 schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 54/140: task=data-to-d3 schema=environment-control
+[outer-loop] materialize pair 55/140: task=data-to-d3 schema=methodology-guardrail
+[outer-loop] materialize pair 56/140: task=data-to-d3 schema=orchestration-delegation
+[outer-loop] materialize pair 57/140: task=earthquake-phase-association schema=artifact-generation
+[outer-loop] materialize pair 58/140: task=earthquake-phase-association schema=analytic-pipeline
+[outer-loop] materialize pair 59/140: task=earthquake-phase-association schema=engineering-composition
+[outer-loop] materialize pair 60/140: task=earthquake-phase-association schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 61/140: task=earthquake-phase-association schema=environment-control
+[outer-loop] materialize pair 62/140: task=earthquake-phase-association schema=methodology-guardrail
+[outer-loop] materialize pair 63/140: task=earthquake-phase-association schema=orchestration-delegation
+[outer-loop] materialize pair 64/140: task=earthquake-plate-calculation schema=artifact-generation
+[outer-loop] materialize pair 65/140: task=earthquake-plate-calculation schema=analytic-pipeline
+[outer-loop] materialize pair 66/140: task=earthquake-plate-calculation schema=engineering-composition
+[outer-loop] materialize pair 67/140: task=earthquake-plate-calculation schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 68/140: task=earthquake-plate-calculation schema=environment-control
+[outer-loop] materialize pair 69/140: task=earthquake-plate-calculation schema=methodology-guardrail
+[outer-loop] materialize pair 70/140: task=earthquake-plate-calculation schema=orchestration-delegation
+[outer-loop] materialize pair 71/140: task=econ-detrending-correlation schema=artifact-generation
+[outer-loop] materialize pair 72/140: task=econ-detrending-correlation schema=analytic-pipeline
+[outer-loop] materialize pair 73/140: task=econ-detrending-correlation schema=engineering-composition
+[outer-loop] materialize pair 74/140: task=econ-detrending-correlation schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 75/140: task=econ-detrending-correlation schema=environment-control
+[outer-loop] materialize pair 76/140: task=econ-detrending-correlation schema=methodology-guardrail
+[outer-loop] materialize pair 77/140: task=econ-detrending-correlation schema=orchestration-delegation
+[outer-loop] materialize pair 78/140: task=energy-ac-optimal-power-flow schema=artifact-generation
+[outer-loop] materialize pair 79/140: task=energy-ac-optimal-power-flow schema=analytic-pipeline
+[outer-loop] materialize pair 80/140: task=energy-ac-optimal-power-flow schema=engineering-composition
+[outer-loop] materialize pair 81/140: task=energy-ac-optimal-power-flow schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 82/140: task=energy-ac-optimal-power-flow schema=environment-control
+[outer-loop] materialize pair 83/140: task=energy-ac-optimal-power-flow schema=methodology-guardrail
+[outer-loop] materialize pair 84/140: task=energy-ac-optimal-power-flow schema=orchestration-delegation
+[outer-loop] materialize pair 85/140: task=energy-market-pricing schema=artifact-generation
+[outer-loop] materialize pair 86/140: task=energy-market-pricing schema=analytic-pipeline
+[outer-loop] materialize pair 87/140: task=energy-market-pricing schema=engineering-composition
+[outer-loop] materialize pair 88/140: task=energy-market-pricing schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 89/140: task=energy-market-pricing schema=environment-control
+[outer-loop] materialize pair 90/140: task=energy-market-pricing schema=methodology-guardrail
+[outer-loop] materialize pair 91/140: task=energy-market-pricing schema=orchestration-delegation
+[outer-loop] materialize pair 92/140: task=exceltable-in-ppt schema=artifact-generation
+[outer-loop] materialize pair 93/140: task=exceltable-in-ppt schema=analytic-pipeline
+[outer-loop] materialize pair 94/140: task=exceltable-in-ppt schema=engineering-composition
+[outer-loop] materialize pair 95/140: task=exceltable-in-ppt schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 96/140: task=exceltable-in-ppt schema=environment-control
+[outer-loop] materialize pair 97/140: task=exceltable-in-ppt schema=methodology-guardrail
+[outer-loop] materialize pair 98/140: task=exceltable-in-ppt schema=orchestration-delegation
+[outer-loop] materialize pair 99/140: task=exoplanet-detection-period schema=artifact-generation
+[outer-loop] materialize pair 100/140: task=exoplanet-detection-period schema=analytic-pipeline
+[outer-loop] materialize pair 101/140: task=exoplanet-detection-period schema=engineering-composition
+[outer-loop] materialize pair 102/140: task=exoplanet-detection-period schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 103/140: task=exoplanet-detection-period schema=environment-control
+[outer-loop] materialize pair 104/140: task=exoplanet-detection-period schema=methodology-guardrail
+[outer-loop] materialize pair 105/140: task=exoplanet-detection-period schema=orchestration-delegation
+[outer-loop] materialize pair 106/140: task=financial-modeling-qa schema=artifact-generation
+[outer-loop] materialize pair 107/140: task=financial-modeling-qa schema=analytic-pipeline
+[outer-loop] materialize pair 108/140: task=financial-modeling-qa schema=engineering-composition
+[outer-loop] materialize pair 109/140: task=financial-modeling-qa schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 110/140: task=financial-modeling-qa schema=environment-control
+[outer-loop] materialize pair 111/140: task=financial-modeling-qa schema=methodology-guardrail
+[outer-loop] materialize pair 112/140: task=financial-modeling-qa schema=orchestration-delegation
+[outer-loop] materialize pair 113/140: task=find-topk-similiar-chemicals schema=artifact-generation
+[outer-loop] materialize pair 114/140: task=find-topk-similiar-chemicals schema=analytic-pipeline
+[outer-loop] materialize pair 115/140: task=find-topk-similiar-chemicals schema=engineering-composition
+[outer-loop] materialize pair 116/140: task=find-topk-similiar-chemicals schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 117/140: task=find-topk-similiar-chemicals schema=environment-control
+[outer-loop] materialize pair 118/140: task=find-topk-similiar-chemicals schema=methodology-guardrail
+[outer-loop] materialize pair 119/140: task=find-topk-similiar-chemicals schema=orchestration-delegation
+[outer-loop] materialize pair 120/140: task=fix-build-agentops schema=artifact-generation
+[outer-loop] materialize pair 121/140: task=fix-build-agentops schema=analytic-pipeline
+[outer-loop] materialize pair 122/140: task=fix-build-agentops schema=engineering-composition
+[outer-loop] materialize pair 123/140: task=fix-build-agentops schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 124/140: task=fix-build-agentops schema=environment-control
+[outer-loop] materialize pair 125/140: task=fix-build-agentops schema=methodology-guardrail
+[outer-loop] materialize pair 126/140: task=fix-build-agentops schema=orchestration-delegation
+[outer-loop] materialize pair 127/140: task=fix-build-google-auto schema=artifact-generation
+[outer-loop] materialize pair 128/140: task=fix-build-google-auto schema=analytic-pipeline
+[outer-loop] materialize pair 129/140: task=fix-build-google-auto schema=engineering-composition
+[outer-loop] materialize pair 130/140: task=fix-build-google-auto schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 131/140: task=fix-build-google-auto schema=environment-control
+[outer-loop] materialize pair 132/140: task=fix-build-google-auto schema=methodology-guardrail
+[outer-loop] materialize pair 133/140: task=fix-build-google-auto schema=orchestration-delegation
+[outer-loop] materialize pair 134/140: task=fix-druid-loophole-cve schema=artifact-generation
+[outer-loop] materialize pair 135/140: task=fix-druid-loophole-cve schema=analytic-pipeline
+[outer-loop] materialize pair 136/140: task=fix-druid-loophole-cve schema=engineering-composition
+[outer-loop] materialize pair 137/140: task=fix-druid-loophole-cve schema=retrieval-heavy-synthesis
+[outer-loop] materialize pair 138/140: task=fix-druid-loophole-cve schema=environment-control
+[outer-loop] materialize pair 139/140: task=fix-druid-loophole-cve schema=methodology-guardrail
+[outer-loop] materialize pair 140/140: task=fix-druid-loophole-cve schema=orchestration-delegation
+[outer-loop] outer-loop optimization complete: next_tasks=20 next_schemas=7 next_pairs=140 next_root=experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates
+{
+  "artifact_type": "skillx_outer_loop_optimization_run",
+  "control_plane_outputs": {
+    "assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/assignments.csv",
+    "assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/assignments.json",
+    "bundle_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/control_plane_bundle.json",
+    "diagnostics_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/diagnostics.json",
+    "multi_assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/multi_assignments.csv",
+    "multi_assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/multi_assignments.json",
+    "schema_training_assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/schema_training_assignments.csv",
+    "schema_training_assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/schema_training_assignments.json",
+    "score_matrix_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/score_matrix.csv",
+    "score_matrix_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/score_matrix.json",
+    "score_matrix_wide_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/score_matrix_wide.csv",
+    "summary_md": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/control-plane/summary.md"
+  },
+  "max_update_schemas": 0,
+  "next_pair_plan_mode": "full_matrix",
+  "next_pair_plan_policy": "intentional_full_matrix_rerun",
+  "next_round_id": "outer-loop-round1",
+  "next_round_materialized_outputs": {
+    "candidate_prompt_bank_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/round1_candidate_prompt_bank.json",
+    "launch_script": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launch_next_round.sh",
+    "manifest_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/manifest.json",
+    "next_round_pair_plan_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/next_round_pair_plan.csv",
+    "next_round_pair_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/next_round_pair_plan.json",
+    "pair_specs_jsonl": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pair_specs.jsonl"
+  },
+  "next_round_pair_count": 140,
+  "next_round_schema_count": 7,
+  "next_round_task_count": 20,
+  "round_id": "outer-loop-round0",
+  "schema_update_outputs": {
+    "candidate_prompt_bank_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/round1_candidate_prompt_bank.json",
+    "challenger_eval_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/challenger_eval_plan.json",
+    "rewrite_verification_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/rewrite_verification.json",
+    "round_update_plan_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/round_update_plan.csv",
+    "round_update_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/round_update_plan.json",
+    "schema_evidence_bundles_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/schema_evidence_bundles.json",
+    "schema_update_package_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/schema_update_package.json",
+    "schema_update_proposals_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/schema_update_proposals.json",
+    "summary_md": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932/schema-updates/summary.md"
+  },
+  "schema_update_policy": "all_eligible_schemas"
+}
