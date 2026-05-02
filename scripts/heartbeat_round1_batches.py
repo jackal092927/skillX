@@ -206,13 +206,17 @@ def active_processes_use_primary(status: dict[str, Any] | None) -> bool:
     return all(expected in str(process) for process in processes)
 
 
-def latest_runtime_profile_uses_primary(status: dict[str, Any] | None) -> bool:
+def latest_runtime_profile_uses_known_oauth(status: dict[str, Any] | None) -> bool:
     if not isinstance(status, dict):
         return True
+    allowed_oauth_files = {
+        str(PRIMARY_CLAUDE_OAUTH_FILE),
+        str(FALLBACK_CLAUDE_OAUTH_FILE),
+    }
     for event in reversed(status.get("recent_events") or []):
         profile = event.get("runtime_profile") if isinstance(event, dict) else None
         if isinstance(profile, dict) and profile.get("agent") == "claude-code":
-            return profile.get("oauth_file") == str(PRIMARY_CLAUDE_OAUTH_FILE)
+            return profile.get("oauth_file") in allowed_oauth_files
     return True
 
 
@@ -306,8 +310,10 @@ def assess_batch(batch: Batch, *, dry_run: bool, stale_minutes: int) -> dict[str
         issues.append(f"dashboard run_label mismatch: {status.get('run_label')}")
     if status and status.get("total_pairs") not in {None, batch.pair_count}:
         issues.append(f"dashboard total_pairs mismatch: {status.get('total_pairs')}")
-    if not active_processes_use_primary(status) or not latest_runtime_profile_uses_primary(status):
+    if not active_processes_use_primary(status):
         issues.append("active runtime is not using fallback Claude token as primary")
+    if not latest_runtime_profile_uses_known_oauth(status):
+        issues.append("latest runtime profile is using an unexpected Claude token")
 
     if not session_exists and not completed:
         issues.append("tmux session missing")
