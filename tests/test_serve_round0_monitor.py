@@ -667,6 +667,139 @@ class ServeRound0MonitorTests(unittest.TestCase):
             self.assertIsNone(running["selected_round"])
             self.assertEqual(running["pair_status"], "running")
 
+    def test_collect_launcher_status_marks_previous_round_primary_and_second_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            report_dir = materialized_root / "reports" / "outer-loop-round1-demo"
+            (report_dir / "schema-updates").mkdir(parents=True)
+            (report_dir / "control-plane").mkdir(parents=True)
+            (materialized_root / "manifest.json").write_text(
+                json.dumps(
+                    {
+                        "run_id": "outer-loop-round1-demo",
+                        "schema_ids": ["schema-a", "schema-b", "schema-c"],
+                        "schema_update_package_path": str(
+                            report_dir / "schema-updates" / "schema_update_package.json"
+                        ),
+                    }
+                )
+                + "\n"
+            )
+            (report_dir / "schema-updates" / "schema_update_package.json").write_text("{}\n")
+            (report_dir / "control-plane" / "assignments.json").write_text(
+                json.dumps(
+                    {
+                        "assignments": [
+                            {
+                                "task_name": "task-alpha",
+                                "assigned_category": "schema-b",
+                                "assignment_status": "assigned",
+                                "best_observed_category": "schema-b",
+                                "second_best_category": "schema-a",
+                            }
+                        ]
+                    }
+                )
+                + "\n"
+            )
+            (report_dir / "control-plane" / "score_matrix.json").write_text(
+                json.dumps(
+                    {
+                        "long_rows": [
+                            {"task_name": "task-alpha", "schema_id": "schema-a", "assignment_score_pct": 80.0},
+                            {"task_name": "task-alpha", "schema_id": "schema-b", "assignment_score_pct": 95.0},
+                            {"task_name": "task-alpha", "schema_id": "schema-c", "assignment_score_pct": 10.0},
+                        ]
+                    }
+                )
+                + "\n"
+            )
+            pair_specs = [
+                {
+                    "pair_id": f"task-alpha__{schema_id}",
+                    "task_name": "task-alpha",
+                    "schema_id": schema_id,
+                    "pair_dir": f"pairs/task-alpha__{schema_id}",
+                }
+                for schema_id in ("schema-a", "schema-b", "schema-c")
+            ]
+            (materialized_root / "pair_specs.jsonl").write_text(
+                "\n".join(json.dumps(item) for item in pair_specs) + "\n"
+            )
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 3 pair(s)\nTasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text("")
+
+            status = self.module.collect_launcher_status(launcher_log_dir)
+            rows = {row["schema_id"]: row for row in status["pair_rows"]}
+
+            self.assertEqual(status["schema_highlight_metadata"]["mode"], "previous_round_assignment")
+            self.assertEqual(rows["schema-b"]["schema_highlight_label"], "Primary")
+            self.assertEqual(rows["schema-b"]["schema_highlight_role"], "primary")
+            self.assertEqual(rows["schema-a"]["schema_highlight_label"], "2nd")
+            self.assertEqual(rows["schema-a"]["schema_highlight_role"], "secondary")
+            self.assertIsNone(rows["schema-c"]["schema_highlight_role"])
+            html = self.module.render_dashboard_html(status, refresh_seconds=9)
+            self.assertIn('class="schema-role schema-primary"', html)
+            self.assertIn('class="schema-role schema-secondary"', html)
+
+    def test_collect_launcher_status_marks_seed_schema_when_no_previous_assignment_exists(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            materialized_root = Path(tmpdir)
+            launcher_log_dir = materialized_root / "launcher_logs" / "run-demo"
+            launcher_log_dir.mkdir(parents=True)
+            inventory_path = materialized_root / "task_inventory.jsonl"
+            inventory_path.write_text(
+                json.dumps(
+                    {
+                        "task_name": "task-alpha",
+                        "cluster_inputs": {
+                            "semantic_contract": {
+                                "task_object_seed": "schema-b",
+                            }
+                        },
+                    }
+                )
+                + "\n"
+            )
+            (materialized_root / "manifest.json").write_text(
+                json.dumps(
+                    {
+                        "run_id": "round0-demo",
+                        "schema_ids": ["schema-a", "schema-b"],
+                        "inventory_path": str(inventory_path),
+                    }
+                )
+                + "\n"
+            )
+            pair_specs = [
+                {
+                    "pair_id": f"task-alpha__{schema_id}",
+                    "task_name": "task-alpha",
+                    "schema_id": schema_id,
+                    "pair_dir": f"pairs/task-alpha__{schema_id}",
+                }
+                for schema_id in ("schema-a", "schema-b")
+            ]
+            (materialized_root / "pair_specs.jsonl").write_text(
+                "\n".join(json.dumps(item) for item in pair_specs) + "\n"
+            )
+            (launcher_log_dir / "launcher.stdout.log").write_text(
+                "Selected 1 task(s) -> 2 pair(s)\nTasks: task-alpha\n"
+            )
+            (launcher_log_dir / "events.ndjson").write_text("")
+
+            status = self.module.collect_launcher_status(launcher_log_dir)
+            rows = {row["schema_id"]: row for row in status["pair_rows"]}
+
+            self.assertEqual(status["schema_highlight_metadata"]["mode"], "seed_schema")
+            self.assertIsNone(rows["schema-a"]["schema_highlight_role"])
+            self.assertEqual(rows["schema-b"]["schema_highlight_label"], "Seed")
+            self.assertEqual(rows["schema-b"]["schema_highlight_role"], "seed")
+
     def test_collect_launcher_status_uses_final_r0_rerun_attempt_as_effective_r0(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             materialized_root = Path(tmpdir)

@@ -54,6 +54,19 @@ def _safe_read_json(path: Path) -> Any | None:
         return None
 
 
+def _resolve_materialized_reference(raw_path: Any, *, materialized_root: Path) -> Path | None:
+    if not isinstance(raw_path, str) or not raw_path:
+        return None
+    path = Path(raw_path).expanduser()
+    if path.is_absolute():
+        return path.resolve()
+    repo_root = Path(__file__).resolve().parents[1]
+    repo_relative = (repo_root / path).resolve()
+    if repo_relative.exists():
+        return repo_relative
+    return (materialized_root / path).resolve()
+
+
 def _read_ndjson(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -894,6 +907,264 @@ def _pair_status_from_sources(
     return "pending"
 
 
+def _task_schema_role(
+    *,
+    role: str,
+    label: str,
+    source: str,
+    detail: str,
+    score: float | None = None,
+) -> dict[str, Any]:
+    return {
+        "role": role,
+        "label": label,
+        "source": source,
+        "detail": detail,
+        "score": score,
+    }
+
+
+def _score_value(row: dict[str, Any]) -> float:
+    for key in ("assignment_score_pct", "best_score", "best_reported_score"):
+        value = row.get(key)
+        if isinstance(value, (int, float)):
+            return float(value)
+    return float("-inf")
+
+
+def _score_rows_by_task(score_matrix: dict[str, Any] | None) -> dict[str, list[dict[str, Any]]]:
+    rows = score_matrix.get("long_rows") if isinstance(score_matrix, dict) else None
+    by_task: dict[str, list[dict[str, Any]]] = {}
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        task_name = row.get("task_name")
+        schema_id = row.get("schema_id")
+        if not isinstance(task_name, str) or not isinstance(schema_id, str):
+            continue
+        by_task.setdefault(task_name, []).append(row)
+    for task_rows in by_task.values():
+        task_rows.sort(
+            key=lambda row: (
+                _score_value(row),
+                float(row.get("delta_vs_r0_post_best_pp") or 0.0)
+                if isinstance(row.get("delta_vs_r0_post_best_pp"), (int, float))
+                else 0.0,
+                str(row.get("schema_id") or ""),
+            ),
+            reverse=True,
+        )
+    return by_task
+
+
+def _schema_from_score_rows(
+    score_rows: list[dict[str, Any]],
+    *,
+    exclude: set[str],
+) -> str | None:
+    for row in score_rows:
+        schema_id = row.get("schema_id")
+        if isinstance(schema_id, str) and schema_id not in exclude:
+            return schema_id
+    return None
+
+
+def _score_for_schema(score_rows: list[dict[str, Any]], schema_id: str | None) -> float | None:
+    if not schema_id:
+        return None
+    for row in score_rows:
+        if row.get("schema_id") == schema_id:
+            value = row.get("assignment_score_pct")
+            if isinstance(value, (int, float)):
+                return float(value)
+            value = row.get("best_score")
+            if isinstance(value, (int, float)):
+                return float(value)
+    return None
+
+
+def _candidate_control_plane_dirs(
+    *,
+    materialized_root: Path,
+    manifest: dict[str, Any],
+) -> list[Path]:
+    candidates: list[Path] = []
+    package_path = _resolve_materialized_reference(
+        manifest.get("schema_update_package_path"),
+        materialized_root=materialized_root,
+    )
+    if package_path is not None:
+        candidates.append(package_path.parent.parent / "control-plane")
+
+    run_id = manifest.get("run_id")
+    if isinstance(run_id, str) and run_id:
+        candidates.append(materialized_root.parent / "reports" / run_id / "control-plane")
+
+    unique: list[Path] = []
+    seen: set[Path] = set()
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        unique.append(resolved)
+    return unique
+
+
+def _load_previous_round_schema_roles(
+    *,
+    materialized_root: Path,
+    manifest: dict[str, Any],
+) -> tuple[dict[str, dict[str, dict[str, Any]]], dict[str, Any] | None]:
+    for control_plane_dir in _candidate_control_plane_dirs(
+        materialized_root=materialized_root,
+        manifest=manifest,
+    ):
+        assignments = _safe_read_json(control_plane_dir / "assignments.json")
+        if not isinstance(assignments, dict):
+            continue
+        assignment_rows = assignments.get("assignments")
+        if not isinstance(assignment_rows, list):
+            continue
+
+        score_rows_by_task = _score_rows_by_task(
+            _safe_read_json(control_plane_dir / "score_matrix.json")
+        )
+        roles: dict[str, dict[str, dict[str, Any]]] = {}
+        for row in assignment_rows:
+            if not isinstance(row, dict):
+                continue
+            task_name = row.get("task_name")
+            if not isinstance(task_name, str):
+                continue
+            task_score_rows = score_rows_by_task.get(task_name, [])
+            assignment_status = str(row.get("assignment_status") or "")
+            assigned_category = row.get("assigned_category")
+            best_observed_category = row.get("best_observed_category")
+
+            primary_schema = (
+                assigned_category
+                if isinstance(assigned_category, str) and assigned_category
+                else best_observed_category
+                if isinstance(best_observed_category, str) and best_observed_category
+                else _schema_from_score_rows(task_score_rows, exclude=set())
+            )
+            if not isinstance(primary_schema, str) or not primary_schema:
+                continue
+
+            primary_label = "Primary" if assigned_category else "Best"
+            roles.setdefault(task_name, {})[primary_schema] = _task_schema_role(
+                role="primary",
+                label=primary_label,
+                source="previous_round_assignment",
+                detail=(
+                    f"{assignment_status or 'previous round'}; "
+                    f"score={_format_metric(_score_for_schema(task_score_rows, primary_schema))}"
+                ),
+                score=_score_for_schema(task_score_rows, primary_schema),
+            )
+
+            second_schema = row.get("second_best_category")
+            if not isinstance(second_schema, str) or not second_schema or second_schema == primary_schema:
+                second_schema = _schema_from_score_rows(task_score_rows, exclude={primary_schema})
+            if isinstance(second_schema, str) and second_schema and second_schema != primary_schema:
+                roles.setdefault(task_name, {})[second_schema] = _task_schema_role(
+                    role="secondary",
+                    label="2nd",
+                    source="previous_round_assignment",
+                    detail=(
+                        "previous round second; "
+                        f"score={_format_metric(_score_for_schema(task_score_rows, second_schema))}"
+                    ),
+                    score=_score_for_schema(task_score_rows, second_schema),
+                )
+
+        if roles:
+            return roles, {
+                "mode": "previous_round_assignment",
+                "control_plane_dir": str(control_plane_dir),
+                "legend": "Primary/Best and 2nd are derived from the previous round control-plane assignment artifacts.",
+            }
+    return {}, None
+
+
+def _load_seed_schema_roles(
+    *,
+    materialized_root: Path,
+    manifest: dict[str, Any],
+) -> tuple[dict[str, dict[str, dict[str, Any]]], dict[str, Any] | None]:
+    inventory_path = _resolve_materialized_reference(
+        manifest.get("inventory_path"),
+        materialized_root=materialized_root,
+    )
+    if inventory_path is None or not inventory_path.exists():
+        return {}, None
+
+    roles: dict[str, dict[str, dict[str, Any]]] = {}
+    for raw_line in inventory_path.read_text().splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(row, dict):
+            continue
+        task_name = row.get("task_name")
+        cluster_inputs = row.get("cluster_inputs")
+        semantic_contract = (
+            cluster_inputs.get("semantic_contract")
+            if isinstance(cluster_inputs, dict)
+            else None
+        )
+        seed_schema = (
+            semantic_contract.get("task_object_seed")
+            if isinstance(semantic_contract, dict)
+            else None
+        )
+        if isinstance(task_name, str) and isinstance(seed_schema, str) and seed_schema:
+            roles.setdefault(task_name, {})[seed_schema] = _task_schema_role(
+                role="seed",
+                label="Seed",
+                source="task_inventory_seed",
+                detail="task_object_seed from the task cluster inventory",
+            )
+
+    if roles:
+        return roles, {
+            "mode": "seed_schema",
+            "inventory_path": str(inventory_path),
+            "legend": "Seed highlights use task_object_seed because no previous-round assignment artifacts were found.",
+        }
+    return {}, None
+
+
+def _load_schema_highlight_roles(
+    *,
+    materialized_root: Path,
+    manifest: dict[str, Any],
+) -> tuple[dict[str, dict[str, dict[str, Any]]], dict[str, Any]]:
+    previous_roles, metadata = _load_previous_round_schema_roles(
+        materialized_root=materialized_root,
+        manifest=manifest,
+    )
+    if metadata is not None:
+        return previous_roles, metadata
+
+    seed_roles, seed_metadata = _load_seed_schema_roles(
+        materialized_root=materialized_root,
+        manifest=manifest,
+    )
+    if seed_metadata is not None:
+        return seed_roles, seed_metadata
+
+    return {}, {
+        "mode": "none",
+        "legend": "No schema highlight source was found for this materialized root.",
+    }
+
+
 def _collect_pair_rows(
     *,
     launcher_log_dir: Path,
@@ -906,6 +1177,10 @@ def _collect_pair_rows(
 ) -> list[dict[str, Any]]:
     materialized_root = launcher_log_dir.parent.parent
     manifest = _read_materialized_manifest(materialized_root) or {}
+    schema_highlight_roles, _schema_highlight_metadata = _load_schema_highlight_roles(
+        materialized_root=materialized_root,
+        manifest=manifest,
+    )
     schema_ids = [
         item for item in (manifest.get("schema_ids") or []) if isinstance(item, str)
     ]
@@ -980,12 +1255,28 @@ def _collect_pair_rows(
         official_c0 = float(official_c0) if isinstance(official_c0, (int, float)) else None
         official_c1 = float(official_c1) if isinstance(official_c1, (int, float)) else None
         r0_score = round_scores.get("R0")
+        schema_role = schema_highlight_roles.get(task_name, {}).get(schema_id)
 
         rows.append(
             {
                 "pair_id": pair_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
+                "schema_highlight_role": (
+                    schema_role.get("role") if isinstance(schema_role, dict) else None
+                ),
+                "schema_highlight_label": (
+                    schema_role.get("label") if isinstance(schema_role, dict) else None
+                ),
+                "schema_highlight_source": (
+                    schema_role.get("source") if isinstance(schema_role, dict) else None
+                ),
+                "schema_highlight_detail": (
+                    schema_role.get("detail") if isinstance(schema_role, dict) else None
+                ),
+                "schema_highlight_score": (
+                    schema_role.get("score") if isinstance(schema_role, dict) else None
+                ),
                 "official_c0": official_c0,
                 "official_c1": official_c1,
                 "round_rewards_raw": {
@@ -1083,6 +1374,12 @@ def collect_launcher_status(
     summary_path = launcher_log_dir / "summary.json"
     events_path = launcher_log_dir / "events.ndjson"
     stdout_log_path = launcher_log_dir / "launcher.stdout.log"
+    materialized_root = launcher_log_dir.parent.parent
+    manifest = _read_materialized_manifest(materialized_root) or {}
+    _schema_highlight_roles, schema_highlight_metadata = _load_schema_highlight_roles(
+        materialized_root=materialized_root,
+        manifest=manifest,
+    )
 
     summary = _safe_read_json(summary_path)
     events = _read_ndjson(events_path)
@@ -1236,6 +1533,7 @@ def collect_launcher_status(
         "archived_retry_count": archived_retry_count,
         "progress_percent": progress_percent,
         "selected_task_names": selected_task_names,
+        "schema_highlight_metadata": schema_highlight_metadata,
         "pair_rows": pair_rows,
         "preflight_risk_audit": preflight_risk_audit,
         "current_pair_id": active_pair.get("pair_id") if isinstance(active_pair, dict) else None,
@@ -1274,6 +1572,25 @@ def _metric_card(label: str, value: str) -> str:
         f'<div class="metric-label">{html.escape(label)}</div>'
         f'<div class="metric-value">{html.escape(value)}</div>'
         "</div>"
+    )
+
+
+def _schema_role_class(role: Any) -> str:
+    value = str(role or "").strip().lower()
+    if value in {"primary", "secondary", "seed"}:
+        return f"schema-{value}"
+    return "schema-none"
+
+
+def _schema_role_badge(row: dict[str, Any]) -> str:
+    label = row.get("schema_highlight_label")
+    if not label:
+        return ""
+    role_class = _schema_role_class(row.get("schema_highlight_role"))
+    title = row.get("schema_highlight_detail") or row.get("schema_highlight_source") or ""
+    return (
+        f'<span class="schema-role {role_class}" title="{html.escape(str(title))}">'
+        f"{html.escape(str(label))}</span>"
     )
 
 
@@ -1357,6 +1674,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     active_pair_details = status.get("active_pair_details") or []
     pair_detail = status.get("pair_detail") or {}
     pair_rows = status.get("pair_rows") or []
+    schema_highlight_metadata = status.get("schema_highlight_metadata") or {}
     preflight_risk_audit = status.get("preflight_risk_audit") or {}
     observed_at = str(status.get("observed_at") or "")
     latest_event_type = latest_event.get("event") or "none"
@@ -1564,6 +1882,8 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         d1 = row.get("delta_vs_c1")
         dr0 = row.get("delta_vs_r0")
         archive_count = int(row.get("archive_count") or 0)
+        role_class = _schema_role_class(row.get("schema_highlight_role"))
+        role_badge = _schema_role_badge(row)
         status_value = row.get("pair_status") or ""
         status_pill_class = _status_pill_class(status_value)
         status_cell = (
@@ -1572,9 +1892,10 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
             else html.escape(str(status_value))
         )
         pair_row_items.append(
-            f'<tr class="{group_class}">'
+            f'<tr class="{group_class} {role_class}">'
             f'<td class="col-task">{html.escape(task_name)}</td>'
-            f'<td class="col-schema">{html.escape(str(row.get("schema_id", "")))}</td>'
+            f'<td class="col-schema {role_class}">{html.escape(str(row.get("schema_id", "")))}</td>'
+            f'<td class="col-role">{role_badge}</td>'
             f'<td class="num">{html.escape(_format_metric(row.get("official_c0")))}</td>'
             f'<td class="num">{html.escape(_format_metric(row.get("official_c1")))}</td>'
             f'<td class="{_heat_class(r0)}">{html.escape(_format_metric(r0))}</td>'
@@ -1593,7 +1914,7 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
         )
     pair_rows_html = (
         "\n".join(pair_row_items)
-        or '<tr><td colspan="16">No pair rows available.</td></tr>'
+        or '<tr><td colspan="17">No pair rows available.</td></tr>'
     )
 
     return f"""<!DOCTYPE html>
@@ -1898,7 +2219,51 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
       color: var(--muted);
       font-size: 12px;
     }}
+    td.col-role {{
+      min-width: 78px;
+    }}
     td.col-status {{ text-align: center; }}
+
+    tbody tr.schema-primary td.col-schema,
+    tbody tr.schema-secondary td.col-schema,
+    tbody tr.schema-seed td.col-schema {{
+      color: var(--ink);
+      font-weight: 700;
+    }}
+    tbody tr.schema-primary td:first-child {{
+      box-shadow: inset 4px 0 0 #22c55e;
+    }}
+    tbody tr.schema-secondary td:first-child {{
+      box-shadow: inset 4px 0 0 #38bdf8;
+    }}
+    tbody tr.schema-seed td:first-child {{
+      box-shadow: inset 4px 0 0 #f59e0b;
+    }}
+    .schema-role {{
+      display: inline-block;
+      min-width: 42px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+      border: 1px solid transparent;
+    }}
+    .schema-role.schema-primary {{
+      background: rgba(34, 197, 94, 0.16);
+      color: #86efac;
+      border-color: rgba(34, 197, 94, 0.34);
+    }}
+    .schema-role.schema-secondary {{
+      background: rgba(56, 189, 248, 0.16);
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.34);
+    }}
+    .schema-role.schema-seed {{
+      background: rgba(245, 158, 11, 0.16);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, 0.36);
+    }}
 
     /* Delta cells: sign-coded */
     .delta-pos {{
@@ -2079,12 +2444,14 @@ def render_dashboard_html(status: dict[str, Any], *, refresh_seconds: int) -> st
     <section class="panel">
       <h2>Task / Pair Results</h2>
       <div class="subhead">Official C0/C1 scores are native 0-100 values. Local R0-R3 rewards are normalized 0-1 internally and shown here on a 0-100 scale; R0 uses the final baseline-rerun attempt when present.</div>
+      <div class="subhead">Schema highlights: {html.escape(str(schema_highlight_metadata.get("legend") or "none"))}</div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Task</th>
               <th>Schema</th>
+              <th>Role</th>
               <th class="num">C0</th>
               <th class="num">C1</th>
               <th class="num">R0</th>
