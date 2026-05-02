@@ -203,7 +203,8 @@ def active_processes_use_primary(status: dict[str, Any] | None) -> bool:
     if not processes:
         return True
     expected = f"--oauth-file {PRIMARY_CLAUDE_OAUTH_FILE}"
-    return all(expected in str(process) for process in processes)
+    runner_processes = [str(process) for process in processes if "--oauth-file" in str(process)]
+    return all(expected in process for process in runner_processes)
 
 
 def latest_runtime_profile_uses_known_oauth(status: dict[str, Any] | None) -> bool:
