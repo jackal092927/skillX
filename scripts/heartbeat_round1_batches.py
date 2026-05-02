@@ -196,15 +196,18 @@ def summary_completed(summary: dict[str, Any] | None, expected_total: int) -> bo
     return completed == expected_total and failed == 0 and not summary.get("aborted")
 
 
-def active_processes_use_primary(status: dict[str, Any] | None) -> bool:
+def active_processes_use_known_oauth(status: dict[str, Any] | None) -> bool:
     if not isinstance(status, dict):
         return True
     processes = status.get("active_processes") or []
     if not processes:
         return True
-    expected = f"--oauth-file {PRIMARY_CLAUDE_OAUTH_FILE}"
+    allowed = {
+        f"--oauth-file {PRIMARY_CLAUDE_OAUTH_FILE}",
+        f"--oauth-file {FALLBACK_CLAUDE_OAUTH_FILE}",
+    }
     runner_processes = [str(process) for process in processes if "--oauth-file" in str(process)]
-    return all(expected in process for process in runner_processes)
+    return all(any(token_arg in process for token_arg in allowed) for process in runner_processes)
 
 
 def latest_runtime_profile_uses_known_oauth(status: dict[str, Any] | None) -> bool:
@@ -311,8 +314,8 @@ def assess_batch(batch: Batch, *, dry_run: bool, stale_minutes: int) -> dict[str
         issues.append(f"dashboard run_label mismatch: {status.get('run_label')}")
     if status and status.get("total_pairs") not in {None, batch.pair_count}:
         issues.append(f"dashboard total_pairs mismatch: {status.get('total_pairs')}")
-    if not active_processes_use_primary(status):
-        issues.append("active runtime is not using fallback Claude token as primary")
+    if not active_processes_use_known_oauth(status):
+        issues.append("active runtime is using an unexpected Claude token")
     if not latest_runtime_profile_uses_known_oauth(status):
         issues.append("latest runtime profile is using an unexpected Claude token")
 
