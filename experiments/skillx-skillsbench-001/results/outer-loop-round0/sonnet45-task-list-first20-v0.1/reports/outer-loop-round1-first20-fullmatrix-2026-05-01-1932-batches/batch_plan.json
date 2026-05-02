@@ -9,7 +9,7 @@
       "monitor_port": 8772,
       "pair_count": 49,
       "pair_manifest_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-batches/batch-01_pair_manifest.json",
-      "run_label": "run-round1-first20-fullmatrix-2026-05-01-b01",
+      "run_label": "run-round1-first20-fullmatrix-fallback-2026-05-01-b01",
       "task_count": 7,
       "task_names": [
         "3d-scan-calc",
@@ -29,7 +29,7 @@
       "monitor_port": 8773,
       "pair_count": 49,
       "pair_manifest_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-batches/batch-02_pair_manifest.json",
-      "run_label": "run-round1-first20-fullmatrix-2026-05-01-b02",
+      "run_label": "run-round1-first20-fullmatrix-fallback-2026-05-01-b02",
       "task_count": 7,
       "task_names": [
         "adaptive-cruise-control",
@@ -49,7 +49,7 @@
       "monitor_port": 8774,
       "pair_count": 42,
       "pair_manifest_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-batches/batch-03_pair_manifest.json",
-      "run_label": "run-round1-first20-fullmatrix-2026-05-01-b03",
+      "run_label": "run-round1-first20-fullmatrix-fallback-2026-05-01-b03",
       "task_count": 6,
       "task_names": [
         "azure-bgp-oscillation-route-leak",
