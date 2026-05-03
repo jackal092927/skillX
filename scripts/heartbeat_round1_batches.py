@@ -141,6 +141,17 @@ def tmux_pane_command(session: str, window: str) -> str | None:
     return commands[0] if commands else None
 
 
+def launcher_process_running(batch: Batch) -> bool:
+    result = run(["ps", "-axo", "command"])
+    if result.returncode != 0:
+        return False
+    output_suffix = f"--output-suffix {batch.run_label}"
+    return any(
+        "scripts/launch_skillx_round0.py" in line and output_suffix in line
+        for line in result.stdout.splitlines()
+    )
+
+
 def tmux_send(session: str, window: str, *keys: str) -> None:
     run(["tmux", "send-keys", "-t", f"{session}:{window}", *keys])
 
@@ -298,6 +309,7 @@ def assess_batch(batch: Batch, *, dry_run: bool, stale_minutes: int) -> dict[str
     summary = read_summary(batch)
     session_exists = tmux_has_session(batch.session)
     inner_command = tmux_pane_command(batch.session, "inner-loop") if session_exists else None
+    launcher_running = launcher_process_running(batch) if session_exists else False
     dashboard_listening = port_listening(batch.port)
 
     completed = (
@@ -322,7 +334,13 @@ def assess_batch(batch: Batch, *, dry_run: bool, stale_minutes: int) -> dict[str
     if not session_exists and not completed:
         issues.append("tmux session missing")
     has_active_process = bool(status and (status.get("active_processes") or []))
-    if session_exists and inner_command in SHELL_COMMANDS and not completed and not has_active_process:
+    if (
+        session_exists
+        and inner_command in SHELL_COMMANDS
+        and not completed
+        and not has_active_process
+        and not launcher_running
+    ):
         issues.append(f"inner-loop inactive: pane command is {inner_command}")
     if not dashboard_listening and not completed:
         issues.append("dashboard port not listening")
