@@ -142,7 +142,10 @@ def tmux_pane_command(session: str, window: str) -> str | None:
 
 
 def launcher_process_running(batch: Batch) -> bool:
-    result = run(["ps", "-axo", "command"])
+    try:
+        result = run(["ps", "-axo", "command"])
+    except OSError:
+        return False
     if result.returncode != 0:
         return False
     output_suffix = f"--output-suffix {batch.run_label}"
