@@ -25,6 +25,7 @@ if str(SRC) not in sys.path:
 
 from skillx.io_utils import ensure_dir, read_json, write_json
 from skillx.docker_health import probe_docker_health
+from skillx.docker_image_names import sanitize_harbor_image_name
 from skillx.model_routing import (
     AUTH_BACKED_CLAUDE_CODE_IMPORT_PATH,
     AUTH_BACKED_CODEX_IMPORT_PATH,
@@ -224,6 +225,8 @@ def build_main_run_failure_payload(
             "run_id": args.run_id,
             "task_id": args.task,
             "orchestration_mode": args.orchestration_mode,
+            "keep_harbor_images": args.keep_harbor_images,
+            "harbor_image_name": args.harbor_image_name,
             "quota_signal": quota_signal,
         },
     )
@@ -511,6 +514,7 @@ def build_job_config(
     n_concurrent_trials: int,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
+    keep_harbor_images: bool = False,
 ) -> dict[str, Any]:
     resolved_agent_name = resolve_benchmark_agent_name(agent_name, model_name)
     agent_payload: dict[str, Any] = {
@@ -552,7 +556,7 @@ def build_job_config(
             "type": "docker",
             "import_path": None,
             "force_build": False,
-            "delete": True,
+            "delete": not keep_harbor_images,
             "override_cpus": None,
             "override_memory_mb": override_memory_mb,
             "override_storage_mb": override_storage_mb,
@@ -1480,8 +1484,12 @@ def create_refine_round_task_sandbox(
     round_timeout_multiplier: float,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
+    keep_harbor_images: bool = False,
+    harbor_image_name: str | None = None,
 ) -> RefineRoundSpec:
     slug = f"round-{round_index}"
+    if harbor_image_name is not None:
+        slug = f"{sanitize_harbor_image_name(harbor_image_name)}-refine-{slug}"
     task_dir = paths.root_dir / "refine_tasks" / slug
     if task_dir.exists():
         shutil.rmtree(task_dir)
@@ -1525,6 +1533,7 @@ def create_refine_round_task_sandbox(
             n_concurrent_trials=1,
             override_memory_mb=override_memory_mb,
             override_storage_mb=override_storage_mb,
+            keep_harbor_images=keep_harbor_images,
         ),
     )
     return RefineRoundSpec(
@@ -1570,8 +1579,16 @@ def materialize_round_output(paths: RefinePaths, round_index: int, exported_dir:
     return destination
 
 
-def materialize_c4_sandbox(task: TaskInputs, run_dir: Path, round_dir_path: Path) -> Path:
-    sandbox_dir = run_dir / "artifacts" / "task_sandboxes" / f"c4-{task.task_id}-{round_dir_path.name}"
+def materialize_c4_sandbox(
+    task: TaskInputs,
+    run_dir: Path,
+    round_dir_path: Path,
+    harbor_image_name: str | None = None,
+) -> Path:
+    sandbox_name = f"c4-{task.task_id}-{round_dir_path.name}"
+    if harbor_image_name is not None:
+        sandbox_name = sanitize_harbor_image_name(harbor_image_name)
+    sandbox_dir = run_dir / "artifacts" / "task_sandboxes" / sandbox_name
     copy_tree(task.task_dir, sandbox_dir)
     skills_target = sandbox_dir / "environment" / "skills"
     if skills_target.exists():
@@ -2494,6 +2511,8 @@ def ensure_c4ar_executor_outputs(
     run_dir: Path,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
+    keep_harbor_images: bool = False,
+    harbor_image_name: str | None = None,
 ) -> tuple[ExecutorOutputs, dict[str, Any]]:
     cached_executor = existing_executor_outputs(round_dir_path=round_dir_path, task_id=task.task_id)
     if cached_executor is not None:
@@ -2513,6 +2532,8 @@ def ensure_c4ar_executor_outputs(
         timeout_multiplier=tune_timeout_multiplier,
         override_memory_mb=override_memory_mb,
         override_storage_mb=override_storage_mb,
+        keep_harbor_images=keep_harbor_images,
+        harbor_image_name=harbor_image_name,
     )
     if tune_result_has_executor_unavailable(tune_result):
         return write_executor_soft_failure_artifacts(round_dir_path=round_dir_path, tune_result=tune_result), tune_result
@@ -3033,6 +3054,8 @@ def run_c4ar_round_with_harbor(
     run_dir: Path,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
+    keep_harbor_images: bool = False,
+    harbor_image_name: str | None = None,
     role_a_model_name: str = "codex-5.3",
     role_b_model_name: str = "gpt-5.4",
     role_a_playbook_path: Path = DEFAULT_ROLE_A_PLAYBOOK,
@@ -3055,6 +3078,8 @@ def run_c4ar_round_with_harbor(
         run_dir=run_dir,
         override_memory_mb=override_memory_mb,
         override_storage_mb=override_storage_mb,
+        keep_harbor_images=keep_harbor_images,
+        harbor_image_name=harbor_image_name,
     )
     if tune_result_has_executor_unavailable(tune_result):
         synthetic_outputs = build_synthetic_c4ar_executor_failure_outputs(
@@ -3186,6 +3211,8 @@ def run_terminal_c4ar_round(
     run_dir: Path,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
+    keep_harbor_images: bool = False,
+    harbor_image_name: str | None = None,
 ) -> dict[str, Any]:
     del round_index
     _, tune_result = ensure_c4ar_executor_outputs(
@@ -3199,6 +3226,8 @@ def run_terminal_c4ar_round(
         run_dir=run_dir,
         override_memory_mb=override_memory_mb,
         override_storage_mb=override_storage_mb,
+        keep_harbor_images=keep_harbor_images,
+        harbor_image_name=harbor_image_name,
     )
     return tune_result
 
@@ -3335,12 +3364,14 @@ def run_round_tune_check(
     timeout_multiplier: float,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
+    keep_harbor_images: bool = False,
+    harbor_image_name: str | None = None,
 ) -> dict[str, Any]:
     tune_root = ensure_dir(round_dir_path / "tune_check")
     existing = existing_tune_result(task_id=task.task_id, round_dir_path=round_dir_path, skill_source=str(round_dir_path / "skillpack"))
     if existing is not None:
         return existing
-    sandbox_dir = materialize_c4_sandbox(task, run_dir, round_dir_path)
+    sandbox_dir = materialize_c4_sandbox(task, run_dir, round_dir_path, harbor_image_name)
     job_name = f"{task.task_id}-{round_dir_path.name}-c4-tune"
     config_path = tune_root / "config.json"
     job_dir = tune_root / job_name
@@ -3358,6 +3389,7 @@ def run_round_tune_check(
                 n_concurrent_trials=1,
                 override_memory_mb=override_memory_mb,
                 override_storage_mb=override_storage_mb,
+                keep_harbor_images=keep_harbor_images,
             ),
         )
         clear_job_dir(job_dir)
@@ -3626,6 +3658,8 @@ def write_environment_notes(run_dir: Path, env_payload: dict[str, Any], args: ar
             f"- tune_timeout_multiplier: `{args.tune_timeout_multiplier}`",
             f"- override_memory_mb: `{args.override_memory_mb}`",
             f"- override_storage_mb: `{args.override_storage_mb}`",
+            f"- keep_harbor_images: `{args.keep_harbor_images}`",
+            f"- harbor_image_name: `{args.harbor_image_name or 'default'}`",
             f"- orchestration_mode: `{args.orchestration_mode}`",
             f"- docker_health_category: `{env_payload['docker_health_category']}`",
             f"- docker_mem_bytes: `{env_payload['docker_mem_bytes']}`",
@@ -3649,6 +3683,8 @@ def write_run_status(
         f"- source_run_dir: `{args.source_run_dir}`",
         f"- round_budget: `{args.round_budget}`",
         f"- orchestration_mode: `{args.orchestration_mode}`",
+        f"- keep_harbor_images: `{args.keep_harbor_images}`",
+        f"- harbor_image_name: `{args.harbor_image_name or 'default'}`",
     ]
     for key, value in (extra_fields or {}).items():
         if value is None:
@@ -3735,6 +3771,8 @@ def run_refine_rounds(
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
     r0_perfect_max_reruns: int = 0,
+    keep_harbor_images: bool = False,
+    harbor_image_name: str | None = None,
 ) -> list[dict[str, Any]]:
     if orchestration_mode == "c4ar":
         round_rows = existing_completed_round_rows(
@@ -3799,6 +3837,8 @@ def run_refine_rounds(
                     run_dir=run_dir,
                     override_memory_mb=override_memory_mb,
                     override_storage_mb=override_storage_mb,
+                    keep_harbor_images=keep_harbor_images,
+                    harbor_image_name=harbor_image_name,
                 )
                 round_row = build_round_row(round_index, current_round_dir, tune_result)
                 round_rows.append(round_row)
@@ -3829,6 +3869,8 @@ def run_refine_rounds(
                 run_dir=run_dir,
                 override_memory_mb=override_memory_mb,
                 override_storage_mb=override_storage_mb,
+                keep_harbor_images=keep_harbor_images,
+                harbor_image_name=harbor_image_name,
             )
             round_row = build_round_row(round_index, current_round_dir, tune_result)
             round_rows.append(round_row)
@@ -3929,6 +3971,8 @@ def run_refine_rounds(
             round_timeout_multiplier=round_timeout_multiplier,
             override_memory_mb=override_memory_mb,
             override_storage_mb=override_storage_mb,
+            keep_harbor_images=keep_harbor_images,
+            harbor_image_name=harbor_image_name,
         )
         if is_round_materialized(task=task, round_dir_path=current_round_dir, round_index=round_index):
             materialized_round_dir = current_round_dir
@@ -3979,6 +4023,8 @@ def run_refine_rounds(
             timeout_multiplier=tune_timeout_multiplier,
             override_memory_mb=override_memory_mb,
             override_storage_mb=override_storage_mb,
+            keep_harbor_images=keep_harbor_images,
+            harbor_image_name=harbor_image_name,
         )
         append_refine_ledger(paths=paths, round_index=round_index, parent_round_index=round_index - 1, tune_result=tune_result)
         round_row = build_round_row(round_index, materialized_round_dir, tune_result)
@@ -4035,6 +4081,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tune-timeout-multiplier", type=float, default=1.0)
     parser.add_argument("--override-memory-mb", type=int)
     parser.add_argument("--override-storage-mb", type=int)
+    parser.add_argument(
+        "--keep-harbor-images",
+        action="store_true",
+        help="Keep Harbor-built Docker images after each trial while still removing containers.",
+    )
+    parser.add_argument(
+        "--harbor-image-name",
+        help="Optional stable Docker image name component for Harbor, e.g. task-name__schema-name.",
+    )
     parser.add_argument("--orchestration-mode", choices=("legacy", "c4ar"), default=DEFAULT_ORCHESTRATION_MODE)
     parser.add_argument(
         "--clear-rate-limit-artifacts",
@@ -4058,6 +4113,7 @@ def main() -> int:
     args.bundle_contract_path = args.bundle_contract_path.resolve()
     args.tune_run_dir = [path.resolve() for path in (args.tune_run_dir or [args.source_run_dir])]
     args.session_log_path = [path.resolve() for path in (args.session_log_path or [])]
+    args.harbor_image_name = sanitize_harbor_image_name(args.harbor_image_name) if args.harbor_image_name else None
     run_dir = ensure_dir(args.output_dir)
     run_failure_path = run_dir / "run_failure.json"
     failure_context: dict[str, Any] = {
@@ -4157,6 +4213,8 @@ def main() -> int:
             override_memory_mb=args.override_memory_mb,
             override_storage_mb=args.override_storage_mb,
             r0_perfect_max_reruns=args.r0_perfect_max_reruns,
+            keep_harbor_images=args.keep_harbor_images,
+            harbor_image_name=args.harbor_image_name,
         )
         baseline_perfect_rerun = read_baseline_perfect_rerun_report(paths)
         update_failure_context(failure_context, failed_stage="write_bundle_manifest")

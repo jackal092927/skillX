@@ -225,6 +225,20 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             "skillx.harbor_agents:AuthBackedClaudeCode",
         )
 
+    def test_build_job_config_can_keep_harbor_images(self) -> None:
+        payload = self.module.build_job_config(
+            job_name="demo-job",
+            jobs_dir=Path("/tmp/jobs"),
+            task_path=Path("/tmp/task"),
+            agent_name="claude-code",
+            model_name="anthropic/claude-sonnet-4-5",
+            timeout_multiplier=1.0,
+            n_concurrent_trials=1,
+            keep_harbor_images=True,
+        )
+
+        self.assertFalse(payload["environment"]["delete"])
+
     def test_build_arg_parser_defaults_tune_timeout_multiplier_to_one(self) -> None:
         parser = self.module.build_arg_parser()
         args = parser.parse_args(
@@ -1107,6 +1121,7 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             sandbox_dir.mkdir()
 
             seen_multipliers: list[float] = []
+            seen_deletes: list[bool] = []
             attempt_results = [
                 {
                     "reward": 0.1,
@@ -1133,6 +1148,7 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 def fake_run_harbor_job(**kwargs):
                     config_payload = json.loads(Path(kwargs["config_path"]).read_text())
                     seen_multipliers.append(config_payload["timeout_multiplier"])
+                    seen_deletes.append(config_payload["environment"]["delete"])
 
                 def fake_parse_job_result(*args, **kwargs):
                     return attempt_results.pop(0)
@@ -1149,6 +1165,7 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                     agent_name="claude-code",
                     model_name="anthropic/claude-sonnet-4-5",
                     timeout_multiplier=1.0,
+                    keep_harbor_images=True,
                 )
             finally:
                 self.module.materialize_c4_sandbox = original_materialize
@@ -1156,6 +1173,7 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 self.module.parse_job_result = original_parse_job_result
 
             self.assertEqual(seen_multipliers, [1.0, 2.0])
+            self.assertEqual(seen_deletes, [False, False])
             self.assertEqual(result["reward"], 0.9)
             self.assertEqual(
                 json.loads((round_dir / "tune_check" / "result.json").read_text())["reward"],
@@ -1891,6 +1909,33 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertFalse((sandbox_dir / "refine_plan.md").exists())
             self.assertFalse((sandbox_dir / "round_decision.json").exists())
             self.assertFalse((sandbox_dir / "next_skillpack_manifest.json").exists())
+
+    def test_materialize_c4_sandbox_uses_stable_harbor_image_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("# Derived Execution Layer\noriginal\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+            round_dir = root / "round-1"
+            (round_dir / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_dir / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("refined\n")
+
+            sandbox_dir = self.module.materialize_c4_sandbox(
+                task,
+                root / "out",
+                round_dir,
+                harbor_image_name="Demo-Task__Schema-A",
+            )
+
+            self.assertEqual(sandbox_dir.name, "demo-task__schema-a")
+            self.assertTrue((sandbox_dir / "environment" / "skills" / "skill-a" / "SKILL.md").exists())
 
     def test_materialize_c4ar_next_round_clears_stale_round_state(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

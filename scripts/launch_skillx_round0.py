@@ -28,6 +28,7 @@ if str(SRC) not in sys.path:
 
 from runtime_guard import assert_healthy_python_executable, assert_supported_python_runtime
 from skillx.docker_health import attempt_docker_recovery, probe_docker_health
+from skillx.docker_image_names import build_harbor_task_pair_image_name
 from skillx.model_routing import resolve_benchmark_agent_name
 from skillx.quota_signals import summarize_run_dir
 from skillx.run_failure_utils import build_run_failure_payload
@@ -391,6 +392,7 @@ def build_launcher_summary(
     pair_manifest_path: Path | None = None,
     runtime_profiles: list[dict[str, Any]] | None = None,
     active_profile_index: int | None = None,
+    keep_harbor_images: bool = True,
     aborted: bool = False,
     abort_reason: str | None = None,
 ) -> dict[str, Any]:
@@ -412,6 +414,7 @@ def build_launcher_summary(
         "max_concurrent_pairs": max_concurrent_pairs,
         "runtime_profiles": runtime_profiles or [],
         "active_profile_index": active_profile_index,
+        "keep_harbor_images": keep_harbor_images,
         "aborted": aborted,
         "abort_reason": abort_reason,
         "results": results,
@@ -860,9 +863,12 @@ def build_refine_command(
     python_executable: str | Path | None = None,
     override_memory_mb: int | None = None,
     override_storage_mb: int | None = None,
+    keep_harbor_images: bool = True,
 ) -> list[str]:
     pair_dir = resolve_pair_dir(pair_spec, materialized_root=materialized_root)
     task_name = str(pair_spec["task_name"])
+    schema_id = str(pair_spec["schema_id"])
+    harbor_image_name = build_harbor_task_pair_image_name(task_name=task_name, schema_id=schema_id)
     skillsbench_root = resolve_skillsbench_root(pair_spec, materialized_root=materialized_root)
     source_stub = pair_dir / "source_stub"
     source_stub.mkdir(parents=True, exist_ok=True)
@@ -903,7 +909,11 @@ def build_refine_command(
         str(refine_protocol_path.resolve()),
         "--bundle-contract-path",
         str(bundle_contract_path.resolve()),
+        "--harbor-image-name",
+        harbor_image_name,
     ]
+    if keep_harbor_images:
+        command.append("--keep-harbor-images")
     if override_memory_mb is not None:
         command.extend(["--override-memory-mb", str(override_memory_mb)])
     if override_storage_mb is not None:
@@ -1065,6 +1075,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--override-memory-mb", type=int)
     parser.add_argument("--override-storage-mb", type=int)
     parser.add_argument(
+        "--keep-harbor-images",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Keep per-pair Harbor Docker images after each inner-loop trial. Default: enabled.",
+    )
+    parser.add_argument(
         "--no-docker-health-check",
         action="store_true",
         help="Disable Docker health probes before each pair launch.",
@@ -1183,6 +1199,7 @@ def main(argv: list[str] | None = None) -> int:
                 python_executable=refine_python_executable,
                 override_memory_mb=args.override_memory_mb,
                 override_storage_mb=args.override_storage_mb,
+                keep_harbor_images=args.keep_harbor_images,
             )
             print(f"\n# {pair_id}")
             print(shlex.join(command))
@@ -1303,6 +1320,7 @@ def main(argv: list[str] | None = None) -> int:
                 results=sorted_result_values(results_by_index),
                 runtime_profiles=[profile_summary(profile) for profile in runtime_profiles],
                 active_profile_index=active_profile_state["index"],
+                keep_harbor_images=args.keep_harbor_images,
                 aborted=bool(abort_state["aborted"]),
                 abort_reason=abort_state["abort_reason"],
             ),
@@ -1357,6 +1375,7 @@ def main(argv: list[str] | None = None) -> int:
         pair_id = str(pair_spec.get("pair_id", f"pair-{index}"))
         task_name = str(pair_spec.get("task_name", "unknown-task"))
         schema_id = str(pair_spec.get("schema_id", "unknown-schema"))
+        harbor_image_name = build_harbor_task_pair_image_name(task_name=task_name, schema_id=schema_id)
         run_id: str | None = None
         output_dir: str | None = None
         log_line(f"[{index}/{len(selected_pairs)}] {pair_id}")
@@ -1367,6 +1386,7 @@ def main(argv: list[str] | None = None) -> int:
                 "pair_id": pair_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
+                "harbor_image_name": harbor_image_name,
                 "observed_at": datetime.now(timezone.utc).isoformat(),
             },
         )
@@ -1396,6 +1416,7 @@ def main(argv: list[str] | None = None) -> int:
                 "pair_id": pair_id,
                 "task_name": task_name,
                 "schema_id": schema_id,
+                "harbor_image_name": harbor_image_name,
                 "status": "failed",
                 "stage": "build_command",
                 "run_id": run_id,
@@ -1410,6 +1431,7 @@ def main(argv: list[str] | None = None) -> int:
                     "pair_id": pair_id,
                     "task_name": task_name,
                     "schema_id": schema_id,
+                    "harbor_image_name": harbor_image_name,
                     "stage": "build_command",
                     "error": str(exc),
                     "observed_at": datetime.now(timezone.utc).isoformat(),
@@ -1539,6 +1561,7 @@ def main(argv: list[str] | None = None) -> int:
                     python_executable=refine_python_executable,
                     override_memory_mb=args.override_memory_mb,
                     override_storage_mb=args.override_storage_mb,
+                    keep_harbor_images=args.keep_harbor_images,
                 )
                 emit_event(
                     {
@@ -1547,6 +1570,7 @@ def main(argv: list[str] | None = None) -> int:
                         "pair_id": pair_id,
                         "task_name": task_name,
                         "schema_id": schema_id,
+                        "harbor_image_name": harbor_image_name,
                         "attempt": attempt_number,
                         "runtime_profile": profile_summary(profile),
                         "observed_at": datetime.now(timezone.utc).isoformat(),
@@ -1574,6 +1598,7 @@ def main(argv: list[str] | None = None) -> int:
                             "pair_id": pair_id,
                             "task_name": task_name,
                             "schema_id": schema_id,
+                            "harbor_image_name": harbor_image_name,
                             "attempt": attempt_number,
                             "runtime_profile": profile_summary(profile),
                             "quota_signal_level": quota_signal.get("signal_level"),
@@ -1616,6 +1641,7 @@ def main(argv: list[str] | None = None) -> int:
                         "pair_id": pair_id,
                         "task_name": task_name,
                         "schema_id": schema_id,
+                        "harbor_image_name": harbor_image_name,
                         "status": "failed",
                         "stage": "rate_limit_exhausted",
                         "run_id": run_id,
@@ -1634,6 +1660,7 @@ def main(argv: list[str] | None = None) -> int:
                         "pair_id": pair_id,
                         "task_name": task_name,
                         "schema_id": schema_id,
+                        "harbor_image_name": harbor_image_name,
                         "status": "succeeded",
                         "stage": "run",
                         "run_id": run_id,
@@ -1650,6 +1677,7 @@ def main(argv: list[str] | None = None) -> int:
                             "pair_id": pair_id,
                             "task_name": task_name,
                             "schema_id": schema_id,
+                            "harbor_image_name": harbor_image_name,
                             "returncode": returncode,
                             "runtime_profile": profile_summary(profile),
                             "attempts": attempt_number,
@@ -1676,6 +1704,7 @@ def main(argv: list[str] | None = None) -> int:
                         "pair_id": pair_id,
                         "task_name": task_name,
                         "schema_id": schema_id,
+                        "harbor_image_name": harbor_image_name,
                         "status": "failed",
                         "stage": "run",
                         "run_id": run_id,
@@ -1693,6 +1722,7 @@ def main(argv: list[str] | None = None) -> int:
                             "pair_id": pair_id,
                             "task_name": task_name,
                             "schema_id": schema_id,
+                            "harbor_image_name": harbor_image_name,
                             "stage": "run",
                             "returncode": returncode,
                             "runtime_profile": profile_summary(profile),
@@ -1712,6 +1742,7 @@ def main(argv: list[str] | None = None) -> int:
                         "quota_hard_terms": [],
                     }
                 )
+                failed_command = list(exc.cmd) if isinstance(exc.cmd, list) else command
                 ensure_launcher_failure_artifacts(
                     output_dir=output_dir,
                     run_id=run_id,
@@ -1722,7 +1753,7 @@ def main(argv: list[str] | None = None) -> int:
                     stage="run",
                     error=f"subprocess exited with code {returncode}",
                     returncode=returncode,
-                    command=command,
+                    command=failed_command,
                     extra={"attempts": attempts, "runtime_profile": profile_summary(profile)},
                 )
                 result = {
@@ -1730,12 +1761,13 @@ def main(argv: list[str] | None = None) -> int:
                     "pair_id": pair_id,
                     "task_name": task_name,
                     "schema_id": schema_id,
+                    "harbor_image_name": harbor_image_name,
                     "status": "failed",
                     "stage": "run",
                     "run_id": run_id,
                     "output_dir": output_dir,
                     "returncode": returncode,
-                    "command": command,
+                    "command": failed_command,
                     "error": f"subprocess exited with code {returncode}",
                     "runtime_profile": profile_summary(profile),
                     "attempts": attempts,
@@ -1747,6 +1779,7 @@ def main(argv: list[str] | None = None) -> int:
                         "pair_id": pair_id,
                         "task_name": task_name,
                         "schema_id": schema_id,
+                        "harbor_image_name": harbor_image_name,
                         "stage": "run",
                         "returncode": returncode,
                         "runtime_profile": profile_summary(profile),
@@ -1756,44 +1789,7 @@ def main(argv: list[str] | None = None) -> int:
                 log_line(f"  FAILED {pair_id} with exit code {returncode} via {profile.label}")
                 return result
             except Exception as exc:
-                if command is None:
-                    ensure_launcher_failure_artifacts(
-                        output_dir=output_dir,
-                        run_id=run_id,
-                        task_name=task_name,
-                        schema_id=schema_id,
-                        pair_id=pair_id,
-                        round_budget=args.round_budget,
-                        stage="build_command",
-                        error=str(exc),
-                        traceback_text=traceback.format_exc(),
-                    )
-                    result = {
-                        "index": index,
-                        "pair_id": pair_id,
-                        "task_name": task_name,
-                        "schema_id": schema_id,
-                        "status": "failed",
-                        "stage": "build_command",
-                        "run_id": run_id,
-                        "output_dir": output_dir,
-                        "error": str(exc),
-                        "traceback": traceback.format_exc(),
-                    }
-                    emit_event(
-                        {
-                            "event": "pair_failed",
-                            "index": index,
-                            "pair_id": pair_id,
-                            "task_name": task_name,
-                            "schema_id": schema_id,
-                            "stage": "build_command",
-                            "error": str(exc),
-                            "observed_at": datetime.now(timezone.utc).isoformat(),
-                        },
-                    )
-                    log_line(f"  FAILED during command build for {pair_id}: {exc}")
-                    return result
+                stage = "build_command" if command is None else "run_exception"
                 ensure_launcher_failure_artifacts(
                     output_dir=output_dir,
                     run_id=run_id,
@@ -1801,7 +1797,7 @@ def main(argv: list[str] | None = None) -> int:
                     schema_id=schema_id,
                     pair_id=pair_id,
                     round_budget=args.round_budget,
-                    stage="run_exception",
+                    stage=stage,
                     error=str(exc),
                     traceback_text=traceback.format_exc(),
                     command=command,
@@ -1812,8 +1808,9 @@ def main(argv: list[str] | None = None) -> int:
                     "pair_id": pair_id,
                     "task_name": task_name,
                     "schema_id": schema_id,
+                    "harbor_image_name": harbor_image_name,
                     "status": "failed",
-                    "stage": "run_exception",
+                    "stage": stage,
                     "run_id": run_id,
                     "output_dir": output_dir,
                     "command": command,
@@ -1828,7 +1825,8 @@ def main(argv: list[str] | None = None) -> int:
                         "pair_id": pair_id,
                         "task_name": task_name,
                         "schema_id": schema_id,
-                        "stage": "run_exception",
+                        "harbor_image_name": harbor_image_name,
+                        "stage": stage,
                         "error": str(exc),
                         "observed_at": datetime.now(timezone.utc).isoformat(),
                     },

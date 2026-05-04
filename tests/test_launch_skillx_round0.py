@@ -294,6 +294,8 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             self.assertIn(str(fixture["bundle_path"]), command_text)
             self.assertIn("refine_run_smoke3", command_text)
             self.assertIn("task-beta__artifact-generation__smoke3", command_text)
+            self.assertIn("--harbor-image-name task-beta__artifact-generation", command_text)
+            self.assertIn("--keep-harbor-images", command_text)
 
     def test_build_refine_command_rejects_recursive_python_wrapper(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -400,6 +402,29 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
             command_text = " ".join(command)
             self.assertIn("--override-memory-mb 8192", command_text)
             self.assertIn("--override-storage-mb 12288", command_text)
+
+    def test_build_refine_command_can_disable_harbor_image_retention(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = self._build_fixture(Path(tmpdir))
+            _, pair_specs = self.module.load_materialized_pairs(fixture["materialized_root"])
+            pair = next(spec for spec in pair_specs if spec["pair_id"] == "task-beta__artifact-generation")
+
+            command = self.module.build_refine_command(
+                pair,
+                materialized_root=fixture["materialized_root"],
+                oauth_file=fixture["oauth_file"],
+                round_budget=3,
+                agent="claude-code",
+                model="anthropic/claude-sonnet-4-5",
+                refine_protocol_path=fixture["protocol_path"],
+                bundle_contract_path=fixture["bundle_path"],
+                output_suffix="delete-images",
+                keep_harbor_images=False,
+            )
+
+            command_text = " ".join(command)
+            self.assertIn("--harbor-image-name task-beta__artifact-generation", command_text)
+            self.assertNotIn("--keep-harbor-images", command_text)
 
     def test_resolve_pair_dir_supports_materialized_relative_pair_spec(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
