@@ -24,10 +24,14 @@ Environment overrides:
   SKILLX_NEXT_PAIR_PLAN_MODE         Default: full_matrix.
   SKILLX_MAX_UPDATE_SCHEMAS          Default inherited from Python wrapper; unset means rewrite all eligible schemas.
   SKILLX_MIN_SUPPORT_SIZE            Default inherited from Python wrapper.
+  SKILLX_INNER_AUDIT                 1 runs post-inner-loop audit before outer-loop optimization. Default: 1.
+  SKILLX_INNER_AUDIT_FAIL_ON_RERUN_REQUIRED
+                                      1 stops before outer-loop when audit marks reruns required. Default: 1.
   SKILLX_PYTHON                      Python runtime used by uv. Default: 3.11.
 
 Behavior:
   - exports the completed inner-loop run report
+  - audits the completed inner-loop run and prepares targeted rerun manifests/scripts
   - rebuilds global status
   - runs the outer-loop assignment + schema rewrite step
   - materializes next-round task x rewritten-schema pairs

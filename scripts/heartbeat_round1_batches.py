@@ -33,13 +33,13 @@ PLAN_DIR = (
 PRIMARY_CLAUDE_OAUTH_FILE = Path(
     os.environ.get(
         "SKILLX_ROUND1_PRIMARY_CLAUDE_OAUTH_FILE",
-        str(Path.home() / ".claude-skillx-fallback/claude-code-oauth-token"),
+        str(Path.home() / ".claude/claude-code-oauth-token"),
     )
 ).expanduser()
 FALLBACK_CLAUDE_OAUTH_FILE = Path(
     os.environ.get(
         "SKILLX_ROUND1_FALLBACK_CLAUDE_OAUTH_FILE",
-        str(Path.home() / ".claude/claude-code-oauth-token"),
+        str(Path.home() / ".claude-skillx-fallback/claude-code-oauth-token"),
     )
 ).expanduser()
 

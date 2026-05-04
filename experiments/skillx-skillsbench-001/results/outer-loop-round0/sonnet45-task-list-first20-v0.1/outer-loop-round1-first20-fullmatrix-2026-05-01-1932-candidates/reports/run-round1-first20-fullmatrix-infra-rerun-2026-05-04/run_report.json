@@ -1,0 +1,513 @@
+{
+  "artifacts": {
+    "events_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launcher_logs/run-round1-first20-fullmatrix-infra-rerun-2026-05-04/events.ndjson",
+    "launcher_stdout_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launcher_logs/run-round1-first20-fullmatrix-infra-rerun-2026-05-04/launcher.stdout.log",
+    "pair_specs_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pair_specs.jsonl",
+    "summary_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launcher_logs/run-round1-first20-fullmatrix-infra-rerun-2026-05-04/summary.json"
+  },
+  "duration_sec": 1844.123,
+  "failure_groups": [],
+  "finished_at": "2026-05-04T14:27:12.304886+00:00",
+  "generated_at": "2026-05-04T17:57:02.979427+00:00",
+  "materialized_root": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates",
+  "pair_count_completed": 2,
+  "pair_count_failed": 0,
+  "pair_count_succeeded": 2,
+  "pair_count_total": 2,
+  "pair_results": [
+    {
+      "best_observed": {
+        "reward_raw": 1.0,
+        "round_index": 0,
+        "score_pct": 100.0
+      },
+      "delta_vs_c0_pp": 20.0,
+      "delta_vs_c1_pp": 20.0,
+      "diagnosis_note": "Clean verifier-facing score available for comparison against C0/C1.",
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 100.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          }
+        ]
+      },
+      "evidence_class": "measured",
+      "failure": null,
+      "has_intermediate_exceptions": false,
+      "launcher": {
+        "duration_sec": 292.279,
+        "finished_at": "2026-05-04T14:01:20.460575+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-05-04T13:56:28.181674+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [
+        "[1/2] 3d-scan-calc__artifact-generation",
+        "  OK 3d-scan-calc__artifact-generation via primary:claude-code"
+      ],
+      "official_scores": {
+        "c0_pct": 80.0,
+        "c1_pct": 80.0
+      },
+      "pair_id": "3d-scan-calc__artifact-generation",
+      "reported_score": {
+        "basis": "selected",
+        "reward_raw": 1.0,
+        "round_index": 0,
+        "score_pct": 100.0
+      },
+      "rounds": [
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 1.0,
+            "score_pct": 100.0,
+            "total_tests": null
+          },
+          "event_times": {},
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/3d-scan-calc__artifact-generation/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/3d-scan-calc/rounds/round-0/tune_check/result.json",
+          "reward_raw": 1.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/3d-scan-calc__artifact-generation/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/3d-scan-calc/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 100.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 1.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/3d-scan-calc__artifact-generation/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/3d-scan-calc/rounds/round-0/tune_check/3d-scan-calc-round-0-c4-tune/c4-3d-scan-calc-round-0__37xxYHo/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/3d-scan-calc__artifact-generation/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04",
+        "raw_status": "skipped_baseline_perfect",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "skipped_baseline_perfect",
+        "updated_at": "2026-05-04T14:01:20.394718+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {},
+            "round_index": 0
+          }
+        ],
+        "terminal_round_index": 0
+      },
+      "schema_id": "artifact-generation",
+      "selected": {
+        "classification": {
+          "has_exception_stats": false,
+          "kind": "clean_success",
+          "reason": "positive_reward_with_no_exception_stats",
+          "reward_is_missing": false,
+          "reward_is_zero": false
+        },
+        "reward_raw": 1.0,
+        "round_index": 0,
+        "score_pct": 100.0
+      },
+      "task_name": "3d-scan-calc",
+      "timeout_detected": false
+    },
+    {
+      "best_observed": {
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "delta_vs_c0_pp": 40.0,
+      "delta_vs_c1_pp": 20.0,
+      "diagnosis_note": "Clean verifier-facing score available for comparison against C0/C1.",
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 100.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 100.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "evidence_class": "measured",
+      "failure": null,
+      "has_intermediate_exceptions": false,
+      "launcher": {
+        "duration_sec": 1551.844,
+        "finished_at": "2026-05-04T14:27:12.304886+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-05-04T14:01:20.461325+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [
+        "[2/2] data-to-d3__retrieval-heavy-synthesis",
+        "  OK data-to-d3__retrieval-heavy-synthesis via primary:claude-code",
+        "Finished round0 launch: succeeded=2 failed=0 summary=<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launcher_logs/run-round1-first20-fullmatrix-infra-rerun-2026-05-04/summary.json"
+      ],
+      "official_scores": {
+        "c0_pct": 60.0,
+        "c1_pct": 80.0
+      },
+      "pair_id": "data-to-d3__retrieval-heavy-synthesis",
+      "reported_score": {
+        "basis": "selected",
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged skillpack now directly targets the observed churn pattern with bounded local edits, so the next round should evaluate this revised candidate.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-05-04T14:04:36.811054+00:00",
+            "role_a_completed": "2026-05-04T14:06:24.913643+00:00",
+            "role_b_completed": "2026-05-04T14:09:33.227346+00:00",
+            "round_decision_loaded": "2026-05-04T14:09:33.227466+00:00",
+            "round_started": "2026-05-04T14:04:36.810617+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-0/tune_check/data-to-d3-round-0-c4-tune/c4-data-to-d3-round-0__sphfELo/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged skillpack now compresses redundant checkpoint flow and preserves prompt invariance, so the next round should evaluate the tighter candidate.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 1.0,
+            "score_pct": 100.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-05-04T14:11:54.595910+00:00",
+            "role_a_completed": "2026-05-04T14:14:27.787168+00:00",
+            "role_b_completed": "2026-05-04T14:16:48.531242+00:00",
+            "round_decision_loaded": "2026-05-04T14:16:48.531379+00:00",
+            "round_started": "2026-05-04T14:11:54.595616+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-1/tune_check/result.json",
+          "reward_raw": 1.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 100.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 1.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-1/tune_check/data-to-d3-round-1-c4-tune/c4-data-to-d3-round-1__d5EUT8i/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The failure mode is guidance-induced churn, and the staged skillpack now applies a bounded artifact-first stop rule with less setup overhead, so the next round should evaluate this revised candidate.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 1.0,
+            "score_pct": 100.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-05-04T14:19:31.600886+00:00",
+            "role_a_completed": "2026-05-04T14:21:14.620202+00:00",
+            "role_b_completed": "2026-05-04T14:23:59.150771+00:00",
+            "round_decision_loaded": "2026-05-04T14:23:59.150904+00:00",
+            "round_started": "2026-05-04T14:19:31.600495+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-2/tune_check/result.json",
+          "reward_raw": 1.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 100.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 1.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-2/tune_check/data-to-d3-round-2-c4-tune/c4-data-to-d3-round-2__s2PRqi2/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-05-04T14:27:12.127232+00:00",
+            "round_started": "2026-05-04T14:27:12.127229+00:00",
+            "terminal_round_completed": "2026-05-04T14:27:12.127243+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04/refine/data-to-d3/rounds/round-3/tune_check/data-to-d3-round-3-c4-tune/c4-data-to-d3-round-3__JAGWwTr/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/data-to-d3__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-infra-rerun-2026-05-04",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-05-04T14:27:12.228397+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-05-04T14:04:36.811054+00:00",
+              "role_a_completed": "2026-05-04T14:06:24.913643+00:00",
+              "role_b_completed": "2026-05-04T14:09:33.227346+00:00",
+              "round_decision_loaded": "2026-05-04T14:09:33.227466+00:00",
+              "round_started": "2026-05-04T14:04:36.810617+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-05-04T14:11:54.595910+00:00",
+              "role_a_completed": "2026-05-04T14:14:27.787168+00:00",
+              "role_b_completed": "2026-05-04T14:16:48.531242+00:00",
+              "round_decision_loaded": "2026-05-04T14:16:48.531379+00:00",
+              "round_started": "2026-05-04T14:11:54.595616+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-05-04T14:19:31.600886+00:00",
+              "role_a_completed": "2026-05-04T14:21:14.620202+00:00",
+              "role_b_completed": "2026-05-04T14:23:59.150771+00:00",
+              "round_decision_loaded": "2026-05-04T14:23:59.150904+00:00",
+              "round_started": "2026-05-04T14:19:31.600495+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-05-04T14:27:12.127232+00:00",
+              "round_started": "2026-05-04T14:27:12.127229+00:00",
+              "terminal_round_completed": "2026-05-04T14:27:12.127243+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "retrieval-heavy-synthesis",
+      "selected": {
+        "classification": {
+          "has_exception_stats": false,
+          "kind": "clean_success",
+          "reason": "positive_reward_with_no_exception_stats",
+          "reward_is_missing": false,
+          "reward_is_zero": false
+        },
+        "reward_raw": 1.0,
+        "round_index": 1,
+        "score_pct": 100.0
+      },
+      "task_name": "data-to-d3",
+      "timeout_detected": false
+    }
+  ],
+  "run_label": "run-round1-first20-fullmatrix-infra-rerun-2026-05-04",
+  "started_at": "2026-05-04T13:56:28.181674+00:00",
+  "tasks": [
+    "3d-scan-calc",
+    "data-to-d3"
+  ]
+}

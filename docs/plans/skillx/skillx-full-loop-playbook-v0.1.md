@@ -12,6 +12,7 @@ The full loop is:
 materialized schema-task pairs
   -> inner loop rerun in tmux
   -> run report export
+  -> post-inner-loop audit and targeted rerun plan
   -> global pair status rebuild
   -> outer loop assignment and schema rewrite
   -> next materialized schema-task pairs
@@ -28,6 +29,8 @@ The inner loop evaluates task-schema pairs. The outer loop consumes the complete
   - serves the monitor dashboard with `scripts/serve_round0_monitor.py`
 - `scripts/run_skillx_outer_loop_step.sh`
   - exports the completed inner-loop run report
+  - runs `scripts/audit_skillx_inner_loop_results.py`
+  - blocks by default if any pair requires rerun before outer-loop consumption
   - rebuilds `global_pair_status.json`
   - runs `scripts/run_outer_loop_optimization.py`
   - writes `rewrite_verification.json`
@@ -160,6 +163,31 @@ SKILLX_PREVIOUS_MATERIALIZED_ROOT=experiments/skillx-skillsbench-001/results/out
   experiments/skillx-skillsbench-001/results/outer-loop-round0/outer-loop-round1-candidate-rerun-10x7
 ```
 
+Before the outer-loop optimizer runs, the wrapper now audits the completed inner-loop run. It writes:
+
+```text
+<materialized-root>/reports/<run-label>/inner_loop_audit/inner_loop_audit.json
+<materialized-root>/reports/<run-label>/inner_loop_audit/inner_loop_audit.md
+<materialized-root>/reports/<run-label>/inner_loop_audit/*_pair_manifest.json
+<materialized-root>/reports/<run-label>/inner_loop_audit/run_*_rerun.sh
+```
+
+The audit classifies failed pairs, runtime failures, rate-limit fallback, basic-model fallback, timeout signals, stale artifacts, incomplete launcher output, and intentional `skipped_baseline_perfect` rows. If `rerun_required > 0`, the wrapper stops before rebuilding global status so invalid evidence is not fed into the outer loop.
+
+To inspect without blocking:
+
+```bash
+SKILLX_INNER_AUDIT_FAIL_ON_RERUN_REQUIRED=0 \
+SKILLX_PREVIOUS_MATERIALIZED_ROOT=experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-slice20-v0.2 \
+  scripts/run_skillx_outer_loop_step.sh run-round0-10x7 outer-loop-round1-10x7
+```
+
+To rerun required pairs:
+
+```bash
+bash <materialized-root>/reports/<run-label>/inner_loop_audit/run_required_rerun.sh
+```
+
 This writes:
 
 ```text
@@ -219,6 +247,8 @@ export SKILLX_MIN_SUPPORT_SIZE=0
 export SKILLX_MAX_UPDATE_SCHEMAS=0
 export SKILLX_MAX_EVAL_TASKS_PER_SCHEMA=6
 export SKILLX_NEXT_PAIR_PLAN_MODE=full_matrix
+export SKILLX_INNER_AUDIT=1
+export SKILLX_INNER_AUDIT_FAIL_ON_RERUN_REQUIRED=1
 ```
 
 Task scope knobs:
@@ -247,10 +277,11 @@ When a Coding Agent is asked to run the full loop:
 4. Start `scripts/run_skillx_inner_loop_tmux.sh`.
 5. Report the tmux session name and dashboard URL.
 6. Wait for human confirmation or monitor completion.
-7. Run `scripts/run_skillx_outer_loop_step.sh`.
-8. Inspect `rewrite_verification.json`.
-9. Report the next materialized root and suggested next inner-loop command.
-10. Keep code commits separate from large raw experiment outputs unless explicitly asked.
+7. Run `scripts/run_skillx_outer_loop_step.sh`; inspect `inner_loop_audit.md` if it blocks.
+8. If reruns are required, launch the generated rerun script and fold the clean rerun output into the effective run before continuing.
+9. Inspect `rewrite_verification.json`.
+10. Report the next materialized root and suggested next inner-loop command.
+11. Keep code commits separate from large raw experiment outputs unless explicitly asked.
 
 ## 7. Optional Main-Agent Automation
 
@@ -261,9 +292,11 @@ for each outer-loop round:
   prepare branch/worktree
   start inner-loop tmux + dashboard
   monitor launcher summary until completed
-  if too many failures or Docker incident:
-    stop and ask human
-  export run report and global status
+  export run report
+  run post-inner-loop audit
+  if rerun_required > 0:
+    launch or hand off generated targeted rerun plan before outer-loop consumption
+  rebuild global status
   run outer-loop optimizer
   require rewrite_verification.status == passed
   smoke-test one generated pair if this is a new algorithm version
@@ -279,6 +312,8 @@ One complete cycle is valid when:
 - inner-loop `summary.json` exists
 - every failed pair has structured failure artifacts
 - `run_report.json` was exported
+- `inner_loop_audit.json` exists
+- `inner_loop_audit.json.counts.rerun_required = 0`, or required reruns were executed and folded into the effective results
 - `global_pair_status.json` was rebuilt
 - outer-loop `outer_loop_optimization_summary.json` exists
 - `rewrite_verification.json` has `status = passed`
@@ -293,3 +328,5 @@ The candidate prompt bank is not accepted as incumbent until the next inner loop
 - `docs/plans/skillx/skillx-assignment-matrix-protocol-v0.1.md`
 - `docs/plans/skillx/skillx-outer-loop-update-protocol-v0.1.md`
 - `docs/plans/skillx/skillx-parallel-development-playbook-v0.1.md`
+- `docs/plans/skillx/full-loop-post-inner-audit-reference-v0.1.md`
+- `skills/skillx-full-loop-audit/SKILL.md`

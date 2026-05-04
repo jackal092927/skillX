@@ -1,0 +1,373 @@
+{
+  "artifacts": {
+    "events_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launcher_logs/run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/events.ndjson",
+    "launcher_stdout_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launcher_logs/run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/launcher.stdout.log",
+    "pair_specs_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pair_specs.jsonl",
+    "summary_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launcher_logs/run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/summary.json"
+  },
+  "duration_sec": 3601.594,
+  "failure_groups": [],
+  "finished_at": "2026-05-04T15:23:11.090284+00:00",
+  "generated_at": "2026-05-04T17:57:02.979161+00:00",
+  "materialized_root": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates",
+  "pair_count_completed": 1,
+  "pair_count_failed": 0,
+  "pair_count_succeeded": 1,
+  "pair_count_total": 1,
+  "pair_results": [
+    {
+      "best_observed": {
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "delta_vs_c0_pp": 0.0,
+      "delta_vs_c1_pp": 0.0,
+      "diagnosis_note": "Clean verifier-facing score available for comparison against C0/C1.",
+      "early_stop": false,
+      "evaluation_matrix": {
+        "columns": [
+          "round_index",
+          "score_pct",
+          "passed_tests",
+          "failed_tests",
+          "total_tests",
+          "n_errors",
+          "pytest_exitcode",
+          "classification_kind",
+          "decision",
+          "terminal_executor_only",
+          "exception_stats"
+        ],
+        "rows": [
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 0,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 1,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": "continue",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 2,
+            "score_pct": 0.0,
+            "terminal_executor_only": false,
+            "total_tests": null
+          },
+          {
+            "classification_kind": null,
+            "decision": null,
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "round_index": 3,
+            "score_pct": 0.0,
+            "terminal_executor_only": true,
+            "total_tests": null
+          }
+        ]
+      },
+      "evidence_class": "measured",
+      "failure": null,
+      "has_intermediate_exceptions": false,
+      "launcher": {
+        "duration_sec": 3601.594,
+        "finished_at": "2026-05-04T15:23:11.090284+00:00",
+        "returncode": 0,
+        "stage": "run",
+        "started_at": "2026-05-04T14:23:09.496420+00:00",
+        "status": "succeeded"
+      },
+      "launcher_log_excerpt": [
+        "[1/1] adaptive-cruise-control__retrieval-heavy-synthesis",
+        "  OK adaptive-cruise-control__retrieval-heavy-synthesis via primary:claude-code",
+        "Finished round0 launch: succeeded=1 failed=0 summary=<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/launcher_logs/run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/summary.json"
+      ],
+      "official_scores": {
+        "c0_pct": 0.0,
+        "c1_pct": 0.0
+      },
+      "pair_id": "adaptive-cruise-control__retrieval-heavy-synthesis",
+      "reported_score": {
+        "basis": "selected",
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "rounds": [
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged candidate now adds concrete anti-churn diagnostics and bounded tuning guidance, which directly addresses the observed low-progress loop pattern.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-05-04T14:34:50.772703+00:00",
+            "role_a_completed": "2026-05-04T14:36:20.884296+00:00",
+            "role_b_completed": "2026-05-04T14:39:45.465161+00:00",
+            "round_decision_loaded": "2026-05-04T14:39:45.465460+00:00",
+            "round_started": "2026-05-04T14:34:50.772252+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-0/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-0",
+          "round_index": 0,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-0/tune_check/adaptive-cruise-control-round-0-c4-tune/c4-adaptive-cruise-control-round__n9dXUEF/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "The staged skillpack now adds stricter consolidated diagnostics and loop guards that directly target the observed churn without changing the invariant task prompt.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-05-04T14:49:11.754875+00:00",
+            "role_a_completed": "2026-05-04T14:50:47.809207+00:00",
+            "role_b_completed": "2026-05-04T14:53:32.146057+00:00",
+            "round_decision_loaded": "2026-05-04T14:53:32.146179+00:00",
+            "round_started": "2026-05-04T14:49:11.754483+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-1/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-1",
+          "round_index": 1,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-1/tune_check/adaptive-cruise-control-round-1-c4-tune/c4-adaptive-cruise-control-round__bGk28nT/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": "continue",
+          "decision_reason": "Continue with the rewritten candidate because the failure mode was localized to metric reframing, repeated low-signal retuning, and minor tool-precondition mistakes rather than a fundamentally wrong skillpack. The staged next skillpack now locks the verifier-facing metric contract, adds a bounded tuning stop rule, and requires a final snapshot from unchanged code before any success claim.",
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-05-04T15:05:28.151632+00:00",
+            "role_a_completed": "2026-05-04T15:07:23.266421+00:00",
+            "role_b_completed": "2026-05-04T15:10:19.225820+00:00",
+            "round_decision_loaded": "2026-05-04T15:10:19.225928+00:00",
+            "round_started": "2026-05-04T15:05:28.151268+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-2/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-2",
+          "round_index": 2,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": false,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-2/tune_check/adaptive-cruise-control-round-2-c4-tune/c4-adaptive-cruise-control-round__LUQD6Q6/result.json"
+          }
+        },
+        {
+          "classification": null,
+          "decision": null,
+          "decision_reason": null,
+          "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+          "evaluation": {
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "reward_raw": 0.0,
+            "score_pct": 0.0,
+            "total_tests": null
+          },
+          "event_times": {
+            "executor_completed": "2026-05-04T15:23:10.895605+00:00",
+            "round_started": "2026-05-04T15:23:10.895603+00:00",
+            "terminal_round_completed": "2026-05-04T15:23:10.895616+00:00"
+          },
+          "exception_stats": {},
+          "result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-3/tune_check/result.json",
+          "reward_raw": 0.0,
+          "round_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-3",
+          "round_index": 3,
+          "score_pct": 0.0,
+          "selected_candidate_label": null,
+          "terminal_executor_only": true,
+          "verifier_summary": {
+            "eval_name": "claude-code__claude-sonnet-4-5__adhoc",
+            "exception_stats": {},
+            "failed_tests": null,
+            "n_errors": null,
+            "n_trials": null,
+            "passed_tests": null,
+            "pytest_exitcode": null,
+            "report_path": null,
+            "reward": 0.0,
+            "total_tests": null,
+            "trial_result_path": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/refine/adaptive-cruise-control/rounds/round-3/tune_check/adaptive-cruise-control-round-3-c4-tune/c4-adaptive-cruise-control-round__HzHgzPk/result.json"
+          }
+        }
+      ],
+      "run": {
+        "output_dir": "<repo-root>/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/pairs/adaptive-cruise-control__retrieval-heavy-synthesis/refine_run_run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04",
+        "raw_status": "completed",
+        "round_budget": 3,
+        "stale_status": false,
+        "status": "completed",
+        "updated_at": "2026-05-04T15:23:10.988818+00:00"
+      },
+      "runtime": {
+        "round_event_sequence": [
+          {
+            "event_times": {
+              "executor_completed": "2026-05-04T14:34:50.772703+00:00",
+              "role_a_completed": "2026-05-04T14:36:20.884296+00:00",
+              "role_b_completed": "2026-05-04T14:39:45.465161+00:00",
+              "round_decision_loaded": "2026-05-04T14:39:45.465460+00:00",
+              "round_started": "2026-05-04T14:34:50.772252+00:00"
+            },
+            "round_index": 0
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-05-04T14:49:11.754875+00:00",
+              "role_a_completed": "2026-05-04T14:50:47.809207+00:00",
+              "role_b_completed": "2026-05-04T14:53:32.146057+00:00",
+              "round_decision_loaded": "2026-05-04T14:53:32.146179+00:00",
+              "round_started": "2026-05-04T14:49:11.754483+00:00"
+            },
+            "round_index": 1
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-05-04T15:05:28.151632+00:00",
+              "role_a_completed": "2026-05-04T15:07:23.266421+00:00",
+              "role_b_completed": "2026-05-04T15:10:19.225820+00:00",
+              "round_decision_loaded": "2026-05-04T15:10:19.225928+00:00",
+              "round_started": "2026-05-04T15:05:28.151268+00:00"
+            },
+            "round_index": 2
+          },
+          {
+            "event_times": {
+              "executor_completed": "2026-05-04T15:23:10.895605+00:00",
+              "round_started": "2026-05-04T15:23:10.895603+00:00",
+              "terminal_round_completed": "2026-05-04T15:23:10.895616+00:00"
+            },
+            "round_index": 3
+          }
+        ],
+        "terminal_round_index": 3
+      },
+      "schema_id": "retrieval-heavy-synthesis",
+      "selected": {
+        "classification": {
+          "has_exception_stats": false,
+          "kind": "scientific_failure",
+          "reason": "clean_zero_or_negative_reward",
+          "reward_is_missing": false,
+          "reward_is_zero": true
+        },
+        "reward_raw": 0.0,
+        "round_index": 0,
+        "score_pct": 0.0
+      },
+      "task_name": "adaptive-cruise-control",
+      "timeout_detected": false
+    }
+  ],
+  "run_label": "run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04",
+  "started_at": "2026-05-04T14:23:09.496420+00:00",
+  "tasks": [
+    "adaptive-cruise-control"
+  ]
+}

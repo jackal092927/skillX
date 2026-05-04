@@ -1,0 +1,79 @@
+[
+  {
+    "clean_success": 7,
+    "contract_failure": 0,
+    "mean_score_pct": 33.5,
+    "pair_count": 20,
+    "runtime_failure": 0,
+    "schema_id": "analytic-pipeline",
+    "scientific_failure": 13,
+    "succeeded_pairs": 20,
+    "unknown_classification": 0
+  },
+  {
+    "clean_success": 10,
+    "contract_failure": 0,
+    "mean_score_pct": 48.0,
+    "pair_count": 20,
+    "runtime_failure": 0,
+    "schema_id": "artifact-generation",
+    "scientific_failure": 10,
+    "succeeded_pairs": 20,
+    "unknown_classification": 0
+  },
+  {
+    "clean_success": 10,
+    "contract_failure": 0,
+    "mean_score_pct": 48.0,
+    "pair_count": 20,
+    "runtime_failure": 0,
+    "schema_id": "engineering-composition",
+    "scientific_failure": 10,
+    "succeeded_pairs": 20,
+    "unknown_classification": 0
+  },
+  {
+    "clean_success": 10,
+    "contract_failure": 0,
+    "mean_score_pct": 48.0,
+    "pair_count": 20,
+    "runtime_failure": 0,
+    "schema_id": "environment-control",
+    "scientific_failure": 10,
+    "succeeded_pairs": 20,
+    "unknown_classification": 0
+  },
+  {
+    "clean_success": 11,
+    "contract_failure": 0,
+    "mean_score_pct": 53.0,
+    "pair_count": 20,
+    "runtime_failure": 0,
+    "schema_id": "methodology-guardrail",
+    "scientific_failure": 9,
+    "succeeded_pairs": 20,
+    "unknown_classification": 0
+  },
+  {
+    "clean_success": 8,
+    "contract_failure": 0,
+    "mean_score_pct": 38.0,
+    "pair_count": 20,
+    "runtime_failure": 0,
+    "schema_id": "orchestration-delegation",
+    "scientific_failure": 12,
+    "succeeded_pairs": 20,
+    "unknown_classification": 0
+  },
+  {
+    "clean_success": 10,
+    "contract_failure": 0,
+    "mean_score_pct": 47.75,
+    "pair_count": 20,
+    "runtime_failure": 0,
+    "schema_id": "retrieval-heavy-synthesis",
+    "scientific_failure": 10,
+    "succeeded_pairs": 20,
+    "unknown_classification": 0
+  }
+]

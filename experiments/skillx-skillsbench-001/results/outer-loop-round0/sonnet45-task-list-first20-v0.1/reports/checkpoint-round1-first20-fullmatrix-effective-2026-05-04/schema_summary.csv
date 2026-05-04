@@ -1,0 +1,8 @@
+schema_id,pair_count,succeeded_pairs,mean_score_pct,clean_success,scientific_failure,runtime_failure,contract_failure,unknown_classification
+analytic-pipeline,20,20,33.5,7,13,0,0,0
+artifact-generation,20,20,48.0,10,10,0,0,0
+engineering-composition,20,20,48.0,10,10,0,0,0
+environment-control,20,20,48.0,10,10,0,0,0
+methodology-guardrail,20,20,53.0,11,9,0,0,0
+orchestration-delegation,20,20,38.0,8,12,0,0,0
+retrieval-heavy-synthesis,20,20,47.75,10,10,0,0,0

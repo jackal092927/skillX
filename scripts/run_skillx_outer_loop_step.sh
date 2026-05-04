@@ -22,6 +22,10 @@ Environment overrides:
   SKILLX_NEXT_MATERIALIZED_ROOT
                             Next-round materialized root if arg 3 is omitted.
   SKILLX_EXPORT_REPORT      1 exports the completed inner-loop run report first. Default: 1
+  SKILLX_INNER_AUDIT        1 runs post-inner-loop audit before outer-loop optimization. Default: 1
+  SKILLX_INNER_AUDIT_FAIL_ON_RERUN_REQUIRED
+                            1 stops before outer-loop when audit marks reruns required. Default: 1
+  SKILLX_INNER_AUDIT_DIR    Optional audit output dir. Default: <previous-root>/reports/<inner-run-label>/inner_loop_audit
   SKILLX_BUILD_GLOBAL_STATUS
                             1 rebuilds reports/global-round0-status. Default: 1
   SKILLX_TASK_SLICE         Optional task-slice JSON used to filter global status.
@@ -53,6 +57,7 @@ Environment overrides:
 
 Behavior:
   - exports a run_report.json for the completed inner-loop run
+  - audits the completed inner-loop run and prepares targeted rerun manifests/scripts
   - rebuilds global_pair_status.json
   - runs scripts/run_outer_loop_optimization.py
   - verifies schema rewrite completion through rewrite_verification.json
@@ -90,6 +95,9 @@ DEFAULT_NEXT_MATERIALIZED_ROOT="$ROUND_ROOT/${NEXT_ROUND_ID}-candidate-rerun-$OU
 NEXT_MATERIALIZED_ROOT="$(resolve_path "${3:-${SKILLX_NEXT_MATERIALIZED_ROOT:-$DEFAULT_NEXT_MATERIALIZED_ROOT}}")"
 
 EXPORT_REPORT="${SKILLX_EXPORT_REPORT:-1}"
+INNER_AUDIT="${SKILLX_INNER_AUDIT:-1}"
+INNER_AUDIT_FAIL_ON_RERUN_REQUIRED="${SKILLX_INNER_AUDIT_FAIL_ON_RERUN_REQUIRED:-1}"
+INNER_AUDIT_DIR="${SKILLX_INNER_AUDIT_DIR:-}"
 BUILD_GLOBAL_STATUS="${SKILLX_BUILD_GLOBAL_STATUS:-1}"
 TASK_SLICE="${SKILLX_TASK_SLICE:-}"
 CONTROL_PLANE_OUTPUT_DIR="$ROUND_ROOT/reports/$OUTER_LABEL/control-plane"
@@ -180,6 +188,32 @@ if [[ "$EXPORT_REPORT" == "1" ]]; then
   uv run --python "$PYTHON_RUNTIME" python scripts/export_round0_run_report.py \
     --materialized-root "$PREVIOUS_MATERIALIZED_ROOT" \
     --run-label "$INNER_RUN_LABEL"
+fi
+
+if [[ "$INNER_AUDIT" == "1" || "$INNER_AUDIT" == "true" ]]; then
+  if [[ -z "$INNER_RUN_LABEL" ]]; then
+    echo "inner-run-label is required when SKILLX_INNER_AUDIT=1" >&2
+    exit 1
+  fi
+  audit_cmd=(
+    uv
+    run
+    --python
+    "$PYTHON_RUNTIME"
+    python
+    scripts/audit_skillx_inner_loop_results.py
+    --materialized-root
+    "$PREVIOUS_MATERIALIZED_ROOT"
+    --run-label
+    "$INNER_RUN_LABEL"
+  )
+  if [[ -n "$INNER_AUDIT_DIR" ]]; then
+    audit_cmd+=(--audit-dir "$(resolve_path "$INNER_AUDIT_DIR")")
+  fi
+  if [[ "$INNER_AUDIT_FAIL_ON_RERUN_REQUIRED" == "1" || "$INNER_AUDIT_FAIL_ON_RERUN_REQUIRED" == "true" ]]; then
+    audit_cmd+=(--fail-on-rerun-required)
+  fi
+  "${audit_cmd[@]}"
 fi
 
 if [[ "$BUILD_GLOBAL_STATUS" == "1" ]]; then

@@ -1,0 +1,53 @@
+{
+  "all_tasks_have_7_succeeded_pairs": true,
+  "artifact_type": "skillx_first20_round0_checkpoint",
+  "base_failed_pair_ids": [
+    "adaptive-cruise-control__retrieval-heavy-synthesis"
+  ],
+  "base_failed_pairs": 1,
+  "base_run_label": "run-round1-first20-fullmatrix-fallback-2026-05-01-combined-b01-b03",
+  "base_run_report": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/reports/run-round1-first20-fullmatrix-fallback-2026-05-01-combined-b01-b03/run_report.json",
+  "checkpoint_label": "checkpoint-round1-first20-fullmatrix-effective-2026-05-04",
+  "classification_counts": {
+    "clean_success": 66,
+    "scientific_failure": 74
+  },
+  "effective_pair_count": 140,
+  "generated_at": "2026-05-04T17:57:41.434143+00:00",
+  "launcher_failed_pairs": 0,
+  "launcher_status_counts": {
+    "succeeded": 140
+  },
+  "launcher_succeeded_pairs": 140,
+  "rerun_labels": [
+    "run-round1-first20-fullmatrix-infra-rerun-2026-05-04",
+    "run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04"
+  ],
+  "rerun_replaced_pairs": 3,
+  "rerun_replacements": [
+    {
+      "base_status": "succeeded",
+      "pair_id": "3d-scan-calc__artifact-generation",
+      "rerun_label": "run-round1-first20-fullmatrix-infra-rerun-2026-05-04",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "succeeded",
+      "pair_id": "data-to-d3__retrieval-heavy-synthesis",
+      "rerun_label": "run-round1-first20-fullmatrix-infra-rerun-2026-05-04",
+      "rerun_status": "succeeded"
+    },
+    {
+      "base_status": "failed",
+      "pair_id": "adaptive-cruise-control__retrieval-heavy-synthesis",
+      "rerun_label": "run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04",
+      "rerun_status": "succeeded"
+    }
+  ],
+  "rerun_reports": [
+    "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/reports/run-round1-first20-fullmatrix-infra-rerun-2026-05-04/run_report.json",
+    "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round1-first20-fullmatrix-2026-05-01-1932-candidates/reports/run-round1-first20-fullmatrix-adaptive-rhs-rerun-2026-05-04/run_report.json"
+  ],
+  "schema_count": 7,
+  "task_count": 20
+}
