@@ -99,6 +99,39 @@ DEFAULT_RETRY_EXCLUDE = [
 ]
 TIMEOUT_EXCEPTION_MARKERS = ("timeout",)
 HARBOR_INFRA_FAILURE_EXCEPTION = "HarborJobExecutionError"
+DEFAULT_TUNE_INFRA_MAX_ATTEMPTS = 2
+TUNE_INFRA_FAILURE_MARKERS = (
+    "failed to connect to the docker api",
+    "cannot connect to the docker daemon",
+    "docker daemon is not running",
+    "is the docker daemon running",
+    "docker.sock",
+    "error during connect",
+    "could not resolve 'ports.ubuntu.com'",
+    "temporary failure resolving 'ports.ubuntu.com'",
+    "failed to fetch http://ports.ubuntu.com",
+)
+
+
+class TuneInfraFailure(RuntimeError):
+    """Raised when a tune_check round produced only infrastructure failures."""
+
+    def __init__(self, *, task_id: str, round_dir_path: Path, result: dict[str, Any], attempts: list[dict[str, Any]]):
+        self.task_id = task_id
+        self.round_dir_path = round_dir_path
+        self.result = result
+        self.attempts = attempts
+        round_name = round_dir_path.name
+        message = result.get("failure_message") or "tune_check infrastructure failure"
+        super().__init__(f"{task_id} {round_name}: {message}")
+
+    def status_fields(self) -> dict[str, Any]:
+        return {
+            "failed_round_dir": str(self.round_dir_path),
+            "infra_failure_stage": self.result.get("failure_stage"),
+            "infra_failure_message": self.result.get("failure_message"),
+            "infra_failure_attempts": len(self.attempts),
+        }
 
 
 @dataclass(frozen=True)
@@ -284,6 +317,22 @@ def tune_result_has_executor_unavailable(tune_result: dict[str, Any]) -> bool:
     return bool(tune_result.get("executor_unavailable"))
 
 
+def tune_result_is_infra_failure(tune_result: dict[str, Any] | None) -> bool:
+    if not isinstance(tune_result, dict):
+        return False
+    if tune_result_has_executor_unavailable(tune_result):
+        return True
+    exception_stats = tune_result.get("exception_stats") or {}
+    return isinstance(exception_stats, dict) and HARBOR_INFRA_FAILURE_EXCEPTION in exception_stats
+
+
+def tune_result_is_placeholder_evidence(tune_result: dict[str, Any] | None) -> bool:
+    if not isinstance(tune_result, dict):
+        return False
+    note = str(tune_result.get("note") or "").lower()
+    return note.startswith("no prior ") and " tune evidence available" in note
+
+
 def build_tune_infra_failure_result(
     *,
     task_id: str,
@@ -306,6 +355,70 @@ def build_tune_infra_failure_result(
         "failure_stage": stage,
         "failure_message": message,
         "attempt_timeout_multiplier": attempt_timeout_multiplier,
+    }
+
+
+def compact_infra_attempt_result(result: dict[str, Any], *, attempt_index: int) -> dict[str, Any]:
+    return {
+        "attempt_index": attempt_index,
+        "reward": result.get("reward"),
+        "eval_name": result.get("eval_name"),
+        "exception_stats": result.get("exception_stats") or {},
+        "executor_unavailable": bool(result.get("executor_unavailable")),
+        "failure_stage": result.get("failure_stage"),
+        "failure_message": result.get("failure_message"),
+        "attempt_timeout_multiplier": result.get("attempt_timeout_multiplier"),
+        "observed_at": _timestamp(),
+    }
+
+
+def detect_harbor_infra_failure_message(job_dir: Path, tune_result: dict[str, Any]) -> str | None:
+    exception_stats = tune_result.get("exception_stats") or {}
+    if not isinstance(exception_stats, dict) or not exception_stats:
+        return None
+    candidates = [job_dir / "job.log"]
+    candidates.extend(sorted(job_dir.glob("*/exception.txt")))
+    candidates.extend(sorted(job_dir.glob("*/trial.log")))
+    for path in candidates:
+        if not path.exists() or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        normalized = text.lower()
+        if any(marker in normalized for marker in TUNE_INFRA_FAILURE_MARKERS):
+            excerpt = " ".join(text.strip().split())
+            if len(excerpt) > 1200:
+                excerpt = excerpt[:1197] + "..."
+            return f"{path.name}: {excerpt}"
+    return None
+
+
+def coerce_trial_infra_failure_result(
+    *,
+    task_id: str,
+    round_dir_path: Path,
+    job_dir: Path,
+    tune_result: dict[str, Any],
+    attempt_timeout_multiplier: float | None = None,
+) -> dict[str, Any]:
+    message = detect_harbor_infra_failure_message(job_dir, tune_result)
+    if message is None:
+        return tune_result
+    return {
+        "task_id": task_id,
+        "condition": "c4",
+        "reward": None,
+        "eval_name": tune_result.get("eval_name"),
+        "exception_stats": {HARBOR_INFRA_FAILURE_EXCEPTION: [f"harbor_trial_infra_failure: {message}"]},
+        "n_trials": tune_result.get("n_trials"),
+        "n_errors": tune_result.get("n_errors"),
+        "skill_source": str(round_dir_path / "skillpack"),
+        "executor_unavailable": True,
+        "failure_stage": "harbor_trial_infra_failure",
+        "failure_message": message,
+        "attempt_timeout_multiplier": attempt_timeout_multiplier,
+        "original_exception_stats": tune_result.get("exception_stats") or {},
+        "original_reward": tune_result.get("reward"),
+        "job_dir": str(job_dir),
     }
 
 
@@ -369,7 +482,7 @@ def parse_job_result(job_dir: Path, condition: str, task_id: str, skill_source: 
             reward_mean = metrics[0].get("mean")
         exception_stats = eval_payload.get("exception_stats") or {}
     exception_stats = normalize_harbor_exception_stats(job_dir, exception_stats)
-    return {
+    result = {
         "task_id": task_id,
         "condition": condition,
         "job_dir": str(job_dir),
@@ -379,6 +492,12 @@ def parse_job_result(job_dir: Path, condition: str, task_id: str, skill_source: 
         "exception_stats": exception_stats,
         "skill_source": skill_source,
     }
+    return coerce_trial_infra_failure_result(
+        task_id=task_id,
+        round_dir_path=Path(skill_source).parent,
+        job_dir=job_dir,
+        tune_result=result,
+    )
 
 
 def build_job_config(
@@ -3121,6 +3240,10 @@ def existing_tune_result(
     top_level_result = tune_root / "result.json"
     if top_level_result.exists():
         cached = read_json(top_level_result)
+        if tune_result_is_placeholder_evidence(cached):
+            return None
+        if tune_result_is_infra_failure(cached):
+            return None
         config_path = tune_root / "config.json"
         if not config_path.exists():
             return cached
@@ -3133,6 +3256,8 @@ def existing_tune_result(
         if not result_path.exists():
             return cached
         canonical = parse_job_result(job_dir, condition="c4", task_id=task_id, skill_source=skill_source)
+        if tune_result_is_infra_failure(canonical):
+            return None
         if canonical != cached:
             write_json(top_level_result, canonical)
         return canonical
@@ -3148,6 +3273,8 @@ def existing_tune_result(
     if not result_path.exists():
         return None
     result = parse_job_result(job_dir, condition="c4", task_id=task_id, skill_source=skill_source)
+    if tune_result_is_infra_failure(result):
+        return None
     write_json(top_level_result, result)
     return result
 
@@ -3155,6 +3282,31 @@ def existing_tune_result(
 def clear_job_dir(job_dir: Path) -> None:
     if job_dir.exists():
         shutil.rmtree(job_dir)
+
+
+def archive_tune_infra_failure_attempt(
+    *,
+    tune_root: Path,
+    job_dir: Path,
+    config_path: Path,
+    result: dict[str, Any],
+    attempt_index: int,
+) -> dict[str, Any]:
+    attempts_root = ensure_dir(tune_root / "infra_failure_attempts")
+    attempt_dir = attempts_root / f"attempt-{attempt_index}"
+    if attempt_dir.exists():
+        shutil.rmtree(attempt_dir)
+    ensure_dir(attempt_dir)
+    if job_dir.exists():
+        shutil.move(str(job_dir), str(attempt_dir / job_dir.name))
+    if config_path.exists():
+        shutil.copy2(config_path, attempt_dir / "config.json")
+    attempt_payload = compact_infra_attempt_result(result, attempt_index=attempt_index)
+    write_json(attempt_dir / "attempt_summary.json", attempt_payload)
+    top_level_result = tune_root / "result.json"
+    if top_level_result.exists():
+        top_level_result.unlink()
+    return attempt_payload
 
 
 def is_retryable_refine_contract_failure(job_dir: Path) -> bool:
@@ -3225,11 +3377,18 @@ def run_round_tune_check(
                 attempt_timeout_multiplier=attempt_timeout_multiplier,
             )
         try:
-            return parse_job_result(
+            parsed = parse_job_result(
                 job_dir,
                 condition="c4",
                 task_id=task.task_id,
                 skill_source=str(round_dir_path / "skillpack"),
+            )
+            return coerce_trial_infra_failure_result(
+                task_id=task.task_id,
+                round_dir_path=round_dir_path,
+                job_dir=job_dir,
+                tune_result=parsed,
+                attempt_timeout_multiplier=attempt_timeout_multiplier,
             )
         except Exception as error:
             return build_tune_infra_failure_result(
@@ -3240,12 +3399,66 @@ def run_round_tune_check(
                 attempt_timeout_multiplier=attempt_timeout_multiplier,
             )
 
-    result = run_attempt(attempt_timeout_multiplier=timeout_multiplier)
-    if tune_result_has_timeout_exception(result):
-        # Retry timeout outcomes once in-place with double timeout; other failures are final.
-        result = run_attempt(attempt_timeout_multiplier=timeout_multiplier * 2.0)
-    write_json(tune_root / "result.json", result)
-    return result
+    infra_attempts: list[dict[str, Any]] = []
+    last_infra_result: dict[str, Any] | None = None
+
+    for attempt_index in range(DEFAULT_TUNE_INFRA_MAX_ATTEMPTS):
+        result = run_attempt(attempt_timeout_multiplier=timeout_multiplier)
+        if tune_result_is_infra_failure(result):
+            last_infra_result = result
+            infra_attempts.append(
+                archive_tune_infra_failure_attempt(
+                    tune_root=tune_root,
+                    job_dir=job_dir,
+                    config_path=config_path,
+                    result=result,
+                    attempt_index=attempt_index,
+                )
+            )
+            continue
+
+        if tune_result_has_timeout_exception(result):
+            # Retry timeout outcomes once in-place with double timeout; other failures are final.
+            result = run_attempt(attempt_timeout_multiplier=timeout_multiplier * 2.0)
+            if tune_result_is_infra_failure(result):
+                last_infra_result = result
+                infra_attempts.append(
+                    archive_tune_infra_failure_attempt(
+                        tune_root=tune_root,
+                        job_dir=job_dir,
+                        config_path=config_path,
+                        result=result,
+                        attempt_index=attempt_index,
+                    )
+                )
+                continue
+
+        write_json(tune_root / "result.json", result)
+        return result
+
+    if last_infra_result is None:
+        raise RuntimeError("unreachable tune infra retry state")
+    failure_report = {
+        "status": "incomplete_due_to_infra_failure",
+        "task_id": task.task_id,
+        "round_dir": str(round_dir_path),
+        "attempts": infra_attempts,
+        "final_failure": compact_infra_attempt_result(
+            last_infra_result,
+            attempt_index=max(0, len(infra_attempts) - 1),
+        ),
+        "observed_at": _timestamp(),
+    }
+    write_json(tune_root / "infra_failure.json", failure_report)
+    top_level_result = tune_root / "result.json"
+    if top_level_result.exists():
+        top_level_result.unlink()
+    raise TuneInfraFailure(
+        task_id=task.task_id,
+        round_dir_path=round_dir_path,
+        result=last_infra_result,
+        attempts=infra_attempts,
+    )
 
 
 def append_refine_ledger(
@@ -3999,6 +4212,22 @@ def main() -> int:
             extra_fields=completed_status_details,
         )
         return 0
+    except TuneInfraFailure as error:
+        write_run_failure(
+            run_failure_path,
+            build_main_run_failure_payload(
+                error=error,
+                args=args,
+                failure_context=failure_context,
+            ),
+        )
+        write_run_status(
+            run_dir,
+            "incomplete_due_to_infra_failure",
+            args,
+            extra_fields=error.status_fields(),
+        )
+        return 2
     except Exception as error:
         write_run_failure(
             run_failure_path,

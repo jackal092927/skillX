@@ -369,12 +369,14 @@ def ensure_launcher_failure_artifacts(
             },
         )
         write_json(failure_path, payload)
-    write_launcher_failed_run_status(
-        run_dir,
-        run_id=run_id,
-        task_name=task_name,
-        round_budget=round_budget,
-    )
+    existing_status = read_run_status_value(run_dir / "RUN_STATUS.md")
+    if existing_status is None or existing_status == "running":
+        write_launcher_failed_run_status(
+            run_dir,
+            run_id=run_id,
+            task_name=task_name,
+            round_budget=round_budget,
+        )
 
 
 def build_launcher_summary(

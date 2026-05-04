@@ -1291,7 +1291,7 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertEqual(seen_multipliers, [1.0])
             self.assertEqual(result["exception_stats"], {"VerifierOutputParseError": ["trial-a"]})
 
-    def test_run_round_tune_check_soft_fails_on_harbor_command_error(self) -> None:
+    def test_run_round_tune_check_marks_repeated_harbor_command_errors_incomplete(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             task_root = root / "skillsbench" / "tasks" / "demo-task"
@@ -1328,6 +1328,164 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 self.module.run_harbor_job = fail_run_harbor_job
                 self.module.parse_job_result = fail_parse_job_result
 
+                with self.assertRaises(self.module.TuneInfraFailure) as raised:
+                    self.module.run_round_tune_check(
+                        task=task,
+                        run_dir=root / "out",
+                        round_dir_path=round_dir,
+                        skillsbench_root=root / "skillsbench",
+                        oauth_file=root / "oauth.txt",
+                        agent_name="claude-code",
+                        model_name="anthropic/claude-sonnet-4-5",
+                        timeout_multiplier=1.0,
+                    )
+            finally:
+                self.module.materialize_c4_sandbox = original_materialize
+                self.module.run_harbor_job = original_run_harbor_job
+                self.module.parse_job_result = original_parse_job_result
+
+            self.assertFalse(observed["parse_called"])
+            self.assertEqual(len(raised.exception.attempts), self.module.DEFAULT_TUNE_INFRA_MAX_ATTEMPTS)
+            self.assertEqual(raised.exception.result["failure_stage"], "harbor_run_failed")
+            self.assertFalse((round_dir / "tune_check" / "result.json").exists())
+            self.assertTrue((round_dir / "tune_check" / "infra_failure.json").exists())
+            self.assertTrue((round_dir / "tune_check" / "infra_failure_attempts" / "attempt-0").exists())
+
+    def test_parse_job_result_marks_docker_trial_failure_as_infra_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            round_dir = root / "round-2"
+            job_dir = round_dir / "tune_check" / "demo-task-round-2-c4-tune"
+            trial_dir = job_dir / "trial-a"
+            trial_dir.mkdir(parents=True)
+            (job_dir / "result.json").write_text(
+                json.dumps(
+                    {
+                        "stats": {
+                            "n_trials": 1,
+                            "n_errors": 1,
+                            "evals": {
+                                "pytest": {
+                                    "metrics": [{"mean": 0.0}],
+                                    "exception_stats": {"RuntimeError": ["trial-a"]},
+                                }
+                            },
+                        }
+                    }
+                )
+            )
+            (trial_dir / "exception.txt").write_text(
+                "RuntimeError: Docker compose command failed. "
+                "failed to connect to the docker API at unix:///Users/demo/.docker/run/docker.sock"
+            )
+
+            result = self.module.parse_job_result(
+                job_dir,
+                condition="c4",
+                task_id="demo-task",
+                skill_source=str(round_dir / "skillpack"),
+            )
+
+            self.assertTrue(result["executor_unavailable"])
+            self.assertIsNone(result["reward"])
+            self.assertEqual(result["failure_stage"], "harbor_trial_infra_failure")
+            self.assertIn("HarborJobExecutionError", result["exception_stats"])
+            self.assertEqual(result["original_exception_stats"], {"RuntimeError": ["trial-a"]})
+
+    def test_existing_tune_result_ignores_no_prior_evidence_placeholder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            round_dir = root / "round-0"
+            tune_root = round_dir / "tune_check"
+            job_dir = tune_root / "demo-task-round-0-c4-tune"
+            (job_dir / "trial-without-result").mkdir(parents=True)
+            (tune_root / "config.json").write_text(json.dumps({"job_name": job_dir.name}))
+            (tune_root / "result.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": "demo-task",
+                        "condition": "c1",
+                        "reward": None,
+                        "exception_stats": {},
+                        "skill_source": "/tmp/source/skills",
+                        "note": "no prior c1 tune evidence available",
+                    }
+                )
+            )
+
+            result = self.module.existing_tune_result(
+                task_id="demo-task",
+                round_dir_path=round_dir,
+                skill_source=str(round_dir / "skillpack"),
+            )
+
+            self.assertIsNone(result)
+
+    def test_run_round_tune_check_retries_infra_failure_and_persists_success_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            task_root = root / "skillsbench" / "tasks" / "demo-task"
+            skills_dir = task_root / "environment" / "skills" / "skill-a"
+            skills_dir.mkdir(parents=True)
+            (skills_dir / "SKILL.md").write_text("original\n")
+            (task_root / "instruction.md").write_text("instr\n")
+            (task_root / "task.toml").write_text("[agent]\n")
+            (task_root / "tests").mkdir()
+            (task_root / "tests" / "test.sh").write_text("echo ok\n")
+            (task_root / "tests" / "test_outputs.py").write_text("print('ok')\n")
+            task = self.module.discover_task_inputs(root / "skillsbench", "demo-task")
+
+            round_dir = root / "round-1"
+            (round_dir / "skillpack" / "skills" / "skill-a").mkdir(parents=True)
+            (round_dir / "skillpack" / "skills" / "skill-a" / "SKILL.md").write_text("candidate\n")
+            sandbox_dir = root / "sandbox"
+            sandbox_dir.mkdir()
+
+            parse_results = [
+                {
+                    "task_id": "demo-task",
+                    "condition": "c4",
+                    "reward": None,
+                    "eval_name": None,
+                    "exception_stats": {
+                        "HarborJobExecutionError": ["harbor_trial_infra_failure: docker daemon is not running"]
+                    },
+                    "n_trials": 0,
+                    "n_errors": 1,
+                    "skill_source": str(round_dir / "skillpack"),
+                    "executor_unavailable": True,
+                    "failure_stage": "harbor_trial_infra_failure",
+                    "failure_message": "docker daemon is not running",
+                },
+                {
+                    "task_id": "demo-task",
+                    "condition": "c4",
+                    "reward": 0.75,
+                    "eval_name": "pytest",
+                    "exception_stats": {},
+                    "n_trials": 1,
+                    "n_errors": 0,
+                    "skill_source": str(round_dir / "skillpack"),
+                },
+            ]
+            seen_multipliers: list[float] = []
+
+            original_materialize = self.module.materialize_c4_sandbox
+            original_run_harbor_job = self.module.run_harbor_job
+            original_parse_job_result = self.module.parse_job_result
+            try:
+                self.module.materialize_c4_sandbox = lambda *args, **kwargs: sandbox_dir
+
+                def fake_run_harbor_job(**kwargs):
+                    config_payload = json.loads(Path(kwargs["config_path"]).read_text())
+                    seen_multipliers.append(config_payload["timeout_multiplier"])
+
+                def fake_parse_job_result(*args, **kwargs):
+                    return parse_results.pop(0)
+
+                self.module.run_harbor_job = fake_run_harbor_job
+                self.module.parse_job_result = fake_parse_job_result
+
                 result = self.module.run_round_tune_check(
                     task=task,
                     run_dir=root / "out",
@@ -1343,12 +1501,12 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
                 self.module.run_harbor_job = original_run_harbor_job
                 self.module.parse_job_result = original_parse_job_result
 
-            self.assertFalse(observed["parse_called"])
-            self.assertTrue(result["executor_unavailable"])
-            self.assertIn("HarborJobExecutionError", result["exception_stats"])
-            self.assertEqual(result["failure_stage"], "harbor_run_failed")
-            self.assertIsNone(result["reward"])
-            self.assertTrue((round_dir / "tune_check" / "result.json").exists())
+            self.assertEqual(seen_multipliers, [1.0, 1.0])
+            self.assertEqual(result["reward"], 0.75)
+            persisted = json.loads((round_dir / "tune_check" / "result.json").read_text())
+            self.assertEqual(persisted["reward"], 0.75)
+            self.assertTrue((round_dir / "tune_check" / "infra_failure_attempts" / "attempt-0").exists())
+            self.assertFalse((round_dir / "tune_check" / "infra_failure.json").exists())
 
     def test_is_round_materialized_checks_required_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -2188,9 +2346,9 @@ class RunSkillxRefineBenchmarkTests(unittest.TestCase):
             self.assertTrue((round_zero / "role_b" / "refine_plan.json").exists())
             self.assertTrue((round_zero / "role_b" / "round_decision.json").exists())
             cached_executor = self.module.existing_executor_outputs(round_dir_path=round_zero, task_id="demo-task")
-            self.assertIsNotNone(cached_executor)
+            self.assertIsNone(cached_executor)
             cached_round = self.module.existing_c4ar_round_outputs(round_dir_path=round_zero, task_id="demo-task")
-            self.assertIsNotNone(cached_round)
+            self.assertIsNone(cached_round)
 
     def test_run_c4ar_round_with_harbor_soft_fails_role_a_timeout(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -867,6 +867,28 @@ class LaunchSkillXRound0Tests(unittest.TestCase):
                 [event.get("event") for event in events],
             )
 
+    def test_launcher_failure_preserves_runner_infra_incomplete_status(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            run_dir = Path(tmpdir) / "run"
+            run_dir.mkdir()
+            (run_dir / "RUN_STATUS.md").write_text("- status: `incomplete_due_to_infra_failure`\n")
+
+            self.module.ensure_launcher_failure_artifacts(
+                output_dir=str(run_dir),
+                run_id="demo-run",
+                task_name="demo-task",
+                schema_id="demo-schema",
+                pair_id="demo-task__demo-schema",
+                round_budget=3,
+                stage="run",
+                error="subprocess exited with code 2",
+                returncode=2,
+                command=["python", "runner.py"],
+            )
+
+            self.assertIn("incomplete_due_to_infra_failure", (run_dir / "RUN_STATUS.md").read_text())
+            self.assertTrue((run_dir / "run_failure.json").exists())
+
     def test_main_aborts_early_when_docker_health_gate_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             fixture = self._build_fixture(Path(tmpdir))
