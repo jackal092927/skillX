@@ -6,3 +6,10 @@
 /pair_specs.jsonl
 /pairs/
 !/reports/
+
+# Sub-run directories keep the same shape: commit reports, ignore raw logs/runs.
+/*/launcher_logs/
+/*/manifest.json
+/*/pair_specs.jsonl
+/*/pairs/
+!/*/reports/
