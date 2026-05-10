@@ -1,0 +1,5 @@
+set,n,mean_prev_score,mean_cur_score,mean_delta_score,improved_score_count,worse_score_count,same_score_count,mean_prev_reported_score,mean_cur_reported_score,mean_delta_reported_score,reported_100_before,reported_100_after,reported_100_to_0,positive_score_to_zero,mean_prev_trajectory_signal,mean_cur_trajectory_signal,mean_delta_trajectory_signal,mean_prev_growth_component,mean_cur_growth_component,mean_delta_growth_component,mean_delta_improved_rounds,stable_or_ideal_before,stable_or_ideal_after
+all_140_pairs,140,17.67,18.05,0.38,29,34,77,54.14,45.18,-8.96,72,59,26,22,21.64,22.57,0.93,63.25,65.43,2.18,-0.01,23,20
+previous_primary_assignment,15,77.48,31.67,-45.81,1,13,1,97.33,57.33,-40.0,14,8,6,7,87.0,44.0,-43.0,100.0,76.67,-23.33,-1.53,11,5
+previous_multi_assignment,27,77.5,25.34,-52.15,1,25,1,94.63,58.89,-35.74,24,14,10,14,92.78,35.0,-57.78,99.63,72.59,-27.04,-1.52,23,6
+previous_schema_training_assignment,28,75.85,25.55,-50.29,1,25,2,94.82,60.36,-34.46,25,15,10,14,91.07,35.36,-55.71,99.64,73.57,-26.07,-1.46,23,6

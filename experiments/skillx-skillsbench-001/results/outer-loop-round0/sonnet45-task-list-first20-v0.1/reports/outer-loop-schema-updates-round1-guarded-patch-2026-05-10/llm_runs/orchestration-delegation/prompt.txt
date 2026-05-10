@@ -1,0 +1,465 @@
+You are the SkillX outer-loop schema update operator.
+Update the schema as structured operations, not as a final accepted prompt bank.
+
+Rules:
+- Use evidence-grounded operations only.
+- Prefer slot-level operations over free-form prompt rewriting.
+- You may add, remove, and sharpen items when evidence supports it.
+- Do not remove a useful incumbent item unless it is redundant, harmful, or contradicted by evidence.
+- Keep Render frozen; optimize only the schema-level guidance.
+- Preserve schema distinctness and explicitly handle low-margin competitors.
+- Output strictly valid JSON matching the provided schema.
+
+Update-mode rules:
+- Current outer-loop update mode is `guarded_patch`.
+- Treat CURRENT_SCHEMA as the stable base, not as a failed artifact to replace.
+- Make the smallest patch that explains positive_transfer_pairs.
+- Do not broaden the schema from globally regressed evidence.
+- Turn protected_regression_pairs into explicit avoid/failure-mode guardrails.
+- Prefer add/sharpen operations; remove only if an incumbent item directly caused a protected regression.
+
+CURRENT_SCHEMA:
+{
+  "avoid": [
+    "eager direct completion without dependency checks",
+    "reviewer-only prompts that lack execution choreography",
+    "over-abstract synthesis that ignores operational order"
+  ],
+  "category_id": "orchestration-delegation",
+  "emphasize": [
+    "constraint extraction before action",
+    "ordering across dependent steps / systems",
+    "state handoff between stages or tools",
+    "fail-safe finalization and side-effect awareness"
+  ],
+  "expected_bad_fit": [
+    "static artifact-only tasks",
+    "deep scientific analysis pipelines"
+  ],
+  "expected_good_fit": [
+    "scheduling / delegation workflows",
+    "multi-system action coordination",
+    "tasks where one substep creates constraints for the next"
+  ],
+  "meta_prompt": "You are revising a skill for an orchestration/delegation task.\nOptimize the skill as a coordination protocol, not just as a content-generation prompt.\n\nPrioritize:\n1. extracting constraints before taking actions,\n2. preserving correct action order across dependent systems or stages,\n3. making state handoffs explicit,\n4. preventing side effects from happening before prerequisites are checked.\n\nIf the task is failing, first strengthen dependency ordering and handoff logic before adding more general reasoning guidance.",
+  "semantic_intent": "Coordinate ordered external actions or substeps where sequence and dependency management matter."
+}
+
+EVIDENCE_BUNDLE:
+{
+  "allowed_patch_scope": [
+    "narrow slot edits grounded in positive transfer pairs",
+    "preserve incumbent behavior unless evidence requires a small sharpen"
+  ],
+  "ambiguous_borderline_cases": [
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "3d-scan-calc"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "azure-bgp-oscillation-route-leak"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "citation-check"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-agentops"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-google-auto"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve"
+    }
+  ],
+  "assigned_task_summaries": [
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 20.0,
+      "evidence_reasons": [
+        "primary",
+        "near_best",
+        "high_score",
+        "stable_gain",
+        "ideal_zero_to_full"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 20.0,
+      "outcome": "success",
+      "primary_assigned_category": "orchestration-delegation",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "ideal_zero_to_full_stable",
+      "score": 100.0,
+      "task_best_schema": "orchestration-delegation",
+      "task_best_score": 100.0,
+      "task_name": "data-to-d3",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "task requires a coupled multi-file web artifact with precise D3 chart behavior, layout constraints, and linked interactions",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "generator",
+          "reviewer"
+        ],
+        "task_object_seed": "artifact-generation",
+        "tool_surface_regime": "tool-medium",
+        "verifier_mode": "deterministic-artifact-plus-stage-check",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 45.3,
+      "evidence_reasons": [
+        "primary",
+        "near_best"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 25.67,
+      "outcome": "success",
+      "primary_assigned_category": "orchestration-delegation",
+      "reported_score": 60.0,
+      "round_r0_to_best_delta_pp": 60.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "partial_gain_then_regression",
+      "score": 39.9167,
+      "task_best_schema": "orchestration-delegation",
+      "task_best_score": 39.9167,
+      "task_name": "civ6-adjacency-optimizer",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "parse .Civ6Map, compute adjacency bonuses for district placements, and maximize total score against an optimal benchmark",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-optional",
+        "verifier_mode": "benchmark-threshold",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "medium",
+      "delta_vs_c1_pp": 40.0,
+      "evidence_reasons": [
+        "stable_gain"
+      ],
+      "evidence_role": "stable_gain_support",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 7.5,
+      "outcome": "success",
+      "primary_assigned_category": "environment-control",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 3.0,
+      "schema_trajectory_quality": "stable_non_decreasing_gain",
+      "score": 60.0,
+      "task_best_schema": "environment-control",
+      "task_best_score": 80.0,
+      "task_name": "econ-detrending-correlation",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "extract nominal series, deflate with CPI, HP-filter log-real series, compute Pearson correlation, output single number",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-optional",
+        "verifier_mode": "deterministic-output-contract",
+        "workflow_topology": "staged-multi-step"
+      }
+    }
+  ],
+  "blocked_regression_patterns": [
+    "earthquake-phase-association regressed from 100.0 to 100.0",
+    "earthquake-plate-calculation regressed from 100.0 to 0.0"
+  ],
+  "category_id": "orchestration-delegation",
+  "cross_schema_losses": [
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "3d-scan-calc",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "azure-bgp-oscillation-route-leak",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "citation-check",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 60.0,
+      "gap_pp": 20.0,
+      "task_name": "econ-detrending-correlation",
+      "winning_score": 80.0,
+      "won_by": "environment-control"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-build-agentops",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-build-google-auto",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    }
+  ],
+  "main_borderline_competitors": [
+    {
+      "count": 6,
+      "value": "analytic-pipeline"
+    }
+  ],
+  "main_failure_patterns": [],
+  "mean_assigned_score": 66.6389,
+  "mean_delta_vs_c1_pp": 35.1,
+  "mean_r0_to_best_delta_pp": 86.6667,
+  "outcome_counts": {
+    "success": 3
+  },
+  "outer_loop_global_update_mode": "guarded_patch",
+  "outer_loop_global_update_reason": "protected regressions exceed rewrite guard, but positive transfer evidence exists",
+  "outer_loop_update_mode": "guarded_patch",
+  "outer_loop_update_reason": "schema has positive transfer evidence; patch against stable base",
+  "positive_transfer_pairs": [
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 60.0,
+      "current_score": 39.9167,
+      "current_trajectory_signal_score": 45.0,
+      "pair_id": "civ6-adjacency-optimizer__orchestration-delegation",
+      "previous_reported_score": 60.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "orchestration-delegation",
+      "score_delta_pp": 39.9167,
+      "task_name": "civ6-adjacency-optimizer",
+      "trajectory_signal_delta_pp": 45.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 100.0,
+      "current_trajectory_signal_score": 100.0,
+      "pair_id": "data-to-d3__orchestration-delegation",
+      "previous_reported_score": 100.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "orchestration-delegation",
+      "score_delta_pp": 100.0,
+      "task_name": "data-to-d3",
+      "trajectory_signal_delta_pp": 100.0
+    }
+  ],
+  "protected_regression_pairs": [
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 0.0,
+      "current_trajectory_signal_score": 0.0,
+      "pair_id": "earthquake-phase-association__orchestration-delegation",
+      "previous_reported_score": 100.0,
+      "previous_roles": [
+        "previous_multi_assignment",
+        "previous_schema_training_assignment"
+      ],
+      "previous_score": 100.0,
+      "previous_trajectory_signal_score": 100.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "orchestration-delegation",
+      "score_delta_pp": -100.0,
+      "task_name": "earthquake-phase-association",
+      "trajectory_signal_delta_pp": -100.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 0.0,
+      "current_score": 0.0,
+      "current_trajectory_signal_score": 0.0,
+      "pair_id": "earthquake-plate-calculation__orchestration-delegation",
+      "previous_reported_score": 100.0,
+      "previous_roles": [
+        "previous_multi_assignment",
+        "previous_primary_assignment",
+        "previous_schema_training_assignment"
+      ],
+      "previous_score": 100.0,
+      "previous_trajectory_signal_score": 100.0,
+      "reported_score_delta_pp": -100.0,
+      "schema_id": "orchestration-delegation",
+      "score_delta_pp": -100.0,
+      "task_name": "earthquake-plate-calculation",
+      "trajectory_signal_delta_pp": -100.0
+    }
+  ],
+  "reliable_support_size": 3,
+  "stability_notes": [],
+  "support_size": 3,
+  "task_profile_signals": {
+    "primary_pattern": [
+      {
+        "count": 3,
+        "value": "pipeline"
+      }
+    ],
+    "task_object_seed": [
+      {
+        "count": 2,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "artifact-generation"
+      }
+    ],
+    "tool_surface_regime": [
+      {
+        "count": 2,
+        "value": "tool-heavy-script-optional"
+      },
+      {
+        "count": 1,
+        "value": "tool-medium"
+      }
+    ],
+    "verifier_mode": [
+      {
+        "count": 1,
+        "value": "deterministic-artifact-plus-stage-check"
+      },
+      {
+        "count": 1,
+        "value": "benchmark-threshold"
+      },
+      {
+        "count": 1,
+        "value": "deterministic-output-contract"
+      }
+    ],
+    "workflow_topology": [
+      {
+        "count": 3,
+        "value": "staged-multi-step"
+      }
+    ]
+  }
+}
+
+DETERMINISTIC_SEED_EDITS_FOR_REFERENCE_ONLY:
+{
+  "avoid": {
+    "add": [
+      "schema broadening that regresses previously stable task-schema behavior"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "emphasize": {
+    "add": [
+      "extract the task-specific failure mode before adding broader procedural scaffolding",
+      "limit this update to narrow evidence-backed patches against the stable base schema",
+      "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+      "name the required execution and verification handoffs instead of leaving tool use implicit",
+      "state why this schema should win over analytic-pipeline on borderline tasks"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "expected_bad_fit": {
+    "add": [
+      "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+    ],
+    "remove": []
+  },
+  "expected_good_fit": {
+    "add": [
+      "task patterns matching positive-transfer evidence from the candidate outer-loop round",
+      "tasks with deterministic-artifact-plus-stage-check verifier behavior when the schema's workflow bias matches the task",
+      "tasks whose dominant operational pattern is pipeline"
+    ],
+    "remove": []
+  },
+  "hypothesized_primary_failure_modes": {
+    "add": [
+      "outer-loop candidate regression on protected prior-success tasks",
+      "low-margin schema-boundary ambiguity against analytic-pipeline"
+    ],
+    "remove": [],
+    "sharpen": []
+  }
+}
+

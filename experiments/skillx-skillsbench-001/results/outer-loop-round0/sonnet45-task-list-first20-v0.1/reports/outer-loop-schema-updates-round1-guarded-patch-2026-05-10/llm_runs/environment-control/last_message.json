@@ -1,0 +1,95 @@
+{
+  "acceptance_notes": [
+    "Guarded patch mode correctly treats current schema as stable base rather than failed artifact",
+    "All edits grounded in evidence: regressions \u2192 avoid guardrails, borderline losses \u2192 differentiation sharpening",
+    "No speculative broadening from positive transfer on generic pipeline tasks",
+    "Preserves schema distinctness by reinforcing control/simulation core rather than expanding into analytic-pipeline overlap zone"
+  ],
+  "challenger_guidance": {
+    "conservative": "Preserve all incumbent control/simulation guidance; add only minimal guardrails against the observed regressions. Do not incorporate positive transfer evidence from generic pipeline tasks.",
+    "differentiating": "Sharpen the active-control vs passive-processing boundary. Add explicit guardrails to prevent regression on control/simulation tasks. Clarify why environment-control wins over analytic-pipeline on borderline cases (control loop presence, not workflow topology).",
+    "exploratory": "Rewrite toward a hybrid schema that handles both control/simulation and generic pipeline tasks. Aggressively broaden expected_good_fit to include all pipeline-pattern tasks with deterministic contracts."
+  },
+  "expected_effect": [
+    "Preserve control/simulation task performance by adding regression guardrails",
+    "Sharpen differentiation from analytic-pipeline using active-vs-passive control boundary",
+    "Reduce borderline ambiguity by making workflow bias matching explicit",
+    "Prevent further drift into analytic-pipeline territory while maintaining stable base"
+  ],
+  "operator_summary": {
+    "add": [
+      "explicit guardrail: do not regress on control/simulation tasks that previously succeeded",
+      "differentiation anchor: wins over analytic-pipeline when task requires active control loop or environment interaction, not just staged processing",
+      "workflow handoff specification: name execution and verification handoffs explicitly"
+    ],
+    "exclude": [
+      "generic pipeline scaffolding that overlaps with analytic-pipeline territory",
+      "speculative broadening from globally regressed tasks"
+    ],
+    "keep": [
+      "world / simulator / environment state understanding",
+      "explicit control or planning loop structure",
+      "parameter, policy, or plan validation",
+      "metric-facing evaluation after execution",
+      "control design",
+      "planning with validity constraints",
+      "simulator-driven evaluation tasks"
+    ],
+    "remove": [],
+    "sharpen": [
+      "semantic_intent: clarify the boundary between environment-control (active state manipulation) vs analytic-pipeline (passive staged processing)"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "schema broadening into generic pipeline territory that regresses control/simulation task performance",
+        "weakening the control-loop and environment-interaction differentiation from analytic-pipeline",
+        "losing the active-vs-passive boundary: environment-control is for state manipulation, not just staged computation"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "state why environment-control wins over analytic-pipeline: task requires active control loop, state manipulation, or policy execution vs passive staged processing",
+        "name required execution and verification handoffs explicitly instead of leaving tool orchestration implicit",
+        "match workflow bias to task profile: environment-control for control/simulation, analytic-pipeline for staged analytical processing"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "world / simulator / environment state understanding with active manipulation or control feedback",
+          "old": "world / simulator / environment state understanding"
+        },
+        {
+          "new": "explicit control or planning loop structure with evaluate-adjust-execute cycles, not just staged pipeline steps",
+          "old": "explicit control or planning loop structure"
+        }
+      ]
+    },
+    "expected_bad_fit": {
+      "add": [
+        "borderline pipeline tasks where analytic-pipeline wins because the task is staged analytical processing without active control",
+        "tasks that are purely computational workflows without environment state manipulation"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "tasks requiring active control loops with state feedback (e.g., optimal power flow, policy optimization)",
+        "tasks where the agent manipulates environment parameters and observes metric responses",
+        "simulation-driven evaluation with explicit validity or metric constraints"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "protected regression on control/simulation tasks (energy-ac-optimal-power-flow, exoplanet-detection-period) due to schema drift toward generic pipeline patterns",
+        "low-margin boundary ambiguity with analytic-pipeline on 6 tasks scoring 0.0 for both schemas"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

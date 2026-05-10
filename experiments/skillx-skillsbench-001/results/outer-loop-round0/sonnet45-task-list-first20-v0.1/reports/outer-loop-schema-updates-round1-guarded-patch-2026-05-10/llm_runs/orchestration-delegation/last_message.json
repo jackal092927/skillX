@@ -1,0 +1,94 @@
+{
+  "acceptance_notes": [
+    "Guarded patch mode: all changes preserve incumbent schema structure and make minimal evidence-backed additions",
+    "Protected regressions (earthquake tasks) converted to avoid patterns rather than triggering schema removal",
+    "Positive transfer explained by artifact-construction and multi-stage-optimization additions, not by broadening",
+    "Competitive differentiation against analytic-pipeline made explicit via expected_bad_fit and hypothesized failure modes",
+    "No incumbent items removed; all changes are additive or sharpening based on 3-task assigned evidence"
+  ],
+  "challenger_guidance": {
+    "conservative": "Accept only the protected regression guardrails (avoid schema broadening) and the minimal expected_good_fit addition for multi-file artifact generation. Defer other changes until more evidence accumulates. Rationale: 2 positive transfers is thin support for major sharpening; focus on preventing known regressions.",
+    "differentiating": "Prioritize the competitive boundary clarifications: add all expected_bad_fit items and the 'conflating pure computational analysis' avoid pattern. These directly address the 6 borderline losses to analytic-pipeline by stating when NOT to use orchestration-delegation. Rationale: 0pp margin losses indicate schema confusion that explicit differentiation can resolve.",
+    "exploratory": "Accept all proposed additions and sharpenings. The positive transfer tasks share clear common structure (staged-multi-step + pipeline + artifact/optimization focus), and the protected regressions reveal a need for tighter coordination-vs-computation boundary. Rationale: Small support size but high-confidence signal quality justifies explicit workflow assumption and competitor differentiation."
+  },
+  "expected_effect": [
+    "Preserve 100% score on data-to-d3 by codifying multi-stage artifact construction pattern",
+    "Maintain civ6-adjacency-optimizer gains (39.9, 45.3pp margin) through optimization-benchmark-verification pattern",
+    "Reduce future regressions on stable tasks via explicit schema-broadening guardrail",
+    "Improve boundary clarity with analytic-pipeline on the 6 borderline cases by stating when coordination complexity is minimal",
+    "Make staged-multi-step workflow assumption explicit to guide future task routing decisions"
+  ],
+  "operator_summary": {
+    "add": [
+      "Guardrail against schema broadening that regresses previously stable task assignments",
+      "Explicit workflow assumption about multi-stage artifact construction and computational pipelines",
+      "Competitive differentiation explaining when to choose this schema over analytic-pipeline",
+      "Expected good fit patterns matching positive transfer evidence (artifact generation, optimization benchmarks)"
+    ],
+    "exclude": [
+      "Broadening from earthquake task regressions (evidence is negative, not positive)",
+      "Adding scientific analysis patterns that competed with other stable schemas",
+      "Speculative features beyond the 3 assigned tasks' common profile"
+    ],
+    "keep": [
+      "Core emphasis on constraint extraction, ordering, state handoff, and fail-safe finalization",
+      "Semantic intent focused on coordinating ordered external actions with dependency management",
+      "Existing avoid patterns for eager completion and over-abstract synthesis",
+      "Expected good fit for multi-system coordination and dependent substep workflows"
+    ],
+    "remove": [],
+    "sharpen": [
+      "Make 'ordering across dependent steps' more specific about staged workflows and constraint propagation",
+      "Clarify 'tasks where one substep creates constraints' with artifact/computation output language",
+      "Expand expected_bad_fit to include pure computational analysis without coordination complexity"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "schema broadening that causes regression on previously stable task-schema assignments",
+        "conflating pure computational analysis pipelines with orchestration needs when coordination complexity is minimal"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "multi-stage artifact construction where each stage produces outputs that constrain subsequent stages",
+        "computational pipeline coordination requiring explicit handoff between data transformation, processing, and verification stages",
+        "making workflow stage boundaries and execution handoffs explicit before rendering task-specific guidance"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "ordering and dependency management across multi-stage workflows where one stage's output artifact or computation creates binding constraints for the next",
+          "old": "ordering across dependent steps / systems"
+        }
+      ]
+    },
+    "expected_bad_fit": {
+      "add": [
+        "pure computational analysis pipelines where analytic-pipeline schema provides better workflow match",
+        "scientific analysis tasks with deterministic output contracts but minimal state handoff complexity",
+        "tasks where the primary challenge is domain computation rather than coordination across stages"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "multi-file artifact generation requiring staged construction with precise inter-component coordination (e.g., data-to-d3 pattern)",
+        "optimization tasks requiring constraint extraction, computational pipeline execution, and benchmark verification against thresholds",
+        "tasks with staged-multi-step workflows where pipeline execution order determines correctness"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "regression on previously stable scientific analysis tasks (earthquake-phase-association, earthquake-plate-calculation) due to insufficient workflow-to-task pattern matching",
+        "boundary ambiguity with analytic-pipeline on computational tasks that have both analysis and light coordination aspects, resolved by checking whether multi-stage constraint propagation is the primary challenge"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

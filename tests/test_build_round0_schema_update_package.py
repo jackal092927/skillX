@@ -344,6 +344,108 @@ class BuildRound0SchemaUpdatePackageTests(unittest.TestCase):
                 "schema_training_assignments",
             )
 
+    def test_guarded_patch_updates_positive_schema_and_holds_others(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            prompt_bank_path = self._write_prompt_bank(root)
+            task_profiles_path = self._write_task_profiles(root)
+            bundle_path = self._write_control_bundle(root)
+            update_decision = {
+                "artifact_type": "skillx_outer_loop_update_decision",
+                "global_update_mode": "guarded_patch",
+                "mode_reason": "positive transfer with protected regression",
+                "scorecard": {},
+                "positive_transfer_pairs": [
+                    {
+                        "pair_id": "task-b__schema-alpha",
+                        "task_name": "task-b",
+                        "schema_id": "schema-alpha",
+                        "previous_score": 0.0,
+                        "current_score": 100.0,
+                        "score_delta_pp": 100.0,
+                    }
+                ],
+                "protected_regression_pairs": [
+                    {
+                        "pair_id": "task-a__schema-alpha",
+                        "task_name": "task-a",
+                        "schema_id": "schema-alpha",
+                        "previous_reported_score": 100.0,
+                        "current_reported_score": 0.0,
+                        "reported_score_delta_pp": -100.0,
+                    }
+                ],
+                "schema_decisions": {
+                    "schema-alpha": {
+                        "schema_id": "schema-alpha",
+                        "update_mode": "guarded_patch",
+                        "reason": "schema has positive transfer evidence; patch against stable base",
+                        "positive_transfer_pairs": [
+                            {
+                                "pair_id": "task-b__schema-alpha",
+                                "task_name": "task-b",
+                                "schema_id": "schema-alpha",
+                            }
+                        ],
+                        "protected_regression_pairs": [
+                            {
+                                "pair_id": "task-a__schema-alpha",
+                                "task_name": "task-a",
+                                "schema_id": "schema-alpha",
+                            }
+                        ],
+                        "allowed_patch_scope": ["narrow slot edits grounded in positive transfer pairs"],
+                        "blocked_regression_patterns": ["task-a regressed from 100 to 0"],
+                    },
+                    "schema-beta": {
+                        "schema_id": "schema-beta",
+                        "update_mode": "hold",
+                        "reason": "no schema-local positive transfer; keep stable base",
+                        "positive_transfer_pairs": [],
+                        "protected_regression_pairs": [],
+                        "allowed_patch_scope": [],
+                        "blocked_regression_patterns": [],
+                    },
+                },
+            }
+
+            package = self.module.build_schema_update_package(
+                control_plane_bundle_path=bundle_path,
+                prompt_bank_path=prompt_bank_path,
+                task_cluster_inputs_path=task_profiles_path,
+                update_decision=update_decision,
+                rewrite_mode="deterministic",
+                llm_model="anthropic/claude-sonnet-4-5",
+                llm_timeout_sec=1.0,
+                llm_work_dir=None,
+                round_id="round0-test",
+                next_round_id="round1-test",
+                min_support_size=0,
+                low_margin_pp=5.0,
+                boundary_margin_pp=10.0,
+                max_update_schemas=0,
+                max_eval_tasks_per_schema=5,
+            )
+
+            plan_by_schema = {row["category_id"]: row for row in package["round_update_plan"]}
+            self.assertEqual(plan_by_schema["schema-alpha"]["action"], "update")
+            self.assertEqual(plan_by_schema["schema-alpha"]["outer_loop_update_mode"], "guarded_patch")
+            self.assertEqual(
+                plan_by_schema["schema-alpha"]["reason"],
+                "selected_by_guarded_patch_positive_transfer",
+            )
+            self.assertEqual(plan_by_schema["schema-alpha"]["recommended_challenger_mode"], "conservative")
+            self.assertEqual(plan_by_schema["schema-beta"]["action"], "freeze")
+            self.assertEqual(plan_by_schema["schema-beta"]["reason"], "freeze_update_decision_hold")
+            self.assertTrue(package["rewrite_verification"]["decision_limited_update"])
+
+            candidate_schema = {
+                row["category_id"]: row for row in package["candidate_prompt_bank"]["categories"]
+            }["schema-alpha"]
+            self.assertEqual(candidate_schema["outer_loop_update_mode"], "guarded_patch")
+            self.assertIn("positive-transfer evidence", " ".join(candidate_schema["expected_good_fit"]))
+            self.assertEqual(package["challenger_eval_plan"][0]["task_names"][0], "task-b")
+
     def test_freezes_schema_below_support_floor(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)

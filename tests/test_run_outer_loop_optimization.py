@@ -360,8 +360,12 @@ class RunOuterLoopOptimizationTests(unittest.TestCase):
             )
 
             self.assertEqual(result["summary"]["next_pair_plan_mode"], "full_matrix")
+            self.assertEqual(result["summary"]["outer_loop_update_decision_mode"], "rewrite")
             self.assertEqual(result["summary"]["next_round_pair_count"], 4)
             self.assertTrue((root / "control" / "control_plane_bundle.json").exists())
+            self.assertTrue(
+                (root / "schema-updates" / "update-decision" / "outer_loop_update_decision.json").exists()
+            )
             self.assertTrue((root / "schema-updates" / "schema_update_package.json").exists())
             self.assertTrue((root / "round1-materialized" / "manifest.json").exists())
             self.assertTrue((root / "round1-materialized" / "pair_specs.jsonl").exists())

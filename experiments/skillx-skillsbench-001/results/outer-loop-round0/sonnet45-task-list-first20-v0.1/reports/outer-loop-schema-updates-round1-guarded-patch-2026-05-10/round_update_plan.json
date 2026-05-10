@@ -1,0 +1,86 @@
+[
+  {
+    "action": "update",
+    "category_id": "analytic-pipeline",
+    "outer_loop_update_mode": "guarded_patch",
+    "positive_transfer_count": 2,
+    "priority_score": 6.0,
+    "protected_regression_count": 2,
+    "reason": "selected_by_guarded_patch_positive_transfer",
+    "recommended_challenger_mode": "conservative",
+    "reliable_support_size": 3,
+    "support_size": 3
+  },
+  {
+    "action": "update",
+    "category_id": "artifact-generation",
+    "outer_loop_update_mode": "guarded_patch",
+    "positive_transfer_count": 6,
+    "priority_score": 6.0,
+    "protected_regression_count": 0,
+    "reason": "selected_by_guarded_patch_positive_transfer",
+    "recommended_challenger_mode": "conservative",
+    "reliable_support_size": 3,
+    "support_size": 3
+  },
+  {
+    "action": "update",
+    "category_id": "engineering-composition",
+    "outer_loop_update_mode": "guarded_patch",
+    "positive_transfer_count": 6,
+    "priority_score": 7.0,
+    "protected_regression_count": 3,
+    "reason": "selected_by_guarded_patch_positive_transfer",
+    "recommended_challenger_mode": "conservative",
+    "reliable_support_size": 3,
+    "support_size": 3
+  },
+  {
+    "action": "update",
+    "category_id": "environment-control",
+    "outer_loop_update_mode": "guarded_patch",
+    "positive_transfer_count": 3,
+    "priority_score": 6.0,
+    "protected_regression_count": 2,
+    "reason": "selected_by_guarded_patch_positive_transfer",
+    "recommended_challenger_mode": "conservative",
+    "reliable_support_size": 3,
+    "support_size": 3
+  },
+  {
+    "action": "update",
+    "category_id": "methodology-guardrail",
+    "outer_loop_update_mode": "guarded_patch",
+    "positive_transfer_count": 6,
+    "priority_score": 7.0,
+    "protected_regression_count": 1,
+    "reason": "selected_by_guarded_patch_positive_transfer",
+    "recommended_challenger_mode": "conservative",
+    "reliable_support_size": 4,
+    "support_size": 4
+  },
+  {
+    "action": "update",
+    "category_id": "orchestration-delegation",
+    "outer_loop_update_mode": "guarded_patch",
+    "positive_transfer_count": 2,
+    "priority_score": 6.0,
+    "protected_regression_count": 2,
+    "reason": "selected_by_guarded_patch_positive_transfer",
+    "recommended_challenger_mode": "conservative",
+    "reliable_support_size": 3,
+    "support_size": 3
+  },
+  {
+    "action": "update",
+    "category_id": "retrieval-heavy-synthesis",
+    "outer_loop_update_mode": "guarded_patch",
+    "positive_transfer_count": 5,
+    "priority_score": 7.0,
+    "protected_regression_count": 2,
+    "reason": "selected_by_guarded_patch_positive_transfer",
+    "recommended_challenger_mode": "conservative",
+    "reliable_support_size": 4,
+    "support_size": 4
+  }
+]

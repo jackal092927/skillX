@@ -1,0 +1,602 @@
+You are the SkillX outer-loop schema update operator.
+Update the schema as structured operations, not as a final accepted prompt bank.
+
+Rules:
+- Use evidence-grounded operations only.
+- Prefer slot-level operations over free-form prompt rewriting.
+- You may add, remove, and sharpen items when evidence supports it.
+- Do not remove a useful incumbent item unless it is redundant, harmful, or contradicted by evidence.
+- Keep Render frozen; optimize only the schema-level guidance.
+- Preserve schema distinctness and explicitly handle low-margin competitors.
+- Output strictly valid JSON matching the provided schema.
+
+Update-mode rules:
+- Current outer-loop update mode is `guarded_patch`.
+- Treat CURRENT_SCHEMA as the stable base, not as a failed artifact to replace.
+- Make the smallest patch that explains positive_transfer_pairs.
+- Do not broaden the schema from globally regressed evidence.
+- Turn protected_regression_pairs into explicit avoid/failure-mode guardrails.
+- Prefer add/sharpen operations; remove only if an incumbent item directly caused a protected regression.
+
+CURRENT_SCHEMA:
+{
+  "avoid": [
+    "vague reviewer-only advice without execution discipline",
+    "unordered bundles of suggestions",
+    "generic prose that does not tell the agent how to validate changes"
+  ],
+  "category_id": "engineering-composition",
+  "emphasize": [
+    "diagnose -> patch/edit -> verify sequencing",
+    "tool wrappers / execution interfaces / reproducible commands",
+    "explicit precedence and dependency handling",
+    "benchmark / build / test gate awareness"
+  ],
+  "expected_bad_fit": [
+    "pure retrieval/synthesis",
+    "simple output formatting tasks"
+  ],
+  "expected_good_fit": [
+    "build fixes",
+    "migrations",
+    "code implementation tasks with compile/test/benchmark constraints"
+  ],
+  "meta_prompt": "You are revising a skill for an engineering-composition task.\nOptimize the skill as a disciplined execution bundle, not as a generic writing prompt.\n\nPrioritize:\n1. diagnose-before-edit behavior,\n2. explicit tool / command / wrapper interfaces where execution matters,\n3. ordered patching with dependency awareness,\n4. verification gates such as compile, test, or benchmark checks.\n\nIf the task fails, first ask whether the skill lacks:\n- clear execution order,\n- explicit interfaces,\n- or a strong verify step.\n\nDo not over-expand into broad research or synthesis unless the task truly requires it.",
+  "semantic_intent": "Compose diagnosis, editing, execution, and verification into a disciplined engineering workflow."
+}
+
+EVIDENCE_BUNDLE:
+{
+  "allowed_patch_scope": [
+    "narrow slot edits grounded in positive transfer pairs",
+    "preserve incumbent behavior unless evidence requires a small sharpen"
+  ],
+  "ambiguous_borderline_cases": [
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "3d-scan-calc"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "azure-bgp-oscillation-route-leak"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "citation-check"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 60.0,
+      "current_schema_score": 51.25,
+      "margin_pp": 8.75,
+      "task_name": "court-form-filling"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "environment-control",
+      "competing_schema_score": 80.0,
+      "current_schema_score": 72.5,
+      "margin_pp": 7.5,
+      "task_name": "econ-detrending-correlation"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-agentops"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-google-auto"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve"
+    }
+  ],
+  "assigned_task_summaries": [
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 100.0,
+      "evidence_reasons": [
+        "primary",
+        "near_best",
+        "high_score",
+        "stable_gain",
+        "ideal_zero_to_full"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 68.75,
+      "outcome": "success",
+      "primary_assigned_category": "engineering-composition",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "ideal_zero_to_full_stable",
+      "score": 100.0,
+      "task_best_schema": "engineering-composition",
+      "task_best_score": 100.0,
+      "task_name": "adaptive-cruise-control",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "controller design, simulation, tuning, and metric targets form an ordered control-system workflow",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "environment-control",
+        "tool_surface_regime": "tool-heavy-script-recommended",
+        "verifier_mode": "benchmark-threshold",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 80.0,
+      "evidence_reasons": [
+        "primary",
+        "near_best",
+        "high_score",
+        "stable_gain",
+        "ideal_zero_to_full"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 27.5,
+      "outcome": "success",
+      "primary_assigned_category": "engineering-composition",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "ideal_zero_to_full_stable",
+      "score": 100.0,
+      "task_best_schema": "engineering-composition",
+      "task_best_score": 100.0,
+      "task_name": "energy-ac-optimal-power-flow",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "solve AC-OPF from math model, produce structured JSON report with generators, buses, branches, and feasibility checks",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-recommended",
+        "verifier_mode": "deterministic-output-contract",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 20.0,
+      "evidence_reasons": [
+        "high_score",
+        "stable_gain"
+      ],
+      "evidence_role": "stable_gain_support",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 20.0,
+      "outcome": "success",
+      "primary_assigned_category": "orchestration-delegation",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 2.0,
+      "schema_trajectory_quality": "stable_non_decreasing_gain",
+      "score": 80.0,
+      "task_best_schema": "orchestration-delegation",
+      "task_best_score": 100.0,
+      "task_name": "data-to-d3",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "task requires a coupled multi-file web artifact with precise D3 chart behavior, layout constraints, and linked interactions",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "generator",
+          "reviewer"
+        ],
+        "task_object_seed": "artifact-generation",
+        "tool_surface_regime": "tool-medium",
+        "verifier_mode": "deterministic-artifact-plus-stage-check",
+        "workflow_topology": "staged-multi-step"
+      }
+    }
+  ],
+  "blocked_regression_patterns": [
+    "earthquake-phase-association regressed from 100.0 to 100.0",
+    "exoplanet-detection-period regressed from 100.0 to 0.0",
+    "find-topk-similiar-chemicals regressed from 100.0 to 0.0"
+  ],
+  "category_id": "engineering-composition",
+  "cross_schema_losses": [
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "3d-scan-calc",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "azure-bgp-oscillation-route-leak",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "citation-check",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 51.25,
+      "gap_pp": 8.75,
+      "task_name": "court-form-filling",
+      "winning_score": 60.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 80.0,
+      "gap_pp": 20.0,
+      "task_name": "data-to-d3",
+      "winning_score": 100.0,
+      "won_by": "orchestration-delegation"
+    },
+    {
+      "current_schema_score": 72.5,
+      "gap_pp": 7.5,
+      "task_name": "econ-detrending-correlation",
+      "winning_score": 80.0,
+      "won_by": "environment-control"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-build-agentops",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-build-google-auto",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    }
+  ],
+  "main_borderline_competitors": [
+    {
+      "count": 7,
+      "value": "analytic-pipeline"
+    },
+    {
+      "count": 1,
+      "value": "environment-control"
+    }
+  ],
+  "main_failure_patterns": [],
+  "mean_assigned_score": 93.3333,
+  "mean_delta_vs_c1_pp": 66.6667,
+  "mean_r0_to_best_delta_pp": 100.0,
+  "outcome_counts": {
+    "success": 3
+  },
+  "outer_loop_global_update_mode": "guarded_patch",
+  "outer_loop_global_update_reason": "protected regressions exceed rewrite guard, but positive transfer evidence exists",
+  "outer_loop_update_mode": "guarded_patch",
+  "outer_loop_update_reason": "schema has positive transfer evidence; patch against stable base",
+  "positive_transfer_pairs": [
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 100.0,
+      "current_trajectory_signal_score": 100.0,
+      "pair_id": "adaptive-cruise-control__engineering-composition",
+      "previous_reported_score": 0.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 100.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": 100.0,
+      "task_name": "adaptive-cruise-control",
+      "trajectory_signal_delta_pp": 100.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 51.25,
+      "current_trajectory_signal_score": 45.0,
+      "pair_id": "court-form-filling__engineering-composition",
+      "previous_reported_score": 0.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 100.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": 51.25,
+      "task_name": "court-form-filling",
+      "trajectory_signal_delta_pp": 45.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 80.0,
+      "current_trajectory_signal_score": 100.0,
+      "pair_id": "data-to-d3__engineering-composition",
+      "previous_reported_score": 0.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 100.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": 80.0,
+      "task_name": "data-to-d3",
+      "trajectory_signal_delta_pp": 100.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 72.5,
+      "current_trajectory_signal_score": 70.0,
+      "pair_id": "econ-detrending-correlation__engineering-composition",
+      "previous_reported_score": 100.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": 72.5,
+      "task_name": "econ-detrending-correlation",
+      "trajectory_signal_delta_pp": 70.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 100.0,
+      "current_trajectory_signal_score": 100.0,
+      "pair_id": "energy-ac-optimal-power-flow__engineering-composition",
+      "previous_reported_score": 100.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": 100.0,
+      "task_name": "energy-ac-optimal-power-flow",
+      "trajectory_signal_delta_pp": 100.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 31.25,
+      "current_trajectory_signal_score": 45.0,
+      "pair_id": "energy-market-pricing__engineering-composition",
+      "previous_reported_score": 0.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 100.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": 31.25,
+      "task_name": "energy-market-pricing",
+      "trajectory_signal_delta_pp": 45.0
+    }
+  ],
+  "protected_regression_pairs": [
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 0.0,
+      "current_trajectory_signal_score": 0.0,
+      "pair_id": "earthquake-phase-association__engineering-composition",
+      "previous_reported_score": 100.0,
+      "previous_roles": [
+        "previous_multi_assignment",
+        "previous_schema_training_assignment"
+      ],
+      "previous_score": 100.0,
+      "previous_trajectory_signal_score": 100.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": -100.0,
+      "task_name": "earthquake-phase-association",
+      "trajectory_signal_delta_pp": -100.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 0.0,
+      "current_score": 0.0,
+      "current_trajectory_signal_score": 0.0,
+      "pair_id": "exoplanet-detection-period__engineering-composition",
+      "previous_reported_score": 100.0,
+      "previous_roles": [
+        "previous_multi_assignment",
+        "previous_primary_assignment",
+        "previous_schema_training_assignment"
+      ],
+      "previous_score": 60.0,
+      "previous_trajectory_signal_score": 100.0,
+      "reported_score_delta_pp": -100.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": -60.0,
+      "task_name": "exoplanet-detection-period",
+      "trajectory_signal_delta_pp": -100.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 0.0,
+      "current_score": 0.0,
+      "current_trajectory_signal_score": 0.0,
+      "pair_id": "find-topk-similiar-chemicals__engineering-composition",
+      "previous_reported_score": 100.0,
+      "previous_roles": [
+        "previous_multi_assignment",
+        "previous_primary_assignment",
+        "previous_schema_training_assignment"
+      ],
+      "previous_score": 31.25,
+      "previous_trajectory_signal_score": 45.0,
+      "reported_score_delta_pp": -100.0,
+      "schema_id": "engineering-composition",
+      "score_delta_pp": -31.25,
+      "task_name": "find-topk-similiar-chemicals",
+      "trajectory_signal_delta_pp": -45.0
+    }
+  ],
+  "reliable_support_size": 3,
+  "stability_notes": [],
+  "support_size": 3,
+  "task_profile_signals": {
+    "primary_pattern": [
+      {
+        "count": 3,
+        "value": "pipeline"
+      }
+    ],
+    "task_object_seed": [
+      {
+        "count": 1,
+        "value": "environment-control"
+      },
+      {
+        "count": 1,
+        "value": "analytic-pipeline"
+      },
+      {
+        "count": 1,
+        "value": "artifact-generation"
+      }
+    ],
+    "tool_surface_regime": [
+      {
+        "count": 2,
+        "value": "tool-heavy-script-recommended"
+      },
+      {
+        "count": 1,
+        "value": "tool-medium"
+      }
+    ],
+    "verifier_mode": [
+      {
+        "count": 1,
+        "value": "benchmark-threshold"
+      },
+      {
+        "count": 1,
+        "value": "deterministic-output-contract"
+      },
+      {
+        "count": 1,
+        "value": "deterministic-artifact-plus-stage-check"
+      }
+    ],
+    "workflow_topology": [
+      {
+        "count": 3,
+        "value": "staged-multi-step"
+      }
+    ]
+  }
+}
+
+DETERMINISTIC_SEED_EDITS_FOR_REFERENCE_ONLY:
+{
+  "avoid": {
+    "add": [
+      "schema broadening that regresses previously stable task-schema behavior"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "emphasize": {
+    "add": [
+      "extract the task-specific failure mode before adding broader procedural scaffolding",
+      "limit this update to narrow evidence-backed patches against the stable base schema",
+      "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+      "name the required execution and verification handoffs instead of leaving tool use implicit",
+      "state why this schema should win over analytic-pipeline on borderline tasks"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "expected_bad_fit": {
+    "add": [
+      "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+    ],
+    "remove": []
+  },
+  "expected_good_fit": {
+    "add": [
+      "task patterns matching positive-transfer evidence from the candidate outer-loop round",
+      "tasks with benchmark-threshold verifier behavior when the schema's workflow bias matches the task",
+      "tasks whose dominant operational pattern is pipeline"
+    ],
+    "remove": []
+  },
+  "hypothesized_primary_failure_modes": {
+    "add": [
+      "outer-loop candidate regression on protected prior-success tasks",
+      "low-margin schema-boundary ambiguity against analytic-pipeline"
+    ],
+    "remove": [],
+    "sharpen": []
+  }
+}
+

@@ -1,0 +1,31 @@
+{
+  "artifact_type": "skillx_outer_loop_rewrite_verification",
+  "completed_rewrite_schema_count": 7,
+  "completed_rewrite_schema_ids": [
+    "analytic-pipeline",
+    "artifact-generation",
+    "engineering-composition",
+    "environment-control",
+    "methodology-guardrail",
+    "orchestration-delegation",
+    "retrieval-heavy-synthesis"
+  ],
+  "decision_limited_update": true,
+  "expected_rewrite_schema_count": 7,
+  "expected_rewrite_schema_ids": [
+    "analytic-pipeline",
+    "artifact-generation",
+    "engineering-composition",
+    "environment-control",
+    "methodology-guardrail",
+    "orchestration-delegation",
+    "retrieval-heavy-synthesis"
+  ],
+  "failures": [],
+  "max_update_schemas": 0,
+  "min_support_size": 0,
+  "rewrite_mode": "llm",
+  "schema_count": 7,
+  "status": "passed",
+  "unrestricted_update": false
+}

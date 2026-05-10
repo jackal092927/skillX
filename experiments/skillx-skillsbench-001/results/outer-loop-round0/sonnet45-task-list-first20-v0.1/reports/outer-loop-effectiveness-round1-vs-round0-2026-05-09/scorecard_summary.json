@@ -1,0 +1,180 @@
+{
+  "previous_result": "first20-round0-rate-limit-rerun-3batch-final-2026-04-29",
+  "current_result": "outer-loop-round1-first20-fullmatrix-effective-2026-05-04",
+  "pair_count": 140,
+  "output_dir": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-effectiveness-round1-vs-round0-2026-05-09",
+  "files": [
+    "all_pair_deltas.csv",
+    "assignment_confidence.csv",
+    "assignment_route_changes.csv",
+    "improvements.csv",
+    "protected_regressions.csv",
+    "schema_delta_summary.csv",
+    "scorecard_summary.csv",
+    "summary.md",
+    "targeted_lift_rows.csv",
+    "task_delta_summary.csv"
+  ],
+  "scorecard_summary": [
+    {
+      "set": "all_140_pairs",
+      "n": 140,
+      "mean_prev_score": 17.67,
+      "mean_cur_score": 18.05,
+      "mean_delta_score": 0.38,
+      "improved_score_count": 29,
+      "worse_score_count": 34,
+      "same_score_count": 77,
+      "mean_prev_reported_score": 54.14,
+      "mean_cur_reported_score": 45.18,
+      "mean_delta_reported_score": -8.96,
+      "reported_100_before": 72,
+      "reported_100_after": 59,
+      "reported_100_to_0": 26,
+      "positive_score_to_zero": 22,
+      "mean_prev_trajectory_signal": 21.64,
+      "mean_cur_trajectory_signal": 22.57,
+      "mean_delta_trajectory_signal": 0.93,
+      "mean_prev_growth_component": 63.25,
+      "mean_cur_growth_component": 65.43,
+      "mean_delta_growth_component": 2.18,
+      "mean_delta_improved_rounds": -0.01,
+      "stable_or_ideal_before": 23,
+      "stable_or_ideal_after": 20
+    },
+    {
+      "set": "previous_primary_assignment",
+      "n": 15,
+      "mean_prev_score": 77.48,
+      "mean_cur_score": 31.67,
+      "mean_delta_score": -45.81,
+      "improved_score_count": 1,
+      "worse_score_count": 13,
+      "same_score_count": 1,
+      "mean_prev_reported_score": 97.33,
+      "mean_cur_reported_score": 57.33,
+      "mean_delta_reported_score": -40.0,
+      "reported_100_before": 14,
+      "reported_100_after": 8,
+      "reported_100_to_0": 6,
+      "positive_score_to_zero": 7,
+      "mean_prev_trajectory_signal": 87.0,
+      "mean_cur_trajectory_signal": 44.0,
+      "mean_delta_trajectory_signal": -43.0,
+      "mean_prev_growth_component": 100.0,
+      "mean_cur_growth_component": 76.67,
+      "mean_delta_growth_component": -23.33,
+      "mean_delta_improved_rounds": -1.53,
+      "stable_or_ideal_before": 11,
+      "stable_or_ideal_after": 5
+    },
+    {
+      "set": "previous_multi_assignment",
+      "n": 27,
+      "mean_prev_score": 77.5,
+      "mean_cur_score": 25.34,
+      "mean_delta_score": -52.15,
+      "improved_score_count": 1,
+      "worse_score_count": 25,
+      "same_score_count": 1,
+      "mean_prev_reported_score": 94.63,
+      "mean_cur_reported_score": 58.89,
+      "mean_delta_reported_score": -35.74,
+      "reported_100_before": 24,
+      "reported_100_after": 14,
+      "reported_100_to_0": 10,
+      "positive_score_to_zero": 14,
+      "mean_prev_trajectory_signal": 92.78,
+      "mean_cur_trajectory_signal": 35.0,
+      "mean_delta_trajectory_signal": -57.78,
+      "mean_prev_growth_component": 99.63,
+      "mean_cur_growth_component": 72.59,
+      "mean_delta_growth_component": -27.04,
+      "mean_delta_improved_rounds": -1.52,
+      "stable_or_ideal_before": 23,
+      "stable_or_ideal_after": 6
+    },
+    {
+      "set": "previous_schema_training_assignment",
+      "n": 28,
+      "mean_prev_score": 75.85,
+      "mean_cur_score": 25.55,
+      "mean_delta_score": -50.29,
+      "improved_score_count": 1,
+      "worse_score_count": 25,
+      "same_score_count": 2,
+      "mean_prev_reported_score": 94.82,
+      "mean_cur_reported_score": 60.36,
+      "mean_delta_reported_score": -34.46,
+      "reported_100_before": 25,
+      "reported_100_after": 15,
+      "reported_100_to_0": 10,
+      "positive_score_to_zero": 14,
+      "mean_prev_trajectory_signal": 91.07,
+      "mean_cur_trajectory_signal": 35.36,
+      "mean_delta_trajectory_signal": -55.71,
+      "mean_prev_growth_component": 99.64,
+      "mean_cur_growth_component": 73.57,
+      "mean_delta_growth_component": -26.07,
+      "mean_delta_improved_rounds": -1.46,
+      "stable_or_ideal_before": 23,
+      "stable_or_ideal_after": 6
+    }
+  ],
+  "assignment_confidence": [
+    {
+      "metric": "assigned_tasks",
+      "previous": 15,
+      "current": 14,
+      "delta": -1.0
+    },
+    {
+      "metric": "unassigned_tasks",
+      "previous": 5,
+      "current": 6,
+      "delta": 1.0
+    },
+    {
+      "metric": "multi_assignment_count_total",
+      "previous": 27,
+      "current": 23,
+      "delta": -4.0
+    },
+    {
+      "metric": "low_confidence_assigned",
+      "previous": 8,
+      "current": 0,
+      "delta": -8.0
+    },
+    {
+      "metric": "medium_confidence_assigned",
+      "previous": 0,
+      "current": 2,
+      "delta": 2.0
+    },
+    {
+      "metric": "high_confidence_assigned",
+      "previous": 7,
+      "current": 12,
+      "delta": 5.0
+    },
+    {
+      "metric": "low_confidence_fraction_assigned",
+      "previous": 53.33,
+      "current": 0.0,
+      "delta": -53.33
+    },
+    {
+      "metric": "mean_margin_pp_assigned",
+      "previous": 27.33,
+      "current": 32.55,
+      "delta": 5.22
+    },
+    {
+      "metric": "median_margin_pp_assigned",
+      "previous": 0.0,
+      "current": 27.5,
+      "delta": 27.5
+    }
+  ]
+}

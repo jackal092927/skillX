@@ -1,0 +1,550 @@
+You are the SkillX outer-loop schema update operator.
+Update the schema as structured operations, not as a final accepted prompt bank.
+
+Rules:
+- Use evidence-grounded operations only.
+- Prefer slot-level operations over free-form prompt rewriting.
+- You may add, remove, and sharpen items when evidence supports it.
+- Do not remove a useful incumbent item unless it is redundant, harmful, or contradicted by evidence.
+- Keep Render frozen; optimize only the schema-level guidance.
+- Preserve schema distinctness and explicitly handle low-margin competitors.
+- Output strictly valid JSON matching the provided schema.
+
+Update-mode rules:
+- Current outer-loop update mode is `guarded_patch`.
+- Treat CURRENT_SCHEMA as the stable base, not as a failed artifact to replace.
+- Make the smallest patch that explains positive_transfer_pairs.
+- Do not broaden the schema from globally regressed evidence.
+- Turn protected_regression_pairs into explicit avoid/failure-mode guardrails.
+- Prefer add/sharpen operations; remove only if an incumbent item directly caused a protected regression.
+
+CURRENT_SCHEMA:
+{
+  "avoid": [
+    "unsupported synthesis",
+    "hallucinated joins across sources",
+    "excessive workflow scaffolding that obscures evidence use"
+  ],
+  "category_id": "retrieval-heavy-synthesis",
+  "emphasize": [
+    "retrieval plan and source grounding",
+    "evidence tracking / provenance discipline",
+    "compression without support loss",
+    "abstain / unknown behavior when evidence is insufficient"
+  ],
+  "expected_bad_fit": [
+    "simulator/control tasks",
+    "code patch workflows"
+  ],
+  "expected_good_fit": [
+    "information search",
+    "handbook / database grounded QA",
+    "report or answer generation from external sources"
+  ],
+  "meta_prompt": "You are revising a skill for a retrieval-heavy synthesis task.\nOptimize the skill for evidence-grounded synthesis rather than free-form completion.\n\nPrioritize:\n1. retrieving the right evidence before answering,\n2. keeping track of what each source supports,\n3. compressing evidence into the final answer without dropping required support,\n4. explicit unknown / abstain behavior when the evidence does not justify completion.\n\nIf the task is failing, suspect evidence-loss or unsupported synthesis before adding more procedural bulk.",
+  "semantic_intent": "Gather evidence from sources, compress it correctly, and synthesize an output without dropping support."
+}
+
+EVIDENCE_BUNDLE:
+{
+  "allowed_patch_scope": [
+    "narrow slot edits grounded in positive transfer pairs",
+    "preserve incumbent behavior unless evidence requires a small sharpen"
+  ],
+  "ambiguous_borderline_cases": [
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "3d-scan-calc"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "azure-bgp-oscillation-route-leak"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "citation-check"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-agentops"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-build-google-auto"
+    },
+    {
+      "case_type": "near_boundary_loss",
+      "competing_schema_id": "analytic-pipeline",
+      "competing_schema_score": 0.0,
+      "current_schema_score": 0.0,
+      "margin_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve"
+    }
+  ],
+  "assigned_task_summaries": [
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 100.0,
+      "evidence_reasons": [
+        "primary",
+        "near_best"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 12.5,
+      "outcome": "success",
+      "primary_assigned_category": "retrieval-heavy-synthesis",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "stable_no_loss_gain",
+      "score": 72.5,
+      "task_best_schema": "retrieval-heavy-synthesis",
+      "task_best_score": 72.5,
+      "task_name": "energy-market-pricing",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "run DC-OPF with reserve co-optimization for base and counterfactual scenarios; produce comparative JSON report",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-recommended",
+        "verifier_mode": "deterministic-output-contract",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 100.0,
+      "evidence_reasons": [
+        "primary",
+        "near_best",
+        "stable_gain"
+      ],
+      "evidence_role": "primary_assignment",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 28.75,
+      "outcome": "success",
+      "primary_assigned_category": "retrieval-heavy-synthesis",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 1.0,
+      "schema_trajectory_quality": "stable_non_decreasing_gain",
+      "score": 60.0,
+      "task_best_schema": "retrieval-heavy-synthesis",
+      "task_best_score": 60.0,
+      "task_name": "financial-modeling-qa",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "instruction is a concrete workbook-plus-background analysis task that reduces to one numeric answer.txt output rather than an open-ended finance QA surface",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "reviewer",
+          "tool-wrapper"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-medium",
+        "verifier_mode": "deterministic-output-contract",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 80.0,
+      "evidence_reasons": [
+        "stable_gain"
+      ],
+      "evidence_role": "stable_gain_support",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 20.0,
+      "outcome": "success",
+      "primary_assigned_category": "analytic-pipeline",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 3.0,
+      "schema_trajectory_quality": "stable_non_decreasing_gain",
+      "score": 60.0,
+      "task_best_schema": "analytic-pipeline",
+      "task_best_score": 100.0,
+      "task_name": "earthquake-phase-association",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "load waveforms, run DL phase picking via SeisBench, associate picks into events, and pass F1 \u2265 0.6 gate",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-recommended",
+        "verifier_mode": "benchmark-threshold",
+        "workflow_topology": "staged-multi-step"
+      }
+    },
+    {
+      "assignment_confidence": "high",
+      "delta_vs_c1_pp": 80.0,
+      "evidence_reasons": [
+        "stable_gain"
+      ],
+      "evidence_role": "stable_gain_support",
+      "floor_evidence": false,
+      "main_failure_notes": [],
+      "margin_pp": 27.5,
+      "outcome": "success",
+      "primary_assigned_category": "engineering-composition",
+      "reported_score": 100.0,
+      "round_r0_to_best_delta_pp": 100.0,
+      "schema_rank_for_task": 3.0,
+      "schema_trajectory_quality": "stable_non_decreasing_gain",
+      "score": 60.0,
+      "task_best_schema": "engineering-composition",
+      "task_best_score": 100.0,
+      "task_name": "energy-ac-optimal-power-flow",
+      "task_profile": {
+        "confidence": "high",
+        "evidence_note": "solve AC-OPF from math model, produce structured JSON report with generators, buses, branches, and feasibility checks",
+        "primary_pattern": "pipeline",
+        "secondary_patterns": [
+          "tool-wrapper",
+          "reviewer"
+        ],
+        "task_object_seed": "analytic-pipeline",
+        "tool_surface_regime": "tool-heavy-script-recommended",
+        "verifier_mode": "deterministic-output-contract",
+        "workflow_topology": "staged-multi-step"
+      }
+    }
+  ],
+  "blocked_regression_patterns": [
+    "adaptive-cruise-control regressed from 100.0 to 0.0",
+    "court-form-filling regressed from 100.0 to 0.0"
+  ],
+  "category_id": "retrieval-heavy-synthesis",
+  "cross_schema_losses": [
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "3d-scan-calc",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "azure-bgp-oscillation-route-leak",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "citation-check",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 60.0,
+      "gap_pp": 40.0,
+      "task_name": "earthquake-phase-association",
+      "winning_score": 100.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 60.0,
+      "gap_pp": 40.0,
+      "task_name": "energy-ac-optimal-power-flow",
+      "winning_score": 100.0,
+      "won_by": "engineering-composition"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-build-agentops",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-build-google-auto",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    },
+    {
+      "current_schema_score": 0.0,
+      "gap_pp": 0.0,
+      "task_name": "fix-druid-loophole-cve",
+      "winning_score": 0.0,
+      "won_by": "analytic-pipeline"
+    }
+  ],
+  "main_borderline_competitors": [
+    {
+      "count": 6,
+      "value": "analytic-pipeline"
+    }
+  ],
+  "main_failure_patterns": [],
+  "mean_assigned_score": 63.125,
+  "mean_delta_vs_c1_pp": 90.0,
+  "mean_r0_to_best_delta_pp": 100.0,
+  "outcome_counts": {
+    "success": 4
+  },
+  "outer_loop_global_update_mode": "guarded_patch",
+  "outer_loop_global_update_reason": "protected regressions exceed rewrite guard, but positive transfer evidence exists",
+  "outer_loop_update_mode": "guarded_patch",
+  "outer_loop_update_reason": "schema has positive transfer evidence; patch against stable base",
+  "positive_transfer_pairs": [
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 51.25,
+      "current_trajectory_signal_score": 45.0,
+      "pair_id": "data-to-d3__retrieval-heavy-synthesis",
+      "previous_reported_score": 0.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 100.0,
+      "schema_id": "retrieval-heavy-synthesis",
+      "score_delta_pp": 51.25,
+      "task_name": "data-to-d3",
+      "trajectory_signal_delta_pp": 45.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 60.0,
+      "current_trajectory_signal_score": 100.0,
+      "pair_id": "earthquake-phase-association__retrieval-heavy-synthesis",
+      "previous_reported_score": 100.0,
+      "previous_roles": [],
+      "previous_score": 72.5,
+      "previous_trajectory_signal_score": 70.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "retrieval-heavy-synthesis",
+      "score_delta_pp": -12.5,
+      "task_name": "earthquake-phase-association",
+      "trajectory_signal_delta_pp": 30.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 51.25,
+      "current_trajectory_signal_score": 45.0,
+      "pair_id": "econ-detrending-correlation__retrieval-heavy-synthesis",
+      "previous_reported_score": 100.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "retrieval-heavy-synthesis",
+      "score_delta_pp": 51.25,
+      "task_name": "econ-detrending-correlation",
+      "trajectory_signal_delta_pp": 45.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 60.0,
+      "current_trajectory_signal_score": 100.0,
+      "pair_id": "energy-ac-optimal-power-flow__retrieval-heavy-synthesis",
+      "previous_reported_score": 100.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 0.0,
+      "schema_id": "retrieval-heavy-synthesis",
+      "score_delta_pp": 60.0,
+      "task_name": "energy-ac-optimal-power-flow",
+      "trajectory_signal_delta_pp": 100.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 100.0,
+      "current_score": 60.0,
+      "current_trajectory_signal_score": 100.0,
+      "pair_id": "financial-modeling-qa__retrieval-heavy-synthesis",
+      "previous_reported_score": 0.0,
+      "previous_roles": [],
+      "previous_score": 0.0,
+      "previous_trajectory_signal_score": 0.0,
+      "reported_score_delta_pp": 100.0,
+      "schema_id": "retrieval-heavy-synthesis",
+      "score_delta_pp": 60.0,
+      "task_name": "financial-modeling-qa",
+      "trajectory_signal_delta_pp": 100.0
+    }
+  ],
+  "protected_regression_pairs": [
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 0.0,
+      "current_score": 0.0,
+      "current_trajectory_signal_score": 0.0,
+      "pair_id": "adaptive-cruise-control__retrieval-heavy-synthesis",
+      "previous_reported_score": 100.0,
+      "previous_roles": [
+        "previous_multi_assignment",
+        "previous_primary_assignment",
+        "previous_schema_training_assignment"
+      ],
+      "previous_score": 31.25,
+      "previous_trajectory_signal_score": 45.0,
+      "reported_score_delta_pp": -100.0,
+      "schema_id": "retrieval-heavy-synthesis",
+      "score_delta_pp": -31.25,
+      "task_name": "adaptive-cruise-control",
+      "trajectory_signal_delta_pp": -45.0
+    },
+    {
+      "current_evidence_class": "measured",
+      "current_failure_summary": "",
+      "current_failure_type": "",
+      "current_reported_score": 0.0,
+      "current_score": 0.0,
+      "current_trajectory_signal_score": 0.0,
+      "pair_id": "court-form-filling__retrieval-heavy-synthesis",
+      "previous_reported_score": 100.0,
+      "previous_roles": [
+        "previous_multi_assignment",
+        "previous_schema_training_assignment"
+      ],
+      "previous_score": 60.0,
+      "previous_trajectory_signal_score": 100.0,
+      "reported_score_delta_pp": -100.0,
+      "schema_id": "retrieval-heavy-synthesis",
+      "score_delta_pp": -60.0,
+      "task_name": "court-form-filling",
+      "trajectory_signal_delta_pp": -100.0
+    }
+  ],
+  "reliable_support_size": 4,
+  "stability_notes": [],
+  "support_size": 4,
+  "task_profile_signals": {
+    "primary_pattern": [
+      {
+        "count": 4,
+        "value": "pipeline"
+      }
+    ],
+    "task_object_seed": [
+      {
+        "count": 4,
+        "value": "analytic-pipeline"
+      }
+    ],
+    "tool_surface_regime": [
+      {
+        "count": 3,
+        "value": "tool-heavy-script-recommended"
+      },
+      {
+        "count": 1,
+        "value": "tool-medium"
+      }
+    ],
+    "verifier_mode": [
+      {
+        "count": 3,
+        "value": "deterministic-output-contract"
+      },
+      {
+        "count": 1,
+        "value": "benchmark-threshold"
+      }
+    ],
+    "workflow_topology": [
+      {
+        "count": 4,
+        "value": "staged-multi-step"
+      }
+    ]
+  }
+}
+
+DETERMINISTIC_SEED_EDITS_FOR_REFERENCE_ONLY:
+{
+  "avoid": {
+    "add": [
+      "schema broadening that regresses previously stable task-schema behavior"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "emphasize": {
+    "add": [
+      "extract the task-specific failure mode before adding broader procedural scaffolding",
+      "limit this update to narrow evidence-backed patches against the stable base schema",
+      "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+      "name the required execution and verification handoffs instead of leaving tool use implicit",
+      "state why this schema should win over analytic-pipeline on borderline tasks"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "expected_bad_fit": {
+    "add": [
+      "borderline tasks where analytic-pipeline wins because its workflow bias is more central"
+    ],
+    "remove": []
+  },
+  "expected_good_fit": {
+    "add": [
+      "task patterns matching positive-transfer evidence from the candidate outer-loop round",
+      "tasks with deterministic-output-contract verifier behavior when the schema's workflow bias matches the task",
+      "tasks whose dominant operational pattern is pipeline"
+    ],
+    "remove": []
+  },
+  "hypothesized_primary_failure_modes": {
+    "add": [
+      "outer-loop candidate regression on protected prior-success tasks",
+      "low-margin schema-boundary ambiguity against analytic-pipeline"
+    ],
+    "remove": [],
+    "sharpen": []
+  }
+}
+

@@ -1,0 +1,53 @@
+{
+  "artifact_type": "skillx_outer_loop_optimization_run",
+  "round_id": "outer-loop-round1",
+  "next_round_id": "outer-loop-round2-guarded-patch",
+  "schema_update_policy": "all_eligible_schemas",
+  "next_pair_plan_policy": "intentional_full_matrix_rerun",
+  "max_update_schemas": 0,
+  "control_plane_outputs": {
+    "score_matrix_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/score_matrix.csv",
+    "score_matrix_wide_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/score_matrix_wide.csv",
+    "score_matrix_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/score_matrix.json",
+    "assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/assignments.csv",
+    "assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/assignments.json",
+    "multi_assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/multi_assignments.csv",
+    "multi_assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/multi_assignments.json",
+    "schema_training_assignments_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/schema_training_assignments.csv",
+    "schema_training_assignments_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/schema_training_assignments.json",
+    "diagnostics_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/diagnostics.json",
+    "bundle_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/control_plane_bundle.json",
+    "summary_md": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-control-plane-round1-guarded-patch-input-2026-05-10/summary.md"
+  },
+  "outer_loop_update_decision_mode": "guarded_patch",
+  "outer_loop_update_decision_outputs": {
+    "outer_loop_update_decision_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/update-decision/outer_loop_update_decision.json",
+    "positive_transfer_pairs_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/update-decision/positive_transfer_pairs.csv",
+    "protected_regression_pairs_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/update-decision/protected_regression_pairs.csv",
+    "summary_md": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/update-decision/summary.md"
+  },
+  "schema_update_outputs": {
+    "schema_update_package_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/schema_update_package.json",
+    "outer_loop_update_decision_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/outer_loop_update_decision.json",
+    "schema_evidence_bundles_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/schema_evidence_bundles.json",
+    "schema_update_proposals_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/schema_update_proposals.json",
+    "round_update_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/round_update_plan.json",
+    "round_update_plan_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/round_update_plan.csv",
+    "rewrite_verification_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/rewrite_verification.json",
+    "challenger_eval_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/challenger_eval_plan.json",
+    "candidate_prompt_bank_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/round1_candidate_prompt_bank.json",
+    "summary_md": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/summary.md"
+  },
+  "next_round_materialized_outputs": {
+    "manifest_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/manifest.json",
+    "pair_specs_jsonl": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pair_specs.jsonl",
+    "next_round_pair_plan_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/next_round_pair_plan.json",
+    "next_round_pair_plan_csv": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/next_round_pair_plan.csv",
+    "candidate_prompt_bank_json": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/round1_candidate_prompt_bank.json",
+    "launch_script": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launch_next_round.sh"
+  },
+  "next_round_pair_count": 140,
+  "next_round_schema_count": 7,
+  "next_round_task_count": 20,
+  "next_pair_plan_mode": "full_matrix"
+}

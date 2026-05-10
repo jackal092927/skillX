@@ -26,6 +26,7 @@ assert_supported_python_runtime()
 
 import build_round0_outer_loop_artifacts as control_plane  # noqa: E402
 import build_round0_schema_update_package as schema_updates  # noqa: E402
+import build_outer_loop_update_decision as update_decisions  # noqa: E402
 import materialize_skillx_round0_runner as round_materializer  # noqa: E402
 from skillx.io_utils import ensure_dir, write_json  # noqa: E402
 
@@ -480,6 +481,8 @@ def run_outer_loop_optimization(
     min_support_size: int,
     next_pair_plan_mode: str,
     allow_partial_assignment: bool,
+    previous_control_plane_bundle_path: Path | None = None,
+    update_decision_mode: str = update_decisions.DEFAULT_UPDATE_DECISION_MODE,
 ) -> dict[str, Any]:
     global_status = read_json(global_pair_status_path)
     global_pairs = global_status.get("pairs") or []
@@ -504,7 +507,7 @@ def run_outer_loop_optimization(
     if task_names:
         log_progress("input tasks: " + ", ".join(task_names))
 
-    log_progress("phase 1/4: building task-to-schema score matrix and assignment control plane")
+    log_progress("phase 1/5: building task-to-schema score matrix and assignment control plane")
     control_payload = control_plane.build_outer_loop_artifacts(
         round0_root=round0_root,
         global_pair_status_path=global_pair_status_path,
@@ -557,11 +560,29 @@ def run_outer_loop_optimization(
         f"occupied_schemas={len(occupied_schemas)} outputs={control_plane_output_dir}"
     )
 
-    log_progress("phase 2/4: building schema evidence bundles and rewriting candidate schemas")
+    log_progress("phase 2/5: deciding whether to rewrite, guarded-patch, or hold schemas")
+    update_decision = update_decisions.build_outer_loop_update_decision(
+        current_control_plane_bundle_path=control_bundle_path,
+        previous_control_plane_bundle_path=previous_control_plane_bundle_path,
+        requested_mode=update_decision_mode,
+    )
+    update_decision_outputs = update_decisions.write_outer_loop_update_decision_artifacts(
+        decision=update_decision,
+        output_dir=schema_update_output_dir / "update-decision",
+    )
+    log_progress(
+        "outer-loop update decision complete: "
+        f"mode={update_decision.get('global_update_mode')} "
+        f"positive_transfer_pairs={len(update_decision.get('positive_transfer_pairs') or [])} "
+        f"protected_regressions={len(update_decision.get('protected_regression_pairs') or [])}"
+    )
+
+    log_progress("phase 3/5: building schema evidence bundles and rewriting candidate schemas")
     package = schema_updates.build_schema_update_package(
         control_plane_bundle_path=control_bundle_path,
         prompt_bank_path=prompt_bank_path,
         task_cluster_inputs_path=task_cluster_inputs_path,
+        update_decision=update_decision,
         rewrite_mode=rewrite_mode,
         llm_model=llm_model,
         llm_timeout_sec=llm_timeout_sec,
@@ -582,14 +603,14 @@ def run_outer_loop_optimization(
         f"{rewrite_verification.get('expected_rewrite_schema_count')}"
     )
 
-    log_progress("phase 3/4: writing outer-loop schema update artifacts")
+    log_progress("phase 4/5: writing outer-loop schema update artifacts")
     schema_update_outputs = schema_updates.write_schema_update_package(
         package=package,
         output_dir=schema_update_output_dir,
     )
     log_progress(f"schema update artifacts written: {schema_update_output_dir}")
 
-    log_progress("phase 4/4: materializing next-round schema-task candidate pairs")
+    log_progress("phase 5/5: materializing next-round schema-task candidate pairs")
     materialized = materialize_next_round_pairs(
         package=package,
         output_dir=next_materialized_root,
@@ -620,6 +641,8 @@ def run_outer_loop_optimization(
         ),
         "max_update_schemas": max_update_schemas,
         "control_plane_outputs": control_outputs,
+        "outer_loop_update_decision_mode": update_decision.get("global_update_mode"),
+        "outer_loop_update_decision_outputs": update_decision_outputs,
         "schema_update_outputs": schema_update_outputs,
         "next_round_materialized_outputs": materialized["outputs"],
         "next_round_pair_count": len(materialized["pair_specs"]),
@@ -649,6 +672,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--global-pair-status-path", type=Path, default=DEFAULT_GLOBAL_PAIR_STATUS_PATH)
     parser.add_argument("--prompt-bank-path", type=Path, default=DEFAULT_PROMPT_BANK_PATH)
     parser.add_argument("--task-cluster-inputs-path", type=Path, default=DEFAULT_TASK_CLUSTER_INPUTS_PATH)
+    parser.add_argument("--previous-control-plane-bundle-path", type=Path, default=None)
     parser.add_argument("--control-plane-output-dir", type=Path, default=DEFAULT_CONTROL_PLANE_OUTPUT_DIR)
     parser.add_argument("--schema-update-output-dir", type=Path, default=DEFAULT_SCHEMA_UPDATE_OUTPUT_DIR)
     parser.add_argument("--next-materialized-root", type=Path, default=DEFAULT_NEXT_MATERIALIZED_ROOT)
@@ -670,6 +694,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--llm-model", default=schema_updates.DEFAULT_LLM_MODEL)
     parser.add_argument("--llm-timeout-sec", type=float, default=schema_updates.DEFAULT_LLM_TIMEOUT_SEC)
+    parser.add_argument(
+        "--update-decision-mode",
+        choices=update_decisions.UPDATE_DECISION_MODES,
+        default=update_decisions.DEFAULT_UPDATE_DECISION_MODE,
+    )
     parser.add_argument(
         "--max-update-schemas",
         type=int,
@@ -704,6 +733,7 @@ def main(argv: list[str] | None = None) -> int:
         global_pair_status_path=args.global_pair_status_path,
         prompt_bank_path=args.prompt_bank_path,
         task_cluster_inputs_path=args.task_cluster_inputs_path,
+        previous_control_plane_bundle_path=args.previous_control_plane_bundle_path,
         control_plane_output_dir=args.control_plane_output_dir,
         schema_update_output_dir=args.schema_update_output_dir,
         next_materialized_root=args.next_materialized_root,
@@ -726,6 +756,7 @@ def main(argv: list[str] | None = None) -> int:
         min_support_size=int(args.min_support_size),
         next_pair_plan_mode=str(args.next_pair_plan_mode),
         allow_partial_assignment=bool(args.allow_partial_assignment),
+        update_decision_mode=str(args.update_decision_mode),
     )
     print(json.dumps(result["summary"], indent=2, sort_keys=True))
     return 0

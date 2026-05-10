@@ -1,0 +1,747 @@
+{
+  "config": {
+    "assignment_random_seed": "skillx-round0-assignment-v1",
+    "assignment_score_mode": "trajectory",
+    "balance_tie_max_loss_pp": 1.0,
+    "dominant_share_threshold": 0.6,
+    "epsilon_pp": 5.0,
+    "flat_column_range_pp": 10.0,
+    "global_pair_status_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/global-round1-first20-fullmatrix-effective-2026-05-04/global_pair_status.json",
+    "high_confidence_margin_pp": 10.0,
+    "medium_confidence_margin_pp": 5.0,
+    "min_assignment_score_pct": 0.0,
+    "multi_assignment_min_delta_vs_r0_pp": 10.0,
+    "multi_assignment_min_score_pct": 80.0,
+    "multi_assignment_near_best_margin_pp": 10.0,
+    "near_empty_threshold": 3,
+    "post_r0_improved_round_count_weight": 0.2,
+    "post_r0_improvement_area_weight": 0.4,
+    "post_r0_monotonicity_weight": 0.25,
+    "post_r0_terminal_improvement_weight": 0.15,
+    "prompt_bank_path": "docs/plans/skillx/skillx-prompt-bank-v0.1.json",
+    "require_full_coverage": true,
+    "round0_root": "experiments/skillx-skillsbench-001/results/outer-loop-round0",
+    "round_id": "outer-loop-round1",
+    "round_score_weights": {
+      "0": 0.15,
+      "1": 0.2,
+      "2": 0.3,
+      "3": 0.35
+    },
+    "task_cluster_inputs_path": "docs/plans/skillx/skillsbench-task-cluster-inputs-v0.1.jsonl",
+    "top3_tie_threshold_pp": 10.0,
+    "update_floor_fraction": 0.1
+  },
+  "diagnostics": {
+    "collapse_warnings": [],
+    "flat_schema_columns": [],
+    "incomplete_tasks": [],
+    "low_margin_tasks": [],
+    "schema_diagnostics": [
+      {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 80.0,
+        "mean_observed_score": 18.25,
+        "multi_assigned_count": 3,
+        "near_empty": true,
+        "observed_task_count": 20,
+        "occupancy_share": 0.1429,
+        "primary_assigned_count": 2,
+        "schema_id": "artifact-generation",
+        "score_range_pp": 100.0,
+        "score_stddev_pp": 29.36,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 3,
+        "update_evidence_task_names": [
+          "exceltable-in-ppt",
+          "earthquake-plate-calculation",
+          "earthquake-phase-association"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 86.67,
+        "mean_observed_score": 17.34,
+        "multi_assigned_count": 3,
+        "near_empty": false,
+        "observed_task_count": 20,
+        "occupancy_share": 0.2143,
+        "primary_assigned_count": 3,
+        "schema_id": "analytic-pipeline",
+        "score_range_pp": 100.0,
+        "score_stddev_pp": 33.95,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 3,
+        "update_evidence_task_names": [
+          "dapt-intrusion-detection",
+          "earthquake-phase-association",
+          "court-form-filling"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 100.0,
+        "mean_observed_score": 21.75,
+        "multi_assigned_count": 3,
+        "near_empty": true,
+        "observed_task_count": 20,
+        "occupancy_share": 0.1429,
+        "primary_assigned_count": 2,
+        "schema_id": "engineering-composition",
+        "score_range_pp": 100.0,
+        "score_stddev_pp": 35.92,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 3,
+        "update_evidence_task_names": [
+          "adaptive-cruise-control",
+          "energy-ac-optimal-power-flow",
+          "data-to-d3"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 66.25,
+        "mean_observed_score": 21.38,
+        "multi_assigned_count": 4,
+        "near_empty": true,
+        "observed_task_count": 20,
+        "occupancy_share": 0.1429,
+        "primary_assigned_count": 2,
+        "schema_id": "retrieval-heavy-synthesis",
+        "score_range_pp": 72.5,
+        "score_stddev_pp": 29.52,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 4,
+        "update_evidence_task_names": [
+          "energy-market-pricing",
+          "financial-modeling-qa",
+          "earthquake-phase-association",
+          "energy-ac-optimal-power-flow"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 55.62,
+        "mean_observed_score": 14.25,
+        "multi_assigned_count": 3,
+        "near_empty": true,
+        "observed_task_count": 20,
+        "occupancy_share": 0.1429,
+        "primary_assigned_count": 2,
+        "schema_id": "environment-control",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 23.97,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 3,
+        "update_evidence_task_names": [
+          "econ-detrending-correlation",
+          "find-topk-similiar-chemicals",
+          "energy-market-pricing"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": true,
+        "empty": false,
+        "mean_assigned_score": 80.0,
+        "mean_observed_score": 20.25,
+        "multi_assigned_count": 4,
+        "near_empty": true,
+        "observed_task_count": 20,
+        "occupancy_share": 0.0714,
+        "primary_assigned_count": 1,
+        "schema_id": "methodology-guardrail",
+        "score_range_pp": 80.0,
+        "score_stddev_pp": 26.98,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 4,
+        "update_evidence_task_names": [
+          "exoplanet-detection-period",
+          "dapt-intrusion-detection",
+          "data-to-d3",
+          "energy-ac-optimal-power-flow"
+        ],
+        "update_floor_k": 2
+      },
+      {
+        "below_training_floor": false,
+        "below_update_floor": false,
+        "empty": false,
+        "mean_assigned_score": 69.96,
+        "mean_observed_score": 13.12,
+        "multi_assigned_count": 3,
+        "near_empty": true,
+        "observed_task_count": 20,
+        "occupancy_share": 0.1429,
+        "primary_assigned_count": 2,
+        "schema_id": "orchestration-delegation",
+        "score_range_pp": 100.0,
+        "score_stddev_pp": 26.18,
+        "top_k_tasks_added": [],
+        "training_evidence_count": 3,
+        "update_evidence_task_names": [
+          "data-to-d3",
+          "civ6-adjacency-optimizer",
+          "econ-detrending-correlation"
+        ],
+        "update_floor_k": 2
+      }
+    ],
+    "schema_pair_correlations": [
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.1779,
+        "right_schema_id": "analytic-pipeline"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 20,
+        "pearson_correlation": -0.0745,
+        "right_schema_id": "engineering-composition"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.1198,
+        "right_schema_id": "retrieval-heavy-synthesis"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.2132,
+        "right_schema_id": "environment-control"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.1522,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "artifact-generation",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.217,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.1141,
+        "right_schema_id": "engineering-composition"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.5084,
+        "right_schema_id": "retrieval-heavy-synthesis"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 20,
+        "pearson_correlation": -0.3036,
+        "right_schema_id": "environment-control"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.5639,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "analytic-pipeline",
+        "pair_task_count": 20,
+        "pearson_correlation": -0.224,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "engineering-composition",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.3199,
+        "right_schema_id": "retrieval-heavy-synthesis"
+      },
+      {
+        "left_schema_id": "engineering-composition",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.3238,
+        "right_schema_id": "environment-control"
+      },
+      {
+        "left_schema_id": "engineering-composition",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.3023,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "engineering-composition",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.5195,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "retrieval-heavy-synthesis",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.4847,
+        "right_schema_id": "environment-control"
+      },
+      {
+        "left_schema_id": "retrieval-heavy-synthesis",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.4423,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "retrieval-heavy-synthesis",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.1677,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "environment-control",
+        "pair_task_count": 20,
+        "pearson_correlation": -0.0152,
+        "right_schema_id": "methodology-guardrail"
+      },
+      {
+        "left_schema_id": "environment-control",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.5707,
+        "right_schema_id": "orchestration-delegation"
+      },
+      {
+        "left_schema_id": "methodology-guardrail",
+        "pair_task_count": 20,
+        "pearson_correlation": 0.1813,
+        "right_schema_id": "orchestration-delegation"
+      }
+    ],
+    "schema_training_assignments": [
+      {
+        "evidence_reasons": "primary;near_best;high_score;stable_gain;ideal_zero_to_full",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "artifact-generation",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "artifact-generation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 100.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "task_best_schema": "artifact-generation",
+        "task_best_score": 100.0,
+        "task_name": "exceltable-in-ppt"
+      },
+      {
+        "evidence_reasons": "primary;near_best;stable_gain",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "artifact-generation",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "artifact-generation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "artifact-generation",
+        "task_best_score": 60.0,
+        "task_name": "earthquake-plate-calculation"
+      },
+      {
+        "evidence_reasons": "high_score;stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "artifact-generation",
+        "schema_rank_for_task": 2,
+        "schema_reported_score": 100.0,
+        "schema_score": 80.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "evidence_reasons": "primary;near_best;high_score;stable_gain;ideal_zero_to_full",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "analytic-pipeline",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 100.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "dapt-intrusion-detection"
+      },
+      {
+        "evidence_reasons": "primary;near_best;high_score;stable_gain;ideal_zero_to_full",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "analytic-pipeline",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 100.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "evidence_reasons": "primary;near_best;stable_gain",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "analytic-pipeline",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 60.0,
+        "task_name": "court-form-filling"
+      },
+      {
+        "evidence_reasons": "primary;near_best;high_score;stable_gain;ideal_zero_to_full",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "engineering-composition",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "engineering-composition",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 100.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "task_best_schema": "engineering-composition",
+        "task_best_score": 100.0,
+        "task_name": "adaptive-cruise-control"
+      },
+      {
+        "evidence_reasons": "primary;near_best;high_score;stable_gain;ideal_zero_to_full",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "engineering-composition",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "engineering-composition",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 100.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "task_best_schema": "engineering-composition",
+        "task_best_score": 100.0,
+        "task_name": "energy-ac-optimal-power-flow"
+      },
+      {
+        "evidence_reasons": "high_score;stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "orchestration-delegation",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "engineering-composition",
+        "schema_rank_for_task": 2,
+        "schema_reported_score": 100.0,
+        "schema_score": 80.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "orchestration-delegation",
+        "task_best_score": 100.0,
+        "task_name": "data-to-d3"
+      },
+      {
+        "evidence_reasons": "primary;near_best",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "retrieval-heavy-synthesis",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "retrieval-heavy-synthesis",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 72.5,
+        "schema_trajectory_quality": "stable_no_loss_gain",
+        "task_best_schema": "retrieval-heavy-synthesis",
+        "task_best_score": 72.5,
+        "task_name": "energy-market-pricing"
+      },
+      {
+        "evidence_reasons": "primary;near_best;stable_gain",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "retrieval-heavy-synthesis",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "retrieval-heavy-synthesis",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "retrieval-heavy-synthesis",
+        "task_best_score": 60.0,
+        "task_name": "financial-modeling-qa"
+      },
+      {
+        "evidence_reasons": "stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "retrieval-heavy-synthesis",
+        "schema_rank_for_task": 3,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "earthquake-phase-association"
+      },
+      {
+        "evidence_reasons": "stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "engineering-composition",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "retrieval-heavy-synthesis",
+        "schema_rank_for_task": 3,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "engineering-composition",
+        "task_best_score": 100.0,
+        "task_name": "energy-ac-optimal-power-flow"
+      },
+      {
+        "evidence_reasons": "primary;near_best;high_score;stable_gain",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "environment-control",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "environment-control",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 80.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "environment-control",
+        "task_best_score": 80.0,
+        "task_name": "econ-detrending-correlation"
+      },
+      {
+        "evidence_reasons": "primary;near_best",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "environment-control",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "environment-control",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 31.25,
+        "schema_trajectory_quality": "partial_gain_then_regression",
+        "task_best_schema": "environment-control",
+        "task_best_score": 31.25,
+        "task_name": "find-topk-similiar-chemicals"
+      },
+      {
+        "evidence_reasons": "stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "retrieval-heavy-synthesis",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "environment-control",
+        "schema_rank_for_task": 2,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "retrieval-heavy-synthesis",
+        "task_best_score": 72.5,
+        "task_name": "energy-market-pricing"
+      },
+      {
+        "evidence_reasons": "primary;near_best;high_score;stable_gain",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "methodology-guardrail",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "methodology-guardrail",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 80.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "methodology-guardrail",
+        "task_best_score": 80.0,
+        "task_name": "exoplanet-detection-period"
+      },
+      {
+        "evidence_reasons": "stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "analytic-pipeline",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "methodology-guardrail",
+        "schema_rank_for_task": 3,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "analytic-pipeline",
+        "task_best_score": 100.0,
+        "task_name": "dapt-intrusion-detection"
+      },
+      {
+        "evidence_reasons": "stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "orchestration-delegation",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "methodology-guardrail",
+        "schema_rank_for_task": 3,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "orchestration-delegation",
+        "task_best_score": 100.0,
+        "task_name": "data-to-d3"
+      },
+      {
+        "evidence_reasons": "stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "engineering-composition",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "methodology-guardrail",
+        "schema_rank_for_task": 3,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "engineering-composition",
+        "task_best_score": 100.0,
+        "task_name": "energy-ac-optimal-power-flow"
+      },
+      {
+        "evidence_reasons": "primary;near_best;high_score;stable_gain;ideal_zero_to_full",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "orchestration-delegation",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "orchestration-delegation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 100.0,
+        "schema_score": 100.0,
+        "schema_trajectory_quality": "ideal_zero_to_full_stable",
+        "task_best_schema": "orchestration-delegation",
+        "task_best_score": 100.0,
+        "task_name": "data-to-d3"
+      },
+      {
+        "evidence_reasons": "primary;near_best",
+        "evidence_role": "primary_assignment",
+        "primary_assigned_category": "orchestration-delegation",
+        "schema_delta_vs_r0_post_best_pp": 60.0,
+        "schema_id": "orchestration-delegation",
+        "schema_rank_for_task": 1,
+        "schema_reported_score": 60.0,
+        "schema_score": 39.9167,
+        "schema_trajectory_quality": "partial_gain_then_regression",
+        "task_best_schema": "orchestration-delegation",
+        "task_best_score": 39.9167,
+        "task_name": "civ6-adjacency-optimizer"
+      },
+      {
+        "evidence_reasons": "stable_gain",
+        "evidence_role": "stable_gain_support",
+        "primary_assigned_category": "environment-control",
+        "schema_delta_vs_r0_post_best_pp": 100.0,
+        "schema_id": "orchestration-delegation",
+        "schema_rank_for_task": 3,
+        "schema_reported_score": 100.0,
+        "schema_score": 60.0,
+        "schema_trajectory_quality": "stable_non_decreasing_gain",
+        "task_best_schema": "environment-control",
+        "task_best_score": 80.0,
+        "task_name": "econ-detrending-correlation"
+      }
+    ],
+    "summary": {
+      "assigned_task_count": 14,
+      "assignment_score_formula": "0.4*mean(max(R1..R3 - R0, 0)) + 0.25*post_r0_monotonicity + 0.2*fraction(R1..R3 > R0) + 0.15*max(last_post_round - R0, 0)",
+      "assignment_score_mode": "trajectory",
+      "cluster_size_entropy": 1.9085,
+      "cluster_sizes": {
+        "analytic-pipeline": 3,
+        "artifact-generation": 2,
+        "engineering-composition": 2,
+        "environment-control": 2,
+        "methodology-guardrail": 1,
+        "orchestration-delegation": 2,
+        "retrieval-heavy-synthesis": 2
+      },
+      "largest_cluster_share": 0.2143,
+      "low_margin_task_fraction": 0.0,
+      "mean_abs_schema_pair_correlation": 0.2855,
+      "mean_assignment_margin_pp": 32.55,
+      "multi_assignment_count": 23,
+      "multi_assignment_schema_counts": {
+        "analytic-pipeline": 3,
+        "artifact-generation": 3,
+        "engineering-composition": 3,
+        "environment-control": 3,
+        "methodology-guardrail": 4,
+        "orchestration-delegation": 3,
+        "retrieval-heavy-synthesis": 4
+      },
+      "occupied_cluster_count": 7,
+      "task_count_full_coverage": 20,
+      "task_count_no_scores": 0,
+      "task_count_partial_coverage": 0,
+      "task_count_total": 20,
+      "task_count_with_scores": 20,
+      "tie_break_policy": "semantic_prior -> balance_when_score_range_leq_threshold -> stable_random",
+      "unassigned_task_count": 6,
+      "update_floor_k": 2
+    },
+    "top3_tied_tasks": [
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 0.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 0.0,
+        "task_name": "3d-scan-calc",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 0.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 0.0,
+        "task_name": "azure-bgp-oscillation-route-leak",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 0.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 0.0,
+        "task_name": "citation-check",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 0.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 0.0,
+        "task_name": "fix-build-agentops",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 0.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 0.0,
+        "task_name": "fix-build-google-auto",
+        "top3_spread_pp": 0.0
+      },
+      {
+        "best_observed_schema": "analytic-pipeline",
+        "best_observed_score": 0.0,
+        "second_observed_schema": "artifact-generation",
+        "second_observed_score": 0.0,
+        "task_name": "fix-druid-loophole-cve",
+        "top3_spread_pp": 0.0
+      }
+    ]
+  },
+  "generated_at": "2026-05-10T07:26:58.523268+00:00"
+}

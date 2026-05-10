@@ -1,0 +1,10 @@
+metric,previous,current,delta
+assigned_tasks,15,14,-1.0
+unassigned_tasks,5,6,1.0
+multi_assignment_count_total,27,23,-4.0
+low_confidence_assigned,8,0,-8.0
+medium_confidence_assigned,0,2,2.0
+high_confidence_assigned,7,12,5.0
+low_confidence_fraction_assigned,53.33,0.0,-53.33
+mean_margin_pp_assigned,27.33,32.55,5.22
+median_margin_pp_assigned,0.0,27.5,27.5

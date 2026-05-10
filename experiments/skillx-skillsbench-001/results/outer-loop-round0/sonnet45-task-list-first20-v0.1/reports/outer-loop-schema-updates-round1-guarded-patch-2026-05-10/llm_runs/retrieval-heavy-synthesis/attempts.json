@@ -1,0 +1,20 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "profile": {
+        "cli": "claude",
+        "config_dir": null,
+        "index": 0,
+        "label": "primary-claude",
+        "source": "default-claude-config"
+      },
+      "quota_hard_terms": [],
+      "quota_signal_level": "none",
+      "returncode": 0,
+      "status": "succeeded",
+      "stderr_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/llm_runs/retrieval-heavy-synthesis/attempts/01-primary-claude/stderr.txt",
+      "stdout_path": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/outer-loop-schema-updates-round1-guarded-patch-2026-05-10/llm_runs/retrieval-heavy-synthesis/attempts/01-primary-claude/stdout.json"
+    }
+  ]
+}

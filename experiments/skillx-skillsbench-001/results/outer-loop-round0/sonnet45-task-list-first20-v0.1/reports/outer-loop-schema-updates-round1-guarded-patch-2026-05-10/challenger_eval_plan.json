@@ -1,0 +1,100 @@
+[
+  {
+    "candidate_mode": "conservative",
+    "purpose": "evaluate guarded positive-transfer tasks plus assigned/boundary tasks",
+    "schema_id": "analytic-pipeline",
+    "task_count": 6,
+    "task_names": [
+      "dapt-intrusion-detection",
+      "energy-ac-optimal-power-flow",
+      "earthquake-phase-association",
+      "court-form-filling",
+      "3d-scan-calc",
+      "azure-bgp-oscillation-route-leak"
+    ]
+  },
+  {
+    "candidate_mode": "conservative",
+    "purpose": "evaluate guarded positive-transfer tasks plus assigned/boundary tasks",
+    "schema_id": "artifact-generation",
+    "task_count": 6,
+    "task_names": [
+      "data-to-d3",
+      "earthquake-phase-association",
+      "earthquake-plate-calculation",
+      "econ-detrending-correlation",
+      "exceltable-in-ppt",
+      "financial-modeling-qa"
+    ]
+  },
+  {
+    "candidate_mode": "conservative",
+    "purpose": "evaluate guarded positive-transfer tasks plus assigned/boundary tasks",
+    "schema_id": "engineering-composition",
+    "task_count": 6,
+    "task_names": [
+      "adaptive-cruise-control",
+      "court-form-filling",
+      "data-to-d3",
+      "econ-detrending-correlation",
+      "energy-ac-optimal-power-flow",
+      "energy-market-pricing"
+    ]
+  },
+  {
+    "candidate_mode": "conservative",
+    "purpose": "evaluate guarded positive-transfer tasks plus assigned/boundary tasks",
+    "schema_id": "environment-control",
+    "task_count": 6,
+    "task_names": [
+      "data-to-d3",
+      "econ-detrending-correlation",
+      "find-topk-similiar-chemicals",
+      "energy-market-pricing",
+      "3d-scan-calc",
+      "azure-bgp-oscillation-route-leak"
+    ]
+  },
+  {
+    "candidate_mode": "conservative",
+    "purpose": "evaluate guarded positive-transfer tasks plus assigned/boundary tasks",
+    "schema_id": "methodology-guardrail",
+    "task_count": 6,
+    "task_names": [
+      "data-to-d3",
+      "earthquake-phase-association",
+      "earthquake-plate-calculation",
+      "econ-detrending-correlation",
+      "energy-ac-optimal-power-flow",
+      "exoplanet-detection-period"
+    ]
+  },
+  {
+    "candidate_mode": "conservative",
+    "purpose": "evaluate guarded positive-transfer tasks plus assigned/boundary tasks",
+    "schema_id": "orchestration-delegation",
+    "task_count": 6,
+    "task_names": [
+      "civ6-adjacency-optimizer",
+      "data-to-d3",
+      "econ-detrending-correlation",
+      "3d-scan-calc",
+      "azure-bgp-oscillation-route-leak",
+      "citation-check"
+    ]
+  },
+  {
+    "candidate_mode": "conservative",
+    "purpose": "evaluate guarded positive-transfer tasks plus assigned/boundary tasks",
+    "schema_id": "retrieval-heavy-synthesis",
+    "task_count": 6,
+    "task_names": [
+      "data-to-d3",
+      "earthquake-phase-association",
+      "econ-detrending-correlation",
+      "energy-ac-optimal-power-flow",
+      "financial-modeling-qa",
+      "energy-market-pricing"
+    ]
+  }
+]

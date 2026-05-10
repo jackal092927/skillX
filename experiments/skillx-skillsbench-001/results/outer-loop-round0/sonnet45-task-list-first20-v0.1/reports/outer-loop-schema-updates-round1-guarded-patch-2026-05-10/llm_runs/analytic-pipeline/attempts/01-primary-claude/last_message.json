@@ -1,0 +1,89 @@
+{
+  "acceptance_notes": [
+    "Guarded patch mode: preserving stable base schema while adding narrow evidence-backed refinements",
+    "Positive transfer evidence (dapt-intrusion-detection 0\u2192100, earthquake-phase-association 100 score) validates core pipeline emphasis",
+    "Protected regressions (azure-bgp-oscillation-route-leak, exceltable-in-ppt both 100\u21920) trigger explicit guardrails against overapplication",
+    "Six zero-margin borderline cases with artifact-generation require sharper boundary articulation",
+    "One assigned task (court-form-filling) has artifact-generation seed but 60 score, indicating boundary ambiguity",
+    "Patch adds workflow-assumption explicitness and differentiation criteria without removing working incumbent items"
+  ],
+  "challenger_guidance": {
+    "conservative": "Keep analytic-pipeline when the task explicitly requires staged processing (extract \u2192 transform \u2192 analyze \u2192 report) with intermediate validation gates, and when later stage correctness depends on earlier stage artifact quality.",
+    "differentiating": "Choose analytic-pipeline over artifact-generation when intermediate processing quality strongly affects final correctness (e.g., seismic phase picking quality determines event association F1 score). Choose artifact-generation when the task succeeds by meeting strict output contract constraints in a single generation step, even if conceptually multi-phase.",
+    "exploratory": "Try analytic-pipeline when the task shows pipeline vocabulary (phases, stages, workflow) or involves ordered transformations with measurement/analysis steps, but be prepared to yield to artifact-generation if the task succeeds via single-artifact output discipline rather than stage decomposition."
+  },
+  "expected_effect": [
+    "Sharper task-routing boundary with artifact-generation schema, reducing zero-margin borderline ambiguity",
+    "Preserved high performance on core pipeline tasks (dapt-intrusion-detection, earthquake-phase-association patterns)",
+    "Explicit workflow-topology assumption reduces misapplication to single-artifact tasks",
+    "Named handoff requirements make schema differentiation criteria more testable",
+    "Protected regression guardrails prevent future overapplication to non-pipeline patterns"
+  ],
+  "operator_summary": {
+    "add": [
+      "Explicit staged-multi-step workflow assumption in emphasize to match successful task profiles",
+      "Named execution/verification handoffs to make tool use less implicit",
+      "Differentiation criteria vs artifact-generation for borderline task routing",
+      "Task-specific failure mode extraction before generic scaffolding",
+      "Guardrails against schema broadening that regresses stable prior behavior",
+      "Expected_bad_fit expansion for artifact-generation boundary cases",
+      "Hypothesized failure modes covering boundary ambiguity and protected regressions"
+    ],
+    "exclude": [
+      "Any broadening based on regression evidence (guarded_patch constraint)",
+      "Removal of working incumbent items without direct causation evidence",
+      "Generic procedural additions not grounded in positive transfer pairs"
+    ],
+    "keep": [
+      "All current emphasize items (stage decomposition, intermediate artifacts, handoff integrity, pipeline evidence) - validated by positive transfer",
+      "All current avoid items (collapsing transforms, skipping validation, generic prose) - still relevant",
+      "All current expected_good_fit and expected_bad_fit items - baseline boundaries remain valid",
+      "Core semantic_intent and meta_prompt - working on true pipeline tasks"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "applying pipeline framing to tasks where the dominant pattern is single-artifact generation with review",
+        "schema broadening that regresses previously stable task-schema pairings"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "assume a staged-multi-step workflow topology; make stage boundaries explicit before rendering task-specific guidance",
+        "name the required execution handoffs (data extraction \u2192 transformation \u2192 analysis) and verification handoffs (intermediate validation gates) instead of leaving tool orchestration implicit",
+        "extract the task-specific failure mode or constraint before layering broader procedural scaffolding",
+        "on borderline cases with artifact-generation, articulate why intermediate processing quality affects final correctness in this task"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "expected_bad_fit": {
+      "add": [
+        "single-step artifact generation tasks where review discipline matters more than stage decomposition",
+        "borderline cases where artifact-generation schema wins because output contract constraints dominate over intermediate processing quality"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "tasks with deterministic-output-contract verifier mode when staged workflow topology matches the task structure",
+        "tasks whose task_profile primary_pattern is pipeline",
+        "tool-heavy workflows where intermediate artifact quality gates prevent downstream error propagation"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "low-margin schema-boundary ambiguity with artifact-generation on tasks that superficially appear multi-stage but succeed via single-artifact discipline",
+        "outer-loop candidate regressions on previously stable tasks when pipeline emphasis is overapplied to non-pipeline patterns"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

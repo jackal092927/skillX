@@ -1,0 +1,93 @@
+{
+  "acceptance_notes": [
+    "Schema appears to be evolving from 'pure methodology guardrail' toward 'methodology-aware pipeline execution' - this explains both positive transfer (pipeline tasks benefit from discipline) and protected regression (tasks that don't need the methodology layer)",
+    "The protected regression (azure-bgp-oscillation-route-leak: 100\u21920%) wasn't caused by bad incumbent content but by unclear category scope boundaries - the guarded_patch approach correctly avoids removing useful content",
+    "6 borderline cases at 0pp margin with analytic-pipeline indicate systematic boundary ambiguity requiring explicit differentiation guidance, not schema expansion",
+    "Future rounds should monitor whether methodology-guardrail should split into: (1) pure methodology/judgment tasks vs (2) methodology-aware pipeline tasks, or refocus exclusively on one",
+    "The deterministic_seed_edits provided good guidance aligned with guarded_patch principles: minimal evidence-backed patches, explicit workflow assumptions, boundary clarification vs analytic-pipeline",
+    "Mean assigned score of 65% with 55pp delta vs previous round shows modest improvement; primary assignment at 80% is solid but support size of 4 is small - schema needs more evidence before major expansion"
+  ],
+  "challenger_guidance": {
+    "conservative": "Claim only tasks where methodological judgment (fit-check, abstention, rule-hierarchy) is the primary differentiator over pure pipeline execution. When borderline against analytic-pipeline at 0pp margin, defer unless explicit abstention or fit-check behavior is required.",
+    "differentiating": "Win against analytic-pipeline when tasks need BOTH staged-multi-step execution AND reviewer-style judgment discipline at phase boundaries. Lose to analytic-pipeline when systematic data processing or pure execution flow is sufficient. The differentiator is judgment-during-execution, not judgment-instead-of-execution.",
+    "exploratory": "Test whether this schema should specialize into 'methodology-aware pipeline execution' as a distinct pattern vs preserving pure 'methodology guardrail' focus. The positive transfer evidence suggests pipeline+judgment tasks are workable, but the protected regression indicates scope drift risk."
+  },
+  "expected_effect": [
+    "Preserve high-confidence primary assignment (exoplanet-detection-period: 80%, 100pp delta, stable gain) by clarifying that pipeline+judgment is in scope",
+    "Reduce 6-task borderline ambiguity with analytic-pipeline by explicitly stating when methodological discipline differentiates vs when pure execution wins",
+    "Prevent future regressions similar to azure-bgp-oscillation-route-leak (100\u21920%) by adding guardrail against scope drift that breaks stable assignments",
+    "Support 6 positive transfer tasks while maintaining honest boundary: this schema is for methodology-aware pipelines, not all pipelines",
+    "Clarify that staged-multi-step + deterministic-output-contract tasks can succeed here IF judgment/fit-checking is central, otherwise defer to analytic-pipeline"
+  ],
+  "operator_summary": {
+    "add": [
+      "Evidence that this schema now serves pipeline+deterministic-contract tasks, not just pure methodology tasks",
+      "Explicit workflow assumptions: positive transfer tasks all use staged-multi-step patterns",
+      "Handoff and execution clarity: these tasks need both judgment AND staged execution",
+      "Boundary markers vs analytic-pipeline: when methodological discipline is the differentiator"
+    ],
+    "exclude": [
+      "Tasks where analytic-pipeline wins because pure execution focus is more appropriate",
+      "Pipeline tasks that don't need judgment discipline between stages"
+    ],
+    "keep": [
+      "Core methodology-guardrail intent: fit-check before commitment, abstention/unknown behavior, rule hierarchy discipline",
+      "Reviewer-style judgment emphasis - this differentiates from pure execution schemas",
+      "Anti-hallucination and anti-premature-completion guardrails remain valuable",
+      "Expected bad fit for straightforward artifact generation and benchmark loops"
+    ],
+    "remove": [],
+    "sharpen": [
+      "Make reviewer-style judgment apply *during* staged execution, not instead of execution",
+      "Clarify that fit-checking applies between pipeline stages, not just at task entry",
+      "Emphasize list should reflect methodology-aware-pipeline, not pure methodology-only"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "schema broadening that regresses previously stable task-schema behavior",
+        "claiming pipeline tasks where pure execution discipline suffices without methodological judgment"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "staged-multi-step workflow with fit-checks between execution phases",
+        "explicit handoff points between retrieval, analysis, and output-contract phases",
+        "methodological discipline during pipeline execution, not instead of execution"
+      ],
+      "remove": [],
+      "sharpen": [
+        {
+          "new": "reviewer-style judgment applied during staged pipeline execution, validating each phase before proceeding",
+          "old": "reviewer-style judgment over direct eager generation"
+        }
+      ]
+    },
+    "expected_bad_fit": {
+      "add": [
+        "borderline pipeline tasks where analytic-pipeline wins because systematic execution is central and judgment is secondary",
+        "pure data-processing or network-analysis tasks without significant fit-check or abstention requirements"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "pipeline tasks with deterministic-output-contract verifiers requiring judgment discipline during execution",
+        "staged-multi-step workflows where fit-checking between phases prevents invalid outputs",
+        "tasks combining tool-heavy execution with reviewer-style validation at stage boundaries"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "boundary ambiguity with analytic-pipeline: claiming tasks that need execution discipline but not methodological judgment",
+        "over-broadening from methodology-only to methodology-aware-pipeline without preserving core guardrail purpose causes regressions on previously stable assignments"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

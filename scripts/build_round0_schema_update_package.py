@@ -423,6 +423,75 @@ def index_score_rows(
     return by_pair, by_task_scores
 
 
+def default_update_decision(schema_ids: list[str]) -> dict[str, Any]:
+    return {
+        "artifact_type": "skillx_outer_loop_update_decision",
+        "version": "v0.1",
+        "global_update_mode": "rewrite",
+        "mode_reason": "no outer-loop update decision supplied",
+        "scorecard": {},
+        "positive_transfer_pairs": [],
+        "protected_regression_pairs": [],
+        "schema_decisions": {
+            schema_id: {
+                "schema_id": schema_id,
+                "update_mode": "rewrite",
+                "reason": "default rewrite mode",
+                "positive_transfer_count": 0,
+                "protected_regression_count": 0,
+                "positive_transfer_pairs": [],
+                "protected_regression_pairs": [],
+                "allowed_patch_scope": [],
+                "blocked_regression_patterns": [],
+            }
+            for schema_id in schema_ids
+        },
+    }
+
+
+def schema_update_decision(update_decision: dict[str, Any], schema_id: str) -> dict[str, Any]:
+    schema_decisions = update_decision.get("schema_decisions")
+    if isinstance(schema_decisions, dict):
+        decision = schema_decisions.get(schema_id)
+        if isinstance(decision, dict):
+            return decision
+    global_mode = str(update_decision.get("global_update_mode") or "rewrite")
+    return {
+        "schema_id": schema_id,
+        "update_mode": global_mode,
+        "reason": str(update_decision.get("mode_reason") or "global update decision"),
+        "positive_transfer_count": 0,
+        "protected_regression_count": 0,
+        "positive_transfer_pairs": [],
+        "protected_regression_pairs": [],
+        "allowed_patch_scope": [],
+        "blocked_regression_patterns": [],
+    }
+
+
+def attach_update_decision_evidence(
+    evidence: dict[str, Any],
+    *,
+    update_decision: dict[str, Any],
+) -> dict[str, Any]:
+    schema_id = str(evidence["category_id"])
+    decision = schema_update_decision(update_decision, schema_id)
+    enriched = dict(evidence)
+    enriched["outer_loop_global_update_mode"] = str(update_decision.get("global_update_mode") or "rewrite")
+    enriched["outer_loop_global_update_reason"] = str(update_decision.get("mode_reason") or "")
+    enriched["outer_loop_update_mode"] = str(decision.get("update_mode") or "rewrite")
+    enriched["outer_loop_update_reason"] = str(decision.get("reason") or "")
+    enriched["positive_transfer_pairs"] = [
+        row for row in decision.get("positive_transfer_pairs") or [] if isinstance(row, dict)
+    ]
+    enriched["protected_regression_pairs"] = [
+        row for row in decision.get("protected_regression_pairs") or [] if isinstance(row, dict)
+    ]
+    enriched["allowed_patch_scope"] = normalize_string_list(decision.get("allowed_patch_scope"))
+    enriched["blocked_regression_patterns"] = normalize_string_list(decision.get("blocked_regression_patterns"))
+    return enriched
+
+
 def sorted_task_scores(task_scores: dict[str, float]) -> list[dict[str, Any]]:
     rows = [
         {"schema_id": schema_id, "score": score}
@@ -776,6 +845,9 @@ def propose_slot_edits(schema: dict[str, Any], evidence: dict[str, Any]) -> dict
     existing = existing_text_set(schema)
     support_size = int(evidence["support_size"])
     reliable_support_size = int(evidence["reliable_support_size"])
+    outer_loop_update_mode = str(evidence.get("outer_loop_update_mode") or "rewrite")
+    positive_transfer_count = len(evidence.get("positive_transfer_pairs") or [])
+    protected_regression_count = len(evidence.get("protected_regression_pairs") or [])
     outcome_counts = Counter(evidence.get("outcome_counts") or {})
     low_margin_count = len(evidence.get("ambiguous_borderline_cases") or [])
     competitor = top_competitor(evidence)
@@ -788,6 +860,29 @@ def propose_slot_edits(schema: dict[str, Any], evidence: dict[str, Any]) -> dict
         append_unique(
             edits["emphasize"]["add"],
             "extract the task-specific failure mode before adding broader procedural scaffolding",
+            existing,
+        )
+    if outer_loop_update_mode == "guarded_patch":
+        append_unique(
+            edits["emphasize"]["add"],
+            "limit this update to narrow evidence-backed patches against the stable base schema",
+            existing,
+        )
+    if positive_transfer_count:
+        append_unique(
+            edits["expected_good_fit"]["add"],
+            "task patterns matching positive-transfer evidence from the candidate outer-loop round",
+            existing,
+        )
+    if protected_regression_count:
+        append_unique(
+            edits["avoid"]["add"],
+            "schema broadening that regresses previously stable task-schema behavior",
+            existing,
+        )
+        append_unique(
+            edits["hypothesized_primary_failure_modes"]["add"],
+            "outer-loop candidate regression on protected prior-success tasks",
             existing,
         )
     if verifier_mode:
@@ -971,8 +1066,13 @@ def build_llm_update_prompt(
     evidence: dict[str, Any],
     deterministic_edits: dict[str, Any],
 ) -> str:
+    update_mode = str(evidence.get("outer_loop_update_mode") or "rewrite")
     compact_evidence = {
         "category_id": evidence["category_id"],
+        "outer_loop_global_update_mode": evidence.get("outer_loop_global_update_mode"),
+        "outer_loop_global_update_reason": evidence.get("outer_loop_global_update_reason"),
+        "outer_loop_update_mode": update_mode,
+        "outer_loop_update_reason": evidence.get("outer_loop_update_reason"),
         "support_size": evidence["support_size"],
         "reliable_support_size": evidence["reliable_support_size"],
         "mean_assigned_score": evidence["mean_assigned_score"],
@@ -986,7 +1086,33 @@ def build_llm_update_prompt(
         "assigned_task_summaries": evidence["assigned_task_summaries"][:8],
         "ambiguous_borderline_cases": evidence["ambiguous_borderline_cases"][:12],
         "cross_schema_losses": evidence["cross_schema_losses"][:12],
+        "positive_transfer_pairs": (evidence.get("positive_transfer_pairs") or [])[:12],
+        "protected_regression_pairs": (evidence.get("protected_regression_pairs") or [])[:12],
+        "allowed_patch_scope": evidence.get("allowed_patch_scope") or [],
+        "blocked_regression_patterns": evidence.get("blocked_regression_patterns") or [],
     }
+    mode_rules = [
+        f"- Current outer-loop update mode is `{update_mode}`.",
+    ]
+    if update_mode == "guarded_patch":
+        mode_rules.extend(
+            [
+                "- Treat CURRENT_SCHEMA as the stable base, not as a failed artifact to replace.",
+                "- Make the smallest patch that explains positive_transfer_pairs.",
+                "- Do not broaden the schema from globally regressed evidence.",
+                "- Turn protected_regression_pairs into explicit avoid/failure-mode guardrails.",
+                "- Prefer add/sharpen operations; remove only if an incumbent item directly caused a protected regression.",
+            ]
+        )
+    elif update_mode == "hold":
+        mode_rules.extend(
+            [
+                "- Do not invent a rewrite when the update decision says hold.",
+                "- Preserve the stable base schema and use the evidence only as acceptance-risk notes.",
+            ]
+        )
+    else:
+        mode_rules.append("- A full evidence-grounded slot rewrite is allowed.")
     return (
         "You are the SkillX outer-loop schema update operator.\n"
         "Update the schema as structured operations, not as a final accepted prompt bank.\n\n"
@@ -998,6 +1124,9 @@ def build_llm_update_prompt(
         "- Keep Render frozen; optimize only the schema-level guidance.\n"
         "- Preserve schema distinctness and explicitly handle low-margin competitors.\n"
         "- Output strictly valid JSON matching the provided schema.\n\n"
+        "Update-mode rules:\n"
+        + "\n".join(mode_rules)
+        + "\n\n"
         f"CURRENT_SCHEMA:\n{json.dumps(schema, indent=2, sort_keys=True)}\n\n"
         f"EVIDENCE_BUNDLE:\n{json.dumps(compact_evidence, indent=2, sort_keys=True)}\n\n"
         "DETERMINISTIC_SEED_EDITS_FOR_REFERENCE_ONLY:\n"
@@ -1410,9 +1539,13 @@ def build_schema_update_proposal(
     llm_json_runner: LLMJsonRunner | None,
 ) -> dict[str, Any]:
     schema_id = str(schema["category_id"])
+    outer_loop_global_update_mode = str(evidence.get("outer_loop_global_update_mode") or "rewrite")
+    outer_loop_update_mode = str(evidence.get("outer_loop_update_mode") or "rewrite")
     deterministic_edits = propose_slot_edits(schema, evidence)
     reliable_support_size = int(evidence["reliable_support_size"])
-    if min_support_size > 0 and reliable_support_size < min_support_size:
+    if outer_loop_update_mode == "hold":
+        proposal_status = "freeze_update_decision_hold"
+    elif min_support_size > 0 and reliable_support_size < min_support_size:
         proposal_status = "freeze_low_support"
     elif min_support_size > 0 and not evidence.get("assigned_task_summaries"):
         proposal_status = "freeze_unassigned"
@@ -1465,10 +1598,20 @@ def build_schema_update_proposal(
             }
         )
 
-    selected_mode = choose_challenger_mode(evidence) if proposal_status == "candidate_update" else "incumbent"
+    if proposal_status != "candidate_update":
+        selected_mode = "incumbent"
+    elif outer_loop_update_mode == "guarded_patch":
+        selected_mode = "conservative"
+    else:
+        selected_mode = choose_challenger_mode(evidence)
     return {
         "category_id": schema_id,
         "proposal_status": proposal_status,
+        "outer_loop_global_update_mode": outer_loop_global_update_mode,
+        "outer_loop_update_mode": outer_loop_update_mode,
+        "outer_loop_update_reason": evidence.get("outer_loop_update_reason"),
+        "positive_transfer_count": len(evidence.get("positive_transfer_pairs") or []),
+        "protected_regression_count": len(evidence.get("protected_regression_pairs") or []),
         "support_size": evidence["support_size"],
         "reliable_support_size": reliable_support_size,
         "mean_assigned_score": evidence["mean_assigned_score"],
@@ -1508,6 +1651,8 @@ def expected_effects(mode: str, evidence: dict[str, Any]) -> list[str]:
         "preserve the frozen Render path while changing only schema-level guidance",
         "make the next rerun auditable against round-0 assigned tasks",
     ]
+    if evidence.get("outer_loop_update_mode") == "guarded_patch":
+        effects.append("absorb only positive-transfer evidence while protecting prior stable behavior")
     if mode == "conservative":
         effects.append("test a low-risk local slot edit before broader schema search")
     elif mode == "exploratory":
@@ -1526,6 +1671,8 @@ def acceptance_notes(evidence: dict[str, Any], min_support_size: int) -> list[st
         "accept only after challenger rerun improves assigned-task utility or clarifies a boundary case",
         "reject if prompt text becomes more generic or less distinct from neighboring schemas",
     ]
+    if evidence.get("outer_loop_update_mode") == "guarded_patch":
+        notes.append("reject if protected regression pairs remain worse than the stable reference schema")
     if min_support_size > 0 and int(evidence["reliable_support_size"]) < min_support_size:
         notes.append("below support floor; do not accept schema edits this round")
     if evidence.get("ambiguous_borderline_cases"):
@@ -1558,7 +1705,11 @@ def select_round_updates(
         category_id = str(proposal["category_id"])
         if category_id in selected_ids:
             action = "update"
-            reason = "selected_by_priority"
+            reason = (
+                "selected_by_guarded_patch_positive_transfer"
+                if proposal.get("outer_loop_update_mode") == "guarded_patch"
+                else "selected_by_priority"
+            )
         elif proposal["proposal_status"] != "candidate_update":
             action = "freeze"
             reason = proposal["proposal_status"]
@@ -1570,6 +1721,9 @@ def select_round_updates(
                 "category_id": category_id,
                 "action": action,
                 "reason": reason,
+                "outer_loop_update_mode": proposal.get("outer_loop_update_mode") or "rewrite",
+                "positive_transfer_count": proposal.get("positive_transfer_count") or 0,
+                "protected_regression_count": proposal.get("protected_regression_count") or 0,
                 "priority_score": proposal["priority_score"],
                 "recommended_challenger_mode": proposal["recommended_challenger_mode"],
                 "support_size": proposal["support_size"],
@@ -1599,9 +1753,16 @@ def build_candidate_prompt_bank(
     candidate_bank["source_artifact_type"] = prompt_bank.get("artifact_type")
     candidate_bank["version"] = f"{prompt_bank.get('version', 'v0.1')}+{next_round_id}"
     candidate_bank["status"] = "candidate; requires challenger rerun before acceptance"
+    update_modes = sorted(
+        {
+            str(proposal.get("outer_loop_update_mode") or "rewrite")
+            for proposal in proposals_by_schema.values()
+        }
+    )
     candidate_bank["outer_loop_update"] = {
         "next_round_id": next_round_id,
         "update_policy": "slot-first schema edits with frozen Render",
+        "schema_update_modes": update_modes,
     }
 
     updated_categories: list[dict[str, Any]] = []
@@ -1621,6 +1782,8 @@ def build_candidate_prompt_bank(
         replacement["outer_loop_candidate_id"] = candidate["candidate_id"]
         replacement["outer_loop_candidate_mode"] = mode
         replacement["outer_loop_candidate_status"] = "proposed_for_rerun"
+        replacement["outer_loop_update_mode"] = proposal.get("outer_loop_update_mode") or "rewrite"
+        replacement["outer_loop_update_reason"] = proposal.get("outer_loop_update_reason")
         updated_categories.append(replacement)
     candidate_bank["categories"] = updated_categories
     return candidate_bank
@@ -1667,7 +1830,12 @@ def build_rewrite_verification(
     failures: list[dict[str, Any]] = []
     completed_schema_ids: list[str] = []
 
-    unrestricted_update = min_support_size <= 0 and max_update_schemas <= 0
+    decision_limited_update = any(
+        proposal.get("proposal_status") == "freeze_update_decision_hold"
+        or proposal.get("outer_loop_update_mode") in {"guarded_patch", "hold"}
+        for proposal in proposals_by_schema.values()
+    )
+    unrestricted_update = min_support_size <= 0 and max_update_schemas <= 0 and not decision_limited_update
     if unrestricted_update and set(expected_schema_ids) != set(schema_ids):
         failures.append(
             {
@@ -1727,6 +1895,7 @@ def build_rewrite_verification(
         "min_support_size": min_support_size,
         "max_update_schemas": max_update_schemas,
         "unrestricted_update": unrestricted_update,
+        "decision_limited_update": decision_limited_update,
         "schema_count": len(schema_ids),
         "expected_rewrite_schema_count": len(expected_schema_ids),
         "completed_rewrite_schema_count": len(completed_schema_ids),
@@ -1759,6 +1928,12 @@ def build_challenger_eval_plan(
         schema_id = str(plan_row["category_id"])
         evidence = evidence_by_schema[schema_id]
         task_names: list[str] = []
+        for task in evidence.get("positive_transfer_pairs", []):
+            if not isinstance(task, dict):
+                continue
+            name = str(task.get("task_name") or "")
+            if name and name not in task_names:
+                task_names.append(name)
         for task in evidence.get("assigned_task_summaries", []):
             name = str(task["task_name"])
             if name not in task_names:
@@ -1775,7 +1950,11 @@ def build_challenger_eval_plan(
                 "candidate_mode": plan_row["recommended_challenger_mode"],
                 "task_names": task_names[:max_tasks_per_schema],
                 "task_count": min(len(task_names), max_tasks_per_schema),
-                "purpose": "evaluate assigned tasks plus low-margin boundary cases",
+                "purpose": (
+                    "evaluate guarded positive-transfer tasks plus assigned/boundary tasks"
+                    if evidence.get("outer_loop_update_mode") == "guarded_patch"
+                    else "evaluate assigned tasks plus low-margin boundary cases"
+                ),
             }
         )
     return rows
@@ -1786,6 +1965,7 @@ def build_schema_update_package(
     control_plane_bundle_path: Path,
     prompt_bank_path: Path,
     task_cluster_inputs_path: Path | None,
+    update_decision: dict[str, Any] | None = None,
     rewrite_mode: str,
     llm_model: str,
     llm_timeout_sec: float,
@@ -1803,6 +1983,7 @@ def build_schema_update_package(
     prompt_bank = load_prompt_bank(prompt_bank_path)
     task_profiles = load_task_profiles(task_cluster_inputs_path)
     schema_ids = [str(item["category_id"]) for item in prompt_bank["categories"]]
+    effective_update_decision = update_decision or default_update_decision(schema_ids)
     assignments = [
         row for row in bundle.get("assignments", []) if isinstance(row, dict)
     ]
@@ -1819,7 +2000,9 @@ def build_schema_update_package(
     log_progress(
         "start package build: "
         f"round_id={round_id} next_round_id={next_round_id} "
-        f"rewrite_mode={rewrite_mode} schemas={len(schema_ids)} tasks={len(task_names)} "
+        f"rewrite_mode={rewrite_mode} "
+        f"outer_loop_update_mode={effective_update_decision.get('global_update_mode')} "
+        f"schemas={len(schema_ids)} tasks={len(task_names)} "
         f"assignments={len(assignments)} score_rows={len(score_rows)}"
     )
     if task_names:
@@ -1839,6 +2022,10 @@ def build_schema_update_package(
             task_profiles=task_profiles,
             low_margin_pp=low_margin_pp,
             boundary_margin_pp=boundary_margin_pp,
+        )
+        evidence = attach_update_decision_evidence(
+            evidence,
+            update_decision=effective_update_decision,
         )
         evidence_by_schema[schema_id] = evidence
         assigned_count = len(evidence.get("assigned_task_summaries", []) or [])
@@ -1862,6 +2049,7 @@ def build_schema_update_package(
         log_progress(
             f"schema {schema_index}/{len(schema_ids)}: proposal complete for {schema_id} "
             f"status={proposal.get('proposal_status')} "
+            f"update_mode={proposal.get('outer_loop_update_mode')} "
             f"source={proposal.get('rewrite_source')} "
             f"support={proposal.get('support_size')}"
         )
@@ -1949,7 +2137,10 @@ def build_schema_update_package(
             "boundary_margin_pp": boundary_margin_pp,
             "max_update_schemas": max_update_schemas,
             "max_eval_tasks_per_schema": max_eval_tasks_per_schema,
+            "outer_loop_global_update_mode": effective_update_decision.get("global_update_mode"),
+            "outer_loop_update_reason": effective_update_decision.get("mode_reason"),
         },
+        "outer_loop_update_decision": effective_update_decision,
         "schema_ids": schema_ids,
         "schema_evidence_bundles": evidence_by_schema,
         "schema_update_proposals": proposals,
@@ -1968,6 +2159,7 @@ def render_summary_markdown(package: dict[str, Any], output_dir: Path) -> str:
         f"- output_dir: `{display_path(output_dir)}`",
         f"- next_round_id: `{package['config']['next_round_id']}`",
         f"- rewrite_mode: `{package['config']['rewrite_mode']}`",
+        f"- outer_loop_update_mode: `{package['config'].get('outer_loop_global_update_mode')}`",
         f"- llm_model: `{package['config']['llm_model']}`",
         f"- min_support_size: `{package['config']['min_support_size']}`",
         f"- max_update_schemas: `{package['config']['max_update_schemas']}`",
@@ -1977,8 +2169,8 @@ def render_summary_markdown(package: dict[str, Any], output_dir: Path) -> str:
         "",
         "## Round Update Plan",
         "",
-        "| schema_id | action | reason | support | reliable | priority | challenger |",
-        "| --- | --- | --- | ---: | ---: | ---: | --- |",
+        "| schema_id | action | update_mode | reason | support | reliable | priority | challenger |",
+        "| --- | --- | --- | --- | ---: | ---: | ---: | --- |",
     ]
     for row in package["round_update_plan"]:
         lines.append(
@@ -1987,6 +2179,7 @@ def render_summary_markdown(package: dict[str, Any], output_dir: Path) -> str:
                 [
                     str(row["category_id"]),
                     str(row["action"]),
+                    str(row.get("outer_loop_update_mode") or "rewrite"),
                     str(row["reason"]),
                     str(row["support_size"]),
                     str(row["reliable_support_size"]),
@@ -2023,6 +2216,7 @@ def render_summary_markdown(package: dict[str, Any], output_dir: Path) -> str:
 def write_schema_update_package(*, package: dict[str, Any], output_dir: Path) -> dict[str, str]:
     output_dir.mkdir(parents=True, exist_ok=True)
     package_json_path = output_dir / "schema_update_package.json"
+    update_decision_json_path = output_dir / "outer_loop_update_decision.json"
     evidence_json_path = output_dir / "schema_evidence_bundles.json"
     proposals_json_path = output_dir / "schema_update_proposals.json"
     update_plan_json_path = output_dir / "round_update_plan.json"
@@ -2033,6 +2227,7 @@ def write_schema_update_package(*, package: dict[str, Any], output_dir: Path) ->
     update_plan_csv_path = output_dir / "round_update_plan.csv"
 
     write_json(package_json_path, package)
+    write_json(update_decision_json_path, package.get("outer_loop_update_decision") or {})
     write_json(evidence_json_path, package["schema_evidence_bundles"])
     write_json(proposals_json_path, package["schema_update_proposals"])
     write_json(update_plan_json_path, package["round_update_plan"])
@@ -2046,6 +2241,9 @@ def write_schema_update_package(*, package: dict[str, Any], output_dir: Path) ->
             "category_id",
             "action",
             "reason",
+            "outer_loop_update_mode",
+            "positive_transfer_count",
+            "protected_regression_count",
             "priority_score",
             "recommended_challenger_mode",
             "support_size",
@@ -2055,6 +2253,7 @@ def write_schema_update_package(*, package: dict[str, Any], output_dir: Path) ->
     summary_md_path.write_text(render_summary_markdown(package, output_dir))
     return {
         "schema_update_package_json": display_path(package_json_path),
+        "outer_loop_update_decision_json": display_path(update_decision_json_path),
         "schema_evidence_bundles_json": display_path(evidence_json_path),
         "schema_update_proposals_json": display_path(proposals_json_path),
         "round_update_plan_json": display_path(update_plan_json_path),
@@ -2071,6 +2270,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--control-plane-bundle-path", type=Path, default=DEFAULT_CONTROL_PLANE_BUNDLE_PATH)
     parser.add_argument("--prompt-bank-path", type=Path, default=DEFAULT_PROMPT_BANK_PATH)
     parser.add_argument("--task-cluster-inputs-path", type=Path, default=DEFAULT_TASK_CLUSTER_INPUTS_PATH)
+    parser.add_argument("--update-decision-path", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
         "--rewrite-mode",
@@ -2109,10 +2309,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    update_decision = read_json(args.update_decision_path) if args.update_decision_path is not None else None
     package = build_schema_update_package(
         control_plane_bundle_path=args.control_plane_bundle_path,
         prompt_bank_path=args.prompt_bank_path,
         task_cluster_inputs_path=args.task_cluster_inputs_path,
+        update_decision=update_decision,
         rewrite_mode=str(args.rewrite_mode),
         llm_model=str(args.llm_model),
         llm_timeout_sec=float(args.llm_timeout_sec),

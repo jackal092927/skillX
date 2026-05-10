@@ -1,0 +1,82 @@
+{
+  "acceptance_notes": [
+    "guarded_patch mode: treating current schema as stable base, making minimal evidence-backed additions",
+    "positive transfer evidence (6 tasks, +46.67pp mean delta) supports narrow patches to explain gains",
+    "no protected regressions, so no removals needed from incumbent slots",
+    "all 3 assigned tasks show pipeline+staged-multi-step pattern, requiring explicit workflow acknowledgment",
+    "6 near-boundary losses to analytic-pipeline require boundary sharpening",
+    "earthquake-phase-association (benchmark-threshold verifier) lost to analytic-pipeline by 20pp, confirming expected_bad_fit about benchmark-gated tasks"
+  ],
+  "challenger_guidance": {
+    "conservative": "preserve all incumbent slot items; they explain core artifact-generation wins on exceltable-in-ppt (100.0) and earthquake-plate-calculation (60.0)",
+    "differentiating": "sharpen boundary with analytic-pipeline using verifier_mode signals: artifact-generation should win deterministic-artifact cases, lose benchmark-threshold cases; test on borderline tasks with both pipeline structure and artifact outputs",
+    "exploratory": "investigate why 2 of 3 assigned tasks have analytic-pipeline as task_object_seed despite artifact-generation winning assignment; may reveal deeper workflow-vs-artifact tensions"
+  },
+  "expected_effect": [
+    "narrow patch should explain positive transfer on 6 tasks without broadening schema scope",
+    "explicit workflow acknowledgment should reduce confusion on pipeline-structured artifact tasks",
+    "boundary sharpening should help differentiator choose artifact-generation for deterministic-artifact verifiers, analytic-pipeline for benchmark-threshold verifiers",
+    "expected to maintain ~80.0 mean score on assigned tasks while improving borderline case routing",
+    "no regression risk since no incumbent items removed and no protected regressions exist"
+  ],
+  "operator_summary": {
+    "add": [
+      "emphasize: workflow stages serving artifact contract",
+      "emphasize: boundary differentiation from analytic-pipeline",
+      "expected_good_fit: pipeline workflows with deterministic artifact outputs",
+      "expected_good_fit: deterministic-artifact-plus-stage-check verifier mode",
+      "expected_bad_fit: borderline pipeline tasks where analytic-pipeline emphasis is more central",
+      "hypothesized_primary_failure_modes: boundary ambiguity with analytic-pipeline on pipeline+benchmark tasks"
+    ],
+    "exclude": [
+      "global regression patterns (none exist in evidence)",
+      "speculative workflow additions not grounded in positive transfer pairs",
+      "removals of incumbent items (no protected regressions to address)"
+    ],
+    "keep": [
+      "all 4 emphasize items (exact output schema, preservation constraints, missing-input detection, final reviewer pass)",
+      "all 3 avoid items (unnecessary scaffolding, speculative filling, unnecessary tool usage)",
+      "all 3 expected_good_fit items (form filling, formatting/conversion, single-artifact generation)",
+      "all 3 expected_bad_fit items (benchmark-gated repair, control loops, deep retrieval synthesis)"
+    ],
+    "remove": [],
+    "sharpen": [
+      "expected_bad_fit: expand benchmark-gated item to include threshold-based quality gates"
+    ]
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "workflow stages that serve the artifact contract as deterministic transformations toward required output (e.g., extract\u2192transform\u2192verify for format conversions)",
+        "boundary with analytic-pipeline: select artifact-generation when task objective centers on producing a specific output artifact meeting an explicit contract, not exploratory pipeline analysis or benchmark optimization"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "expected_bad_fit": {
+      "add": [
+        "tasks where pipeline workflow or benchmark optimization is central to task identity rather than serving a constrained artifact goal"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "artifact transformations within pipeline workflows where each stage serves a deterministic output contract",
+        "tasks with deterministic-artifact-plus-stage-check verifier mode requiring staged validation"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "boundary ambiguity with analytic-pipeline on tasks combining pipeline structure with artifact outputs, especially when benchmark thresholds are involved"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}

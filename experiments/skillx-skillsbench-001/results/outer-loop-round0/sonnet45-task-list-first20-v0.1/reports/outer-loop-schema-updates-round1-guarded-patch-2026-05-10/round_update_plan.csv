@@ -1,0 +1,8 @@
+category_id,action,reason,outer_loop_update_mode,positive_transfer_count,protected_regression_count,priority_score,recommended_challenger_mode,support_size,reliable_support_size
+analytic-pipeline,update,selected_by_guarded_patch_positive_transfer,guarded_patch,2,2,6.0,conservative,3,3
+artifact-generation,update,selected_by_guarded_patch_positive_transfer,guarded_patch,6,0,6.0,conservative,3,3
+engineering-composition,update,selected_by_guarded_patch_positive_transfer,guarded_patch,6,3,7.0,conservative,3,3
+environment-control,update,selected_by_guarded_patch_positive_transfer,guarded_patch,3,2,6.0,conservative,3,3
+methodology-guardrail,update,selected_by_guarded_patch_positive_transfer,guarded_patch,6,1,7.0,conservative,4,4
+orchestration-delegation,update,selected_by_guarded_patch_positive_transfer,guarded_patch,2,2,6.0,conservative,3,3
+retrieval-heavy-synthesis,update,selected_by_guarded_patch_positive_transfer,guarded_patch,5,2,7.0,conservative,4,4

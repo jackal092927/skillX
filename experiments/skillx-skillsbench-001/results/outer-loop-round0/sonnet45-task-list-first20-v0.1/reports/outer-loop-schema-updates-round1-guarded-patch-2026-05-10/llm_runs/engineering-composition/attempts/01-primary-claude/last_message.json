@@ -1,0 +1,90 @@
+{
+  "acceptance_notes": [
+    "Verify that the 4 new emphasize additions do not broaden schema scope beyond current stable base",
+    "Check that protected regressions (earthquake-phase-association, exoplanet-detection-period, find-topk-similiar-chemicals) are not re-assigned in next round",
+    "Monitor analytic-pipeline boundary: expect reduced zero-margin ties on 3d-scan-calc, citation-check, fix-build-* tasks",
+    "Confirm that positive-transfer tasks (adaptive-cruise-control, energy-ac-optimal-power-flow) maintain 100% scores",
+    "Watch for whether explicit handoff naming reduces tool-use ambiguity on pipeline-pattern tasks",
+    "Guarded patch constraint: this update should NOT increase assigned task count beyond stable baseline"
+  ],
+  "challenger_guidance": {
+    "conservative": "Preserve all incumbent emphasis items. Add only the four new emphasis points that make workflow assumptions and handoffs explicit. Add the single avoid guardrail against schema broadening. Convert protected regressions into failure-mode documentation without changing core behavior.",
+    "differentiating": "Sharpen the analytic-pipeline boundary by stating when engineering-composition should win: when the task requires ordered patching with compile/test gates, not just data transformation pipelines. Add expected_good_fit patterns matching positive-transfer evidence (benchmark-threshold verification, dependency ordering). Document protected regressions as explicit exclusions to prevent future mis-assignments.",
+    "exploratory": "Test whether explicitly naming execution/verification handoffs in the emphasize section reduces analytic-pipeline boundary losses. Experiment with making the pipeline-pattern assumption even more prominent in the meta_prompt. Consider whether the protected regressions indicate over-fitting to build/test tasks."
+  },
+  "expected_effect": [
+    "Reduce analytic-pipeline boundary ambiguity by explicitly stating differentiation criteria for the 7 borderline cases",
+    "Preserve positive transfer on adaptive-cruise-control (100), energy-ac-optimal-power-flow (100), and 4 other gains by keeping stable base intact",
+    "Guard against future protected regressions by documenting earthquake-phase-association, exoplanet-detection-period, find-topk-similiar-chemicals as failure modes",
+    "Improve schema clarity by making implicit workflow assumptions (staged-multi-step, execution handoffs) explicit in emphasize section",
+    "Maintain 93.3 mean assigned score while reducing zero-margin losses through sharper boundary definition"
+  ],
+  "operator_summary": {
+    "add": [
+      "emphasize: extract task-specific failure mode before adding procedural scaffolding",
+      "emphasize: make staged-multi-step workflow assumption explicit",
+      "emphasize: name required execution and verification handoffs",
+      "emphasize: state differentiation criteria vs analytic-pipeline on borderline cases",
+      "avoid: schema broadening that regresses previously stable task-schema behavior",
+      "expected_good_fit: pipeline-pattern tasks with benchmark-threshold or deterministic-output-contract verification",
+      "expected_bad_fit: borderline tasks where analytic-pipeline's workflow bias is more central",
+      "failure_modes: protected regression on earthquake-phase-association, exoplanet-detection-period, find-topk-similiar-chemicals",
+      "failure_modes: low-margin schema-boundary ambiguity against analytic-pipeline"
+    ],
+    "exclude": [
+      "earthquake-phase-association (protected regression: 100.0 \u2192 0.0)",
+      "exoplanet-detection-period (protected regression: 60.0 \u2192 0.0)",
+      "find-topk-similiar-chemicals (protected regression: 31.25 \u2192 0.0)"
+    ],
+    "keep": [
+      "diagnose -> patch/edit -> verify sequencing",
+      "tool wrappers / execution interfaces / reproducible commands",
+      "explicit precedence and dependency handling",
+      "benchmark / build / test gate awareness",
+      "vague reviewer-only advice avoidance",
+      "unordered bundles of suggestions avoidance"
+    ],
+    "remove": [],
+    "sharpen": []
+  },
+  "slot_edits": {
+    "avoid": {
+      "add": [
+        "schema broadening that regresses previously stable task-schema behavior"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "emphasize": {
+      "add": [
+        "extract the task-specific failure mode before adding broader procedural scaffolding",
+        "make the staged-multi-step workflow assumption explicit before rendering task-specific guidance",
+        "name the required execution and verification handoffs instead of leaving tool use implicit",
+        "state why this schema should win over analytic-pipeline on borderline tasks"
+      ],
+      "remove": [],
+      "sharpen": []
+    },
+    "expected_bad_fit": {
+      "add": [
+        "borderline tasks where analytic-pipeline's workflow bias is more central to success"
+      ],
+      "remove": []
+    },
+    "expected_good_fit": {
+      "add": [
+        "pipeline-pattern tasks with benchmark-threshold or deterministic-output-contract verification",
+        "tasks requiring staged-multi-step workflows with explicit dependency ordering"
+      ],
+      "remove": []
+    },
+    "hypothesized_primary_failure_modes": {
+      "add": [
+        "protected regression on tasks previously successful under this schema: earthquake-phase-association (100\u21920), exoplanet-detection-period (60\u21920), find-topk-similiar-chemicals (31.25\u21920)",
+        "low-margin schema-boundary ambiguity against analytic-pipeline on borderline assignments (7 near-zero-margin losses)"
+      ],
+      "remove": [],
+      "sharpen": []
+    }
+  }
+}
