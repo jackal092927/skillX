@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SkillX Round2 Guarded-Patch Overall Comparison</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #17202a; --muted: #667085; --line: #d9dee7;
+  --green: #1f8a5b; --green2: #dff3e8; --red: #c84646; --red2: #fae2e2; --blue: #235a9f; --amber: #9a6a11;
+}
+* { box-sizing: border-box; }
+body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+header { padding: 32px 40px 18px; background: #fff; border-bottom: 1px solid var(--line); }
+h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: 0; }
+.subtitle { color: var(--muted); max-width: 1040px; line-height: 1.45; }
+main { padding: 24px 40px 48px; max-width: 1500px; margin: 0 auto; }
+section { margin: 0 0 24px; }
+.grid { display:grid; gap: 14px; }
+.cards { grid-template-columns: repeat(6, minmax(150px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; min-height: 104px; }
+.label { color: var(--muted); font-size: 13px; }
+.value { margin-top: 8px; font-size: 28px; font-weight: 700; }
+.sub { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+h2 { font-size: 18px; margin: 0 0 12px; }
+h3 { font-size: 15px; margin: 18px 0 10px; color: #303b49; }
+.note { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.two { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.barrow { display:grid; grid-template-columns: 285px 1fr 88px 112px; gap: 10px; align-items:center; margin: 8px 0; }
+.barname { font-size: 13px; overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barname span { display:block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+.bartrack { position:relative; height: 20px; background:#f0f2f5; border-radius: 4px; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; }
+.midline { position:absolute; left:50%; top:0; bottom:0; width:1px; background:#98a2b3; z-index:2; }
+.leftbar { display:flex; justify-content:flex-end; } .rightbar { display:flex; justify-content:flex-start; }
+.bar { height:100%; } .pos { background: var(--green); } .neg { background: var(--red); }
+.barnum { font-variant-numeric: tabular-nums; text-align:right; font-size: 13px; font-weight: 650; }
+.barmeta { color: var(--muted); font-size: 12px; }
+.good { color: var(--green); } .bad { color: var(--red); } .flat { color: var(--muted); }
+.legend { display:flex; gap:12px; flex-wrap:wrap; margin: 8px 0 12px; color:var(--muted); font-size:12px; }
+.swatch { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:5px; border:1px solid rgba(0,0,0,.08); }
+.heatwrap { overflow:auto; }
+table { width:100%; border-collapse: collapse; font-size: 13px; }
+th, td { border-bottom: 1px solid var(--line); padding: 8px 9px; text-align:left; vertical-align: top; }
+thead th { position:sticky; top:0; background:#fff; z-index:3; }
+.matrix th { min-width: 235px; background:#fff; position:sticky; left:0; z-index:2; }
+.matrix thead th { left:auto; z-index:4; }
+.matrix th small { display:block; color:var(--muted); font-weight:500; margin-top:2px; }
+.heat { min-width: 86px; text-align:center; font-variant-numeric: tabular-nums; font-weight:700; border-left:1px solid #edf0f4; }
+.heat.same { background:#f4f5f7; color:#5d6673; }
+.heat.up { background:#cdebd9; color:#156342; } .heat.up.strong { background:#77c99a; color:#073d25; }
+.heat.down { background:#f4c7c7; color:#8b2c2c; } .heat.down.strong { background:#df7b7b; color:#5a1515; }
+.smalltable { max-height: 520px; overflow:auto; border:1px solid var(--line); border-radius: 8px; }
+.badge { display:inline-block; padding: 3px 7px; border-radius: 999px; font-size:12px; border:1px solid var(--line); background:#fff; color:var(--muted); }
+.files code { font-size: 12px; white-space: normal; overflow-wrap:anywhere; }
+@media (max-width: 1000px) { .cards { grid-template-columns: repeat(2, 1fr); } .two { grid-template-columns:1fr; } .barrow { grid-template-columns: 1fr; } .bartrack { height:24px; } main, header { padding-left:18px; padding-right:18px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>SkillX Round2 Guarded-Patch Overall Comparison</h1>
+  <div class="subtitle">Comparison of the current final 140-pair guarded-patch inner-loop result against the previous effective inner-loop checkpoint. This page treats all 140 current pair results as valid, after final audit and rerun repair.</div>
+</header>
+<main>
+<section class="grid cards">
+  <div class="card"><div class="label">Valid current results</div><div class="value">140 / 140</div><div class="sub">112 completed + 28 intentional baseline-perfect skips</div></div>
+  <div class="card"><div class="label">Average selected score</div><div class="value">45.2% → 51.0%</div><div class="sub">+5.8 percentage points</div></div>
+  <div class="card"><div class="label">Clean-success pairs</div><div class="value">66 → 74</div><div class="sub">+8 net pairs</div></div>
+  <div class="card"><div class="label">Pair movement</div><div class="value">25 / 20 / 95</div><div class="sub">improved / regressed / unchanged</div></div>
+  <div class="card"><div class="label">Final exception audit</div><div class="value">0 blocking issues</div><div class="sub">0 final 429, 0 rerun-required, primary runtime only</div></div>
+  <div class="card"><div class="label">Manual reruns</div><div class="value">4</div><div class="sub">citation-check__artifact-generation, citation-check__methodology-guardrail, court-form-filling__engineering-composition, energy-ac-optimal-power-flow__environment-control</div></div>
+</section>
+
+<section class="panel">
+  <h2>Readout</h2>
+  <p class="note">The result is directionally positive, but not a clean across-the-board win. The guarded patch improved the aggregate score and added 9 clean-success pairs, while still causing concentrated regressions on several tasks. This is useful outer-loop signal: keep the successful patterns, but add explicit guards around the regression clusters before treating the patch as a stable rewrite.</p>
+</section>
+
+<section class="two">
+  <div class="panel">
+    <h2>Task-Level Delta</h2>
+    <div class="note">Mean score change across the 7 schemas for each task.</div>
+    <div class="barrow">
+      <div class="barname">earthquake-plate-calculation<span>5 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:47.6%"></div></div></div>
+      <div class="barnum good">+71.4 pp</div>
+      <div class="barmeta">100.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">exoplanet-detection-period<span>5 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:47.6%"></div></div></div>
+      <div class="barnum good">+71.4 pp</div>
+      <div class="barmeta">85.7% now</div>
+    </div><div class="barrow">
+      <div class="barname">dapt-intrusion-detection<span>4 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:38.1%"></div></div></div>
+      <div class="barnum good">+57.1 pp</div>
+      <div class="barmeta">100.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">exceltable-in-ppt<span>3 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:28.6%"></div></div></div>
+      <div class="barnum good">+42.9 pp</div>
+      <div class="barmeta">85.7% now</div>
+    </div><div class="barrow">
+      <div class="barname">energy-market-pricing<span>2 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:19.0%"></div></div></div>
+      <div class="barnum good">+28.6 pp</div>
+      <div class="barmeta">71.4% now</div>
+    </div><div class="barrow">
+      <div class="barname">azure-bgp-oscillation-route-leak<span>1 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:9.5%"></div></div></div>
+      <div class="barnum good">+14.3 pp</div>
+      <div class="barmeta">14.3% now</div>
+    </div><div class="barrow">
+      <div class="barname">3d-scan-calc<span>0 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:0.0%"></div></div></div>
+      <div class="barnum flat">+0.0 pp</div>
+      <div class="barmeta">100.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">citation-check<span>0 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:0.0%"></div></div></div>
+      <div class="barnum flat">+0.0 pp</div>
+      <div class="barmeta">100.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">earthquake-phase-association<span>0 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:0.0%"></div></div></div>
+      <div class="barnum flat">+0.0 pp</div>
+      <div class="barmeta">100.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">econ-detrending-correlation<span>1 up, 1 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:0.0%"></div></div></div>
+      <div class="barnum flat">+0.0 pp</div>
+      <div class="barmeta">85.7% now</div>
+    </div><div class="barrow">
+      <div class="barname">fix-build-agentops<span>0 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:0.0%"></div></div></div>
+      <div class="barnum flat">+0.0 pp</div>
+      <div class="barmeta">0.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">fix-build-google-auto<span>0 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:0.0%"></div></div></div>
+      <div class="barnum flat">+0.0 pp</div>
+      <div class="barmeta">0.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">fix-druid-loophole-cve<span>0 up, 0 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:0.0%"></div></div></div>
+      <div class="barnum flat">+0.0 pp</div>
+      <div class="barmeta">0.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">find-topk-similiar-chemicals<span>1 up, 1 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:4.8%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-7.1 pp</div>
+      <div class="barmeta">7.1% now</div>
+    </div><div class="barrow">
+      <div class="barname">adaptive-cruise-control<span>1 up, 2 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:9.5%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-14.3 pp</div>
+      <div class="barmeta">14.3% now</div>
+    </div><div class="barrow">
+      <div class="barname">civ6-adjacency-optimizer<span>0 up, 5 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:13.3%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-20.0 pp</div>
+      <div class="barmeta">40.7% now</div>
+    </div><div class="barrow">
+      <div class="barname">court-form-filling<span>1 up, 3 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:19.0%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-28.6 pp</div>
+      <div class="barmeta">28.6% now</div>
+    </div><div class="barrow">
+      <div class="barname">data-to-d3<span>1 up, 3 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:19.0%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-28.6 pp</div>
+      <div class="barmeta">57.1% now</div>
+    </div><div class="barrow">
+      <div class="barname">energy-ac-optimal-power-flow<span>0 up, 2 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:19.0%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-28.6 pp</div>
+      <div class="barmeta">28.6% now</div>
+    </div><div class="barrow">
+      <div class="barname">financial-modeling-qa<span>0 up, 3 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:28.6%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-42.9 pp</div>
+      <div class="barmeta">0.0% now</div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Schema-Level Delta</h2>
+    <div class="note">Mean score change across the 20 tasks for each schema.</div>
+    <div class="barrow">
+      <div class="barname">orchestration-delegation<span>5 up, 2 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:13.0%"></div></div></div>
+      <div class="barnum good">+19.5 pp</div>
+      <div class="barmeta">57.5% now</div>
+    </div><div class="barrow">
+      <div class="barname">analytic-pipeline<span>6 up, 3 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:11.3%"></div></div></div>
+      <div class="barnum good">+17.0 pp</div>
+      <div class="barmeta">50.5% now</div>
+    </div><div class="barrow">
+      <div class="barname">retrieval-heavy-synthesis<span>4 up, 3 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:4.8%"></div></div></div>
+      <div class="barnum good">+7.2 pp</div>
+      <div class="barmeta">55.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">environment-control<span>3 up, 2 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"></div><div class="rightbar"><div class="bar pos" style="width:3.3%"></div></div></div>
+      <div class="barnum good">+5.0 pp</div>
+      <div class="barmeta">53.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">engineering-composition<span>3 up, 4 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:0.2%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-0.2 pp</div>
+      <div class="barmeta">47.8% now</div>
+    </div><div class="barrow">
+      <div class="barname">methodology-guardrail<span>1 up, 2 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:2.0%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-3.0 pp</div>
+      <div class="barmeta">50.0% now</div>
+    </div><div class="barrow">
+      <div class="barname">artifact-generation<span>3 up, 4 down</span></div>
+      <div class="bartrack"><div class="midline"></div><div class="leftbar"><div class="bar neg" style="width:3.3%"></div></div><div class="rightbar"></div></div>
+      <div class="barnum bad">-5.0 pp</div>
+      <div class="barmeta">43.0% now</div>
+    </div>
+    <h3>What It Means</h3>
+    <p class="note">Orchestration-delegation and analytic-pipeline are the strongest absorptive candidates. Artifact-generation, methodology-guardrail, and parts of engineering-composition need guardrails because they contain several high-impact regressions.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Pair Delta Matrix</h2>
+  <div class="legend"><span><i class="swatch" style="background:#77c99a"></i>large improvement</span><span><i class="swatch" style="background:#cdebd9"></i>small improvement</span><span><i class="swatch" style="background:#f4f5f7"></i>unchanged</span><span><i class="swatch" style="background:#f4c7c7"></i>small regression</span><span><i class="swatch" style="background:#df7b7b"></i>large regression</span></div>
+  <div class="heatwrap">
+    <table class="matrix">
+      <thead><tr><th>Task</th><th>artifact-generation</th><th>analytic-pipeline</th><th>engineering-composition</th><th>retrieval-heavy-synthesis</th><th>environment-control</th><th>methodology-guardrail</th><th>orchestration-delegation</th></tr></thead>
+      <tbody><tr><th>3d-scan-calc<small>+0.0 pp</small></th><td class="heat same" title="3d-scan-calc__artifact-generation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="3d-scan-calc__analytic-pipeline | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="3d-scan-calc__engineering-composition | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="3d-scan-calc__retrieval-heavy-synthesis | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="3d-scan-calc__environment-control | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="3d-scan-calc__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="3d-scan-calc__orchestration-delegation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td></tr><tr><th>adaptive-cruise-control<small>-14.3 pp</small></th><td class="heat up strong" title="adaptive-cruise-control__artifact-generation | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="adaptive-cruise-control__analytic-pipeline | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat down strong" title="adaptive-cruise-control__engineering-composition | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="adaptive-cruise-control__retrieval-heavy-synthesis | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="adaptive-cruise-control__environment-control | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="adaptive-cruise-control__methodology-guardrail | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat down strong" title="adaptive-cruise-control__orchestration-delegation | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td></tr><tr><th>azure-bgp-oscillation-route-leak<small>+14.3 pp</small></th><td class="heat same" title="azure-bgp-oscillation-route-leak__artifact-generation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="azure-bgp-oscillation-route-leak__analytic-pipeline | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="azure-bgp-oscillation-route-leak__engineering-composition | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat up strong" title="azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="azure-bgp-oscillation-route-leak__environment-control | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="azure-bgp-oscillation-route-leak__methodology-guardrail | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="azure-bgp-oscillation-route-leak__orchestration-delegation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td></tr><tr><th>citation-check<small>+0.0 pp</small></th><td class="heat same" title="citation-check__artifact-generation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="citation-check__analytic-pipeline | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="citation-check__engineering-composition | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="citation-check__retrieval-heavy-synthesis | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="citation-check__environment-control | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="citation-check__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="citation-check__orchestration-delegation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td></tr><tr><th>civ6-adjacency-optimizer<small>-20.0 pp</small></th><td class="heat same" title="civ6-adjacency-optimizer__artifact-generation | 60% -&gt; 60% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat down" title="civ6-adjacency-optimizer__analytic-pipeline | 70% -&gt; 60% | clean_success -&gt; clean_success"><span>-10</span></td><td class="heat down" title="civ6-adjacency-optimizer__engineering-composition | 60% -&gt; 55% | clean_success -&gt; clean_success"><span>-5</span></td><td class="heat down" title="civ6-adjacency-optimizer__retrieval-heavy-synthesis | 55% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-55</span></td><td class="heat same" title="civ6-adjacency-optimizer__environment-control | 60% -&gt; 60% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat down" title="civ6-adjacency-optimizer__methodology-guardrail | 60% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-60</span></td><td class="heat down" title="civ6-adjacency-optimizer__orchestration-delegation | 60% -&gt; 50% | clean_success -&gt; clean_success"><span>-10</span></td></tr><tr><th>court-form-filling<small>-28.6 pp</small></th><td class="heat down strong" title="court-form-filling__artifact-generation | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat down strong" title="court-form-filling__analytic-pipeline | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat down strong" title="court-form-filling__engineering-composition | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="court-form-filling__retrieval-heavy-synthesis | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="court-form-filling__environment-control | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="court-form-filling__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="court-form-filling__orchestration-delegation | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td></tr><tr><th>dapt-intrusion-detection<small>+57.1 pp</small></th><td class="heat up strong" title="dapt-intrusion-detection__artifact-generation | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="dapt-intrusion-detection__analytic-pipeline | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="dapt-intrusion-detection__engineering-composition | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="dapt-intrusion-detection__retrieval-heavy-synthesis | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="dapt-intrusion-detection__environment-control | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="dapt-intrusion-detection__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="dapt-intrusion-detection__orchestration-delegation | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td></tr><tr><th>data-to-d3<small>-28.6 pp</small></th><td class="heat down strong" title="data-to-d3__artifact-generation | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat up strong" title="data-to-d3__analytic-pipeline | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat down strong" title="data-to-d3__engineering-composition | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="data-to-d3__retrieval-heavy-synthesis | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="data-to-d3__environment-control | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat down strong" title="data-to-d3__methodology-guardrail | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="data-to-d3__orchestration-delegation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td></tr><tr><th>earthquake-phase-association<small>+0.0 pp</small></th><td class="heat same" title="earthquake-phase-association__artifact-generation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="earthquake-phase-association__analytic-pipeline | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="earthquake-phase-association__engineering-composition | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="earthquake-phase-association__retrieval-heavy-synthesis | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="earthquake-phase-association__environment-control | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="earthquake-phase-association__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="earthquake-phase-association__orchestration-delegation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td></tr><tr><th>earthquake-plate-calculation<small>+71.4 pp</small></th><td class="heat same" title="earthquake-plate-calculation__artifact-generation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="earthquake-plate-calculation__analytic-pipeline | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat up strong" title="earthquake-plate-calculation__engineering-composition | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat up strong" title="earthquake-plate-calculation__retrieval-heavy-synthesis | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat up strong" title="earthquake-plate-calculation__environment-control | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="earthquake-plate-calculation__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="earthquake-plate-calculation__orchestration-delegation | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td></tr><tr><th>econ-detrending-correlation<small>+0.0 pp</small></th><td class="heat down strong" title="econ-detrending-correlation__artifact-generation | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat up strong" title="econ-detrending-correlation__analytic-pipeline | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="econ-detrending-correlation__engineering-composition | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="econ-detrending-correlation__retrieval-heavy-synthesis | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="econ-detrending-correlation__environment-control | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="econ-detrending-correlation__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="econ-detrending-correlation__orchestration-delegation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td></tr><tr><th>energy-ac-optimal-power-flow<small>-28.6 pp</small></th><td class="heat same" title="energy-ac-optimal-power-flow__artifact-generation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat down strong" title="energy-ac-optimal-power-flow__analytic-pipeline | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="energy-ac-optimal-power-flow__engineering-composition | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat down strong" title="energy-ac-optimal-power-flow__retrieval-heavy-synthesis | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="energy-ac-optimal-power-flow__environment-control | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="energy-ac-optimal-power-flow__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="energy-ac-optimal-power-flow__orchestration-delegation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td></tr><tr><th>energy-market-pricing<small>+28.6 pp</small></th><td class="heat same" title="energy-market-pricing__artifact-generation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="energy-market-pricing__analytic-pipeline | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="energy-market-pricing__engineering-composition | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="energy-market-pricing__retrieval-heavy-synthesis | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="energy-market-pricing__environment-control | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="energy-market-pricing__methodology-guardrail | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat up strong" title="energy-market-pricing__orchestration-delegation | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td></tr><tr><th>exceltable-in-ppt<small>+42.9 pp</small></th><td class="heat same" title="exceltable-in-ppt__artifact-generation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="exceltable-in-ppt__analytic-pipeline | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat up strong" title="exceltable-in-ppt__engineering-composition | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat up strong" title="exceltable-in-ppt__retrieval-heavy-synthesis | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="exceltable-in-ppt__environment-control | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat same" title="exceltable-in-ppt__methodology-guardrail | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="exceltable-in-ppt__orchestration-delegation | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td></tr><tr><th>exoplanet-detection-period<small>+71.4 pp</small></th><td class="heat up strong" title="exoplanet-detection-period__artifact-generation | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat up strong" title="exoplanet-detection-period__analytic-pipeline | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="exoplanet-detection-period__engineering-composition | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat up strong" title="exoplanet-detection-period__retrieval-heavy-synthesis | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat up strong" title="exoplanet-detection-period__environment-control | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td><td class="heat same" title="exoplanet-detection-period__methodology-guardrail | 100% -&gt; 100% | clean_success -&gt; clean_success"><span>0</span></td><td class="heat up strong" title="exoplanet-detection-period__orchestration-delegation | 0% -&gt; 100% | scientific_failure -&gt; clean_success"><span>+100</span></td></tr><tr><th>financial-modeling-qa<small>-42.9 pp</small></th><td class="heat down strong" title="financial-modeling-qa__artifact-generation | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="financial-modeling-qa__analytic-pipeline | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="financial-modeling-qa__engineering-composition | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat down strong" title="financial-modeling-qa__retrieval-heavy-synthesis | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat down strong" title="financial-modeling-qa__environment-control | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="financial-modeling-qa__methodology-guardrail | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="financial-modeling-qa__orchestration-delegation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td></tr><tr><th>find-topk-similiar-chemicals<small>-7.1 pp</small></th><td class="heat same" title="find-topk-similiar-chemicals__artifact-generation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat up" title="find-topk-similiar-chemicals__analytic-pipeline | 0% -&gt; 50% | scientific_failure -&gt; clean_success"><span>+50</span></td><td class="heat same" title="find-topk-similiar-chemicals__engineering-composition | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="find-topk-similiar-chemicals__retrieval-heavy-synthesis | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat down strong" title="find-topk-similiar-chemicals__environment-control | 100% -&gt; 0% | clean_success -&gt; scientific_failure"><span>-100</span></td><td class="heat same" title="find-topk-similiar-chemicals__methodology-guardrail | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="find-topk-similiar-chemicals__orchestration-delegation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td></tr><tr><th>fix-build-agentops<small>+0.0 pp</small></th><td class="heat same" title="fix-build-agentops__artifact-generation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-agentops__analytic-pipeline | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-agentops__engineering-composition | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-agentops__retrieval-heavy-synthesis | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-agentops__environment-control | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-agentops__methodology-guardrail | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-agentops__orchestration-delegation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td></tr><tr><th>fix-build-google-auto<small>+0.0 pp</small></th><td class="heat same" title="fix-build-google-auto__artifact-generation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-google-auto__analytic-pipeline | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-google-auto__engineering-composition | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-google-auto__retrieval-heavy-synthesis | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-google-auto__environment-control | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-google-auto__methodology-guardrail | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-build-google-auto__orchestration-delegation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td></tr><tr><th>fix-druid-loophole-cve<small>+0.0 pp</small></th><td class="heat same" title="fix-druid-loophole-cve__artifact-generation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-druid-loophole-cve__analytic-pipeline | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-druid-loophole-cve__engineering-composition | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-druid-loophole-cve__retrieval-heavy-synthesis | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-druid-loophole-cve__environment-control | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-druid-loophole-cve__methodology-guardrail | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td><td class="heat same" title="fix-druid-loophole-cve__orchestration-delegation | 0% -&gt; 0% | scientific_failure -&gt; scientific_failure"><span>0</span></td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Reruns, Repairs, And Exceptions</h2>
+  <p class="note">Final aggregation is valid. The table below keeps the operational history visible: runtime-failure reruns, machine/Docker interruptions, stalled dashboards, and same-label resumes from nearest completed checkpoints.</p>
+  <div class="smalltable"><table><thead><tr><th>Observed</th><th>Scope</th><th>Issue</th><th>Action</th></tr></thead><tbody><tr><td>2026-05-10T21:17:14.055225+00:00</td><td>b04</td><td>dashboard health is completed_with_issues</td><td>recorded only</td></tr><tr><td>2026-05-10T21:21:34.822824+00:00</td><td>court-form-filling__engineering-composition</td><td>completed_with_runtime_failures at R2; audit marked rerun required</td><td>archived b04 launcher log and court-form-filling__engineering-composition runtime-failure run before same-label rerun</td></tr><tr><td>2026-05-11T03:17:15.598274+00:00</td><td>b01</td><td>dashboard health is stalled</td><td>kill tmux session skillx-round2-guarded-patch-b01; archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b01 -&gt; /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T031713Z; launch skillx-round2-guarded-patch-b01 on port 8782</td></tr><tr><td>2026-05-11T07:02:54.276626+00:00</td><td>b01</td><td>tmux session missing, dashboard port not listening</td><td>archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b01 -&gt; /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z; launch skillx-round2-guarded-patch-b01 on port 8782</td></tr><tr><td>2026-05-11T07:02:54.276626+00:00</td><td>b02</td><td>tmux session missing, dashboard port not listening</td><td>archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b02 -&gt; /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z; launch skillx-round2-guarded-patch-b02 on port 8783</td></tr><tr><td>2026-05-11T07:02:54.276626+00:00</td><td>b03</td><td>tmux session missing, dashboard port not listening</td><td>archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b03 -&gt; /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z; launch skillx-round2-guarded-patch-b03 on port 8784</td></tr><tr><td>2026-05-11T07:02:54.276626+00:00</td><td>b05</td><td>tmux session missing, dashboard port not listening</td><td>archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b05 -&gt; /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b05-20260511T070254Z; launch skillx-round2-guarded-patch-b05 on port 8786</td></tr><tr><td>2026-05-11T10:17:40.282254+00:00</td><td>b02</td><td>dashboard health is completed_with_issues</td><td>recorded only</td></tr><tr><td>2026-05-11T10:19:11.202744+00:00</td><td>citation-check__artifact-generation, citation-check__methodology-guardrail</td><td>dashboard completed_with_issues; RUN_STATUS showed completed_with_runtime_failures</td><td>archived b02 runtime-failure pairs and launcher log before same-label rerun</td></tr><tr><td>2026-05-11T10:19:20.215426+00:00</td><td>b02</td><td>tmux session missing, dashboard port not listening</td><td>launch skillx-round2-guarded-patch-b02 on port 8783</td></tr><tr><td>2026-05-11T19:47:08Z</td><td>b01</td><td>user reported Docker error while only b01 remained active; docker info initially failed, then recovered after open -a Docker</td><td>started Docker Desktop after docker API was unavailable</td></tr><tr><td>2026-05-12T00:18:18.993282+00:00</td><td>b01</td><td>dashboard health is completed_with_issues</td><td>recorded only</td></tr><tr><td>2026-05-12T00:18:59.399012+00:00</td><td>energy-ac-optimal-power-flow__environment-control</td><td>dashboard completed_with_issues; RUN_STATUS showed completed_with_runtime_failures at R0</td><td>archived b01 runtime-failure pair and launcher log before same-label rerun</td></tr><tr><td>2026-05-12T00:19:05.477556+00:00</td><td>b01</td><td>tmux session missing, dashboard port not listening</td><td>launch skillx-round2-guarded-patch-b01 on port 8782</td></tr></tbody></table></div>
+  <p class="note">History-only findings included 7 pair_failed events and 7 Docker health probe failures in archived/interrupted attempts. They were not present in final selected outputs after repair. Launcher runtime labels observed: {&#x27;primary:claude-code&#x27;: 297}.</p>
+</section>
+
+<section class="panel">
+  <h2>Full Pair Comparison</h2>
+  <div class="smalltable"><table><thead><tr><th>Pair</th><th>Batch</th><th>Prev</th><th>Current</th><th>Delta</th><th>Prev class</th><th>Current class</th><th>Round</th><th>Final issue</th></tr></thead><tbody><tr class="regressed">
+<td>adaptive-cruise-control__engineering-composition</td><td>b01</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>adaptive-cruise-control__orchestration-delegation</td><td>b01</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>court-form-filling__analytic-pipeline</td><td>b04</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>court-form-filling__artifact-generation</td><td>b04</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>court-form-filling__engineering-composition</td><td>b04</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>data-to-d3__artifact-generation</td><td>b01</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>data-to-d3__engineering-composition</td><td>b01</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>data-to-d3__methodology-guardrail</td><td>b01</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>econ-detrending-correlation__artifact-generation</td><td>b05</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>energy-ac-optimal-power-flow__analytic-pipeline</td><td>b01</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>energy-ac-optimal-power-flow__retrieval-heavy-synthesis</td><td>b01</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>financial-modeling-qa__artifact-generation</td><td>b04</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>financial-modeling-qa__environment-control</td><td>b04</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>financial-modeling-qa__retrieval-heavy-synthesis</td><td>b04</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>find-topk-similiar-chemicals__environment-control</td><td>b05</td><td>100</td><td>0</td><td class="bad">-100.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>civ6-adjacency-optimizer__methodology-guardrail</td><td>b03</td><td>60</td><td>0</td><td class="bad">-60.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>civ6-adjacency-optimizer__retrieval-heavy-synthesis</td><td>b03</td><td>55</td><td>0</td><td class="bad">-55.0</td><td>clean_success</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>civ6-adjacency-optimizer__analytic-pipeline</td><td>b03</td><td>70</td><td>60</td><td class="bad">-10.0</td><td>clean_success</td><td>clean_success</td><td>R3</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>civ6-adjacency-optimizer__orchestration-delegation</td><td>b03</td><td>60</td><td>50</td><td class="bad">-10.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="regressed">
+<td>civ6-adjacency-optimizer__engineering-composition</td><td>b03</td><td>60</td><td>55</td><td class="bad">-5.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>3d-scan-calc__analytic-pipeline</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>3d-scan-calc__artifact-generation</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>3d-scan-calc__engineering-composition</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>3d-scan-calc__environment-control</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>3d-scan-calc__methodology-guardrail</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>3d-scan-calc__orchestration-delegation</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>3d-scan-calc__retrieval-heavy-synthesis</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>adaptive-cruise-control__analytic-pipeline</td><td>b01</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>adaptive-cruise-control__environment-control</td><td>b01</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>adaptive-cruise-control__methodology-guardrail</td><td>b01</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>adaptive-cruise-control__retrieval-heavy-synthesis</td><td>b01</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>azure-bgp-oscillation-route-leak__analytic-pipeline</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>azure-bgp-oscillation-route-leak__artifact-generation</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>azure-bgp-oscillation-route-leak__engineering-composition</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>azure-bgp-oscillation-route-leak__environment-control</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>azure-bgp-oscillation-route-leak__methodology-guardrail</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>azure-bgp-oscillation-route-leak__orchestration-delegation</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>citation-check__analytic-pipeline</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>citation-check__artifact-generation</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>citation-check__engineering-composition</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>citation-check__environment-control</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>citation-check__methodology-guardrail</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>citation-check__orchestration-delegation</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>citation-check__retrieval-heavy-synthesis</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>civ6-adjacency-optimizer__artifact-generation</td><td>b03</td><td>60</td><td>60</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>civ6-adjacency-optimizer__environment-control</td><td>b03</td><td>60</td><td>60</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>court-form-filling__environment-control</td><td>b04</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>court-form-filling__methodology-guardrail</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>court-form-filling__retrieval-heavy-synthesis</td><td>b04</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>dapt-intrusion-detection__analytic-pipeline</td><td>b05</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>dapt-intrusion-detection__methodology-guardrail</td><td>b05</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>dapt-intrusion-detection__retrieval-heavy-synthesis</td><td>b05</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>data-to-d3__environment-control</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>data-to-d3__orchestration-delegation</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>data-to-d3__retrieval-heavy-synthesis</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R3</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>earthquake-phase-association__analytic-pipeline</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>earthquake-phase-association__artifact-generation</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>earthquake-phase-association__engineering-composition</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>earthquake-phase-association__environment-control</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>earthquake-phase-association__methodology-guardrail</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>earthquake-phase-association__orchestration-delegation</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>earthquake-phase-association__retrieval-heavy-synthesis</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>earthquake-plate-calculation__artifact-generation</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>earthquake-plate-calculation__methodology-guardrail</td><td>b04</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>econ-detrending-correlation__engineering-composition</td><td>b05</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>econ-detrending-correlation__environment-control</td><td>b05</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>econ-detrending-correlation__methodology-guardrail</td><td>b05</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>econ-detrending-correlation__orchestration-delegation</td><td>b05</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>econ-detrending-correlation__retrieval-heavy-synthesis</td><td>b05</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-ac-optimal-power-flow__artifact-generation</td><td>b01</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-ac-optimal-power-flow__engineering-composition</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R3</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-ac-optimal-power-flow__environment-control</td><td>b01</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-ac-optimal-power-flow__methodology-guardrail</td><td>b01</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-ac-optimal-power-flow__orchestration-delegation</td><td>b01</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-market-pricing__analytic-pipeline</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-market-pricing__artifact-generation</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-market-pricing__engineering-composition</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-market-pricing__environment-control</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>energy-market-pricing__retrieval-heavy-synthesis</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>exceltable-in-ppt__artifact-generation</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="unchanged">
+<td>exceltable-in-ppt__environment-control</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>exceltable-in-ppt__methodology-guardrail</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>exceltable-in-ppt__orchestration-delegation</td><td>b02</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>exoplanet-detection-period__engineering-composition</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>exoplanet-detection-period__methodology-guardrail</td><td>b03</td><td>100</td><td>100</td><td class="flat">+0.0</td><td>clean_success</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>financial-modeling-qa__analytic-pipeline</td><td>b04</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>financial-modeling-qa__engineering-composition</td><td>b04</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>financial-modeling-qa__methodology-guardrail</td><td>b04</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>financial-modeling-qa__orchestration-delegation</td><td>b04</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>find-topk-similiar-chemicals__artifact-generation</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>find-topk-similiar-chemicals__engineering-composition</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>find-topk-similiar-chemicals__methodology-guardrail</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>find-topk-similiar-chemicals__orchestration-delegation</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>find-topk-similiar-chemicals__retrieval-heavy-synthesis</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-agentops__analytic-pipeline</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-agentops__artifact-generation</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-agentops__engineering-composition</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-agentops__environment-control</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-agentops__methodology-guardrail</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-agentops__orchestration-delegation</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-agentops__retrieval-heavy-synthesis</td><td>b05</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-google-auto__analytic-pipeline</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-google-auto__artifact-generation</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-google-auto__engineering-composition</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-google-auto__environment-control</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-google-auto__methodology-guardrail</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-google-auto__orchestration-delegation</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-build-google-auto__retrieval-heavy-synthesis</td><td>b02</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-druid-loophole-cve__analytic-pipeline</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-druid-loophole-cve__artifact-generation</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-druid-loophole-cve__engineering-composition</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-druid-loophole-cve__environment-control</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-druid-loophole-cve__methodology-guardrail</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-druid-loophole-cve__orchestration-delegation</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="unchanged">
+<td>fix-druid-loophole-cve__retrieval-heavy-synthesis</td><td>b03</td><td>0</td><td>0</td><td class="flat">+0.0</td><td>scientific_failure</td><td>scientific_failure</td><td>R0</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>find-topk-similiar-chemicals__analytic-pipeline</td><td>b05</td><td>0</td><td>50</td><td class="good">+50.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>adaptive-cruise-control__artifact-generation</td><td>b01</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>azure-bgp-oscillation-route-leak__retrieval-heavy-synthesis</td><td>b03</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>court-form-filling__orchestration-delegation</td><td>b04</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R3</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>dapt-intrusion-detection__artifact-generation</td><td>b05</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R3</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>dapt-intrusion-detection__engineering-composition</td><td>b05</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>dapt-intrusion-detection__environment-control</td><td>b05</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>dapt-intrusion-detection__orchestration-delegation</td><td>b05</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R3</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>data-to-d3__analytic-pipeline</td><td>b01</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>earthquake-plate-calculation__analytic-pipeline</td><td>b04</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="improved">
+<td>earthquake-plate-calculation__engineering-composition</td><td>b04</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>earthquake-plate-calculation__environment-control</td><td>b04</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>earthquake-plate-calculation__orchestration-delegation</td><td>b04</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="improved">
+<td>earthquake-plate-calculation__retrieval-heavy-synthesis</td><td>b04</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>econ-detrending-correlation__analytic-pipeline</td><td>b05</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>energy-market-pricing__methodology-guardrail</td><td>b02</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>energy-market-pricing__orchestration-delegation</td><td>b02</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>exceltable-in-ppt__analytic-pipeline</td><td>b02</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R0</td><td>baseline_perfect_skip</td>
+</tr><tr class="improved">
+<td>exceltable-in-ppt__engineering-composition</td><td>b02</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>exceltable-in-ppt__retrieval-heavy-synthesis</td><td>b02</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>exoplanet-detection-period__analytic-pipeline</td><td>b03</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>exoplanet-detection-period__artifact-generation</td><td>b03</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R2</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>exoplanet-detection-period__environment-control</td><td>b03</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R1</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>exoplanet-detection-period__orchestration-delegation</td><td>b03</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R3</td><td>complete_without_exceptions</td>
+</tr><tr class="improved">
+<td>exoplanet-detection-period__retrieval-heavy-synthesis</td><td>b03</td><td>0</td><td>100</td><td class="good">+100.0</td><td>scientific_failure</td><td>clean_success</td><td>R3</td><td>complete_without_exceptions</td>
+</tr></tbody></table></div>
+</section>
+
+<section class="panel files">
+  <h2>Artifacts</h2>
+  <p><span class="badge">HTML</span> <code>/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_overall_comparison_2026-05-12/overall.html</code></p>
+  <p><span class="badge">Markdown</span> <code>/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_overall_comparison_2026-05-12/overall_summary.md</code></p>
+  <p><span class="badge">CSV</span> <code>/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_overall_comparison_2026-05-12/pair_comparison.csv</code></p>
+  <p><span class="badge">Metrics</span> <code>/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_overall_comparison_2026-05-12/summary_metrics.json</code></p>
+</section>
+</main>
+</body>
+</html>

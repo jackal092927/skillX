@@ -1,0 +1,73 @@
+{
+  "artifact_type": "skillx_round2_guarded_patch_batch_pair_manifest",
+  "batch_count": 5,
+  "batch_id": "batch-05",
+  "batch_index": 5,
+  "created_at": "2026-05-10T07:51:54.640579+00:00",
+  "materialized_root": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10",
+  "pair_count": 28,
+  "pair_count_total": 28,
+  "schema_names": [
+    "artifact-generation",
+    "analytic-pipeline",
+    "engineering-composition",
+    "retrieval-heavy-synthesis",
+    "environment-control",
+    "methodology-guardrail",
+    "orchestration-delegation"
+  ],
+  "schemas_per_task": 7,
+  "selected_pair_ids": [
+    "dapt-intrusion-detection__artifact-generation",
+    "dapt-intrusion-detection__analytic-pipeline",
+    "dapt-intrusion-detection__engineering-composition",
+    "dapt-intrusion-detection__retrieval-heavy-synthesis",
+    "dapt-intrusion-detection__environment-control",
+    "dapt-intrusion-detection__methodology-guardrail",
+    "dapt-intrusion-detection__orchestration-delegation",
+    "econ-detrending-correlation__artifact-generation",
+    "econ-detrending-correlation__analytic-pipeline",
+    "econ-detrending-correlation__engineering-composition",
+    "econ-detrending-correlation__retrieval-heavy-synthesis",
+    "econ-detrending-correlation__environment-control",
+    "econ-detrending-correlation__methodology-guardrail",
+    "econ-detrending-correlation__orchestration-delegation",
+    "find-topk-similiar-chemicals__artifact-generation",
+    "find-topk-similiar-chemicals__analytic-pipeline",
+    "find-topk-similiar-chemicals__engineering-composition",
+    "find-topk-similiar-chemicals__retrieval-heavy-synthesis",
+    "find-topk-similiar-chemicals__environment-control",
+    "find-topk-similiar-chemicals__methodology-guardrail",
+    "find-topk-similiar-chemicals__orchestration-delegation",
+    "fix-build-agentops__artifact-generation",
+    "fix-build-agentops__analytic-pipeline",
+    "fix-build-agentops__engineering-composition",
+    "fix-build-agentops__retrieval-heavy-synthesis",
+    "fix-build-agentops__environment-control",
+    "fix-build-agentops__methodology-guardrail",
+    "fix-build-agentops__orchestration-delegation"
+  ],
+  "selected_task_names": [
+    "dapt-intrusion-detection",
+    "econ-detrending-correlation",
+    "find-topk-similiar-chemicals",
+    "fix-build-agentops"
+  ],
+  "selection_mode": "task_disjoint_5batch_4tasks",
+  "source_audit": {
+    "source_pair_count": 140,
+    "source_pair_plan": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/next_round_pair_plan.json",
+    "source_pair_specs": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pair_specs.jsonl",
+    "source_schema_count": 7,
+    "source_task_count": 20
+  },
+  "source_outer_loop_label": "outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10",
+  "task_count": 4,
+  "task_count_total": 4,
+  "task_names": [
+    "dapt-intrusion-detection",
+    "econ-detrending-correlation",
+    "find-topk-similiar-chemicals",
+    "fix-build-agentops"
+  ]
+}

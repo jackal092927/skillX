@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-05-12T02:49:19.474394+00:00",
+  "previous_result_csv": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/reports/checkpoint-round1-first20-fullmatrix-effective-2026-05-04/final_pair_results.csv",
+  "current_result_csv": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_final_summary_2026-05-12/round2_guarded_patch_final_140_results.csv",
+  "audit_json": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_final_summary_2026-05-12/round2_guarded_patch_rerun_exception_audit.json",
+  "pair_count": 140,
+  "previous_mean_score_pct": 45.17857142857143,
+  "current_mean_score_pct": 50.964285714285715,
+  "mean_delta_pp": 5.785714285714286,
+  "previous_clean_success_pairs": 66,
+  "current_clean_success_pairs": 74,
+  "previous_100_score_pairs": 59,
+  "current_100_score_pairs": 68,
+  "improved_pairs": 25,
+  "regressed_pairs": 20,
+  "unchanged_pairs": 95,
+  "final_validity_counts": {
+    "valid": 112,
+    "valid_intentional_skip": 28
+  },
+  "final_status_counts": {
+    "completed": 112,
+    "skipped_baseline_perfect": 28
+  },
+  "final_issue_code_counts": {
+    "complete_without_exceptions": 112,
+    "baseline_perfect_skip": 28
+  },
+  "final_rate_limit_signal_count": 0,
+  "runtime_profile_labels_observed_in_launcher_events": {
+    "primary:claude-code": 297
+  },
+  "manual_pair_reruns": [
+    "citation-check__artifact-generation",
+    "citation-check__methodology-guardrail",
+    "court-form-filling__engineering-composition",
+    "energy-ac-optimal-power-flow__environment-control"
+  ],
+  "launcher_event_counts": {
+    "preflight_risk_audit_completed": 13,
+    "preflight_risk_detected": 245,
+    "pair_started": 326,
+    "docker_health_probe": 152,
+    "pair_attempt_started": 149,
+    "pair_succeeded": 318,
+    "pair_skipped_existing_succeeded": 174,
+    "pair_failed": 7,
+    "docker_recovery_attempted": 7,
+    "docker_health_reprobe": 7
+  }
+}

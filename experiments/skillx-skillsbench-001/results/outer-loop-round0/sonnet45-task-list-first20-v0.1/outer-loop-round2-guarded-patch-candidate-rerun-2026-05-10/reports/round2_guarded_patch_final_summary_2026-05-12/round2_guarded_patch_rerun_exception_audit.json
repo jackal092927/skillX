@@ -1,0 +1,973 @@
+{
+  "generated_at": "2026-05-12T02:41:56.568522+00:00",
+  "materialized_root": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10",
+  "report_dir": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_final_summary_2026-05-12",
+  "final_row_count": 140,
+  "final_validity_counts": {
+    "valid": 112,
+    "valid_intentional_skip": 28
+  },
+  "final_status_counts": {
+    "completed": 112,
+    "skipped_baseline_perfect": 28
+  },
+  "final_issue_code_counts": {
+    "complete_without_exceptions": 112,
+    "baseline_perfect_skip": 28
+  },
+  "schema_counts": {
+    "artifact-generation": 20,
+    "analytic-pipeline": 20,
+    "engineering-composition": 20,
+    "retrieval-heavy-synthesis": 20,
+    "environment-control": 20,
+    "methodology-guardrail": 20,
+    "orchestration-delegation": 20
+  },
+  "task_count": 20,
+  "task_counts": {
+    "adaptive-cruise-control": 7,
+    "earthquake-phase-association": 7,
+    "energy-ac-optimal-power-flow": 7,
+    "data-to-d3": 7,
+    "citation-check": 7,
+    "energy-market-pricing": 7,
+    "exceltable-in-ppt": 7,
+    "fix-build-google-auto": 7,
+    "civ6-adjacency-optimizer": 7,
+    "exoplanet-detection-period": 7,
+    "fix-druid-loophole-cve": 7,
+    "azure-bgp-oscillation-route-leak": 7,
+    "court-form-filling": 7,
+    "earthquake-plate-calculation": 7,
+    "financial-modeling-qa": 7,
+    "3d-scan-calc": 7,
+    "dapt-intrusion-detection": 7,
+    "econ-detrending-correlation": 7,
+    "find-topk-similiar-chemicals": 7,
+    "fix-build-agentops": 7
+  },
+  "batch_counts": {
+    "b01": {
+      "run_label": "run-round2-guarded-patch-2026-05-10-b01",
+      "total_pairs": 28,
+      "completed_pairs": 28,
+      "failed_pairs": 0,
+      "aborted": false,
+      "summary_path": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b01/summary.json"
+    },
+    "b02": {
+      "run_label": "run-round2-guarded-patch-2026-05-10-b02",
+      "total_pairs": 28,
+      "completed_pairs": 28,
+      "failed_pairs": 0,
+      "aborted": false,
+      "summary_path": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b02/summary.json"
+    },
+    "b03": {
+      "run_label": "run-round2-guarded-patch-2026-05-10-b03",
+      "total_pairs": 28,
+      "completed_pairs": 28,
+      "failed_pairs": 0,
+      "aborted": false,
+      "summary_path": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b03/summary.json"
+    },
+    "b04": {
+      "run_label": "run-round2-guarded-patch-2026-05-10-b04",
+      "total_pairs": 28,
+      "completed_pairs": 28,
+      "failed_pairs": 0,
+      "aborted": false,
+      "summary_path": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b04/summary.json"
+    },
+    "b05": {
+      "run_label": "run-round2-guarded-patch-2026-05-10-b05",
+      "total_pairs": 28,
+      "completed_pairs": 28,
+      "failed_pairs": 0,
+      "aborted": false,
+      "summary_path": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b05/summary.json"
+    }
+  },
+  "audit_counts": {
+    "b01": {
+      "issues": {
+        "baseline_perfect_skip": 6,
+        "complete_without_exceptions": 22
+      },
+      "rerun_recommended": 0,
+      "rerun_required": 0,
+      "run_status": {
+        "completed": 22,
+        "skipped_baseline_perfect": 6
+      },
+      "severity": {
+        "note": 6,
+        "ok": 22
+      },
+      "total_pairs": 28
+    },
+    "b02": {
+      "issues": {
+        "baseline_perfect_skip": 9,
+        "complete_without_exceptions": 19
+      },
+      "rerun_recommended": 0,
+      "rerun_required": 0,
+      "run_status": {
+        "completed": 19,
+        "skipped_baseline_perfect": 9
+      },
+      "severity": {
+        "note": 9,
+        "ok": 19
+      },
+      "total_pairs": 28
+    },
+    "b03": {
+      "issues": {
+        "complete_without_exceptions": 28
+      },
+      "rerun_recommended": 0,
+      "rerun_required": 0,
+      "run_status": {
+        "completed": 28
+      },
+      "severity": {
+        "ok": 28
+      },
+      "total_pairs": 28
+    },
+    "b04": {
+      "issues": {
+        "baseline_perfect_skip": 11,
+        "complete_without_exceptions": 17
+      },
+      "rerun_recommended": 0,
+      "rerun_required": 0,
+      "run_status": {
+        "completed": 17,
+        "skipped_baseline_perfect": 11
+      },
+      "severity": {
+        "note": 11,
+        "ok": 17
+      },
+      "total_pairs": 28
+    },
+    "b05": {
+      "issues": {
+        "baseline_perfect_skip": 2,
+        "complete_without_exceptions": 26
+      },
+      "rerun_recommended": 0,
+      "rerun_required": 0,
+      "run_status": {
+        "completed": 26,
+        "skipped_baseline_perfect": 2
+      },
+      "severity": {
+        "note": 2,
+        "ok": 26
+      },
+      "total_pairs": 28
+    }
+  },
+  "final_rate_limit_signal_count": 0,
+  "runtime_profile_labels_observed_in_launcher_events": {
+    "primary:claude-code": 297
+  },
+  "launcher_event_counts": {
+    "preflight_risk_audit_completed": 13,
+    "preflight_risk_detected": 245,
+    "pair_started": 326,
+    "docker_health_probe": 152,
+    "pair_attempt_started": 149,
+    "pair_succeeded": 318,
+    "pair_skipped_existing_succeeded": 174,
+    "pair_failed": 7,
+    "docker_recovery_attempted": 7,
+    "docker_health_reprobe": 7
+  },
+  "manual_pair_reruns": [
+    "citation-check__artifact-generation",
+    "citation-check__methodology-guardrail",
+    "court-form-filling__engineering-composition",
+    "energy-ac-optimal-power-flow__environment-control"
+  ],
+  "issue_records": [
+    {
+      "observed_at": "2026-05-10T21:17:14.055225+00:00",
+      "results": [
+        {
+          "actions": [],
+          "active_pair_count": 0,
+          "batch_id": "b04",
+          "completed": true,
+          "completed_pairs": 28,
+          "failed_pairs": 0,
+          "health": "completed_with_issues",
+          "issues": [
+            "dashboard health is completed_with_issues"
+          ],
+          "port": 8785,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b04",
+          "session": "skillx-round2-guarded-patch-b04",
+          "status": "issue"
+        }
+      ]
+    },
+    {
+      "automation_id": "skillx-round2-guarded-patch-heartbeat",
+      "batch_id": "b04",
+      "manual_repair_action": "archived b04 launcher log and court-form-filling__engineering-composition runtime-failure run before same-label rerun",
+      "observed_at": "2026-05-10T21:21:34.822824+00:00",
+      "pair_id": "court-form-filling__engineering-composition",
+      "reason": "completed_with_runtime_failures at R2; audit marked rerun required"
+    },
+    {
+      "observed_at": "2026-05-11T03:17:15.598274+00:00",
+      "results": [
+        {
+          "actions": [
+            "kill tmux session skillx-round2-guarded-patch-b01",
+            "archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b01 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T031713Z",
+            "launch skillx-round2-guarded-patch-b01 on port 8782"
+          ],
+          "active_pair_count": 1,
+          "batch_id": "b01",
+          "completed": false,
+          "completed_pairs": 12,
+          "failed_pairs": 0,
+          "health": "stalled",
+          "issues": [
+            "dashboard health is stalled"
+          ],
+          "port": 8782,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b01",
+          "session": "skillx-round2-guarded-patch-b01",
+          "status": "repaired"
+        }
+      ]
+    },
+    {
+      "observed_at": "2026-05-11T07:02:54.276626+00:00",
+      "results": [
+        {
+          "actions": [
+            "archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b01 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z",
+            "launch skillx-round2-guarded-patch-b01 on port 8782"
+          ],
+          "active_pair_count": null,
+          "batch_id": "b01",
+          "completed": false,
+          "completed_pairs": null,
+          "failed_pairs": null,
+          "health": null,
+          "issues": [
+            "tmux session missing",
+            "dashboard port not listening"
+          ],
+          "port": 8782,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b01",
+          "session": "skillx-round2-guarded-patch-b01",
+          "status": "repaired"
+        },
+        {
+          "actions": [
+            "archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b02 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z",
+            "launch skillx-round2-guarded-patch-b02 on port 8783"
+          ],
+          "active_pair_count": null,
+          "batch_id": "b02",
+          "completed": false,
+          "completed_pairs": null,
+          "failed_pairs": null,
+          "health": null,
+          "issues": [
+            "tmux session missing",
+            "dashboard port not listening"
+          ],
+          "port": 8783,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b02",
+          "session": "skillx-round2-guarded-patch-b02",
+          "status": "repaired"
+        },
+        {
+          "actions": [
+            "archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b03 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z",
+            "launch skillx-round2-guarded-patch-b03 on port 8784"
+          ],
+          "active_pair_count": null,
+          "batch_id": "b03",
+          "completed": false,
+          "completed_pairs": null,
+          "failed_pairs": null,
+          "health": null,
+          "issues": [
+            "tmux session missing",
+            "dashboard port not listening"
+          ],
+          "port": 8784,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b03",
+          "session": "skillx-round2-guarded-patch-b03",
+          "status": "repaired"
+        },
+        {
+          "actions": [
+            "archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b05 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b05-20260511T070254Z",
+            "launch skillx-round2-guarded-patch-b05 on port 8786"
+          ],
+          "active_pair_count": null,
+          "batch_id": "b05",
+          "completed": false,
+          "completed_pairs": null,
+          "failed_pairs": null,
+          "health": null,
+          "issues": [
+            "tmux session missing",
+            "dashboard port not listening"
+          ],
+          "port": 8786,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b05",
+          "session": "skillx-round2-guarded-patch-b05",
+          "status": "repaired"
+        }
+      ]
+    },
+    {
+      "observed_at": "2026-05-11T10:17:40.282254+00:00",
+      "results": [
+        {
+          "actions": [],
+          "active_pair_count": 0,
+          "batch_id": "b02",
+          "completed": true,
+          "completed_pairs": 28,
+          "failed_pairs": 0,
+          "health": "completed_with_issues",
+          "issues": [
+            "dashboard health is completed_with_issues"
+          ],
+          "port": 8783,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b02",
+          "session": "skillx-round2-guarded-patch-b02",
+          "status": "issue"
+        }
+      ]
+    },
+    {
+      "actions": [
+        "archive pair run /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/citation-check__artifact-generation/refine_run_run-round2-guarded-patch-2026-05-10-b02 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/citation-check__artifact-generation/archives/manual-runtime-failure-rerun-20260511T101911Z",
+        "archive pair run /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/citation-check__methodology-guardrail/refine_run_run-round2-guarded-patch-2026-05-10-b02 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/citation-check__methodology-guardrail/archives/manual-runtime-failure-rerun-20260511T101911Z",
+        "archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b02 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T101911Z-runtime-failures"
+      ],
+      "automation_id": "skillx-round2-guarded-patch-heartbeat",
+      "batch_id": "b02",
+      "manual_repair_action": "archived b02 runtime-failure pairs and launcher log before same-label rerun",
+      "observed_at": "2026-05-11T10:19:11.202744+00:00",
+      "pair_ids": [
+        "citation-check__artifact-generation",
+        "citation-check__methodology-guardrail"
+      ],
+      "reason": "dashboard completed_with_issues; RUN_STATUS showed completed_with_runtime_failures"
+    },
+    {
+      "observed_at": "2026-05-11T10:19:20.215426+00:00",
+      "results": [
+        {
+          "actions": [
+            "launch skillx-round2-guarded-patch-b02 on port 8783"
+          ],
+          "active_pair_count": null,
+          "batch_id": "b02",
+          "completed": false,
+          "completed_pairs": null,
+          "failed_pairs": null,
+          "health": null,
+          "issues": [
+            "tmux session missing",
+            "dashboard port not listening"
+          ],
+          "port": 8783,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b02",
+          "session": "skillx-round2-guarded-patch-b02",
+          "status": "repaired"
+        }
+      ]
+    },
+    {
+      "automation_id": "skillx-round2-guarded-patch-heartbeat",
+      "observed_at": "2026-05-11T19:47:08Z",
+      "manual_repair_action": "started Docker Desktop after docker API was unavailable",
+      "batch_id": "b01",
+      "reason": "user reported Docker error while only b01 remained active; docker info initially failed, then recovered after open -a Docker"
+    },
+    {
+      "observed_at": "2026-05-12T00:18:18.993282+00:00",
+      "results": [
+        {
+          "actions": [],
+          "active_pair_count": 0,
+          "batch_id": "b01",
+          "completed": true,
+          "completed_pairs": 28,
+          "failed_pairs": 0,
+          "health": "completed_with_issues",
+          "issues": [
+            "dashboard health is completed_with_issues"
+          ],
+          "port": 8782,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b01",
+          "session": "skillx-round2-guarded-patch-b01",
+          "status": "issue"
+        }
+      ]
+    },
+    {
+      "actions": [
+        "archive pair run /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/energy-ac-optimal-power-flow__environment-control/refine_run_run-round2-guarded-patch-2026-05-10-b01 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/energy-ac-optimal-power-flow__environment-control/archives/manual-runtime-failure-rerun-20260512T001859Z",
+        "archive launcher log /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/run-round2-guarded-patch-2026-05-10-b01 -> /Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260512T001859Z-runtime-failure"
+      ],
+      "automation_id": "skillx-round2-guarded-patch-heartbeat",
+      "batch_id": "b01",
+      "manual_repair_action": "archived b01 runtime-failure pair and launcher log before same-label rerun",
+      "observed_at": "2026-05-12T00:18:59.399012+00:00",
+      "pair_ids": [
+        "energy-ac-optimal-power-flow__environment-control"
+      ],
+      "reason": "dashboard completed_with_issues; RUN_STATUS showed completed_with_runtime_failures at R0"
+    },
+    {
+      "observed_at": "2026-05-12T00:19:05.477556+00:00",
+      "results": [
+        {
+          "actions": [
+            "launch skillx-round2-guarded-patch-b01 on port 8782"
+          ],
+          "active_pair_count": null,
+          "batch_id": "b01",
+          "completed": false,
+          "completed_pairs": null,
+          "failed_pairs": null,
+          "health": null,
+          "issues": [
+            "tmux session missing",
+            "dashboard port not listening"
+          ],
+          "port": 8782,
+          "run_label": "run-round2-guarded-patch-2026-05-10-b01",
+          "session": "skillx-round2-guarded-patch-b01",
+          "status": "repaired"
+        }
+      ]
+    }
+  ],
+  "launcher_event_findings": [
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z/events.ndjson",
+      "line": 66,
+      "observed_at": "2026-05-11T06:50:36.679806+00:00",
+      "batch_id": "b01",
+      "pair_id": "earthquake-phase-association__orchestration-delegation",
+      "stage": "run",
+      "returncode": 2,
+      "runtime_profile_label": "primary:claude-code",
+      "message": ""
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z/events.ndjson",
+      "line": 68,
+      "observed_at": "2026-05-11T06:50:37.155975+00:00",
+      "batch_id": "b01",
+      "pair_id": "energy-ac-optimal-power-flow__artifact-generation",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_recovery_attempted",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z/events.ndjson",
+      "line": 69,
+      "observed_at": "2026-05-11T06:53:49.227700+00:00",
+      "batch_id": "b01",
+      "pair_id": "energy-ac-optimal-power-flow__artifact-generation",
+      "stage": "docker_recovery",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "successful=True"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z/events.ndjson",
+      "line": 71,
+      "observed_at": "2026-05-11T06:53:50.069141+00:00",
+      "batch_id": "b01",
+      "pair_id": "energy-ac-optimal-power-flow__artifact-generation",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260512T001859Z-runtime-failure/events.ndjson",
+      "line": 63,
+      "observed_at": "2026-05-11T07:02:58.017667+00:00",
+      "batch_id": "b01",
+      "pair_id": "earthquake-phase-association__orchestration-delegation",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_recovery_attempted",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260512T001859Z-runtime-failure/events.ndjson",
+      "line": 64,
+      "observed_at": "2026-05-11T07:03:51.178434+00:00",
+      "batch_id": "b01",
+      "pair_id": "earthquake-phase-association__orchestration-delegation",
+      "stage": "docker_recovery",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "successful=True"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z/events.ndjson",
+      "line": 126,
+      "observed_at": "2026-05-11T06:50:36.508864+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__environment-control",
+      "stage": "run",
+      "returncode": 2,
+      "runtime_profile_label": "primary:claude-code",
+      "message": ""
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z/events.ndjson",
+      "line": 128,
+      "observed_at": "2026-05-11T06:50:37.005092+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__methodology-guardrail",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_recovery_attempted",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z/events.ndjson",
+      "line": 129,
+      "observed_at": "2026-05-11T06:53:49.247992+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__methodology-guardrail",
+      "stage": "docker_recovery",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "successful=True"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z/events.ndjson",
+      "line": 131,
+      "observed_at": "2026-05-11T06:53:50.070447+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__methodology-guardrail",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T101911Z-runtime-failures/events.ndjson",
+      "line": 99,
+      "observed_at": "2026-05-11T07:02:58.017420+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__environment-control",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_recovery_attempted",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T101911Z-runtime-failures/events.ndjson",
+      "line": 100,
+      "observed_at": "2026-05-11T07:04:08.491189+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__environment-control",
+      "stage": "docker_recovery",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "successful=True"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z/events.ndjson",
+      "line": 80,
+      "observed_at": "2026-05-11T06:50:36.642476+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__retrieval-heavy-synthesis",
+      "stage": "run",
+      "returncode": 2,
+      "runtime_profile_label": "primary:claude-code",
+      "message": ""
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z/events.ndjson",
+      "line": 82,
+      "observed_at": "2026-05-11T06:50:37.123553+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__environment-control",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_recovery_attempted",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z/events.ndjson",
+      "line": 83,
+      "observed_at": "2026-05-11T06:53:49.214410+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__environment-control",
+      "stage": "docker_recovery",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "successful=True"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z/events.ndjson",
+      "line": 85,
+      "observed_at": "2026-05-11T06:53:50.070845+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__environment-control",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b05-20260511T070254Z/events.ndjson",
+      "line": 134,
+      "observed_at": "2026-05-11T06:53:55.723466+00:00",
+      "batch_id": "b05",
+      "pair_id": "fix-build-agentops__orchestration-delegation",
+      "stage": "run",
+      "returncode": 2,
+      "runtime_profile_label": "primary:claude-code",
+      "message": ""
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": false,
+      "source": "launcher_logs/run-round2-guarded-patch-2026-05-10-b03/events.ndjson",
+      "line": 61,
+      "observed_at": "2026-05-11T07:02:58.017452+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__retrieval-heavy-synthesis",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_recovery_attempted",
+      "archive": false,
+      "source": "launcher_logs/run-round2-guarded-patch-2026-05-10-b03/events.ndjson",
+      "line": 62,
+      "observed_at": "2026-05-11T07:03:51.511036+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__retrieval-heavy-synthesis",
+      "stage": "docker_recovery",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "successful=True"
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": false,
+      "source": "launcher_logs/run-round2-guarded-patch-2026-05-10-b05/events.ndjson",
+      "line": 105,
+      "observed_at": "2026-05-11T07:02:58.017419+00:00",
+      "batch_id": "b05",
+      "pair_id": "fix-build-agentops__orchestration-delegation",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_recovery_attempted",
+      "archive": false,
+      "source": "launcher_logs/run-round2-guarded-patch-2026-05-10-b05/events.ndjson",
+      "line": 106,
+      "observed_at": "2026-05-11T07:03:51.250636+00:00",
+      "batch_id": "b05",
+      "pair_id": "fix-build-agentops__orchestration-delegation",
+      "stage": "docker_recovery",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "successful=True"
+    }
+  ],
+  "history_only_pair_findings": [
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z/events.ndjson",
+      "line": 66,
+      "observed_at": "2026-05-11T06:50:36.679806+00:00",
+      "batch_id": "b01",
+      "pair_id": "earthquake-phase-association__orchestration-delegation",
+      "stage": "run",
+      "returncode": 2,
+      "runtime_profile_label": "primary:claude-code",
+      "message": ""
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z/events.ndjson",
+      "line": 68,
+      "observed_at": "2026-05-11T06:50:37.155975+00:00",
+      "batch_id": "b01",
+      "pair_id": "energy-ac-optimal-power-flow__artifact-generation",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260511T070253Z/events.ndjson",
+      "line": 71,
+      "observed_at": "2026-05-11T06:53:50.069141+00:00",
+      "batch_id": "b01",
+      "pair_id": "energy-ac-optimal-power-flow__artifact-generation",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b01-20260512T001859Z-runtime-failure/events.ndjson",
+      "line": 63,
+      "observed_at": "2026-05-11T07:02:58.017667+00:00",
+      "batch_id": "b01",
+      "pair_id": "earthquake-phase-association__orchestration-delegation",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z/events.ndjson",
+      "line": 126,
+      "observed_at": "2026-05-11T06:50:36.508864+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__environment-control",
+      "stage": "run",
+      "returncode": 2,
+      "runtime_profile_label": "primary:claude-code",
+      "message": ""
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z/events.ndjson",
+      "line": 128,
+      "observed_at": "2026-05-11T06:50:37.005092+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__methodology-guardrail",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T070253Z/events.ndjson",
+      "line": 131,
+      "observed_at": "2026-05-11T06:53:50.070447+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__methodology-guardrail",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b02-20260511T101911Z-runtime-failures/events.ndjson",
+      "line": 99,
+      "observed_at": "2026-05-11T07:02:58.017420+00:00",
+      "batch_id": "b02",
+      "pair_id": "fix-build-google-auto__environment-control",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z/events.ndjson",
+      "line": 80,
+      "observed_at": "2026-05-11T06:50:36.642476+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__retrieval-heavy-synthesis",
+      "stage": "run",
+      "returncode": 2,
+      "runtime_profile_label": "primary:claude-code",
+      "message": ""
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z/events.ndjson",
+      "line": 82,
+      "observed_at": "2026-05-11T06:50:37.123553+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__environment-control",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b03-20260511T070253Z/events.ndjson",
+      "line": 85,
+      "observed_at": "2026-05-11T06:53:50.070845+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__environment-control",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "pair_failed",
+      "archive": true,
+      "source": "launcher_logs/_heartbeat_archives/run-round2-guarded-patch-2026-05-10-b05-20260511T070254Z/events.ndjson",
+      "line": 134,
+      "observed_at": "2026-05-11T06:53:55.723466+00:00",
+      "batch_id": "b05",
+      "pair_id": "fix-build-agentops__orchestration-delegation",
+      "stage": "run",
+      "returncode": 2,
+      "runtime_profile_label": "primary:claude-code",
+      "message": ""
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": false,
+      "source": "launcher_logs/run-round2-guarded-patch-2026-05-10-b03/events.ndjson",
+      "line": 61,
+      "observed_at": "2026-05-11T07:02:58.017452+00:00",
+      "batch_id": "b03",
+      "pair_id": "fix-druid-loophole-cve__retrieval-heavy-synthesis",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    },
+    {
+      "kind": "docker_health_probe_failed",
+      "archive": false,
+      "source": "launcher_logs/run-round2-guarded-patch-2026-05-10-b05/events.ndjson",
+      "line": 105,
+      "observed_at": "2026-05-11T07:02:58.017419+00:00",
+      "batch_id": "b05",
+      "pair_id": "fix-build-agentops__orchestration-delegation",
+      "stage": "docker_health_gate",
+      "returncode": null,
+      "runtime_profile_label": null,
+      "message": "docker_info returned exit code 1"
+    }
+  ],
+  "archive_statuses": [
+    {
+      "pair_id": "citation-check__artifact-generation",
+      "archive_dir": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/citation-check__artifact-generation/archives/manual-runtime-failure-rerun-20260511T101911Z",
+      "status": "completed_with_runtime_failures",
+      "selected_round": "R1",
+      "selected_reward": "1.0",
+      "selected_classification": "clean_success",
+      "selected_reason": "positive_reward_with_no_exception_stats",
+      "updated_at": "2026-05-10T08:59:30.451281+00:00"
+    },
+    {
+      "pair_id": "citation-check__methodology-guardrail",
+      "archive_dir": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/citation-check__methodology-guardrail/archives/manual-runtime-failure-rerun-20260511T101911Z",
+      "status": "completed_with_runtime_failures",
+      "selected_round": "R1",
+      "selected_reward": "1.0",
+      "selected_classification": "runtime_failure",
+      "selected_reason": "exception_stats_present",
+      "updated_at": "2026-05-10T10:12:18.331402+00:00"
+    },
+    {
+      "pair_id": "energy-ac-optimal-power-flow__environment-control",
+      "archive_dir": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/energy-ac-optimal-power-flow__environment-control/archives/manual-runtime-failure-rerun-20260512T001859Z",
+      "status": "completed_with_runtime_failures",
+      "selected_round": "R0",
+      "selected_reward": "0.0",
+      "selected_classification": "runtime_failure",
+      "selected_reason": "exception_stats_present",
+      "updated_at": "2026-05-11T16:09:00.879461+00:00"
+    },
+    {
+      "pair_id": "court-form-filling__engineering-composition",
+      "archive_dir": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pairs/court-form-filling__engineering-composition/heartbeat_archives/refine_run_run-round2-guarded-patch-2026-05-10-b04-runtime-failure-R2-20260510T212133Z",
+      "status": "completed_with_runtime_failures",
+      "selected_round": "R0",
+      "selected_reward": "0.0",
+      "selected_classification": "scientific_failure",
+      "selected_reason": "clean_zero_or_negative_reward",
+      "updated_at": "2026-05-10T10:12:23.692649+00:00"
+    }
+  ],
+  "output_files": {
+    "csv": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_final_summary_2026-05-12/round2_guarded_patch_final_140_results.csv",
+    "json": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_final_summary_2026-05-12/round2_guarded_patch_final_140_results.json",
+    "markdown_table": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_final_summary_2026-05-12/round2_guarded_patch_final_140_results_table.md",
+    "report": "/Users/Jackal/iWorld/projects/skillX/experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/reports/round2_guarded_patch_final_summary_2026-05-12/round2_guarded_patch_final_report.md"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "artifact_type": "skillx_round2_guarded_patch_batch_pair_manifest",
+  "batch_count": 5,
+  "batch_id": "batch-04",
+  "batch_index": 4,
+  "created_at": "2026-05-10T07:51:54.640579+00:00",
+  "materialized_root": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10",
+  "pair_count": 28,
+  "pair_count_total": 28,
+  "schema_names": [
+    "artifact-generation",
+    "analytic-pipeline",
+    "engineering-composition",
+    "retrieval-heavy-synthesis",
+    "environment-control",
+    "methodology-guardrail",
+    "orchestration-delegation"
+  ],
+  "schemas_per_task": 7,
+  "selected_pair_ids": [
+    "court-form-filling__artifact-generation",
+    "court-form-filling__analytic-pipeline",
+    "court-form-filling__engineering-composition",
+    "court-form-filling__retrieval-heavy-synthesis",
+    "court-form-filling__environment-control",
+    "court-form-filling__methodology-guardrail",
+    "court-form-filling__orchestration-delegation",
+    "earthquake-plate-calculation__artifact-generation",
+    "earthquake-plate-calculation__analytic-pipeline",
+    "earthquake-plate-calculation__engineering-composition",
+    "earthquake-plate-calculation__retrieval-heavy-synthesis",
+    "earthquake-plate-calculation__environment-control",
+    "earthquake-plate-calculation__methodology-guardrail",
+    "earthquake-plate-calculation__orchestration-delegation",
+    "financial-modeling-qa__artifact-generation",
+    "financial-modeling-qa__analytic-pipeline",
+    "financial-modeling-qa__engineering-composition",
+    "financial-modeling-qa__retrieval-heavy-synthesis",
+    "financial-modeling-qa__environment-control",
+    "financial-modeling-qa__methodology-guardrail",
+    "financial-modeling-qa__orchestration-delegation",
+    "3d-scan-calc__artifact-generation",
+    "3d-scan-calc__analytic-pipeline",
+    "3d-scan-calc__engineering-composition",
+    "3d-scan-calc__retrieval-heavy-synthesis",
+    "3d-scan-calc__environment-control",
+    "3d-scan-calc__methodology-guardrail",
+    "3d-scan-calc__orchestration-delegation"
+  ],
+  "selected_task_names": [
+    "court-form-filling",
+    "earthquake-plate-calculation",
+    "financial-modeling-qa",
+    "3d-scan-calc"
+  ],
+  "selection_mode": "task_disjoint_5batch_4tasks",
+  "source_audit": {
+    "source_pair_count": 140,
+    "source_pair_plan": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/next_round_pair_plan.json",
+    "source_pair_specs": "experiments/skillx-skillsbench-001/results/outer-loop-round0/sonnet45-task-list-first20-v0.1/outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10/pair_specs.jsonl",
+    "source_schema_count": 7,
+    "source_task_count": 20
+  },
+  "source_outer_loop_label": "outer-loop-round2-guarded-patch-candidate-rerun-2026-05-10",
+  "task_count": 4,
+  "task_count_total": 4,
+  "task_names": [
+    "court-form-filling",
+    "earthquake-plate-calculation",
+    "financial-modeling-qa",
+    "3d-scan-calc"
+  ]
+}

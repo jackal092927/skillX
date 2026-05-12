@@ -1,0 +1,86 @@
+[
+  {
+    "schema_id": "orchestration-delegation",
+    "count": 20,
+    "prev_mean_score_pct": 38.0,
+    "curr_mean_score_pct": 57.5,
+    "mean_delta_pp": 19.5,
+    "improved": 5,
+    "regressed": 2,
+    "unchanged": 13,
+    "current_clean_success": 12,
+    "previous_clean_success": 8
+  },
+  {
+    "schema_id": "analytic-pipeline",
+    "count": 20,
+    "prev_mean_score_pct": 33.5,
+    "curr_mean_score_pct": 50.5,
+    "mean_delta_pp": 17.0,
+    "improved": 6,
+    "regressed": 3,
+    "unchanged": 11,
+    "current_clean_success": 11,
+    "previous_clean_success": 7
+  },
+  {
+    "schema_id": "retrieval-heavy-synthesis",
+    "count": 20,
+    "prev_mean_score_pct": 47.75,
+    "curr_mean_score_pct": 55.0,
+    "mean_delta_pp": 7.25,
+    "improved": 4,
+    "regressed": 3,
+    "unchanged": 13,
+    "current_clean_success": 11,
+    "previous_clean_success": 10
+  },
+  {
+    "schema_id": "environment-control",
+    "count": 20,
+    "prev_mean_score_pct": 48.0,
+    "curr_mean_score_pct": 53.0,
+    "mean_delta_pp": 5.0,
+    "improved": 3,
+    "regressed": 2,
+    "unchanged": 15,
+    "current_clean_success": 11,
+    "previous_clean_success": 10
+  },
+  {
+    "schema_id": "engineering-composition",
+    "count": 20,
+    "prev_mean_score_pct": 48.0,
+    "curr_mean_score_pct": 47.75,
+    "mean_delta_pp": -0.25,
+    "improved": 3,
+    "regressed": 4,
+    "unchanged": 13,
+    "current_clean_success": 10,
+    "previous_clean_success": 10
+  },
+  {
+    "schema_id": "methodology-guardrail",
+    "count": 20,
+    "prev_mean_score_pct": 53.0,
+    "curr_mean_score_pct": 50.0,
+    "mean_delta_pp": -3.0,
+    "improved": 1,
+    "regressed": 2,
+    "unchanged": 17,
+    "current_clean_success": 10,
+    "previous_clean_success": 11
+  },
+  {
+    "schema_id": "artifact-generation",
+    "count": 20,
+    "prev_mean_score_pct": 48.0,
+    "curr_mean_score_pct": 43.0,
+    "mean_delta_pp": -5.0,
+    "improved": 3,
+    "regressed": 4,
+    "unchanged": 13,
+    "current_clean_success": 9,
+    "previous_clean_success": 10
+  }
+]
